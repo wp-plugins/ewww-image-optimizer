@@ -3,7 +3,7 @@ Contributors: nosilver4u
 Tags: images, image, attachments, attachment
 Requires at least: 2.9
 Tested up to: 3.3.2
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv3
 
 Reduce image file sizes and improve performance using Linux image optimizers within WordPress. Uses jpegtran, optipng, and gifsicle.
@@ -67,7 +67,7 @@ Have some problems, and I'll give some pointers here.
 
 = Can I use EWWW Image Optimizer with a Windows server? =
 
-Maybe, have fun with that.
+No, it doesn't work on Windows. If you do manage to get the tools working on Windows and hack the plugin to remove the OS check and it all works, please let me know, and I'll consider removing the block on Windows.
 
 = How are JPGs optimized? =
 
@@ -75,7 +75,7 @@ Using the command *jpegtran -copy all -optimize original-file > optimized-file*.
 
 = How are PNGs optimized? =
 
-Using the command *optipng -o10 original-file*. The '-o10' switch tells optipng to perform 10 trials, but if people complain about performance, I may look to streamline that a bit. Optipng is a derivative of pngcrush, which is another widely used png optimization utility.
+Using the command *optipng -o3 original-file*. The '-o3' switch tells optipng to perform 16 trials, but if people complain about performance, I may look to streamline that a bit. Optipng is a derivative of pngcrush, which is another widely used png optimization utility.
 
 = How are GIFs optimized? =
 
@@ -97,8 +97,17 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 == Changelog ==
 
+= 1.0.1 =
+* Fixed optimization level for optipng (-o3)
+* Added Installation and Support links to Settings page, and a link to Settings from the Plugin page.
+
 = 1.0.0 =
 * First release (forked from CW Image Optimizer)
+
+== Upgrade Notice ==
+
+= 1.0.1 =
+Improved performance for PNGs by specifying proper optimization level
 
 == Contact and Credits ==
 

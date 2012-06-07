@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate Linux image optimizers into WordPress.
- * @version 1.0.0
+ * @version 1.0.1
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -9,9 +9,9 @@ Plugin Name: EWWW Image Optimizer
 Plugin URI: http://www.shanebishop.net/ewww-image-optimizer/
 Description: Reduce image file sizes and improve performance using Linux image optimizers within WordPress. Uses jpegtran, optipng, and gifsicle.
 Author: Shane Bishop
-Version: 1.0.0
+Version: 1.0.1
 Author URI: http://www.shanebishop.net/
-License: GPL3
+License: GPLv3
 */
 
 /**
@@ -87,7 +87,7 @@ function ewww_image_optimizer_notice_utils() {
     $msg = implode(', ', $missing);
 
     if(!empty($msg)){
-        echo "<div id='ewww-image-optimizer-warning-opt-png' class='updated fade'><p><strong>EWWW Image Optimizer requires jpegtran, optipng, and gifsicle (imagemagick).</strong> You are missing: $msg.</p></div>";
+        echo "<div id='ewww-image-optimizer-warning-opt-png' class='updated fade'><p><strong>EWWW Image Optimizer requires <a href='http://jpegclub.org/jpegtran/'>jpegtran</a>, <a href='http://optipng.sourceforge.net/'>optipng</a>, and <a href='http://www.lcdf.org/gifsicle/'>gifsicle</a>.</strong> You are missing: $msg. <a href='http://wordpress.org/extend/plugins/ewww-image-optimizer/installation/'>Installation Instructions</a>.</p></div>";
     }
 
     // Check if exec is disabled
@@ -125,6 +125,14 @@ function ewww_image_optimizer_admin_menu() {
 
 }
 add_action( 'admin_menu', 'ewww_image_optimizer_admin_menu' );
+
+function ewww_image_optimizer_settings_link($links) {
+  $settings_link = '<a href="options-general.php?page=ewww-image-optimizer/ewww-image-optimizer.php">Settings</a>';
+  array_unshift ( $links, $settings_link );
+  return $links;
+}
+$plugin = plugin_basename ( __FILE__ );
+add_filter ( "plugin_action_links_$plugin", 'ewww_image_optimizer_settings_link' );
 
 function ewww_image_optimizer_bulk_preview() {
   if ( function_exists( 'apache_setenv' ) ) {
@@ -252,7 +260,7 @@ function ewww_image_optimizer($file, $attach_id) {
             break;
         case 'image/png':
             $orig_size = filesize($file);
-            exec("$optipng_path -o10 -quiet $file");
+            exec("$optipng_path -o3 -quiet $file");
             clearstatcache();
             $new_size = filesize($file);
             if ($orig_size > $new_size) {
@@ -471,6 +479,9 @@ function ewww_image_optimizer_options () {
     <div class="wrap">
         <div id="icon-options-general" class="icon32"><br /></div>
         <h2>EWWW Image Optimizer Settings</h2>
+	<p><a href="http://shanebishop.net/ewww-image-optimizer/">Plugin Home Page</a> |
+	<a href="http://wordpress.org/extend/plugins/ewww-image-optimizer/installation/">Installation Instructions</a> | 
+	<a href="http://wordpress.org/support/plugin/ewww-image-optimizer">Plugin Support</a></p>
         <p>EWWW Image Optimizer performs a check to make sure your system has the programs we use for optimization: jpegtran, optipng, and gifsicle.</p>
         <p>In some cases, these checks may erroneously report that you are missing the required utilities even though you have them installed.</p>
         <p>If you are on shared hosting, and have compiled the utilities in your home folder, you can provide the paths below.</p>
