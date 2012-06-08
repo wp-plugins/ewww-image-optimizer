@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate Linux image optimizers into WordPress.
- * @version 1.0.2
+ * @version 1.0.3
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -9,7 +9,7 @@ Plugin Name: EWWW Image Optimizer
 Plugin URI: http://www.shanebishop.net/ewww-image-optimizer/
 Description: Reduce image file sizes and improve performance using Linux image optimizers within WordPress. Uses jpegtran, optipng, and gifsicle.
 Author: Shane Bishop
-Version: 1.0.2
+Version: 1.0.3
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
@@ -107,6 +107,7 @@ function ewww_image_optimizer_admin_init() {
         register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_skip_check');
         register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_skip_gifs');
         register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpegtran_copy');
+        register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_optipng_level');
         register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpegtran_path');
         register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_optipng_path');
         register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_gifsicle_path');
@@ -181,15 +182,7 @@ function ewww_image_optimizer_manual() {
  * @param   string $file            Full absolute path to the image file
  * @returns array
  */
-function ewww_image_optimizer($file, $attach_id) {
-	// don't run on localhost, IPv4 and IPv6 checks
-	// if( in_array($_SERVER['SERVER_ADDR'], array('127.0.0.1', '::1')) )
-	//	return array($file, __('Not processed (local file)', EWWW_IMAGE_OPTIMIZER_DOMAIN));
-
-	// canonicalize path - disabled 2011-02-1 troubleshooting 'Could not find...' errors.
-	// From the PHP docs: "The running script must have executable permissions on 
-	// all directories in the hierarchy, otherwise realpath() will return FALSE."
-	// $file_path = realpath($file);
+function ewww_image_optimizer($file) {
 	
 	$file_path = $file;
 
@@ -260,7 +253,12 @@ function ewww_image_optimizer($file, $attach_id) {
             break;
         case 'image/png':
             $orig_size = filesize($file);
-            exec("$optipng_path -o3 -quiet $file");
+            if(get_option('ewww_image_optimizer_optipng_level') > 0){
+                $optipng_level = get_option('ewww_image_optimizer_optipng_level');
+            } else {
+                $optipng_level = 3;
+            }
+            exec("$optipng_path -o$optipng_level -quiet $file");
             clearstatcache();
             $new_size = filesize($file);
             if ($orig_size > $new_size) {
@@ -270,38 +268,24 @@ function ewww_image_optimizer($file, $attach_id) {
             }
             break;
         case 'image/gif':
-            // if someone was paying attention, and disabled gif processing
-            //$skip_gifs = get_option('ewww_image_optimizer_skip_gifs');
-            //if ($skip_gifs || $frames > 1) {
-            //    $result = "animated";
-            //} else {
             $orig_size = filesize($file);
-            //    $newfile = str_replace('.gif', '.png', $file);
             exec("$gifsicle_path -b -O3 --careful $file");
             clearstatcache();
             $new_size = filesize($file);
             if ($orig_size > $new_size) {
                 $result = "$file: $orig_size vs. $new_size";
-            //        update_attached_file($attach_id, $newfile );
-            //        $file = $newfile;
             } else {
                 $result = "$file: unchanged";
             }
-            //}
             break;
         default:
             return array($file, __('Unknown type: ' . $type, EWWW_IMAGE_OPTIMIZER_DOMAIN));
     }
 
-    //$result = exec($command . ' ' . escapeshellarg($file));
-
     $result = str_replace($file . ': ', '', $result);
 
     if($result == 'unchanged') {
         return array($file, __('No savings', EWWW_IMAGE_OPTIMIZER_DOMAIN));
-    }
-    if($result == 'animated') {
-        return array($file, __('GIFs not supported', EWWW_IMAGE_OPTIMIZER_DOMAIN));
     }
     if(strpos($result, ' vs. ') !== false) {
         $s = explode(' vs. ', $result);
@@ -343,7 +327,7 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 		$file_path =  $upload_path . $file_path;
 	}
 
-	list($file, $msg) = ewww_image_optimizer($file_path, $ID);
+	list($file, $msg) = ewww_image_optimizer($file_path);
 
 	$meta['file'] = $file;
 	$meta['ewww_image_optimizer'] = $msg;
@@ -362,7 +346,7 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 
 
 	foreach($meta['sizes'] as $size => $data) {
-		list($optimized_file, $results) = ewww_image_optimizer($base_dir . $data['file'], $ID);
+		list($optimized_file, $results) = ewww_image_optimizer($base_dir . $data['file']);
 
 		$meta['sizes'][$size]['file'] = str_replace($base_dir, '', $optimized_file);
 		$meta['sizes'][$size]['ewww_image_optimizer'] = $results;
@@ -482,18 +466,29 @@ function ewww_image_optimizer_options () {
 	<p><a href="http://shanebishop.net/ewww-image-optimizer/">Plugin Home Page</a> |
 	<a href="http://wordpress.org/extend/plugins/ewww-image-optimizer/installation/">Installation Instructions</a> | 
 	<a href="http://wordpress.org/support/plugin/ewww-image-optimizer">Plugin Support</a></p>
-        <p>EWWW Image Optimizer performs a check to make sure your system has the programs we use for optimization: jpegtran, optipng, and gifsicle.</p>
-        <p>In some cases, these checks may erroneously report that you are missing the required utilities even though you have them installed.</p>
-        <p>If you are on shared hosting, and have compiled the utilities in your home folder, you can provide the paths below.</p>
+        <p>EWWW Image Optimizer performs a check to make sure your system has the programs we use for optimization: jpegtran, optipng, and gifsicle. In some cases, these checks may erroneously report that you are missing the required utilities even though you have them installed.</p>
         <form method="post" action="options.php">
             <?php settings_fields('ewww_image_optimizer_options'); ?>
-            <p>Do you want to skip the utils check?</p>
-            <input type="checkbox" id="ewww_image_optimizer_skip_check" name="ewww_image_optimizer_skip_check" value="true" <?php if (get_option('ewww_image_optimizer_skip_check') == TRUE) { ?>checked="true"<?php } ?> /> <label for="ewww_image_optimizer_skip_check" />Skip utils check</label><br />
-            <!--<input type="checkbox" id="ewww_image_optimizer_skip_gifs" name="ewww_image_optimizer_skip_gifs" value="true" <?php if (get_option('ewww_image_optimizer_skip_gifs') == TRUE) { ?>checked="true"<?php } ?> /> <label for="ewww_image_optimizer_skip_gifs" />Skip GIFs</label><br />-->
-            <label>jpegtran path: <input type="text" id="ewww_image_optimizer_jpegtran_path" name="ewww_image_optimizer_jpegtran_path" value="<?php echo get_option('ewww_image_optimizer_jpegtran_path'); ?>" /></label><br />
-            <input type="checkbox" id="ewww_image_optimizer_jpegtran_copy" name="ewww_image_optimizer_jpegtran_copy" value="true" <?php if (get_option('ewww_image_optimizer_jpegtran_copy') == TRUE) { ?>checked="true"<?php } ?> /> <label for="ewww_image_optimizer_jpegtran_copy" />Check this box to remove all metadata (EXIF & comments) from jpegs</label><br />
-            <label>optipng path: <input type="text" id="ewww_image_optimizer_optipng_path" name="ewww_image_optimizer_optipng_path" value="<?php echo get_option('ewww_image_optimizer_optipng_path'); ?>" /></label><br />
-            <label>gifsicle path: <input type="text" id="ewww_image_optimizer_gifsicle_path" name="ewww_image_optimizer_gifsicle_path" value="<?php echo get_option('ewww_image_optimizer_gifsicle_path'); ?>" /></label><br />
+            <p><b>Do you want to skip the utils check?</b><br />
+            <input type="checkbox" id="ewww_image_optimizer_skip_check" name="ewww_image_optimizer_skip_check" value="true" <?php if (get_option('ewww_image_optimizer_skip_check') == TRUE) { ?>checked="true"<?php } ?> /> <label for="ewww_image_optimizer_skip_check" />Skip utils check</label></p>
+            <p><b>If you are on shared hosting, and have compiled the utilities in your home folder, you can provide the paths below.</b><br />
+            <label><input type="text" style="width: 400px" id="ewww_image_optimizer_jpegtran_path" name="ewww_image_optimizer_jpegtran_path" value="<?php echo get_option('ewww_image_optimizer_jpegtran_path'); ?>" /> jpegtran path</label><br />
+            <label><input type="text" style="width: 400px" id="ewww_image_optimizer_optipng_path" name="ewww_image_optimizer_optipng_path" value="<?php echo get_option('ewww_image_optimizer_optipng_path'); ?>" /> optipng path</label><br />
+            <label><input type="text" style="width: 400px" id="ewww_image_optimizer_gifsicle_path" name="ewww_image_optimizer_gifsicle_path" value="<?php echo get_option('ewww_image_optimizer_gifsicle_path'); ?>" /> gifsicle path</label></p>
+            <p><b>Advanced options</b><br />
+            <input type="checkbox" id="ewww_image_optimizer_jpegtran_copy" name="ewww_image_optimizer_jpegtran_copy" value="true" <?php if (get_option('ewww_image_optimizer_jpegtran_copy') == TRUE) { ?>checked="true"<?php } ?> /> <label for="ewww_image_optimizer_jpegtran_copy" />Check this box to remove all metadata (EXIF and comments) from JPGs</label><br />
+            <label><input type="text" style="width: 20px" id="ewww_image_optimizer_optipng_level" name="ewww_image_optimizer_optipng_level" value="<?php echo get_option('ewww_image_optimizer_optipng_level'); ?>" /> PNG optimization level (default=3, valid levels=1-7)</label><br />
+            <i>According to the author of optipng, 10 trials should satisfy most people, 30 trials should satisfy everyone. See below for how many trials are run at each level:</i></p>
+            <table border="1" cellpadding="2" style="width: 150px; border-collapse: collapse; text-align: center">
+                <tr><th>Level</th><th>Trials</th>
+                <tr><td>1</td><td>1</td></tr>
+                <tr><td>2</td><td>8</td></tr>
+                <tr><td>3</td><td>16</td></tr>
+                <tr><td>4</td><td>24</td></tr>
+                <tr><td>5</td><td>48</td></tr>
+                <tr><td>6</td><td>120</td></tr>
+                <tr><td>7</td><td>240</td></tr>
+            </table>
             <p class="submit">
                 <input type="submit" class="button-primary" value="Save Changes" />
             </p>

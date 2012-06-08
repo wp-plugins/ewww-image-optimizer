@@ -12,7 +12,7 @@ Reduce image file sizes and improve performance using Linux image optimizers wit
 
 The EWWW Image Optimizer is a WordPress plugin that will automatically and losslessly optimize your images as you upload them to your blog. It can also optimize the images that you have already uploaded in the past.
 
-Because EWWW Image Optimizer uses lossless optimization techniques, your image quality will be exactly the same before and after the optimization. The only thing that will change is your file size. The one small exception to this is GIF files. While the optimization is technically lossless, you will not be able to properly edit the image again without performing an --unoptimize operation with gifsicle.
+Because EWWW Image Optimizer uses lossless optimization techniques, your image quality will be exactly the same before and after the optimization. The only thing that will change is your file size. The one small exception to this is GIF animations. While the optimization is technically lossless, you will not be able to properly edit the animation again without performing an --unoptimize operation with gifsicle.
 
 The EWWW Image Optimizer plugin is based heavily on the CW Image Optimizer plugin, which in turn is based upon the WP Smush.it plugin. Unlike the WP Smush.it plugin, your files won’t be uploaded to a third party. Your files are optimized using the Linux [jpegtran](http://jpegclub.org/jpegtran/), [optipng](http://optipng.sourceforge.net/), and [gifsicle](http://www.lcdf.org/gifsicle/) image tools (available for free). 
 
@@ -96,6 +96,11 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 3. Bulk optimization page. You can optimize all your images at once. This is very useful for existing blogs that have lots of images.
 
 == Changelog ==
+
+= 1.0.3 =
+* Allow user to specify PNG optimization level
+* Code and screenshot cleanup
+* Settings page beautification (if you can think of further improvements, feel free to use the support link)
 
 = 1.0.2 =
 * Forgot to add Settings link to warning message when tools are missing
