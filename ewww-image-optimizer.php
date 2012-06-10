@@ -136,18 +136,31 @@ $plugin = plugin_basename ( __FILE__ );
 add_filter ( "plugin_action_links_$plugin", 'ewww_image_optimizer_settings_link' );
 
 function ewww_image_optimizer_bulk_preview() {
-  if ( function_exists( 'apache_setenv' ) ) {
-    @apache_setenv('no-gzip', 1);
+//  if ( function_exists( 'apache_setenv' ) ) {
+//    @apache_setenv('no-gzip', 1);
+//  }
+//  @ini_set('output_buffering','on');
+//  @ini_set('zlib.output_compression', 0);
+//  @ini_set('implicit_flush', 1);
+  $attachments = null;
+  $auto_start = false;
+  if (isset($_REQUEST['ids'])) {
+    $attachments = get_posts( array(
+      'numberposts' => -1,
+      'include' => explode(',', $_REQUEST['ids']),
+      'post_type' => 'attachment',
+      'post_mime_type' => 'image',
+    ));
+    $auto_start = true;
+  } else {
+    $attachments = get_posts( array(
+      'numberposts' => -1,
+      'post_type' => 'attachment',
+      'post_mime_type' => 'image'
+    ));
   }
-  @ini_set('output_buffering','on');
-  @ini_set('zlib.output_compression', 0);
-  @ini_set('implicit_flush', 1);
-  $attachments = get_posts( array(
-    'numberposts' => -1,
-    'post_type' => 'attachment',
-    'post_mime_type' => 'image'
-  ));
   require( dirname(__FILE__) . '/bulk.php' );
+    $auto_start = true;
 }
 
 /**
@@ -457,6 +470,34 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
         }
     }
 }
+
+add_action( 'admin_head-upload.php', 'ewww_image_optimizer_add_bulk_actions_via_javascript' ); 
+// Borrowed from http://www.viper007bond.com/wordpress-plugins/regenerate-thumbnails/ 
+function ewww_image_optimizer_add_bulk_actions_via_javascript() { ?> 
+    <script type="text/javascript"> 
+        jQuery(document).ready(function($){ 
+            $('select[name^="action"] option:last-child').before('<option value="bulk_optimize">Bulk Optimize</option>'); 
+        }); 
+    </script> 
+<?php } 
+
+add_action( 'admin_action_bulk_optimize', 'ewww_image_optimizer_bulk_action_handler' ); 
+add_action( 'admin_action_-1', 'ewww_image_optimizer_bulk_action_handler' ); 
+// Handles the bulk actions POST 
+// Borrowed from http://www.viper007bond.com/wordpress-plugins/regenerate-thumbnails/ 
+function ewww_image_optimizer_bulk_action_handler() { 
+    if ( empty( $_REQUEST['action'] ) || ( 'bulk_optimize' != $_REQUEST['action'] && 'bulk_optimize' != $_REQUEST['action2'] ) ) {
+        return;
+    }
+    if ( empty( $_REQUEST['media'] ) || ! is_array( $_REQUEST['media'] ) ) {
+        return; 
+    }
+    check_admin_referer( 'bulk-media' ); 
+    $ids = implode( ',', array_map( 'intval', $_REQUEST['media'] ) ); 
+    // Can't use wp_nonce_url() as it escapes HTML entities 
+    wp_redirect( add_query_arg( '_wpnonce', wp_create_nonce( 'ewww-image-optimizer-bulk' ), admin_url( 'upload.php?page=ewww-image-optimizer-bulk&goback=1&ids=' . $ids ) ) ); 
+    exit(); 
+} 
 
 function ewww_image_optimizer_options () {
 ?>
