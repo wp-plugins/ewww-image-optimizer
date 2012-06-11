@@ -3,7 +3,7 @@ Contributors: nosilver4u
 Tags: images, image, attachments, attachment
 Requires at least: 2.9
 Tested up to: 3.3.2
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPLv3
 
 Reduce image file sizes and improve performance using Linux image optimizers within WordPress. Uses jpegtran, optipng, and gifsicle.
@@ -101,6 +101,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * Allow user to specify PNG optimization level
 * Code and screenshot cleanup
 * Settings page beautification (if you can think of further improvements, feel free to use the support link)
+* Bulk Optimize action drop-down on Media Library - ported from Regenerate Thumbnails plugin
 
 = 1.0.2 =
 * Forgot to add Settings link to warning message when tools are missing
