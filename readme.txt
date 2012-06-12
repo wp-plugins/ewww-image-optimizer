@@ -3,7 +3,7 @@ Contributors: nosilver4u
 Tags: images, image, attachments, attachment
 Requires at least: 2.9
 Tested up to: 3.4-RC3
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 License: GPLv3
 
 Reduce image file sizes and improve performance using Linux image optimizers within WordPress. Uses jpegtran, optipng, and gifsicle.
@@ -96,6 +96,10 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 3. Bulk optimization page. You can optimize all your images at once. This is very useful for existing blogs that have lots of images.
 
 == Changelog ==
+
+= 1.0.4 =
+* Added trial with -progressive switch for JPGs (jpegtran), thanks to Alex Vojacek for noticing something was missing. We still check to make sure the progressive option is better, just in case.
+* tested against 3.4-RC3
 
 = 1.0.3 =
 * Allow user to specify PNG optimization level

@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate Linux image optimizers into WordPress.
- * @version 1.0.3
+ * @version 1.0.4
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -9,7 +9,7 @@ Plugin Name: EWWW Image Optimizer
 Plugin URI: http://www.shanebishop.net/ewww-image-optimizer/
 Description: Reduce image file sizes and improve performance using Linux image optimizers within WordPress. Uses jpegtran, optipng, and gifsicle.
 Author: Shane Bishop
-Version: 1.0.3
+Version: 1.0.4
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
@@ -240,14 +240,26 @@ function ewww_image_optimizer($file) {
 	switch($type) {
 		case 'image/jpeg':
 			$orig_size = filesize($file);
-			$tempfile = $file . ".tmp";
+			$tempfile = $file . ".tmp"; //non-progressive jpeg
+			$progfile = $file . ".prog"; // progressive jpeg
 			if(get_option('ewww_image_optimizer_jpegtran_copy') == TRUE){
 				$copy_opt = 'none';
 			} else {
 				$copy_opt = 'all';
 			}
 			exec("$jpegtran_path -copy $copy_opt -optimize $file > $tempfile");
-			$new_size = filesize($tempfile);
+			exec("$jpegtran_path -copy $copy_opt -optimize -progressive $file > $progfile");
+			$non_size = filesize($tempfile);
+			$prog_size = filesize($progfile);
+			// compare progressive vs. non-progressive
+			if ($prog_size > $non_size) {
+				$new_size = $non_size;
+				exec("rm $progfile");
+			} else {
+				$new_size = $prog_size;
+				exec("mv $progfile $tempfile");
+			}
+			// compare best-optimized vs. original
 			if ($orig_size > $new_size) {
 				exec("mv $tempfile $file");
 				$result = "$file: $orig_size vs. $new_size";
