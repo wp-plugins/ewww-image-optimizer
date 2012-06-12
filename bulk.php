@@ -28,7 +28,8 @@ else:
 			echo "</p>";
 			wp_update_attachment_metadata( $attachment->ID, $meta );
 		}
-		echo '<p><b>Finished</b> - <a href="upload.php">Return to Media Library</a></p>';
+		$upload_url = admin_url( 'upload.php' );
+		echo "<p><b>Finished</b> - <a href='$upload_url'>Return to Media Library</a></p>";
 	endif;
 endif; 
 ?>
