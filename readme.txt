@@ -3,7 +3,7 @@ Contributors: nosilver4u
 Tags: images, image, attachments, attachment
 Requires at least: 2.9
 Tested up to: 3.4-RC3
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 License: GPLv3
 
 Reduce image file sizes and improve performance using Linux image optimizers within WordPress. Uses jpegtran, optipng, and gifsicle.
@@ -71,7 +71,7 @@ No, it doesn't work on Windows. If you do manage to get the tools working on Win
 
 = How are JPGs optimized? =
 
-Using the command *jpegtran -copy all -optimize original-file > optimized-file*. Optionally, the -copy switch gets the 'none' parameter if you choose to strip metadata from your JPGs on the options page.
+Using the command *jpegtran -copy all -optimize -progressive original-file > optimized-file*. Optionally, the -copy switch gets the 'none' parameter if you choose to strip metadata from your JPGs on the options page.
 
 = How are PNGs optimized? =
 
@@ -97,6 +97,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 == Changelog ==
 
+= 1.0.5 =
+* missed documentation updates in 1.0.4 - sorry
+
 = 1.0.4 =
 * Added trial with -progressive switch for JPGs (jpegtran), thanks to Alex Vojacek for noticing something was missing. We still check to make sure the progressive option is better, just in case.
 * tested against 3.4-RC3
@@ -118,6 +121,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * First release (forked from CW Image Optimizer)
 
 == Upgrade Notice ==
+
+= 1.0.5 =
+Improved optimization for JPGs significantly, by adding -progressive flag. May want to run the bulk operation on all your JPGs (or your whole library)
 
 = 1.0.1 =
 Improved performance for PNGs by specifying proper optimization level
