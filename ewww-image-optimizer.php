@@ -48,6 +48,8 @@ if('Linux' != PHP_OS && 'Darwin' != PHP_OS) {
 	add_action('admin_notices', 'ewww_image_optimizer_notice_utils');
 }   
 
+require( dirname(__FILE__) . '/nextgen-integration.php' );
+
 function ewww_image_optimizer_notice_os() {
 	echo "<div id='ewww-image-optimizer-warning-os' class='updated fade'><p><strong>EWWW Image Optimizer isn't supported on your server.</strong> Unfortunately, the EWWW Image Optimizer plugin doesn't work with " . htmlentities(PHP_OS) . ".</p></div>";
 }   
@@ -131,7 +133,7 @@ function ewww_image_optimizer_admin_menu() {
 }
 
 function ewww_image_optimizer_settings_link($links) {
-	$settings_link = '<a href="options-general.php?page=ewww-image-optimizer/ewww-image-optimizer.php">Settings</a>' . "<!-- $plugin -->";
+	$settings_link = '<a href="options-general.php?page=ewww-image-optimizer/ewww-image-optimizer.php">Settings</a>';
 	array_unshift ( $links, $settings_link );
 	return $links;
 }
@@ -205,11 +207,12 @@ function ewww_image_optimizer($file) {
 	}
 
 	// check that the file is within the WP_CONTENT_DIR
-	$upload_dir = wp_upload_dir();
-	$wp_upload_dir = $upload_dir['basedir'];
-	$wp_upload_url = $upload_dir['baseurl'];
-	if ( 0 !== stripos(realpath($file_path), realpath($wp_upload_dir)) ) {
-		$msg = sprintf(__("<span class='code'>%s</span> must be within the content directory (<span class='code'>%s</span>)", EWWW_IMAGE_OPTIMIZER_DOMAIN), htmlentities($file_path), $wp_upload_dir);
+//	$upload_dir = wp_upload_dir();
+//	$wp_upload_dir = $upload_dir['basedir'];
+//	$wp_upload_url = $upload_dir['baseurl'];
+//echo realpath(ABSPATH);
+	if ( 0 !== stripos(realpath($file_path), realpath(ABSPATH)) ) {
+		$msg = sprintf(__("<span class='code'>%s</span> must be within the content directory (<span class='code'>%s</span>)", EWWW_IMAGE_OPTIMIZER_DOMAIN), htmlentities($file_path), realpath(ABSPATH));
 		return array($file, $msg);
 	}
 
@@ -260,7 +263,7 @@ function ewww_image_optimizer($file) {
 				exec("mv $progfile $tempfile");
 			}
 			// compare best-optimized vs. original
-			if ($orig_size > $new_size) {
+			if ($orig_size > $new_size && $new_size != 0) {
 				exec("mv $tempfile $file");
 				$result = "$file: $orig_size vs. $new_size";
 			} else {

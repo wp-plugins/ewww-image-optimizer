@@ -2,7 +2,7 @@
 Contributors: nosilver4u
 Tags: images, image, attachments, attachment
 Requires at least: 2.9
-Tested up to: 3.4-RC3
+Tested up to: 3.4
 Stable tag: 1.0.5
 License: GPLv3
 
