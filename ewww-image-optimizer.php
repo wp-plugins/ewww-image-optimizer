@@ -1,15 +1,15 @@
 <?php
 /**
  * Integrate Linux image optimizers into WordPress.
- * @version 1.0.5
+ * @version 1.0.6
  * @package EWWW_Image_Optimizer
  */
 /*
 Plugin Name: EWWW Image Optimizer
 Plugin URI: http://www.shanebishop.net/ewww-image-optimizer/
-Description: Reduce image file sizes and improve performance using Linux image optimizers within WordPress. Uses jpegtran, optipng, and gifsicle.
+Description: Reduce image file sizes and improve performance using Linux image optimizers within WordPress and NextGEN Gallery. Uses jpegtran, optipng, and gifsicle.
 Author: Shane Bishop
-Version: 1.0.5
+Version: 1.0.6
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
@@ -69,9 +69,9 @@ function ewww_image_optimizer_notice_utils() {
 	}
 
 	$required = array(
-		'optipng' => $optipng_path,
-		'jpegtran' => $jpegtran_path,
-		'gifsicle' => $gifsicle_path,
+		'PNG' => $optipng_path,
+		'JPG' => $jpegtran_path,
+		'GIF' => $gifsicle_path,
 	);
    
 	// To skip binary checking, you can visit the EWWW Image Optimizer options page
@@ -86,7 +86,17 @@ function ewww_image_optimizer_notice_utils() {
 	foreach($required as $key => $req){
 		$result = trim(exec('which ' . $req));
 		if(!$skip && empty($result)){
-			$missing[] = $key;
+			switch($key) {
+				case 'JPG':
+					$missing[] = 'jpegtran';
+					break; 
+				case 'PNG':
+					$missing[] = 'optipng';
+					break;
+				case 'GIF':
+					$missing[] = 'gifsicle';
+					break;
+			}
 			define('EWWW_IMAGE_OPTIMIZER_' . $key, false);
 		} else {
 			define('EWWW_IMAGE_OPTIMIZER_' . $key, true);
@@ -425,6 +435,7 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 			$type = false;
 			$msg = 'getimagesize() and mime_content_type() PHP functions are missing';
 		}
+		$file_size = ewww_image_optimizer_format_bytes(filesize($file_path));
 
 		$valid = true;
 		switch($type) {
@@ -457,11 +468,13 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 
 		if ( isset($data['ewww_image_optimizer']) && !empty($data['ewww_image_optimizer']) ) {
 			print $data['ewww_image_optimizer'];
+			print "<br>Image Size: $file_size";
 			printf("<br><a href=\"admin.php?action=ewww_image_optimizer_manual&amp;attachment_ID=%d\">%s</a>",
 				$id,
 				__('Re-optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 		} else {
 			print __('Not processed', EWWW_IMAGE_OPTIMIZER_DOMAIN);
+			print "<br>Image Size: $file_size";
 			printf("<br><a href=\"admin.php?action=ewww_image_optimizer_manual&amp;attachment_ID=%d\">%s</a>",
 				$id,
 				__('Optimize now!', EWWW_IMAGE_OPTIMIZER_DOMAIN));
@@ -505,7 +518,7 @@ function ewww_image_optimizer_options () {
 		<p>EWWW Image Optimizer performs a check to make sure your system has the programs we use for optimization: jpegtran, optipng, and gifsicle. In some cases, these checks may erroneously report that you are missing the required utilities even though you have them installed.</p>
 		<form method="post" action="options.php">
 			<?php settings_fields('ewww_image_optimizer_options'); ?>
-			<p><b>Do you want to skip the utils check?</b><br />
+			<p><b>Do you want to skip the utils check?</b> <i>*only do this if you are SURE that you have the utilities installed, or you don't care about the missing ones</i><br />
 			<input type="checkbox" id="ewww_image_optimizer_skip_check" name="ewww_image_optimizer_skip_check" value="true" <?php if (get_option('ewww_image_optimizer_skip_check') == TRUE) { ?>checked="true"<?php } ?> /> <label for="ewww_image_optimizer_skip_check" />Skip utils check</label></p>
 			<p><b>If you are on shared hosting, and have compiled the utilities in your home folder, you can provide the paths below.</b><br />
 			<label><input type="text" style="width: 400px" id="ewww_image_optimizer_jpegtran_path" name="ewww_image_optimizer_jpegtran_path" value="<?php echo get_option('ewww_image_optimizer_jpegtran_path'); ?>" /> jpegtran path</label><br />

@@ -3,10 +3,10 @@ Contributors: nosilver4u
 Tags: images, image, attachments, attachment
 Requires at least: 2.9
 Tested up to: 3.4
-Stable tag: 1.0.5
+Stable tag: 1.0.6
 License: GPLv3
 
-Reduce image file sizes and improve performance using Linux image optimizers within WordPress. Uses jpegtran, optipng, and gifsicle.
+Reduce image file sizes and improve performance using Linux image optimizers within WordPress Media Library and NextGEN Gallery. Uses jpegtran, optipng, and gifsicle.
 
 == Description ==
 
@@ -23,7 +23,7 @@ The primary reason for creating this plugin was that CW Image Optimizer uses lit
 1. **Your pages will load faster.** Smaller image sizes means faster page loads. This will make your visitors happy, and can increase ad revenue.
 1. **Faster backups.** Smaller image sizes also means faster backups.
 1. **Less bandwidth usage.** Optimizing your images can save you hundreds of KB per image, which means significantly less bandwidth usage.
-1. **Super fast.** Because it runs on your own server, you don’t have to wait for a third party service to receive, process, and return your images. You can optimize hundreds of images in just a few minutes. Png files do take a little longer than jpegs, as the plugin is currently configured to perform 10 optimization trials before selecting the best algorithm.
+1. **Super fast.** Because it runs on your own server, you don’t have to wait for a third party service to receive, process, and return your images. You can optimize hundreds of images in just a few minutes. Png files do take a little longer than jpegs, as the plugin is currently configured to perform 16 optimization trials before selecting the best algorithm.
 1. **Root access not needed** Because the paths are configurable via the settings page, and the programs we use have minimal dependencies, you can compile the utilities (if they aren't already installed) and tell the plugin where they are located. 
 
 == Installation ==
@@ -97,6 +97,13 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 == Changelog ==
 
+= 1.0.6 = 
+* ported basic NextGEN integration from WP Smush.it (no bulk or re-optimize... yet)
+* added extra output for bulk operations
+* if the jpeg optimization produces an empty file, it will be discarded (instead of overwriting your originals)
+* output filesize in custom column for Media Library
+* fixed various PHP notices/warnings
+
 = 1.0.5 =
 * missed documentation updates in 1.0.4 - sorry
 
@@ -121,6 +128,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * First release (forked from CW Image Optimizer)
 
 == Upgrade Notice ==
+
+= 1.0.6 =
+Made jpeg optimization safer (so an empty file doesn't overwrite the originals), and added NextGEN Gallery integration
 
 = 1.0.5 =
 Improved optimization for JPGs significantly, by adding -progressive flag. May want to run the bulk operation on all your JPGs (or your whole library)
