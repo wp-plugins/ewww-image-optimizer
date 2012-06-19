@@ -7,7 +7,14 @@
     add_filter( 'ngg_manage_images_columns', array( &$this, 'ewww_manage_images_columns' ) );
     add_action( 'ngg_manage_image_custom_column', array( &$this, 'ewww_manage_image_custom_column' ), 10, 2 );
     add_action( 'ngg_added_new_image', array( &$this, 'ewww_added_new_image' ) );
+    add_action('admin_action_ewww_ngg_manual', array( &$this, 'ewww_ngg_manual') );
+    add_action('admin_menu', array(&$this, 'ewww_ngg_bulk_menu') );
+//    add_action('admin_action_ewww_ngg_bulk', array( &$this, 'ewww_ngg_bulk') );
   }
+
+	function ewww_ngg_bulk_menu () {
+		add_management_page('NextGEN Gallery Bulk Optimize', 'NextGEN Bulk Optimize', 'manage_options', 'ewww-ngg-bulk', array (&$this, 'ewww_ngg_bulk'));
+	}
 
   /* ngg_added_new_image hook */
   function ewww_added_new_image( $image ) {
@@ -32,11 +39,12 @@ function ewww_ngg_manual() {
                 wp_die(__('No attachment ID was provided.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
         }
 
-        $attachment_ID = intval($_GET['attachment_ID']);
+        $id = intval($_GET['attachment_ID']);
 
-        $original_meta = wp_get_attachment_metadata( $attachment_ID );
-        $new_meta = ewww_image_optimizer_resize_from_meta_data( $original_meta, $attachment_ID );
-        wp_update_attachment_metadata( $attachment_ID, $new_meta );
+        $meta = new nggMeta( $id );
+	$file_path = $meta->image->imagePath;
+      $res = ewww_image_optimizer($file_path);
+      nggdb::update_image_meta($id, array('ewww_image_optimizer' => $res[1]));
 
         $sendback = wp_get_referer();
         $sendback = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $sendback);
@@ -44,11 +52,51 @@ function ewww_ngg_manual() {
         exit(0);
 }
 
-  /* ngg_manage_images_columns hook */
-  function ewww_manage_images_columns( $columns ) {
-    $columns['ewww_image_optimizer'] = 'Image Optimizer';
-    return $columns;
-  }
+	function ewww_ngg_bulk() {
+		global $wpdb;
+		$order = 'sortorder ASC';
+		$images = $wpdb->get_col("SELECT pid FROM $wpdb->nggpictures ORDER BY $order");
+?>
+<div class="wrap">
+<div id="icon-nextgen-gallery" class="icon32"><br /></div><h2>Bulk NextGEN Gallery Optimize</h2>
+<?php
+if ( sizeof($images) < 1 ):
+        echo '<p>You don’t appear to have uploaded any images yet.</p>';
+else:
+        if ( empty($_POST) ): // instructions page
+?>
+                <p>This tool will run all of the images in your NextGEN Galleries through the Linux image optimization programs.</p>
+                <p>We found <?php echo sizeof($images); ?> images in your media library.</p>
+                <form method="post" action="">
+                        <?php wp_nonce_field( 'ewww-ngg-bulk', '_wpnonce'); ?>
+                        <button type="submit" class="button-secondary action">Run all my images through image optimizers right now</button>
+                </form>
+<?php
+        else: // run the script
+                if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-ngg-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
+                        wp_die( __( 'Cheatin&#8217; uh?' ) );
+                }
+		foreach ($images as $id) {
+		        $meta = new nggMeta( $id );
+			printf( "<p>Processing <strong>%s</strong>&hellip;<br>", esc_html($meta->image->filename) );
+			$file_path = $meta->image->imagePath;
+			$fres = ewww_image_optimizer($file_path);
+			nggdb::update_image_meta($id, array('ewww_image_optimizer' => $fres[1]));
+                        printf( "Full size – %s<br>", $fres[1] );
+			$thumb_path = $meta->image->thumbPath;
+			$tres = ewww_image_optimizer($thumb_path);
+                        printf( "Thumbnail – %s<br>", $tres[1] );
+		}	
+	echo '<p><b>Finished</b></p></div>';	
+	endif;
+	endif;
+	}
+
+	/* ngg_manage_images_columns hook */
+	function ewww_manage_images_columns( $columns ) {
+		$columns['ewww_image_optimizer'] = 'Image Optimizer';
+		return $columns;
+	}
 
   /* ngg_manage_image_custom_column hook */
   function ewww_manage_image_custom_column( $column_name, $id ) {

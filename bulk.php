@@ -20,7 +20,7 @@ else:
 		foreach( $attachments as $attachment ) {
 			printf( "<p>Processing <strong>%s</strong>&hellip;<br>", esc_html($attachment->post_name) );
 			$meta = ewww_image_optimizer_resize_from_meta_data( wp_get_attachment_metadata( $attachment->ID, true ), $attachment->ID );
-					printf( "Full size – %s<br>", $meta['ewww_image_optimizer'] );
+			printf( "Full size – %s<br>", $meta['ewww_image_optimizer'] );
 			if(isset($meta['sizes']) && is_array($meta['sizes'])){
 				foreach( $meta['sizes'] as $size ) {
 					printf( "%s – %s<br>", $size['file'], $size['ewww_image_optimizer'] );
