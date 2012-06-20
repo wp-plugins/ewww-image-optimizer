@@ -97,6 +97,14 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 == Changelog ==
 
+= 1.0.7 =
+* added bulk optimize to Tools menu and re-optimize for individual images with NextGEN
+* fixed bulk optimizer to skip images where the utilities are missing
+* added check to ensure user doesn't pass arguments in utility paths
+* added check to prevent utilities from being located in web root
+* changed optipng level setting from text entry to drop-down to prevent arbitrary script execution
+* more code cleanup
+
 = 1.0.6 = 
 * ported basic NextGEN integration from WP Smush.it (no bulk or re-optimize... yet)
 * added extra output for bulk operations
@@ -128,6 +136,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * First release (forked from CW Image Optimizer)
 
 == Upgrade Notice ==
+
+= 1.0.7 =
+Enhanced NextGEN integration, and security enhancements for user data provided to exec() command
 
 = 1.0.6 =
 Made jpeg optimization safer (so an empty file doesn't overwrite the originals), and added NextGEN Gallery integration
