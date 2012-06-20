@@ -54,23 +54,30 @@ function ewww_image_optimizer_notice_os() {
 	echo "<div id='ewww-image-optimizer-warning-os' class='updated fade'><p><strong>EWWW Image Optimizer isn't supported on your server.</strong> Unfortunately, the EWWW Image Optimizer plugin doesn't work with " . htmlentities(PHP_OS) . ".</p></div>";
 }   
 
-function ewww_image_optimizer_notice_utils() {
-	$jpegtran_path = get_option('ewww_image_optimizer_jpegtran_path');
-	if(!$jpegtran_path) {
-		$jpegtran_path = 'jpegtran';
+// Retrieves user specified paths or set defaults if they don't exist. We also do a basic check to make sure we weren't given a malicious path.
+function ewww_image_optimizer_path_check() {
+	$doc_root = $_SERVER['DOCUMENT_ROOT'];
+	echo "<!-- $doc_root -->";
+	$jpegtran = get_option('ewww_image_optimizer_jpegtran_path');
+	if(!preg_match('/^\/[\w\.-\d\/_]+\/jpegtran$/', $jpegtran) || preg_match("|$doc_root|", $jpegtran)) {
+		$jpegtran = 'jpegtran';
 	}
-	$optipng_path = get_option('ewww_image_optimizer_optipng_path');
-	if(!$optipng_path) {
-		$optipng_path = 'optipng';
+	$optipng = get_option('ewww_image_optimizer_optipng_path');
+	if(!preg_match('/^\/[\w\.-\d\/_]+\/optipng$/', $optipng) || preg_match("|$doc_root|", $optipng)) {
+		$optipng = 'optipng';
 	}
-	$gifsicle_path = get_option('ewww_image_optimizer_gifsicle_path');
-	if(!$gifsicle_path) {
-		$gifsicle_path = 'gifsicle';
+	$gifsicle = get_option('ewww_image_optimizer_gifsicle_path');
+	if(!preg_match('/^\/[\w\.-\d\/_]+\/gifsicle$/', $gifsicle) || preg_match("|$doc_root|", $gifsicle)) {
+		$gifsicle = 'gifsicle';
 	}
+	return array($jpegtran, $optipng, $gifsicle);
+}
 
+function ewww_image_optimizer_notice_utils() {
+	list ($jpegtran_path, $optipng_path, $gifsicle_path) = ewww_image_optimizer_path_check();
 	$required = array(
-		'PNG' => $optipng_path,
 		'JPG' => $jpegtran_path,
+		'PNG' => $optipng_path,
 		'GIF' => $gifsicle_path,
 	);
    
@@ -216,11 +223,10 @@ function ewww_image_optimizer($file) {
 		return array($file, $msg);
 	}
 
-	// check that the file is within the WP_CONTENT_DIR
+	// check that the file is within the WP folder 
 //	$upload_dir = wp_upload_dir();
 //	$wp_upload_dir = $upload_dir['basedir'];
 //	$wp_upload_url = $upload_dir['baseurl'];
-//echo realpath(ABSPATH);
 	if ( 0 !== stripos(realpath($file_path), realpath(ABSPATH)) ) {
 		$msg = sprintf(__("<span class='code'>%s</span> must be within the content directory (<span class='code'>%s</span>)", EWWW_IMAGE_OPTIMIZER_DOMAIN), htmlentities($file_path), realpath(ABSPATH));
 		return array($file, $msg);
@@ -237,21 +243,14 @@ function ewww_image_optimizer($file) {
 		$type = 'Missing getimagesize() and mime_content_type() PHP functions';
 	}
 
-	$jpegtran_path = get_option('ewww_image_optimizer_jpegtran_path');
-	if(!$jpegtran_path) {
-		$jpegtran_path = 'jpegtran';
-	}
-	$optipng_path = get_option('ewww_image_optimizer_optipng_path');
-	if(!$optipng_path) {
-		$optipng_path = 'optipng';
-	}
-	$gifsicle_path = get_option('ewww_image_optimizer_gifsicle_path');
-	if(!$gifsicle_path) {
-		$gifsicle_path = 'gifsicle';
-	}
+	list ($jpegtran_path, $optipng_path, $gifsicle_path) = ewww_image_optimizer_path_check();
 
 	switch($type) {
 		case 'image/jpeg':
+			if(EWWW_IMAGE_OPTIMIZER_JPG == false) {
+				$result = '<em>jpegtran</em> is missing';
+				break;
+			}
 			$orig_size = filesize($file);
 			$tempfile = $file . ".tmp"; //non-progressive jpeg
 			$progfile = $file . ".prog"; // progressive jpeg
@@ -282,6 +281,10 @@ function ewww_image_optimizer($file) {
 			}
 			break;
 		case 'image/png':
+			if(EWWW_IMAGE_OPTIMIZER_PNG == false) {
+				$result = '<em>optipng</em> is missing';
+				break;
+			}
 			$orig_size = filesize($file);
 			if(get_option('ewww_image_optimizer_optipng_level') > 0){
 				$optipng_level = get_option('ewww_image_optimizer_optipng_level');
@@ -298,6 +301,10 @@ function ewww_image_optimizer($file) {
 			}
 			break;
 		case 'image/gif':
+			if(EWWW_IMAGE_OPTIMIZER_GIF == false) {
+				$result = '<em>gifsicle</em> is missing';
+				break;
+			}
 			$orig_size = filesize($file);
 			exec("$gifsicle_path -b -O3 --careful $file");
 			clearstatcache();
@@ -328,7 +335,7 @@ function ewww_image_optimizer($file) {
 			$savings_str);
 		return array($file, $results_msg);
 	}
-	return array($file, __('Bad response from optimizer', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+	return array($file, $result);
 }
 
 /**
@@ -507,6 +514,7 @@ function ewww_image_optimizer_bulk_action_handler() {
 	exit(); 
 }
 
+// TODO: turn optipng level into a drop-down instead of free-form entry
 function ewww_image_optimizer_options () {
 ?>
 	<div class="wrap">
@@ -518,26 +526,24 @@ function ewww_image_optimizer_options () {
 		<p>EWWW Image Optimizer performs a check to make sure your system has the programs we use for optimization: jpegtran, optipng, and gifsicle. In some cases, these checks may erroneously report that you are missing the required utilities even though you have them installed.</p>
 		<form method="post" action="options.php">
 			<?php settings_fields('ewww_image_optimizer_options'); ?>
-			<p><b>Do you want to skip the utils check?</b> <i>*only do this if you are SURE that you have the utilities installed, or you don't care about the missing ones</i><br />
+			<p><b>Do you want to skip the utils check?</b> <i>*Only do this if you are SURE that you have the utilities installed, or you don't care about the missing ones. Checking this option also bypasses our basic security checks on the paths entered below.</i><br />
 			<input type="checkbox" id="ewww_image_optimizer_skip_check" name="ewww_image_optimizer_skip_check" value="true" <?php if (get_option('ewww_image_optimizer_skip_check') == TRUE) { ?>checked="true"<?php } ?> /> <label for="ewww_image_optimizer_skip_check" />Skip utils check</label></p>
-			<p><b>If you are on shared hosting, and have compiled the utilities in your home folder, you can provide the paths below.</b><br />
+			<p><b>If you are on shared hosting, and have compiled the utilities in your home folder, you can provide the paths below. DO NOT place the utilities in a web-accessible location.</b><br />
 			<label><input type="text" style="width: 400px" id="ewww_image_optimizer_jpegtran_path" name="ewww_image_optimizer_jpegtran_path" value="<?php echo get_option('ewww_image_optimizer_jpegtran_path'); ?>" /> jpegtran path</label><br />
 			<label><input type="text" style="width: 400px" id="ewww_image_optimizer_optipng_path" name="ewww_image_optimizer_optipng_path" value="<?php echo get_option('ewww_image_optimizer_optipng_path'); ?>" /> optipng path</label><br />
 			<label><input type="text" style="width: 400px" id="ewww_image_optimizer_gifsicle_path" name="ewww_image_optimizer_gifsicle_path" value="<?php echo get_option('ewww_image_optimizer_gifsicle_path'); ?>" /> gifsicle path</label></p>
 			<p><b>Advanced options</b><br />
 			<input type="checkbox" id="ewww_image_optimizer_jpegtran_copy" name="ewww_image_optimizer_jpegtran_copy" value="true" <?php if (get_option('ewww_image_optimizer_jpegtran_copy') == TRUE) { ?>checked="true"<?php } ?> /> <label for="ewww_image_optimizer_jpegtran_copy" />Check this box to remove all metadata (EXIF and comments) from JPGs</label><br />
-			<label><input type="text" style="width: 20px" id="ewww_image_optimizer_optipng_level" name="ewww_image_optimizer_optipng_level" value="<?php echo get_option('ewww_image_optimizer_optipng_level'); ?>" /> PNG optimization level (default=3, valid levels=1-7)</label><br />
-			<i>According to the author of optipng, 10 trials should satisfy most people, 30 trials should satisfy everyone. See below for how many trials are run at each level:</i></p>
-			<table border="1" cellpadding="2" style="width: 150px; border-collapse: collapse; text-align: center">
-				<tr><th>Level</th><th>Trials</th>
-				<tr><td>1</td><td>1</td></tr>
-				<tr><td>2</td><td>8</td></tr>
-				<tr><td>3</td><td>16</td></tr>
-				<tr><td>4</td><td>24</td></tr>
-				<tr><td>5</td><td>48</td></tr>
-				<tr><td>6</td><td>120</td></tr>
-				<tr><td>7</td><td>240</td></tr>
-			</table>
+			<label><select id="ewww_image_optimizer_optipng_level" name="ewww_image_optimizer_optipng_level">
+				<option value="1"<?php if (get_option('ewww_image_optimizer_optipng_level') == 1) { echo ' selected="selected"'; } ?>>Level 1: 1 trial</option>
+				<option value="2"<?php if (get_option('ewww_image_optimizer_optipng_level') == 2) { echo ' selected="selected"'; } ?>>Level 2: 8 trials</option>
+				<option value="3"<?php if (get_option('ewww_image_optimizer_optipng_level') == 3 || !get_option('ewww_image_optimizer_optipng_level')) { echo ' selected="selected"'; } ?>>Level 3: 16 trials</option>
+				<option value="4"<?php if (get_option('ewww_image_optimizer_optipng_level') == 4) { echo ' selected="selected"'; } ?>>Level 4: 24 trials</option>
+				<option value="5"<?php if (get_option('ewww_image_optimizer_optipng_level') == 5) { echo ' selected="selected"'; } ?>>Level 5: 48 trials</option>
+				<option value="6"<?php if (get_option('ewww_image_optimizer_optipng_level') == 6) { echo ' selected="selected"'; } ?>>Level 6: 120 trials</option>
+				<option value="7"<?php if (get_option('ewww_image_optimizer_optipng_level') == 7) { echo ' selected="selected"'; } ?>>Level 7: 240 trials</option>
+			</select> PNG optimization level (default=3)</label><br />
+			<i>According to the author of optipng, 10 trials should satisfy most people, 30 trials should satisfy everyone.</i></p>
 			<p class="submit"><input type="submit" class="button-primary" value="Save Changes" /></p>
 		</form>
 	</div>
