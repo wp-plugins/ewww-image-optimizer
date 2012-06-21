@@ -85,7 +85,7 @@ function ewww_image_optimizer_notice_utils() {
 	if(get_option('ewww_image_optimizer_skip_check') == TRUE){
 		$skip = true;
 	} else {
-	$skip = false;
+		$skip = false;
 	}
 
 	$missing = array();
@@ -244,10 +244,17 @@ function ewww_image_optimizer($file) {
 	}
 
 	list ($jpegtran_path, $optipng_path, $gifsicle_path) = ewww_image_optimizer_path_check();
+	// To skip binary checking, you can visit the EWWW Image Optimizer options page
+	if(get_option('ewww_image_optimizer_skip_check') == TRUE){
+		$skip = true;
+	} else {
+		$skip = false;
+	}
 
 	switch($type) {
 		case 'image/jpeg':
-			if(EWWW_IMAGE_OPTIMIZER_JPG == false) {
+			$result = trim(exec('which ' . $jpegtran_path));
+			if(!$skip && empty($result)){
 				$result = '<em>jpegtran</em> is missing';
 				break;
 			}
@@ -281,7 +288,8 @@ function ewww_image_optimizer($file) {
 			}
 			break;
 		case 'image/png':
-			if(EWWW_IMAGE_OPTIMIZER_PNG == false) {
+			$result = trim(exec('which ' . $optipng_path));
+			if(!$skip && empty($result)){
 				$result = '<em>optipng</em> is missing';
 				break;
 			}
@@ -301,7 +309,8 @@ function ewww_image_optimizer($file) {
 			}
 			break;
 		case 'image/gif':
-			if(EWWW_IMAGE_OPTIMIZER_GIF == false) {
+			$result = trim(exec('which ' . $gifsicle_path));
+			if(!$skip && empty($result)){
 				$result = '<em>gifsicle</em> is missing';
 				break;
 			}
