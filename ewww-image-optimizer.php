@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate Linux image optimizers into WordPress.
- * @version 1.0.6
+ * @version 1.0.7
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -9,7 +9,7 @@ Plugin Name: EWWW Image Optimizer
 Plugin URI: http://www.shanebishop.net/ewww-image-optimizer/
 Description: Reduce image file sizes and improve performance using Linux image optimizers within WordPress and NextGEN Gallery. Uses jpegtran, optipng, and gifsicle.
 Author: Shane Bishop
-Version: 1.0.6
+Version: 1.0.7
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
@@ -223,11 +223,8 @@ function ewww_image_optimizer($file) {
 	}
 
 	// check that the file is within the WP folder 
-//	$upload_dir = wp_upload_dir();
-//	$wp_upload_dir = $upload_dir['basedir'];
-//	$wp_upload_url = $upload_dir['baseurl'];
 	if ( 0 !== stripos(realpath($file_path), realpath(ABSPATH)) ) {
-		$msg = sprintf(__("<span class='code'>%s</span> must be within the content directory (<span class='code'>%s</span>)", EWWW_IMAGE_OPTIMIZER_DOMAIN), htmlentities($file_path), realpath(ABSPATH));
+		$msg = sprintf(__("<span class='code'>%s</span> must be within the wordpress directory (<span class='code'>%s</span>)", EWWW_IMAGE_OPTIMIZER_DOMAIN), htmlentities($file_path), realpath(ABSPATH));
 		return array($file, $msg);
 	}
 
@@ -522,7 +519,6 @@ function ewww_image_optimizer_bulk_action_handler() {
 	exit(); 
 }
 
-// TODO: turn optipng level into a drop-down instead of free-form entry
 function ewww_image_optimizer_options () {
 ?>
 	<div class="wrap">

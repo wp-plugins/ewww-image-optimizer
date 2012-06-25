@@ -6,7 +6,7 @@ Tested up to: 3.4
 Stable tag: 1.0.6
 License: GPLv3
 
-Reduce image file sizes and improve performance using Linux image optimizers within WordPress Media Library and NextGEN Gallery. Uses jpegtran, optipng, and gifsicle.
+Reduce image file sizes and improve performance for images within WordPress Media Library and NextGEN Gallery. Uses jpegtran, optipng, and gifsicle.
 
 == Description ==
 
@@ -25,6 +25,10 @@ The primary reason for creating this plugin was that CW Image Optimizer uses lit
 1. **Less bandwidth usage.** Optimizing your images can save you hundreds of KB per image, which means significantly less bandwidth usage.
 1. **Super fast.** Because it runs on your own server, you don’t have to wait for a third party service to receive, process, and return your images. You can optimize hundreds of images in just a few minutes. Png files do take a little longer than jpegs, as the plugin is currently configured to perform 16 optimization trials before selecting the best algorithm.
 1. **Root access not needed** Because the paths are configurable via the settings page, and the programs we use have minimal dependencies, you can compile the utilities (if they aren't already installed) and tell the plugin where they are located. 
+
+= NextGEN Integration =
+
+Features re-optimization capability, and bulk optimizing. The NextGEN Bulk Optimize function is located under the Wordpress Tools menu, and should optimize all images in all galleries. If anyone has a better idea for where the tool should go, feel free to post in the support area, or on the plugin homepage. Alternatively, if you can figure out a way to hook into the existing NextGEN menu, that would be ideal. I just can't seem to find a way to do that.
 
 == Installation ==
 
@@ -99,7 +103,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 = 1.0.7 =
 * added bulk optimize to Tools menu and re-optimize for individual images with NextGEN
-* fixed bulk optimizer to skip images where the utilities are missing
+* fixed optimizer function to skip images where the utilities are missing
 * added check to ensure user doesn't pass arguments in utility paths
 * added check to prevent utilities from being located in web root
 * changed optipng level setting from text entry to drop-down to prevent arbitrary script execution
