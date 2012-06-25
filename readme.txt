@@ -3,7 +3,7 @@ Contributors: nosilver4u
 Tags: images, image, attachments, attachment
 Requires at least: 2.9
 Tested up to: 3.4
-Stable tag: 1.0.6
+Stable tag: 1.0.7
 License: GPLv3
 
 Reduce image file sizes and improve performance for images within WordPress Media Library and NextGEN Gallery. Uses jpegtran, optipng, and gifsicle.
