@@ -57,7 +57,6 @@ function ewww_image_optimizer_notice_os() {
 // Retrieves user specified paths or set defaults if they don't exist. We also do a basic check to make sure we weren't given a malicious path.
 function ewww_image_optimizer_path_check() {
 	$doc_root = $_SERVER['DOCUMENT_ROOT'];
-	echo "<!-- $doc_root -->";
 	$jpegtran = get_option('ewww_image_optimizer_jpegtran_path');
 	if(!preg_match('/^\/[\w\.-\d\/_]+\/jpegtran$/', $jpegtran) || preg_match("|$doc_root|", $jpegtran)) {
 		$jpegtran = 'jpegtran';
