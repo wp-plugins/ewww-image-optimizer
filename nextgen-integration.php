@@ -76,9 +76,14 @@ class ewwwngg {
 				if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-ngg-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
 				wp_die( __( 'Cheatin&#8217; uh?' ) );
 				}
+				$current = 0;
+				$total = sizeof($attachments);
 				foreach ($images as $id) {
+					set_time_limit (500);
+					$current++;
+					echo "<p>Processing $current/$total: ";
 					$meta = new nggMeta( $id );
-					printf( "<p>Processing <strong>%s</strong>&hellip;<br>", esc_html($meta->image->filename) );
+					printf( "<strong>%s</strong>&hellip;<br>", esc_html($meta->image->filename) );
 					$file_path = $meta->image->imagePath;
 					$fres = ewww_image_optimizer($file_path);
 					nggdb::update_image_meta($id, array('ewww_image_optimizer' => $fres[1]));

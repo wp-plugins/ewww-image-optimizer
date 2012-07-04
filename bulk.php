@@ -17,8 +17,13 @@ else:
 		if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
 			wp_die( __( 'Cheatin&#8217; uh?' ) );
 		}
+		$current = 0;
+		$total = sizeof($attachments);
 		foreach( $attachments as $attachment ) {
-			printf( "<p>Processing <strong>%s</strong>&hellip;<br>", esc_html($attachment->post_name) );
+			set_time_limit (500);
+			$current++;
+			echo "<p>Processing $current/$total: ";
+			printf( "<strong>%s</strong>&hellip;<br>", esc_html($attachment->post_name) );
 			$meta = ewww_image_optimizer_resize_from_meta_data( wp_get_attachment_metadata( $attachment->ID, true ), $attachment->ID );
 			printf( "Full size – %s<br>", $meta['ewww_image_optimizer'] );
 			if(isset($meta['sizes']) && is_array($meta['sizes'])){
