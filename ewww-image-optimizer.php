@@ -35,6 +35,7 @@ add_action('admin_menu', 'ewww_image_optimizer_admin_menu' );
 add_action('admin_head-upload.php', 'ewww_image_optimizer_add_bulk_actions_via_javascript' ); 
 add_action('admin_action_bulk_optimize', 'ewww_image_optimizer_bulk_action_handler' ); 
 add_action('admin_action_-1', 'ewww_image_optimizer_bulk_action_handler' ); 
+add_action('admin_print_scripts-media_page_ewww-image-optimizer-bulk', 'ewww_image_optimizer_scripts' );
 
 /**
  * Check if system requirements are met
@@ -137,6 +138,10 @@ function ewww_image_optimizer_admin_init() {
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_gifsicle_path');
 }
 
+function ewww_image_optimizer_scripts () {
+	wp_enqueue_script ('ewwwloadscript', plugins_url('/pageload.js', __FILE__));
+}	
+
 function ewww_image_optimizer_admin_menu() {
 	add_media_page( 'Bulk Optimize', 'Bulk Optimize', 'edit_others_posts', 'ewww-image-optimizer-bulk', 'ewww_image_optimizer_bulk_preview');
 	add_options_page(
@@ -171,7 +176,7 @@ function ewww_image_optimizer_bulk_preview() {
 			'post_type' => 'attachment',
 			'post_mime_type' => 'image'
 		));
-	} 
+	}
 	require( dirname(__FILE__) . '/bulk.php' );
 }
 

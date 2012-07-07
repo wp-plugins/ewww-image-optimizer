@@ -18,7 +18,14 @@ else:
 			wp_die( __( 'Cheatin&#8217; uh?' ) );
 		}
 		$current = 0;
+		$started = time();
 		$total = sizeof($attachments);
+		?>
+		<script type="text/javascript">
+			document.write('Bulk Optimization has taken <span id="endTime">0.0</span> seconds. <i>This timer will keep going if Apache or PHP stop the execution.</i>');
+			var loopTime=setInterval("currentTime()",100);
+		</script>
+		<?
 		foreach( $attachments as $attachment ) {
 			set_time_limit (500);
 			$current++;
@@ -31,7 +38,8 @@ else:
 					printf( "%s – %s<br>", $size['file'], $size['ewww_image_optimizer'] );
 				}
 			}
-			echo "</p>";
+			$elapsed = time() - $started;
+			echo "Elapsed: $elapsed seconds</p>";
 			wp_update_attachment_metadata( $attachment->ID, $meta );
 		}
 		echo '<p><b>Finished</b> - <a href="upload.php">Return to Media Library</a></p>';

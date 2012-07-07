@@ -77,7 +77,14 @@ class ewwwngg {
 				wp_die( __( 'Cheatin&#8217; uh?' ) );
 				}
 				$current = 0;
+				$started = time();
 				$total = sizeof($attachments);
+				?>
+				<script type="text/javascript">
+					document.write('Bulk Optimization has taken <span id="endTime">0.0</span> seconds. <i>This timer will keep going if Apache or PHP stop the execution.</i>');
+					var loopTime=setInterval("currentTime()",100);
+				</script>
+				<?
 				foreach ($images as $id) {
 					set_time_limit (500);
 					$current++;
@@ -92,6 +99,8 @@ class ewwwngg {
 					$tres = ewww_image_optimizer($thumb_path);
 					printf( "Thumbnail – %s<br>", $tres[1] );
 				}	
+			$elapsed = time() - $started;
+			echo "Elapsed: $elapsed seconds</p>";
 				echo '<p><b>Finished</b></p></div>';	
 			endif;
 		endif;
