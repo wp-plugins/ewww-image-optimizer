@@ -17,8 +17,22 @@ else:
 		if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
 			wp_die( __( 'Cheatin&#8217; uh?' ) );
 		}
+		$current = 0;
+		$started = time();
+		$total = sizeof($attachments);
+		?>
+		<script type="text/javascript">
+			document.write('Bulk Optimization has taken <span id="endTime">0.0</span> seconds.');
+			var loopTime=setInterval("currentTime()",100);
+		</script>
+		<?
+		ob_implicit_flush(true);
+		ob_end_flush();
 		foreach( $attachments as $attachment ) {
-			printf( "<p>Processing <strong>%s</strong>&hellip;<br>", esc_html($attachment->post_name) );
+			set_time_limit (50);
+			$current++;
+			echo "<p>Processing $current/$total: ";
+			printf( "<strong>%s</strong>&hellip;<br>", esc_html($attachment->post_name) );
 			$meta = ewww_image_optimizer_resize_from_meta_data( wp_get_attachment_metadata( $attachment->ID, true ), $attachment->ID );
 			printf( "Full size – %s<br>", $meta['ewww_image_optimizer'] );
 			if(isset($meta['sizes']) && is_array($meta['sizes'])){
@@ -26,8 +40,11 @@ else:
 					printf( "%s – %s<br>", $size['file'], $size['ewww_image_optimizer'] );
 				}
 			}
-			echo "</p>";
+			$elapsed = time() - $started;
+			echo "Elapsed: $elapsed seconds</p>";
 			wp_update_attachment_metadata( $attachment->ID, $meta );
+			@ob_flush();
+			flush();
 		}
 		echo '<p><b>Finished</b> - <a href="upload.php">Return to Media Library</a></p>';
 	endif;
