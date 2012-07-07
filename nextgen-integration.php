@@ -78,15 +78,17 @@ class ewwwngg {
 				}
 				$current = 0;
 				$started = time();
-				$total = sizeof($attachments);
+				$total = sizeof($images);
 				?>
 				<script type="text/javascript">
-					document.write('Bulk Optimization has taken <span id="endTime">0.0</span> seconds. <i>This timer will keep going if Apache or PHP stop the execution.</i>');
+					document.write('Bulk Optimization has taken <span id="endTime">0.0</span> seconds.');
 					var loopTime=setInterval("currentTime()",100);
 				</script>
 				<?
+				ob_implicit_flush(true);
+				ob_end_flush();
 				foreach ($images as $id) {
-					set_time_limit (500);
+					set_time_limit (50);
 					$current++;
 					echo "<p>Processing $current/$total: ";
 					$meta = new nggMeta( $id );
@@ -98,9 +100,11 @@ class ewwwngg {
 					$thumb_path = $meta->image->thumbPath;
 					$tres = ewww_image_optimizer($thumb_path);
 					printf( "Thumbnail – %s<br>", $tres[1] );
+					$elapsed = time() - $started;
+					echo "Elapsed: $elapsed seconds</p>";
+					@ob_flush();
+					flush();
 				}	
-			$elapsed = time() - $started;
-			echo "Elapsed: $elapsed seconds</p>";
 				echo '<p><b>Finished</b></p></div>';	
 			endif;
 		endif;
@@ -178,6 +182,7 @@ class ewwwngg {
 }
 
 add_action( 'init', 'ewwwngg' );
+add_action('admin_print_scripts-tools_page_ewww-ngg-bulk', 'ewww_image_optimizer_scripts' );
 
 function ewwwngg() {
 	global $ewwwngg;

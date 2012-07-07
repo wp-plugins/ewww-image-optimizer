@@ -22,12 +22,14 @@ else:
 		$total = sizeof($attachments);
 		?>
 		<script type="text/javascript">
-			document.write('Bulk Optimization has taken <span id="endTime">0.0</span> seconds. <i>This timer will keep going if Apache or PHP stop the execution.</i>');
+			document.write('Bulk Optimization has taken <span id="endTime">0.0</span> seconds.');
 			var loopTime=setInterval("currentTime()",100);
 		</script>
 		<?
+		ob_implicit_flush(true);
+		ob_end_flush();
 		foreach( $attachments as $attachment ) {
-			set_time_limit (500);
+			set_time_limit (50);
 			$current++;
 			echo "<p>Processing $current/$total: ";
 			printf( "<strong>%s</strong>&hellip;<br>", esc_html($attachment->post_name) );
@@ -41,6 +43,8 @@ else:
 			$elapsed = time() - $started;
 			echo "Elapsed: $elapsed seconds</p>";
 			wp_update_attachment_metadata( $attachment->ID, $meta );
+			@ob_flush();
+			flush();
 		}
 		echo '<p><b>Finished</b> - <a href="upload.php">Return to Media Library</a></p>';
 	endif;

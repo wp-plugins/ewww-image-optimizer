@@ -1,15 +1,15 @@
 <?php
 /**
  * Integrate Linux image optimizers into WordPress.
- * @version 1.0.7
+ * @version 1.0.8
  * @package EWWW_Image_Optimizer
  */
 /*
 Plugin Name: EWWW Image Optimizer
 Plugin URI: http://www.shanebishop.net/ewww-image-optimizer/
-Description: Reduce image file sizes and improve performance using Linux image optimizers within WordPress and NextGEN Gallery. Uses jpegtran, optipng, and gifsicle.
+Description: Reduce image file sizes and improve performance for images within WordPress including NextGEN Gallery. Uses jpegtran, optipng, and gifsicle.
 Author: Shane Bishop
-Version: 1.0.7
+Version: 1.0.8
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
@@ -74,6 +74,9 @@ function ewww_image_optimizer_path_check() {
 }
 
 function ewww_image_optimizer_notice_utils() {
+	if( ini_get('safe_mode') ){
+		echo "<div id='ewww-image-optimizer-warning-opt-png' class='updated fade'><p><strong>PHP's Safe Mode is turned on. This plugin cannot operate in safe mode.</strong></p></div>";
+	}
 	list ($jpegtran_path, $optipng_path, $gifsicle_path) = ewww_image_optimizer_path_check();
 	$required = array(
 		'JPG' => $jpegtran_path,
@@ -298,7 +301,7 @@ function ewww_image_optimizer($file) {
 			if(get_option('ewww_image_optimizer_optipng_level') > 0){
 				$optipng_level = get_option('ewww_image_optimizer_optipng_level');
 			} else {
-				$optipng_level = 3;
+				$optipng_level = 2;
 			}
 			exec("$optipng_path -o$optipng_level -quiet $file");
 			clearstatcache();
@@ -545,13 +548,13 @@ function ewww_image_optimizer_options () {
 			<input type="checkbox" id="ewww_image_optimizer_jpegtran_copy" name="ewww_image_optimizer_jpegtran_copy" value="true" <?php if (get_option('ewww_image_optimizer_jpegtran_copy') == TRUE) { ?>checked="true"<?php } ?> /> <label for="ewww_image_optimizer_jpegtran_copy" />Check this box to remove all metadata (EXIF and comments) from JPGs</label><br />
 			<label><select id="ewww_image_optimizer_optipng_level" name="ewww_image_optimizer_optipng_level">
 				<option value="1"<?php if (get_option('ewww_image_optimizer_optipng_level') == 1) { echo ' selected="selected"'; } ?>>Level 1: 1 trial</option>
-				<option value="2"<?php if (get_option('ewww_image_optimizer_optipng_level') == 2) { echo ' selected="selected"'; } ?>>Level 2: 8 trials</option>
-				<option value="3"<?php if (get_option('ewww_image_optimizer_optipng_level') == 3 || !get_option('ewww_image_optimizer_optipng_level')) { echo ' selected="selected"'; } ?>>Level 3: 16 trials</option>
+				<option value="2"<?php if (get_option('ewww_image_optimizer_optipng_level') == 2 || !get_option('ewww_image_optimizer_optipng_level')) { echo ' selected="selected"'; } ?>>Level 2: 8 trials</option>
+				<option value="3"<?php if (get_option('ewww_image_optimizer_optipng_level') == 3) { echo ' selected="selected"'; } ?>>Level 3: 16 trials</option>
 				<option value="4"<?php if (get_option('ewww_image_optimizer_optipng_level') == 4) { echo ' selected="selected"'; } ?>>Level 4: 24 trials</option>
 				<option value="5"<?php if (get_option('ewww_image_optimizer_optipng_level') == 5) { echo ' selected="selected"'; } ?>>Level 5: 48 trials</option>
 				<option value="6"<?php if (get_option('ewww_image_optimizer_optipng_level') == 6) { echo ' selected="selected"'; } ?>>Level 6: 120 trials</option>
 				<option value="7"<?php if (get_option('ewww_image_optimizer_optipng_level') == 7) { echo ' selected="selected"'; } ?>>Level 7: 240 trials</option>
-			</select> PNG optimization level (default=3)</label><br />
+			</select> PNG optimization level (default=2)</label><br />
 			<i>According to the author of optipng, 10 trials should satisfy most people, 30 trials should satisfy everyone.</i></p>
 			<p class="submit"><input type="submit" class="button-primary" value="Save Changes" /></p>
 		</form>
