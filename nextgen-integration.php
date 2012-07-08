@@ -76,9 +76,23 @@ class ewwwngg {
 				if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-ngg-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
 				wp_die( __( 'Cheatin&#8217; uh?' ) );
 				}
+				$current = 0;
+				$started = time();
+				$total = sizeof($images);
+				?>
+				<script type="text/javascript">
+					document.write('Bulk Optimization has taken <span id="endTime">0.0</span> seconds.');
+					var loopTime=setInterval("currentTime()",100);
+				</script>
+				<?php
+				ob_implicit_flush(true);
+				ob_end_flush();
 				foreach ($images as $id) {
+					set_time_limit (50);
+					$current++;
+					echo "<p>Processing $current/$total: ";
 					$meta = new nggMeta( $id );
-					printf( "<p>Processing <strong>%s</strong>&hellip;<br>", esc_html($meta->image->filename) );
+					printf( "<strong>%s</strong>&hellip;<br>", esc_html($meta->image->filename) );
 					$file_path = $meta->image->imagePath;
 					$fres = ewww_image_optimizer($file_path);
 					nggdb::update_image_meta($id, array('ewww_image_optimizer' => $fres[1]));
@@ -86,6 +100,10 @@ class ewwwngg {
 					$thumb_path = $meta->image->thumbPath;
 					$tres = ewww_image_optimizer($thumb_path);
 					printf( "Thumbnail – %s<br>", $tres[1] );
+					$elapsed = time() - $started;
+					echo "Elapsed: $elapsed seconds</p>";
+					@ob_flush();
+					flush();
 				}	
 				echo '<p><b>Finished</b></p></div>';	
 			endif;
@@ -164,6 +182,7 @@ class ewwwngg {
 }
 
 add_action( 'init', 'ewwwngg' );
+add_action('admin_print_scripts-tools_page_ewww-ngg-bulk', 'ewww_image_optimizer_scripts' );
 
 function ewwwngg() {
 	global $ewwwngg;
