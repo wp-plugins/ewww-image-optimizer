@@ -25,7 +25,7 @@ else:
 			document.write('Bulk Optimization has taken <span id="endTime">0.0</span> seconds.');
 			var loopTime=setInterval("currentTime()",100);
 		</script>
-		<?
+		<?php
 		ob_implicit_flush(true);
 		ob_end_flush();
 		foreach( $attachments as $attachment ) {
