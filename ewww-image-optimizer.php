@@ -528,7 +528,8 @@ function ewww_image_optimizer_bulk_action_handler() {
 }
 
 function ewww_image_optimizer_options () {
-?>
+	list ($jpegtran_path, $optipng_path, $gifsicle_path) = ewww_image_optimizer_path_check();
+	?>
 	<div class="wrap">
 		<div id="icon-options-general" class="icon32"><br /></div>
 		<h2>EWWW Image Optimizer Settings</h2>
@@ -559,6 +560,28 @@ function ewww_image_optimizer_options () {
 			<p class="submit"><input type="submit" class="button-primary" value="Save Changes" /></p>
 		</form>
 	</div>
-<?php
+	<div id="debug" style="border: 1px solid #333">
+		<p><b>Debug information</b><br />
+		computed jpegtran path: <?php echo $jpegtran_path; ?><br />
+		jpegtran location (using 'which'): <?php echo trim(exec('which ' . $jpegtran_path)); ?><br />
+		computed optipng path: <?php echo $optipng_path; ?><br />
+		optipng location (using 'which'): <?php echo trim(exec('which ' . $optipng_path)); ?><br />
+		computed gifsicle path: <?php echo $gifsicle_path; ?><br />
+		gifsicle location (using 'which'): <?php echo trim(exec('which ' . $gifsicle_path)); ?><br />
+		<?php if( ini_get('safe_mode') ){
+			echo "safe mode: On<br />";
+		} else {
+			echo "safe mode: Off<br />";
+		}
+		echo "Operating System: " . PHP_OS . "<br>";
+		$disabled = explode(', ', ini_get('disable_functions'));
+		if(in_array('exec', $disabled)){
+			echo "exec(): disabled<br>";
+		} else {
+			echo "exec(): enabled<br>";
+		}
+		?></p>
+	</div>
+	<?php
 }
 
