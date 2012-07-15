@@ -84,7 +84,6 @@ function ewww_image_optimizer_notice_utils() {
 		'GIF' => $gifsicle_path,
 	);
    
-	// To skip binary checking, you can visit the EWWW Image Optimizer options page
 	if(get_option('ewww_image_optimizer_skip_check') == TRUE){
 		$skip = true;
 	} else {
@@ -566,8 +565,10 @@ function ewww_image_optimizer_options () {
 		jpegtran location (using 'which'): <?php echo trim(exec('which ' . $jpegtran_path)); ?><br />
 		computed optipng path: <?php echo $optipng_path; ?><br />
 		optipng location (using 'which'): <?php echo trim(exec('which ' . $optipng_path)); ?><br />
+		optipng version: <?php exec($optipng_path . ' -v', $optipng_version); echo $optipng_version[0]; ?><br />
 		computed gifsicle path: <?php echo $gifsicle_path; ?><br />
 		gifsicle location (using 'which'): <?php echo trim(exec('which ' . $gifsicle_path)); ?><br />
+		gifsicle version: <?php exec($gifsicle_path . ' --version', $gifsicle_version); echo $gifsicle_version[0]; ?><br />
 		<?php if( ini_get('safe_mode') ){
 			echo "safe mode: On<br />";
 		} else {
@@ -579,6 +580,16 @@ function ewww_image_optimizer_options () {
 			echo "exec(): disabled<br>";
 		} else {
 			echo "exec(): enabled<br>";
+		}
+		if(function_exists('getimagesize')){
+			echo "getimagesize(): OK<br>";
+		} else {
+			echo "getimagesize(): missing<br>";
+		}
+		if(function_exists('mime_content_type')){
+			echo "mime_content_type(): OK<br>";
+		} else {
+			echo "mime_content_type(): missing<br>";
 		}
 		?></p>
 	</div>
