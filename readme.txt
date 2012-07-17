@@ -69,7 +69,7 @@ Have some problems, and I'll give some pointers here.
 
 == Frequently Asked Questions ==
 
-= The bulk optimizer doesn't seem to be working, what can I do?
+= The bulk optimizer doesn't seem to be working, what can I do? =
 
 First, upgrade to version 1.0.8. Since version 1.0.8, each image is given 50 seconds to complete (which actually doesn't include time used by the optimization utilities), so long as you don't have safe mode enabled in PHP. If you have safe mode enabled, you can increase the setting max_execution_time in your php.ini file. That said, there are other timeouts with Apache, and possibly other limitations of your webhost. If you've tried everything else, the last thing to look for is large PNG files. In my tests on a shared hosting setup, "large" is anything over 300 KB. You can first try decreasing the PNG optimization level to 1 on the settings. If that doesn't work, perhaps you ought to convert that PNG to JPG and re-upload it. Screenshots are often done as PNG files, but that is a poor choice for anything with a gradient or photographic elements.
 

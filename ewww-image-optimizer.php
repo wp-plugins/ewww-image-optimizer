@@ -559,7 +559,7 @@ function ewww_image_optimizer_options () {
 			<p class="submit"><input type="submit" class="button-primary" value="Save Changes" /></p>
 		</form>
 	</div>
-	<div id="debug" style="border: 1px solid #333">
+	<div id="debug" style="border: 1px solid #999; padding: 0 10px">
 		<p><b>Debug information</b><br />
 		computed jpegtran path: <?php echo $jpegtran_path; ?><br />
 		jpegtran location (using 'which'): <?php echo trim(exec('which ' . $jpegtran_path)); ?><br />
