@@ -25,7 +25,7 @@ else:
 		endif;
 	else: // run the script
 		if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
-			wp_die( __( 'Cheatin&#8217; uh?' ) );
+			wp_die( __( 'Cheatin&#8217; eh?' ) );
 		}
 		$current = 0;
 		$started = time();
