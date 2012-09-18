@@ -240,9 +240,11 @@ function ewww_image_optimizer($file) {
 		return array($file, $msg);
 	}
 
-	// check that the file is within the WP folder 
-	if ( 0 !== stripos(realpath($file_path), realpath(ABSPATH)) ) {
-		$msg = sprintf(__("<span class='code'>%s</span> must be within the wordpress directory (<span class='code'>%s</span>)", EWWW_IMAGE_OPTIMIZER_DOMAIN), htmlentities($file_path), realpath(ABSPATH));
+	// check that the file is within the WP uploads folder 
+	$upload_dir = wp_upload_dir();
+	$upload_path = trailingslashit( $upload_dir['basedir'] );
+	if ( 0 !== stripos(realpath($file_path), $upload_path) ) {
+		$msg = sprintf(__("<span class='code'>%s</span> must be within the wordpress upload directory (<span class='code'>%s</span>)", EWWW_IMAGE_OPTIMIZER_DOMAIN), htmlentities($file_path), $upload_path);
 		return array($file, $msg);
 	}
 
