@@ -147,11 +147,11 @@ function ewww_image_optimizer_scripts () {
 function ewww_image_optimizer_admin_menu() {
 	add_media_page( 'Bulk Optimize', 'Bulk Optimize', 'edit_others_posts', 'ewww-image-optimizer-bulk', 'ewww_image_optimizer_bulk_preview');
 	add_options_page(
-		'EWWW Image Optimizer',           //Title
-		'EWWW Image Optimizer',           //Sub-menu title
-		'manage_options',               //Security
-		__FILE__,                       //File to open
-		'ewww_image_optimizer_options'    //Function to call
+		'EWWW Image Optimizer',		//Title
+		'EWWW Image Optimizer',		//Sub-menu title
+		'manage_options',		//Security
+		__FILE__,			//File to open
+		'ewww_image_optimizer_options'	//Function to call
 	);
 }
 
@@ -164,6 +164,9 @@ function ewww_image_optimizer_settings_link($links) {
 function ewww_image_optimizer_bulk_preview() {
 	$attachments = null;
 	$auto_start = false;
+	$skip_attachments = false;
+	$upload_dir = wp_upload_dir();
+	$progress_file = $upload_dir['basedir'] . "/ewww.tmp";
 	if (isset($_REQUEST['ids'])) {
 		$attachments = get_posts( array(
 			'numberposts' => -1,
@@ -172,6 +175,12 @@ function ewww_image_optimizer_bulk_preview() {
 			'post_mime_type' => 'image',
 		));
 		$auto_start = true;
+	} else if (isset($_REQUEST['resume'])) {
+		$progress_contents = file($progress_file);
+		$last_attachment = $progress_contents[0];
+		$attachments = unserialize($progress_contents[1]);
+		$auto_start = true;
+		$skip_attachments = true;
 	} else {
 		$attachments = get_posts( array(
 			'numberposts' => -1,
@@ -179,6 +188,8 @@ function ewww_image_optimizer_bulk_preview() {
 			'post_mime_type' => 'image'
 		));
 	}
+	//prep $attachments for storing in a file
+	$attach_ser = serialize($attachments);
 	require( dirname(__FILE__) . '/bulk.php' );
 }
 
