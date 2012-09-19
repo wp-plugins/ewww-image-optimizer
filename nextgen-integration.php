@@ -52,11 +52,23 @@ class ewwwngg {
 		exit(0);
 	}
 
-	/* function to optimize all images in all NextGEN galleries */
+	/* function to optimize all images in all NextGEN galleries. many lines are commented out from porting the 'resume' function in anticipation that we'll have a bulk action that lets us bulk optimize arbitrary images. */
 	function ewww_ngg_bulk() {
-		global $wpdb;
-		$order = 'sortorder ASC';
-		$images = $wpdb->get_col("SELECT pid FROM $wpdb->nggpictures ORDER BY $order");
+		global $ngg;
+		$progress_file = ABSPATH . $ngg->options['gallerypath'] . "ewww.tmp";
+//		$auto_start = false;
+	        $skip_attachments = false;
+		if (isset($_REQUEST['resume'])) {
+			$progress_contents = file($progress_file);
+			$last_attachment = $progress_contents[0];
+//			$images = unserialize($progress_contents[1]);
+//			$auto_start = true;
+			$skip_attachments = true;
+		} //else {
+			global $wpdb;
+			$images = $wpdb->get_col("SELECT pid FROM $wpdb->nggpictures ORDER BY sortorder ASC");
+		//}
+//		$images_ser = serialize($images);
 		?>
 		<div class="wrap"><div id="icon-nextgen-gallery" class="icon32"><br /></div><h2>Bulk NextGEN Gallery Optimize</h2>
 		<?php
@@ -71,10 +83,20 @@ class ewwwngg {
 					<?php wp_nonce_field( 'ewww-ngg-bulk', '_wpnonce'); ?>
 					<button type="submit" class="button-secondary action">Run all my images through image optimizers</button>
 				</form>
-				<?php
+<?php
+				if (file_exists($progress_file)):
+?>
+					<p>It appears that a previous bulk optimization was interrupted. Would you like to continue where we left off?</p>
+					<form method="post" action="">
+					<?php wp_nonce_field( 'ewww-ngg-bulk', '_wpnonce'); ?>
+					<input type="hidden" name="resume" value="1">
+					<button type="submit" class="button-secondary action">Resume previous operation.</button>
+					</form>
+<?php
+				endif;
 			else: // run the script
 				if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-ngg-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
-				wp_die( __( 'Cheatin&#8217; uh?' ) );
+				wp_die( __( 'Cheatin&#8217; eh?' ) );
 				}
 				$current = 0;
 				$started = time();
@@ -90,21 +112,28 @@ class ewwwngg {
 				foreach ($images as $id) {
 					set_time_limit (50);
 					$current++;
-					echo "<p>Processing $current/$total: ";
-					$meta = new nggMeta( $id );
-					printf( "<strong>%s</strong>&hellip;<br>", esc_html($meta->image->filename) );
-					$file_path = $meta->image->imagePath;
-					$fres = ewww_image_optimizer($file_path);
-					nggdb::update_image_meta($id, array('ewww_image_optimizer' => $fres[1]));
-					printf( "Full size – %s<br>", $fres[1] );
-					$thumb_path = $meta->image->thumbPath;
-					$tres = ewww_image_optimizer($thumb_path);
-					printf( "Thumbnail – %s<br>", $tres[1] );
-					$elapsed = time() - $started;
-					echo "Elapsed: $elapsed seconds</p>";
+					if ($last_attachment == $id) {$skip_attachments = false;}
+					if ($skip_attachments) {
+						echo "<p>Skipping $current/$total <br>";
+					} else {
+						echo "<p>Processing $current/$total: ";
+						$meta = new nggMeta( $id );
+						printf( "<strong>%s</strong>&hellip;<br>", esc_html($meta->image->filename) );
+						$file_path = $meta->image->imagePath;
+						file_put_contents($progress_file, "$id");
+						$fres = ewww_image_optimizer($file_path);
+						nggdb::update_image_meta($id, array('ewww_image_optimizer' => $fres[1]));
+						printf( "Full size – %s<br>", $fres[1] );
+						$thumb_path = $meta->image->thumbPath;
+						$tres = ewww_image_optimizer($thumb_path);
+						printf( "Thumbnail – %s<br>", $tres[1] );
+						$elapsed = time() - $started;
+						echo "Elapsed: $elapsed seconds</p>";
+					}
 					@ob_flush();
 					flush();
-				}	
+				}
+				unlink ($progress_file);
 				echo '<p><b>Finished</b></p></div>';	
 			endif;
 		endif;

@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate Linux image optimizers into WordPress.
- * @version 1.0.9
+ * @version 1.0.10
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -9,7 +9,7 @@ Plugin Name: EWWW Image Optimizer
 Plugin URI: http://www.shanebishop.net/ewww-image-optimizer/
 Description: Reduce image file sizes and improve performance for images within WordPress including NextGEN Gallery. Uses jpegtran, optipng, and gifsicle.
 Author: Shane Bishop
-Version: 1.0.9
+Version: 1.0.10
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
@@ -147,11 +147,11 @@ function ewww_image_optimizer_scripts () {
 function ewww_image_optimizer_admin_menu() {
 	add_media_page( 'Bulk Optimize', 'Bulk Optimize', 'edit_others_posts', 'ewww-image-optimizer-bulk', 'ewww_image_optimizer_bulk_preview');
 	add_options_page(
-		'EWWW Image Optimizer',           //Title
-		'EWWW Image Optimizer',           //Sub-menu title
-		'manage_options',               //Security
-		__FILE__,                       //File to open
-		'ewww_image_optimizer_options'    //Function to call
+		'EWWW Image Optimizer',		//Title
+		'EWWW Image Optimizer',		//Sub-menu title
+		'manage_options',		//Security
+		__FILE__,			//File to open
+		'ewww_image_optimizer_options'	//Function to call
 	);
 }
 
@@ -164,6 +164,9 @@ function ewww_image_optimizer_settings_link($links) {
 function ewww_image_optimizer_bulk_preview() {
 	$attachments = null;
 	$auto_start = false;
+	$skip_attachments = false;
+	$upload_dir = wp_upload_dir();
+	$progress_file = $upload_dir['basedir'] . "/ewww.tmp";
 	if (isset($_REQUEST['ids'])) {
 		$attachments = get_posts( array(
 			'numberposts' => -1,
@@ -172,6 +175,12 @@ function ewww_image_optimizer_bulk_preview() {
 			'post_mime_type' => 'image',
 		));
 		$auto_start = true;
+	} else if (isset($_REQUEST['resume'])) {
+		$progress_contents = file($progress_file);
+		$last_attachment = $progress_contents[0];
+		$attachments = unserialize($progress_contents[1]);
+		$auto_start = true;
+		$skip_attachments = true;
 	} else {
 		$attachments = get_posts( array(
 			'numberposts' => -1,
@@ -179,6 +188,8 @@ function ewww_image_optimizer_bulk_preview() {
 			'post_mime_type' => 'image'
 		));
 	}
+	//prep $attachments for storing in a file
+	$attach_ser = serialize($attachments);
 	require( dirname(__FILE__) . '/bulk.php' );
 }
 
@@ -229,9 +240,11 @@ function ewww_image_optimizer($file) {
 		return array($file, $msg);
 	}
 
-	// check that the file is within the WP folder 
-	if ( 0 !== stripos(realpath($file_path), realpath(ABSPATH)) ) {
-		$msg = sprintf(__("<span class='code'>%s</span> must be within the wordpress directory (<span class='code'>%s</span>)", EWWW_IMAGE_OPTIMIZER_DOMAIN), htmlentities($file_path), realpath(ABSPATH));
+	// check that the file is within the WP uploads folder 
+	$upload_dir = wp_upload_dir();
+	$upload_path = trailingslashit( $upload_dir['basedir'] );
+	if ( 0 !== stripos(realpath($file_path), $upload_path) ) {
+		$msg = sprintf(__("<span class='code'>%s</span> must be within the wordpress upload directory (<span class='code'>%s</span>)", EWWW_IMAGE_OPTIMIZER_DOMAIN), htmlentities($file_path), $upload_path);
 		return array($file, $msg);
 	}
 
