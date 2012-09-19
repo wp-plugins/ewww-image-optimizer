@@ -6,7 +6,7 @@ Tested up to: 3.4.2
 Stable tag: 1.0.11
 License: GPLv3
 
-Reduce image file sizes and improve performance for images within WordPress including NextGEN Gallery. Uses jpegtran, optipng, and gifsicle.
+Reduce image file sizes and improve performance for images within WordPress including NextGEN Gallery. Uses jpegtran, optipng and/or pngout, and gifsicle.
 
 == Description ==
 
@@ -14,16 +14,16 @@ The EWWW Image Optimizer is a WordPress plugin that will automatically and lossl
 
 Because EWWW Image Optimizer uses lossless optimization techniques, your image quality will be exactly the same before and after the optimization. The only thing that will change is your file size. The one small exception to this is GIF animations. While the optimization is technically lossless, you will not be able to properly edit the animation again without performing an --unoptimize operation with gifsicle.
 
-The EWWW Image Optimizer plugin is based heavily on the CW Image Optimizer plugin, which in turn is based upon the WP Smush.it plugin. Unlike the WP Smush.it plugin, your files won’t be uploaded to a third party. Your files are optimized using the Linux [jpegtran](http://jpegclub.org/jpegtran/), [optipng](http://optipng.sourceforge.net/), and [gifsicle](http://www.lcdf.org/gifsicle/) image tools (available for free). 
+The EWWW Image Optimizer plugin is based heavily on the CW Image Optimizer plugin, which in turn is based upon the WP Smush.it plugin. Unlike the WP Smush.it plugin, your files won’t be uploaded to a third party. Your files are optimized using the Linux [jpegtran](http://jpegclub.org/jpegtran/), [optipng](http://optipng.sourceforge.net/), [pngout](advsys.net/ken/utils.htm), and [gifsicle](http://www.lcdf.org/gifsicle/) image tools (available for free). 
 
-The primary reason for creating this plugin was that CW Image Optimizer uses littleutils. While littleutils is a fine piece of software, it does not do any of the optimization work itself, but simply calls upon other utilities with pre-configured options. The result is that you need to have these other utilities already installed to build/compile the binaries for littleutils. In contrast, EWWW Image Optimizer calls the optimization utilities directly (which may also allow us to offer more flexibility in the future). This is better suited to shared hosting situations where these utilities may already be installed. The programs we use (jpegtran, optipng, and gifsicle) generally have very minimal dependencies, so all you will need is a hosting account with shell access, and build utilities installed. You can then tell EWWW Image Optimizer where you compiled these utilities. I use Bluehost, which meets these requirements, and Dreamhost is another suitable alternative. There are likely others out there that I am not aware of.
+The primary reason for creating this plugin was that CW Image Optimizer uses littleutils. While littleutils is a fine piece of software, it does not do any of the optimization work itself, but simply calls upon other utilities with pre-configured options. The result is that you need to have these other utilities already installed to build/compile the binaries for littleutils. In contrast, EWWW Image Optimizer calls the optimization utilities directly (which may also allow us to offer more flexibility in the future). This is better suited to shared hosting situations where these utilities may already be installed. The programs we use (jpegtran, optipng, pngout, and gifsicle) generally have very minimal dependencies (pngout has none), so all you will need is a hosting account with shell access, and build utilities installed. You can then tell EWWW Image Optimizer where you compiled these utilities. I use Bluehost, which meets these requirements, and Dreamhost is another suitable alternative. There are likely others out there that I am not aware of.
 
 **Why use EWWW Image Optimizer (some of the same reasons for using CW Image Optimizer)?**
 
 1. **Your pages will load faster.** Smaller image sizes means faster page loads. This will make your visitors happy, and can increase ad revenue.
 1. **Faster backups.** Smaller image sizes also means faster backups.
 1. **Less bandwidth usage.** Optimizing your images can save you hundreds of KB per image, which means significantly less bandwidth usage.
-1. **Super fast.** Because it runs on your own server, you don’t have to wait for a third party service to receive, process, and return your images. You can optimize hundreds of images in just a few minutes. Png files do take a little longer than jpegs, as the plugin is currently configured to perform 16 optimization trials before selecting the best algorithm.
+1. **Super fast.** Because it runs on your own server, you don’t have to wait for a third party service to receive, process, and return your images. You can optimize hundreds of images in just a few minutes. Png files take the longest, but you can adjust the settings for your situation.
 1. **Root access not needed** Because the paths are configurable via the settings page, and the programs we use have minimal dependencies, you can compile the utilities (if they aren't already installed) and tell the plugin where they are located. 
 
 = NextGEN Integration =
@@ -34,9 +34,17 @@ Features re-optimization capability, and bulk optimizing. The NextGEN Bulk Optim
 
 1. Upload the 'ewww-image-optimizer' plugin to your '/wp-content/plugins/' directory.
 1. Activate the plugin through the 'Plugins' menu in WordPress.
-1. Ensure jpegtran and optipng are installed on your Linux server (basic installation instructions are below if they are not). You will receive a warning when you activate the plugin if they are not present. This message will go away once you have them installed.
-1. *Optional* Visit the settings page to configure paths, and turn on metadata stripping for jpegs (to reduce file size even more).
+1. Ensure jpegtran, optipng, pngout and gifsicle are installed on your Linux server (basic installation instructions are below if they are not). You will receive a warning when you activate the plugin if they are not present. This message will go away once you have them installed. 
+1. *Optional* Visit the settings page to configure paths, enable/disable specific tools and turn on advanced optimization features.
 1. Done!
+
+= Installing pngout =
+
+Pngout is new in version 1.1.0 and is not enabled by default because it is resource intensive. Optipng is the preferred PNG optimizer if you have resource (CPU) constraints. Pngout is also not open-source for those who care about such things, but is free.
+1. Go to the settings page.
+1. Click the link near the middle of the page to Install pngout for your server, and the plugin will download the pngout archive, unpack it, and install the version that you chose. If you don't what architecture your server is, you can stick with the i386 or ask your webhost about it. You can always choose a different version later, and the plugin will simply update the version that is used.
+1. Adjust the pngout level according to your needs. Level 0 gives the best results, but can take up to a minute or so on a single image.
+1. If the one-click install isn't working for you, download the latest version from http://www.jonof.id.au/kenutils and extract the appropriate pngout-static to the plugins/ewww-image-optimizer/ folder.
 
 = Installing optipng =
 
@@ -83,7 +91,7 @@ Using the command *jpegtran -copy all -optimize -progressive original-file > opt
 
 = How are PNGs optimized? =
 
-Using the command *optipng -o2 original-file*. The '-o2' switch tells optipng to perform 8 trials. Optipng is a derivative of pngcrush, which is another widely used png optimization utility.
+There are two parts (and both are optional - you can run either or both). First, using the command *pngout-static -s2 original-file*. Second, by using the command *optipng -o2 original-file*. You can adjust the optimization levels for both tools on the settings page. Optipng is a derivative of pngcrush, which is another widely used png optimization utility.
 
 = How are GIFs optimized? =
 
@@ -95,7 +103,7 @@ I tried that first, and decided against it. First, because it is hard work and I
 
 = I want to know more about image optimization, and why you chose these options/tools. =
 
-That's not a question, but since I made it up, I'll answer it. See the Image Optimization sections for [Yslow - Yahoo](http://developer.yahoo.com/performance/rules.html#opt_images) and [Google PageSpeed](https://developers.google.com/speed/docs/best-practices/payload#CompressImages)
+That's not a question, but since I made it up, I'll answer it. See the Image Optimization sections for [Yslow - Yahoo](http://developer.yahoo.com/performance/rules.html#opt_images) and [Google PageSpeed](https://developers.google.com/speed/docs/best-practices/payload#CompressImages). Pngout was suggested by a user and in tests optimizes better than Optipng, and best (usually) when they are used together.
 
 == Screenshots ==
 
@@ -104,6 +112,10 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 3. Bulk optimization page. You can optimize all your images at once. This is very useful for existing blogs that have lots of images.
 
 == Changelog ==
+
+= 1.1.0 =
+* added pngout functionality for even better PNG optimization (disabled by default)
+* added options to disable/bypass each tool
 
 = 1.0.11 =
 * path validation was broken for nextgen in previous version, now fixed
@@ -163,7 +175,10 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 == Upgrade Notice ==
 
-= 1.0.10 =
+= 1.1.0 =
+Added pngout functionality for even better PNG optimization (disabled by default) and ability to disable each tool
+
+= 1.0.11 =
 Added resume function if Bulk Optimization fails
 
 = 1.0.7 =

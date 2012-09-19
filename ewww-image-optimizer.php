@@ -72,40 +72,70 @@ function ewww_image_optimizer_path_check() {
 	if(!preg_match('/^\/[\w\.-\d\/_]+\/gifsicle$/', $gifsicle) || preg_match("|$doc_root|", $gifsicle)) {
 		$gifsicle = 'gifsicle';
 	}
-	return array($jpegtran, $optipng, $gifsicle);
+	$pngout = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static";
+	return array($jpegtran, $optipng, $gifsicle, $pngout);
 }
 
 function ewww_image_optimizer_notice_utils() {
 	if( ini_get('safe_mode') ){
 		echo "<div id='ewww-image-optimizer-warning-opt-png' class='updated fade'><p><strong>PHP's Safe Mode is turned on. This plugin cannot operate in safe mode.</strong></p></div>";
 	}
-	list ($jpegtran_path, $optipng_path, $gifsicle_path) = ewww_image_optimizer_path_check();
+	list ($jpegtran_path, $optipng_path, $gifsicle_path, $pngout_path) = ewww_image_optimizer_path_check();
 	$required = array(
-		'JPG' => $jpegtran_path,
-		'PNG' => $optipng_path,
-		'GIF' => $gifsicle_path,
+		'jpegtran' => $jpegtran_path,
+		'optipng' => $optipng_path,
+		'gifsicle' => $gifsicle_path,
+		'pngout' => $pngout_path
 	);
    
 	if(get_option('ewww_image_optimizer_skip_check') == TRUE){
-		$skip = true;
+		$skip_jpegtran = true;
+		$skip_optipng = true;
+		$skip_gifsicle = true;
+		$skip_pngout = true;
 	} else {
-		$skip = false;
+		$skip_jpegtran = false;
+		$skip_optipng = false;
+		$skip_gifsicle = false;
+		$skip_pngout = false;
 	}
-
+	if (get_option('ewww_image_optimizer_disable_jpegtran')) {
+		$skip_jpegtran = true;
+	}
+	if (get_option('ewww_image_optimizer_disable_optipng')) {
+		$skip_optipng = true;
+	}
+	if (get_option('ewww_image_optimizer_disable_gifsicle')) {
+		$skip_gifsicle = true;
+	}
+	if (get_option('ewww_image_optimizer_disable_pngout')) {
+		$skip_pngout = true;
+	}
 	$missing = array();
 
 	foreach($required as $key => $req){
 		$result = trim(exec('which ' . $req));
-		if(!$skip && empty($result)){
+		if(empty($result)){
 			switch($key) {
-				case 'JPG':
-					$missing[] = 'jpegtran';
+				case 'jpegtran':
+					if (!$skip_jpegtran) {
+						$missing[] = 'jpegtran';
+					}
 					break; 
-				case 'PNG':
-					$missing[] = 'optipng';
+				case 'optipng':
+					if (!$skip_optipng) {
+						$missing[] = 'optipng';
+					}
 					break;
-				case 'GIF':
-					$missing[] = 'gifsicle';
+				case 'gifsicle':
+					if (!$skip_gifsicle) {
+						$missing[] = 'gifsicle';
+					}
+					break;
+				case 'pngout':
+					if (!$skip_pngout) {
+						$missing[] = 'pngout';
+					}
 					break;
 			}
 			define('EWWW_IMAGE_OPTIMIZER_' . $key, false);
@@ -137,6 +167,7 @@ function ewww_image_optimizer_admin_init() {
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_skip_gifs');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpegtran_copy');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_optipng_level');
+	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_pngout_level');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpegtran_path');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_optipng_path');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_gifsicle_path');
@@ -145,6 +176,8 @@ function ewww_image_optimizer_admin_init() {
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_disable_gifsicle');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_disable_pngout');
 	add_option('ewww_image_optimizer_disable_pngout', TRUE);
+	add_option('ewww_image_optimizer_optipng_level', 2);
+	add_option('ewww_image_optimizer_pngout_level', 2);
 }
 
 function ewww_image_optimizer_scripts () {
@@ -268,18 +301,31 @@ function ewww_image_optimizer($file) {
 		$type = 'Missing getimagesize() and mime_content_type() PHP functions';
 	}
 
-	list ($jpegtran_path, $optipng_path, $gifsicle_path) = ewww_image_optimizer_path_check();
+	list ($jpegtran_path, $optipng_path, $gifsicle_path, $pngout_path) = ewww_image_optimizer_path_check();
 	// To skip binary checking, you can visit the EWWW Image Optimizer options page
 	if(get_option('ewww_image_optimizer_skip_check') == TRUE){
-		$skip = true;
+		$skip_jpegtran = true;
+		$skip_optipng = true;
+		$skip_gifsicle = true;
+		$skip_pngout = true;
 	} else {
-		$skip = false;
+		$skip_jpegtran = false;
+		$skip_optipng = false;
+		$skip_gifsicle = false;
+		$skip_pngout = false;
+		//$skip = true;
+	//} else {
+	//	$skip = false;
 	}
 
 	switch($type) {
 		case 'image/jpeg':
+			if (get_option('ewww_image_optimizer_disable_jpegtran')) {
+				$result = 'jpegtran is disabled';
+				break;
+			}
 			$result = trim(exec('which ' . $jpegtran_path));
-			if(!$skip && empty($result)){
+			if(!$skip_jpegtran && empty($result)){
 				$result = '<em>jpegtran</em> is missing';
 				break;
 			}
@@ -313,18 +359,29 @@ function ewww_image_optimizer($file) {
 			}
 			break;
 		case 'image/png':
+			if (get_option('ewww_image_optimizer_disable_optipng') && get_option('ewww_image_optimizer_disable_pngout')) {
+				$result = 'png tools are disabled';
+				break;
+			}
 			$result = trim(exec('which ' . $optipng_path));
-			if(!$skip && empty($result)){
+			if(!$skip_optipng && empty($result) && !get_option('ewww_image_optimizer_disable_optipng')) {
 				$result = '<em>optipng</em> is missing';
 				break;
 			}
-			$orig_size = filesize($file);
-			if(get_option('ewww_image_optimizer_optipng_level') > 0){
-				$optipng_level = get_option('ewww_image_optimizer_optipng_level');
-			} else {
-				$optipng_level = 2;
+			$result = trim(exec('which ' . $pngout_path));
+			if(!$skip_pngout && empty($result) && !get_option('ewww_image_optimizer_disable_pngout')) {
+				$result = '<em>pngout</em> is missing';
+				break;
 			}
-			exec("$optipng_path -o$optipng_level -quiet $file");
+			$orig_size = filesize($file);
+			if(!get_option('ewww_image_optimizer_disable_pngout')) {
+				$pngout_level = get_option('ewww_image_optimizer_pngout_level');
+				exec("$pngout_path -s$pngout_level -q $file");
+			}
+			if(!get_option('ewww_image_optimizer_disable_optipng')) {
+				$optipng_level = get_option('ewww_image_optimizer_optipng_level');
+				exec("$optipng_path -o$optipng_level -quiet $file");
+			}
 			clearstatcache();
 			$new_size = filesize($file);
 			if ($orig_size > $new_size) {
@@ -334,6 +391,9 @@ function ewww_image_optimizer($file) {
 			}
 			break;
 		case 'image/gif':
+	if (get_option('ewww_image_optimizer_disable_gifsicle')) {
+		$skip_gifsicle = true;
+	}
 			$result = trim(exec('which ' . $gifsicle_path));
 			if(!$skip && empty($result)){
 				$result = '<em>gifsicle</em> is missing';
@@ -550,11 +610,26 @@ function ewww_image_optimizer_bulk_action_handler() {
 
 function ewww_image_optimizer_install_pngout() {
 	$wget_command = "wget -nc -O " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static.tar.gz http://static.jonof.id.au/dl/kenutils/pngout-20120530-linux-static.tar.gz";
-	//$wget_command = "wget -nc http://static.jonof.id.au/dl/kenutils/pngout-20120530-linux-static.tar.gz";
-//	echo $wget_command;
 	exec ($wget_command);
 	exec ("tar xvzf " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static.tar.gz -C " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
-	exec ("cp " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/i386/pngout-static " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
+	$arch_type = $_REQUEST['arch'];
+	switch ($arch_type) {
+		case 'i386':
+			exec ("cp " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/i386/pngout-static " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
+			break;
+		case 'i686':
+			exec ("cp " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/i686/pngout-static " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
+			break;
+		case 'athlon':
+			exec ("cp " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/athlon/pngout-static " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
+			break;
+		case 'pentium4':
+			exec ("cp " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/pentium4/pngout-static " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
+			break;
+		case 'x64':
+			exec ("cp " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/x86_64/pngout-static " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
+			break;
+	}
 	$sendback = wp_get_referer();
 	$sendback = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $sendback);
 	wp_redirect($sendback);
@@ -583,19 +658,27 @@ function ewww_image_optimizer_options () {
 			<label><input type="text" style="width: 400px" id="ewww_image_optimizer_gifsicle_path" name="ewww_image_optimizer_gifsicle_path" value="<?php echo get_option('ewww_image_optimizer_gifsicle_path'); ?>" /> gifsicle path</label><br />
 			<label><input type="checkbox" id="ewww_image_optimizer_disable_gifsicle" name="ewww_image_optimizer_disable_gifsicle" <?php if (get_option('ewww_image_optimizer_disable_gifsicle') == TRUE) { ?>checked="true"<?php } ?> /> disable gifsicle</label><br />
 			<label><input type="checkbox" id="ewww_image_optimizer_disable_pngout" name="ewww_image_optimizer_disable_pngout" <?php if (get_option('ewww_image_optimizer_disable_pngout') == TRUE) { ?>checked="true"<?php } ?> /> disable pngout</label> - If you install pngout via the link below, please make sure to uncheck this box.<br />
-			<a href="admin.php?action=ewww_image_optimizer_install_pngout">Install pngout</a> - pngout is free closed-source software that can produce drastically reduced filesizes for PNGs, but can be very time consuming to process images</p>
+			<b>Install pngout</b> - Click the link below that corresponds to the architecture of your server. If in doubt, try the i386 or ask your webhost. Pngout is free closed-source software that can produce drastically reduced filesizes for PNGs, but can be very time consuming to process images<br />
+<a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=i386">i386</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=athlon">athlon</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=pentium4">pentium4</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=i686">i686</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=x64">64-bit</a></p>
 			<p><b>Advanced options</b><br />
 			<input type="checkbox" id="ewww_image_optimizer_jpegtran_copy" name="ewww_image_optimizer_jpegtran_copy" value="true" <?php if (get_option('ewww_image_optimizer_jpegtran_copy') == TRUE) { ?>checked="true"<?php } ?> /> <label for="ewww_image_optimizer_jpegtran_copy" />Check this box to remove all metadata (EXIF and comments) from JPGs</label><br />
 			<label><select id="ewww_image_optimizer_optipng_level" name="ewww_image_optimizer_optipng_level">
 				<option value="1"<?php if (get_option('ewww_image_optimizer_optipng_level') == 1) { echo ' selected="selected"'; } ?>>Level 1: 1 trial</option>
-				<option value="2"<?php if (get_option('ewww_image_optimizer_optipng_level') == 2 || !get_option('ewww_image_optimizer_optipng_level')) { echo ' selected="selected"'; } ?>>Level 2: 8 trials</option>
+				<option value="2"<?php if (get_option('ewww_image_optimizer_optipng_level') == 2) { echo ' selected="selected"'; } ?>>Level 2: 8 trials</option>
 				<option value="3"<?php if (get_option('ewww_image_optimizer_optipng_level') == 3) { echo ' selected="selected"'; } ?>>Level 3: 16 trials</option>
 				<option value="4"<?php if (get_option('ewww_image_optimizer_optipng_level') == 4) { echo ' selected="selected"'; } ?>>Level 4: 24 trials</option>
 				<option value="5"<?php if (get_option('ewww_image_optimizer_optipng_level') == 5) { echo ' selected="selected"'; } ?>>Level 5: 48 trials</option>
 				<option value="6"<?php if (get_option('ewww_image_optimizer_optipng_level') == 6) { echo ' selected="selected"'; } ?>>Level 6: 120 trials</option>
 				<option value="7"<?php if (get_option('ewww_image_optimizer_optipng_level') == 7) { echo ' selected="selected"'; } ?>>Level 7: 240 trials</option>
-			</select> PNG optimization level (default=2)</label><br />
-			<i>According to the author of optipng, 10 trials should satisfy most people, 30 trials should satisfy everyone.</i></p>
+			</select> optipng (PNG) optimization level (default=2)</label><br />
+			<i>According to the author of optipng, 10 trials should satisfy most people, 30 trials should satisfy everyone.</i><br />
+			<label><select id="ewww_image_optimizer_pngout_level" name="ewww_image_optimizer_pngout_level">
+				<option value="0"<?php if (get_option('ewww_image_optimizer_pngout_level') == 0) { echo ' selected="selected"'; } ?>>Level 0: Xtreme! (Slowest)</option>
+				<option value="1"<?php if (get_option('ewww_image_optimizer_pngout_level') == 1) { echo ' selected="selected"'; } ?>>Level 1: Intense (Slow)</option>
+				<option value="2"<?php if (get_option('ewww_image_optimizer_pngout_level') == 2) { echo ' selected="selected"'; } ?>>Level 2: Longest Match (Fast)</option>
+				<option value="3"<?php if (get_option('ewww_image_optimizer_pngout_level') == 3) { echo ' selected="selected"'; } ?>>Level 3: Huffman Only (Faster)</option>
+			</select> pngout (PNG) optimization level (default=2)</label><br />
+			<i>If you have CPU cycles to spare, go with level 0</i></p>
 			<p class="submit"><input type="submit" class="button-primary" value="Save Changes" /></p>
 		</form>
 	</div>
