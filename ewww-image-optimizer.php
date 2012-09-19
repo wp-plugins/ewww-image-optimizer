@@ -19,6 +19,7 @@ License: GPLv3
  */
 define('EWWW_IMAGE_OPTIMIZER_DOMAIN', 'ewww_image_optimizer');
 define('EWWW_IMAGE_OPTIMIZER_PLUGIN_DIR', dirname(plugin_basename(__FILE__)));
+define('EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH', plugin_dir_path(__FILE__) );
 
 /**
  * Hooks
@@ -36,6 +37,7 @@ add_action('admin_head-upload.php', 'ewww_image_optimizer_add_bulk_actions_via_j
 add_action('admin_action_bulk_optimize', 'ewww_image_optimizer_bulk_action_handler' ); 
 add_action('admin_action_-1', 'ewww_image_optimizer_bulk_action_handler' ); 
 add_action('admin_print_scripts-media_page_ewww-image-optimizer-bulk', 'ewww_image_optimizer_scripts' );
+add_action('admin_action_ewww_image_optimizer_install_pngout', 'ewww_image_optimizer_install_pngout');
 
 /**
  * Check if system requirements are met
@@ -138,6 +140,11 @@ function ewww_image_optimizer_admin_init() {
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpegtran_path');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_optipng_path');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_gifsicle_path');
+	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_disable_jpegtran');
+	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_disable_optipng');
+	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_disable_gifsicle');
+	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_disable_pngout');
+	add_option('ewww_image_optimizer_disable_pngout', TRUE);
 }
 
 function ewww_image_optimizer_scripts () {
@@ -541,6 +548,19 @@ function ewww_image_optimizer_bulk_action_handler() {
 	exit(); 
 }
 
+function ewww_image_optimizer_install_pngout() {
+	$wget_command = "wget -nc -O " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static.tar.gz http://static.jonof.id.au/dl/kenutils/pngout-20120530-linux-static.tar.gz";
+	//$wget_command = "wget -nc http://static.jonof.id.au/dl/kenutils/pngout-20120530-linux-static.tar.gz";
+//	echo $wget_command;
+	exec ($wget_command);
+	exec ("tar xvzf " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static.tar.gz -C " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
+	exec ("cp " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/i386/pngout-static " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
+	$sendback = wp_get_referer();
+	$sendback = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $sendback);
+	wp_redirect($sendback);
+	exit(0);
+}
+
 function ewww_image_optimizer_options () {
 	list ($jpegtran_path, $optipng_path, $gifsicle_path) = ewww_image_optimizer_path_check();
 	?>
@@ -557,8 +577,13 @@ function ewww_image_optimizer_options () {
 			<input type="checkbox" id="ewww_image_optimizer_skip_check" name="ewww_image_optimizer_skip_check" value="true" <?php if (get_option('ewww_image_optimizer_skip_check') == TRUE) { ?>checked="true"<?php } ?> /> <label for="ewww_image_optimizer_skip_check" />Skip utils check</label></p>
 			<p><b>If you are on shared hosting, and have compiled the utilities in your home folder, you can provide the paths below. DO NOT place the utilities in a web-accessible location.</b><br />
 			<label><input type="text" style="width: 400px" id="ewww_image_optimizer_jpegtran_path" name="ewww_image_optimizer_jpegtran_path" value="<?php echo get_option('ewww_image_optimizer_jpegtran_path'); ?>" /> jpegtran path</label><br />
+			<label><input type="checkbox" id="ewww_image_optimizer_disable_jpegtran" name="ewww_image_optimizer_disable_jpegtran" <?php if (get_option('ewww_image_optimizer_disable_jpegtran') == TRUE) { ?>checked="true"<?php } ?> /> disable jpegtran</label><br />
 			<label><input type="text" style="width: 400px" id="ewww_image_optimizer_optipng_path" name="ewww_image_optimizer_optipng_path" value="<?php echo get_option('ewww_image_optimizer_optipng_path'); ?>" /> optipng path</label><br />
-			<label><input type="text" style="width: 400px" id="ewww_image_optimizer_gifsicle_path" name="ewww_image_optimizer_gifsicle_path" value="<?php echo get_option('ewww_image_optimizer_gifsicle_path'); ?>" /> gifsicle path</label></p>
+			<label><input type="checkbox" id="ewww_image_optimizer_disable_optipng" name="ewww_image_optimizer_disable_optipng" <?php if (get_option('ewww_image_optimizer_disable_optipng') == TRUE) { ?>checked="true"<?php } ?> /> disable optipng</label><br>
+			<label><input type="text" style="width: 400px" id="ewww_image_optimizer_gifsicle_path" name="ewww_image_optimizer_gifsicle_path" value="<?php echo get_option('ewww_image_optimizer_gifsicle_path'); ?>" /> gifsicle path</label><br />
+			<label><input type="checkbox" id="ewww_image_optimizer_disable_gifsicle" name="ewww_image_optimizer_disable_gifsicle" <?php if (get_option('ewww_image_optimizer_disable_gifsicle') == TRUE) { ?>checked="true"<?php } ?> /> disable gifsicle</label><br />
+			<label><input type="checkbox" id="ewww_image_optimizer_disable_pngout" name="ewww_image_optimizer_disable_pngout" <?php if (get_option('ewww_image_optimizer_disable_pngout') == TRUE) { ?>checked="true"<?php } ?> /> disable pngout</label> - If you install pngout via the link below, please make sure to uncheck this box.<br />
+			<a href="admin.php?action=ewww_image_optimizer_install_pngout">Install pngout</a> - pngout is free closed-source software that can produce drastically reduced filesizes for PNGs, but can be very time consuming to process images</p>
 			<p><b>Advanced options</b><br />
 			<input type="checkbox" id="ewww_image_optimizer_jpegtran_copy" name="ewww_image_optimizer_jpegtran_copy" value="true" <?php if (get_option('ewww_image_optimizer_jpegtran_copy') == TRUE) { ?>checked="true"<?php } ?> /> <label for="ewww_image_optimizer_jpegtran_copy" />Check this box to remove all metadata (EXIF and comments) from JPGs</label><br />
 			<label><select id="ewww_image_optimizer_optipng_level" name="ewww_image_optimizer_optipng_level">
