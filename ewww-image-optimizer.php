@@ -1,15 +1,15 @@
 <?php
 /**
  * Integrate Linux image optimizers into WordPress.
- * @version 1.0.11
+ * @version 1.1.0
  * @package EWWW_Image_Optimizer
  */
 /*
 Plugin Name: EWWW Image Optimizer
 Plugin URI: http://www.shanebishop.net/ewww-image-optimizer/
-Description: Reduce image file sizes and improve performance for images within WordPress including NextGEN Gallery. Uses jpegtran, optipng, and gifsicle.
+Description: Reduce image file sizes and improve performance for images within WordPress including NextGEN Gallery. Uses jpegtran, optipng, pngout, and gifsicle.
 Author: Shane Bishop
-Version: 1.0.11
+Version: 1.1.0
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */

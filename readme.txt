@@ -14,16 +14,17 @@ The EWWW Image Optimizer is a WordPress plugin that will automatically and lossl
 
 Because EWWW Image Optimizer uses lossless optimization techniques, your image quality will be exactly the same before and after the optimization. The only thing that will change is your file size. The one small exception to this is GIF animations. While the optimization is technically lossless, you will not be able to properly edit the animation again without performing an --unoptimize operation with gifsicle.
 
-The EWWW Image Optimizer plugin is based heavily on the CW Image Optimizer plugin, which in turn is based upon the WP Smush.it plugin. Unlike the WP Smush.it plugin, your files won’t be uploaded to a third party. Your files are optimized using the Linux [jpegtran](http://jpegclub.org/jpegtran/), [optipng](http://optipng.sourceforge.net/), [pngout](advsys.net/ken/utils.htm), and [gifsicle](http://www.lcdf.org/gifsicle/) image tools (available for free). 
+Images are optimized using the Linux [jpegtran](http://jpegclub.org/jpegtran/), [optipng](http://optipng.sourceforge.net/), [pngout](advsys.net/ken/utils.htm), and [gifsicle](http://www.lcdf.org/gifsicle/) image tools (available for free). For PNG files, either optipng or pngout can be used. If you want the best optimization, install both, set optipng to level 3 (beyond that is just crazy and rarely yields significant gains) and pngout to level 0.
 
-The primary reason for creating this plugin was that CW Image Optimizer uses littleutils. While littleutils is a fine piece of software, it does not do any of the optimization work itself, but simply calls upon other utilities with pre-configured options. The result is that you need to have these other utilities already installed to build/compile the binaries for littleutils. In contrast, EWWW Image Optimizer calls the optimization utilities directly (which may also allow us to offer more flexibility in the future). This is better suited to shared hosting situations where these utilities may already be installed. The programs we use (jpegtran, optipng, pngout, and gifsicle) generally have very minimal dependencies (pngout has none), so all you will need is a hosting account with shell access, and build utilities installed. You can then tell EWWW Image Optimizer where you compiled these utilities. I use Bluehost, which meets these requirements, and Dreamhost is another suitable alternative. There are likely others out there that I am not aware of.
+EWWW Image Optimizer calls optimization utilities directly which is better suited to shared hosting situations where these utilities may already be installed. The programs we use (jpegtran, optipng, pngout, and gifsicle) generally have very minimal dependencies (pngout has none), so all you will need is a hosting account with shell access, and build utilities installed. You can then tell EWWW Image Optimizer where you compiled these utilities. I use Bluehost, which meets these requirements, and Dreamhost is another suitable alternative. There are likely others out there that I am not aware of.
 
-**Why use EWWW Image Optimizer (some of the same reasons for using CW Image Optimizer)?**
+**Why use EWWW Image Optimizer?**
 
 1. **Your pages will load faster.** Smaller image sizes means faster page loads. This will make your visitors happy, and can increase ad revenue.
 1. **Faster backups.** Smaller image sizes also means faster backups.
 1. **Less bandwidth usage.** Optimizing your images can save you hundreds of KB per image, which means significantly less bandwidth usage.
 1. **Super fast.** Because it runs on your own server, you don’t have to wait for a third party service to receive, process, and return your images. You can optimize hundreds of images in just a few minutes. Png files take the longest, but you can adjust the settings for your situation.
+1. **Better PNG optimization using pngout and optipng in conjunction.
 1. **Root access not needed** Because the paths are configurable via the settings page, and the programs we use have minimal dependencies, you can compile the utilities (if they aren't already installed) and tell the plugin where they are located. 
 
 = NextGEN Integration =
@@ -79,11 +80,11 @@ Have some problems, and I'll give some pointers here.
 
 = The bulk optimizer doesn't seem to be working, what can I do? =
 
-First, upgrade to the latest version. Since version 1.0.8, each image is given 50 seconds to complete (which actually doesn't include time used by the optimization utilities), so long as you don't have safe mode enabled in PHP. If you have safe mode enabled, you can increase the setting max_execution_time in your php.ini file. That said, there are other timeouts with Apache, and possibly other limitations of your webhost. If you've tried everything else, the last thing to look for is large PNG files. In my tests on a shared hosting setup, "large" is anything over 300 KB. You can first try decreasing the PNG optimization level to 1 on the settings. If that doesn't work, perhaps you ought to convert that PNG to JPG and re-upload it. Screenshots are often done as PNG files, but that is a poor choice for anything with a gradient or photographic elements.
+First, upgrade to the latest version. Since version 1.0.8, each image is given 50 seconds to complete (which actually doesn't include time used by the optimization utilities). You can also increase the setting max_execution_time in your php.ini file. That said, there are other timeouts with Apache, and possibly other limitations of your webhost. If you've tried everything else, the last thing to look for is large PNG files. In my tests on a shared hosting setup, "large" is anything over 300 KB. You can first try decreasing the PNG optimization level to 1 on the settings. If that doesn't work, perhaps you ought to convert that PNG to JPG and re-upload it. Screenshots are often done as PNG files, but that is a poor choice for anything with photographic elements.
 
 = Can I use EWWW Image Optimizer with a Windows server? =
 
-No, it doesn't work on Windows. If you do manage to get the tools working on Windows and hack the plugin to remove the OS check and it all works, please let me know, and I'll consider removing the block on Windows.
+No, the utilities we use don't work on Windows.
 
 = How are JPGs optimized? =
 
