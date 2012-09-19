@@ -2,8 +2,8 @@
 Contributors: nosilver4u
 Tags: images, image, attachments, attachment
 Requires at least: 2.9
-Tested up to: 3.4.1
-Stable tag: 1.0.9
+Tested up to: 3.4.2
+Stable tag: 1.0.10
 License: GPLv3
 
 Reduce image file sizes and improve performance for images within WordPress including NextGEN Gallery. Uses jpegtran, optipng, and gifsicle.
@@ -71,7 +71,7 @@ Have some problems, and I'll give some pointers here.
 
 = The bulk optimizer doesn't seem to be working, what can I do? =
 
-First, upgrade to version 1.0.8. Since version 1.0.8, each image is given 50 seconds to complete (which actually doesn't include time used by the optimization utilities), so long as you don't have safe mode enabled in PHP. If you have safe mode enabled, you can increase the setting max_execution_time in your php.ini file. That said, there are other timeouts with Apache, and possibly other limitations of your webhost. If you've tried everything else, the last thing to look for is large PNG files. In my tests on a shared hosting setup, "large" is anything over 300 KB. You can first try decreasing the PNG optimization level to 1 on the settings. If that doesn't work, perhaps you ought to convert that PNG to JPG and re-upload it. Screenshots are often done as PNG files, but that is a poor choice for anything with a gradient or photographic elements.
+First, upgrade to the latest version. Since version 1.0.8, each image is given 50 seconds to complete (which actually doesn't include time used by the optimization utilities), so long as you don't have safe mode enabled in PHP. If you have safe mode enabled, you can increase the setting max_execution_time in your php.ini file. That said, there are other timeouts with Apache, and possibly other limitations of your webhost. If you've tried everything else, the last thing to look for is large PNG files. In my tests on a shared hosting setup, "large" is anything over 300 KB. You can first try decreasing the PNG optimization level to 1 on the settings. If that doesn't work, perhaps you ought to convert that PNG to JPG and re-upload it. Screenshots are often done as PNG files, but that is a poor choice for anything with a gradient or photographic elements.
 
 = Can I use EWWW Image Optimizer with a Windows server? =
 
@@ -104,6 +104,11 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 3. Bulk optimization page. You can optimize all your images at once. This is very useful for existing blogs that have lots of images.
 
 == Changelog ==
+
+= 1.0.10 =
+* added the ability to resume a bulk optimization that doesn't complete
+* changed path validation for images from wordpress folder to wordpress uploads folder to accomodate users who have located this elsewhere
+* minor code cleanup
 
 = 1.0.9 =
 * fixed parse error due to php short tags (old habits die hard)
@@ -154,6 +159,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * First release (forked from CW Image Optimizer)
 
 == Upgrade Notice ==
+
+= 1.0.10 =
+Added resume function if Bulk Optimization fails
 
 = 1.0.7 =
 Enhanced NextGEN integration, and security enhancements for user data provided to exec() command
