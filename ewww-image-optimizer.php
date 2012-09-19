@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate Linux image optimizers into WordPress.
- * @version 1.0.10
+ * @version 1.0.11
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -9,7 +9,7 @@ Plugin Name: EWWW Image Optimizer
 Plugin URI: http://www.shanebishop.net/ewww-image-optimizer/
 Description: Reduce image file sizes and improve performance for images within WordPress including NextGEN Gallery. Uses jpegtran, optipng, and gifsicle.
 Author: Shane Bishop
-Version: 1.0.10
+Version: 1.0.11
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
@@ -243,8 +243,10 @@ function ewww_image_optimizer($file) {
 	// check that the file is within the WP uploads folder 
 	$upload_dir = wp_upload_dir();
 	$upload_path = trailingslashit( $upload_dir['basedir'] );
-	if ( 0 !== stripos(realpath($file_path), $upload_path) ) {
-		$msg = sprintf(__("<span class='code'>%s</span> must be within the wordpress upload directory (<span class='code'>%s</span>)", EWWW_IMAGE_OPTIMIZER_DOMAIN), htmlentities($file_path), $upload_path);
+	$path_in_upload = stripos(realpath($file_path), realpath($upload_path));
+	$path_in_wp = stripos(realpath($file_path), realpath(ABSPATH));
+	if (0 !== $path_in_upload && 0 !== $path_in_wp) {
+		$msg = sprintf(__("<span class='code'>%s</span> must be within the wordpress or upload directory (<span class='code'>%s or %s</span>)", EWWW_IMAGE_OPTIMIZER_DOMAIN), htmlentities($file_path), $upload_path, ABSPATH);
 		return array($file, $msg);
 	}
 
