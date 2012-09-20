@@ -645,6 +645,7 @@ function ewww_image_optimizer_options () {
 		<p><a href="http://shanebishop.net/ewww-image-optimizer/">Plugin Home Page</a> |
 		<a href="http://wordpress.org/extend/plugins/ewww-image-optimizer/installation/">Installation Instructions</a> | 
 		<a href="http://wordpress.org/support/plugin/ewww-image-optimizer">Plugin Support</a></p>
+		<p>I have compiled static binaries for gifsicle and optipng for those who don't have access to a shell or build utilities. If all goes well, these will become one-click installs in the future:<br /><a href="http://shanebishop.net/uploads/gifsicle.zip">gifsicle</a> | <a href="http://shanebishop.net/uploads/optipng.zip">optipng</a></p>
 		<p>EWWW Image Optimizer performs a check to make sure your system has the programs we use for optimization: jpegtran, optipng, and gifsicle. In some cases, these checks may erroneously report that you are missing the required utilities even though you have them installed.</p>
 		<form method="post" action="options.php">
 			<?php settings_fields('ewww_image_optimizer_options'); ?>

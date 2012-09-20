@@ -51,7 +51,7 @@ Pngout is new in version 1.1.0 and is not enabled by default because it is resou
 
 If you have root access to your server, you can install optipng from the standard repositories. If you are on shared hosting, read on... These steps can/should generally all be done via the command line
 
-1. I've compiled a static binary (32-bit x86) available at http://files.shanebishop.net/files/optipng.zip
+1. I've compiled a static binary (32-bit x86) available at http://shanebishop.net/uploads/optipng.zip
 1. Download and extract it anywhere outside your web folder, and provide the path on the plugin settings page.
 
 If the above binary isn't working for you, you can compile it like so:
@@ -71,7 +71,7 @@ If you are on a standard webhost, you should already have this, if you own your 
 
 If you have root access to your server, you can install gifsicle from the standard repositories. If you are on shared hosting, read on... These steps can/should generally all be done via the command line
 
-1. I've compiled a static binary (32-bit x86) available at http://files.shanebishop.net/files/gifsicle.zip
+1. I've compiled a static binary (32-bit x86) available at http://shanebishop.net/uploads/gifsicle.zip
 1. Download and extract it anywhere outside your web folder, and provide the path on the plugin settings page.
 
 If the above binary isn't working for you, you can compile it like so:
@@ -127,6 +127,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 = 1.1.0 =
 * added pngout functionality for even better PNG optimization (disabled by default)
 * added options to disable/bypass each tool
+* pre-compiled binaries are now available via links on the settings page - try them out and let me know if there are problems
 
 = 1.0.11 =
 * path validation was broken for nextgen in previous version, now fixed
