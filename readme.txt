@@ -84,7 +84,7 @@ First, upgrade to the latest version. Since version 1.0.8, each image is given 5
 
 = Can I use EWWW Image Optimizer with a Windows server? =
 
-No, the utilities we use don't work on Windows.
+Not right now, but maybe if I run out of features to implement for Linux. All of the utilities have windows builds, but it would require a significant rewrite to make it platform agnostic.
 
 = How are JPGs optimized? =
 
