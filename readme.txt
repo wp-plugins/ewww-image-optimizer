@@ -51,6 +51,11 @@ Pngout is new in version 1.1.0 and is not enabled by default because it is resou
 
 If you have root access to your server, you can install optipng from the standard repositories. If you are on shared hosting, read on... These steps can/should generally all be done via the command line
 
+1. I've compiled a static binary (32-bit x86) available at http://files.shanebishop.net/files/optipng.zip
+1. Download and extract it anywhere outside your web folder, and provide the path on the plugin settings page.
+
+If the above binary isn't working for you, you can compile it like so:
+
 1. Download the latest stable version of [optipng](http://optipng.sourceforge.net/) to your home directory
 1. Ensure libpng and zlib are installed. If they are not, you're on your own there (but maybe you need a new web host...)
 1. Uncompress optipng: *tar xvzf optipng-0.7.1.tar.gz && cd optipng-0.7.1*
@@ -65,6 +70,11 @@ If you are on a standard webhost, you should already have this, if you own your 
 = Installing gifsicle =
 
 If you have root access to your server, you can install gifsicle from the standard repositories. If you are on shared hosting, read on... These steps can/should generally all be done via the command line
+
+1. I've compiled a static binary (32-bit x86) available at http://files.shanebishop.net/files/gifsicle.zip
+1. Download and extract it anywhere outside your web folder, and provide the path on the plugin settings page.
+
+If the above binary isn't working for you, you can compile it like so:
 
 1. Download the latest version of [gifsicle](http://www.lcdf.org/gifsicle/) to your home directory
 1. Uncompress gifsicle: *tar xvzf gifsicle-1.67.tar.gz && cd gifsicle-1.67*
