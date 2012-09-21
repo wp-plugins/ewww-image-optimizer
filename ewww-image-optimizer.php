@@ -44,9 +44,10 @@ add_action('admin_action_ewww_image_optimizer_install_pngout', 'ewww_image_optim
  */
 if('Linux' != PHP_OS && 'Darwin' != PHP_OS) {
 	add_action('admin_notices', 'ewww_image_optimizer_notice_os');
-	define('EWWW_IMAGE_OPTIMIZER_PNG', false);
-	define('EWWW_IMAGE_OPTIMIZER_GIF', false);
-	define('EWWW_IMAGE_OPTIMIZER_JPG', false);
+	define('EWWW_IMAGE_OPTIMIZER_PNGOUT', false);
+	define('EWWW_IMAGE_OPTIMIZER_GIFSICLE', false);
+	define('EWWW_IMAGE_OPTIMIZER_JPEGTRAN', false);
+	define('EWWW_IMAGE_OPTIMIZER_OPTIPNG', false);
 }else{
 	add_action('admin_notices', 'ewww_image_optimizer_notice_utils');
 }   
@@ -82,10 +83,10 @@ function ewww_image_optimizer_notice_utils() {
 	}
 	list ($jpegtran_path, $optipng_path, $gifsicle_path, $pngout_path) = ewww_image_optimizer_path_check();
 	$required = array(
-		'jpegtran' => $jpegtran_path,
-		'optipng' => $optipng_path,
-		'gifsicle' => $gifsicle_path,
-		'pngout' => $pngout_path
+		'JPEGTRAN' => $jpegtran_path,
+		'OPTIPNG' => $optipng_path,
+		'GIFSICLE' => $gifsicle_path,
+		'PNGOUT' => $pngout_path
 	);
    
 	if(get_option('ewww_image_optimizer_skip_check') == TRUE){
@@ -117,22 +118,22 @@ function ewww_image_optimizer_notice_utils() {
 		$result = trim(exec('which ' . $req));
 		if(empty($result)){
 			switch($key) {
-				case 'jpegtran':
+				case 'JPEGTRAN':
 					if (!$skip_jpegtran) {
 						$missing[] = 'jpegtran';
 					}
 					break; 
-				case 'optipng':
+				case 'OPTIPNG':
 					if (!$skip_optipng) {
 						$missing[] = 'optipng';
 					}
 					break;
-				case 'gifsicle':
+				case 'GIFSICLE':
 					if (!$skip_gifsicle) {
 						$missing[] = 'gifsicle';
 					}
 					break;
-				case 'pngout':
+				case 'PNGOUT':
 					if (!$skip_pngout) {
 						$missing[] = 'pngout';
 					}
@@ -391,11 +392,12 @@ function ewww_image_optimizer($file) {
 			}
 			break;
 		case 'image/gif':
-	if (get_option('ewww_image_optimizer_disable_gifsicle')) {
-		$skip_gifsicle = true;
-	}
+			if (get_option('ewww_image_optimizer_disable_gifsicle')) {
+				$result = 'gifsicle is disabled';
+				break;
+			}
 			$result = trim(exec('which ' . $gifsicle_path));
-			if(!$skip && empty($result)){
+			if(!$skip_gifsicle && empty($result) && !get_option('ewww_image_optimizer_disable_gifsicle')) {
 				$result = '<em>gifsicle</em> is missing';
 				break;
 			}
@@ -461,7 +463,6 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 	if ( FALSE === $store_absolute_path ) {
 		$meta['file'] = str_replace($upload_path, '', $meta['file']);
 	}
-
 	// no resized versions, so we can exit
 	if ( !isset($meta['sizes']) )
 		return $meta;
@@ -473,7 +474,7 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 		list($optimized_file, $results) = ewww_image_optimizer($base_dir . $data['file']);
 
 		$meta['sizes'][$size]['file'] = str_replace($base_dir, '', $optimized_file);
-		$meta['sizes'][$size]['ewww_image_optimizer'] = $results;
+	//	$meta['sizes'][$size]['ewww_image_optimizer'] = $results;
 	}
 	return $meta;
 }
@@ -541,19 +542,19 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 		$valid = true;
 		switch($type) {
 			case 'image/jpeg':
-				if(EWWW_IMAGE_OPTIMIZER_JPG == false) {
+				if(EWWW_IMAGE_OPTIMIZER_JPEGTRAN == false) {
 					$valid = false;
 					$msg = '<br>' . __('<em>jpegtran</em> is missing');
 				}
 				break; 
 			case 'image/png':
-				if(EWWW_IMAGE_OPTIMIZER_PNG == false) {
+				if(EWWW_IMAGE_OPTIMIZER_PNGOUT == false && EWWW_IMAGE_OPTIMIZER_OPTIPNG == false) {
 					$valid = false;
-					$msg = '<br>' . __('<em>optipng</em> is missing');
+					$msg = '<br>' . __('<em>optipng/pngout</em> is missing');
 				}
 				break;
 			case 'image/gif':
-				if(EWWW_IMAGE_OPTIMIZER_GIF == false) {
+				if(EWWW_IMAGE_OPTIMIZER_GIFSICLE == false) {
 					$valid = false;
 					$msg = '<br>' . __('<em>gifsicle</em> is missing');
 				}

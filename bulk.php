@@ -41,7 +41,9 @@ else:
 		foreach( $attachments as $attachment ) {
 			set_time_limit (50);
 			$current++;
-			if ($last_attachment == $attachment->ID) {$skip_attachments = false;}
+			if (isset($last_attachment)) {
+				if ($last_attachment == $attachment->ID) {$skip_attachments = false;}
+			}
 			if ($skip_attachments) {
 				echo "<p>Skipping $current/$total <br>";
 			} else {

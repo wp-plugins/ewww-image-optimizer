@@ -112,7 +112,9 @@ class ewwwngg {
 				foreach ($images as $id) {
 					set_time_limit (50);
 					$current++;
-					if ($last_attachment == $id) {$skip_attachments = false;}
+					if (isset($last_attachment)) {
+						if ($last_attachment == $id) {$skip_attachments = false;}
+					}
 					if ($skip_attachments) {
 						echo "<p>Skipping $current/$total <br>";
 					} else {
@@ -169,19 +171,19 @@ class ewwwngg {
 			$valid = true;
 	                switch($type) {
         	                case 'image/jpeg':
-                	                if(EWWW_IMAGE_OPTIMIZER_JPG == false) {
+                	                if(EWWW_IMAGE_OPTIMIZER_JPEGTRAN == false) {
                         	                $valid = false;
 	     	                                $msg = '<br>' . __('<em>jpegtran</em> is missing');
 	                                }
 					break;
 				case 'image/png':
-					if(EWWW_IMAGE_OPTIMIZER_PNG == false) {
+					if(EWWW_IMAGE_OPTIMIZER_PNGOUT == false && EWWW_IMAGE_OPTIMIZER_OPTIPNG == false) {
 						$valid = false;
 						$msg = '<br>' . __('<em>optipng</em> is missing');
 					}
 					break;
 				case 'image/gif':
-					if(EWWW_IMAGE_OPTIMIZER_GIF == false) {
+					if(EWWW_IMAGE_OPTIMIZER_GIFSICLE == false) {
 						$valid = false;
 						$msg = '<br>' . __('<em>gifsicle</em> is missing');
 					}
