@@ -3,7 +3,7 @@ Contributors: nosilver4u
 Tags: images, image, attachments, attachment
 Requires at least: 2.9
 Tested up to: 3.4.2
-Stable tag: 1.0.11
+Stable tag: 1.1.0
 License: GPLv3
 
 Reduce image file sizes and improve performance for images within WordPress including NextGEN Gallery. Uses jpegtran, optipng and/or pngout, and gifsicle.
@@ -30,6 +30,7 @@ EWWW Image Optimizer calls optimization utilities directly which is better suite
 = NextGEN Integration =
 
 Features re-optimization capability, and bulk optimizing. The NextGEN Bulk Optimize function is located under the Wordpress Tools menu, and should optimize all images in all galleries. If anyone has a better idea for where the tool should go, feel free to post in the support area, or on the plugin homepage. Alternatively, if you can figure out a way to hook into the existing NextGEN menu, that would be ideal. I just can't seem to find a way to do that.
+NOTE: Does not optimize thumbnails on initial upload, must re-optimize images to optimize thumbnails.
 
 == Installation ==
 
@@ -188,7 +189,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 == Upgrade Notice ==
 
 = 1.1.0 =
-Added pngout functionality for even better PNG optimization (disabled by default) and ability to disable each tool
+Added pngout functionality for even better PNG optimization (disabled by default). Settings page now has links to stand-alone binaries of gifsicle and optipng. Please try them out and report any problems.
 
 = 1.0.11 =
 Added resume function if Bulk Optimization fails
