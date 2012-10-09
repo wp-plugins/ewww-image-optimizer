@@ -176,6 +176,7 @@ function ewww_image_optimizer_admin_init() {
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_disable_optipng');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_disable_gifsicle');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_disable_pngout');
+	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_gif_to_png');
 	add_option('ewww_image_optimizer_disable_pngout', TRUE);
 	add_option('ewww_image_optimizer_optipng_level', 2);
 	add_option('ewww_image_optimizer_pngout_level', 2);
@@ -397,14 +398,41 @@ function ewww_image_optimizer($file) {
 				break;
 			}
 			$result = trim(exec('which ' . $gifsicle_path));
+
+			// TO DO: don't skip optimization if conversion to PNG is enabled
+
 			if(!$skip_gifsicle && empty($result) && !get_option('ewww_image_optimizer_disable_gifsicle')) {
 				$result = '<em>gifsicle</em> is missing';
 				break;
 			}
+			$gif_converted = FALSE;
 			$orig_size = filesize($file);
-			exec("$gifsicle_path -b -O3 --careful $file");
-			clearstatcache();
-			$new_size = filesize($file);
+			// TO DO: need to compare the converted version to the gifsicle optimized version too
+			if(get_option('ewww_image_optimizer_gif_to_png') && !ewww_image_optimizer_is_animated($file)) {
+				$pngfile = substr_replace($file, 'png', -3);
+				exec("convert $file $pngfile");
+				clearstatcache();
+				if(!get_option('ewww_image_optimizer_disable_pngout')) {
+					$pngout_level = get_option('ewww_image_optimizer_pngout_level');
+					exec("$pngout_path -s$pngout_level -q $file");
+				}
+			// TO DO: figure out what to do if pngout is enabled, and we should run optipng on the PNG, not the GIF
+				if(!get_option('ewww_image_optimizer_disable_optipng')) {
+					$optipng_level = get_option('ewww_image_optimizer_optipng_level');
+					exec("$optipng_path -o$optipng_level -quiet $file");
+				}
+				$new_size = filesize($pngfile);
+				if ($orig_size > $new_size && $new_size != 0) {
+					$gif_converted = TRUE;
+					echo "More saving, more doing, that's the power of... oh, nevermind<br>";
+				}
+			} 
+			// TO DO: if PNG conversion successful, optimize as PNG too (probably don't actually need 'convert')
+			if (!$gif_converted) {
+				exec("$gifsicle_path -b -O3 --careful $file");
+				clearstatcache();
+				$new_size = filesize($file);
+			}
 			if ($orig_size > $new_size) {
 				$result = "$file: $orig_size vs. $new_size";
 			} else {
@@ -432,6 +460,30 @@ function ewww_image_optimizer($file) {
 		return array($file, $results_msg);
 	}
 	return array($file, $result);
+}
+
+/**
+ * Check the submitted GIF to see if it is animated
+ */
+function ewww_image_optimizer_is_animated($filename) {
+    if(!($fh = @fopen($filename, 'rb')))
+        return false;
+    $count = 0;
+    //an animated gif contains multiple "frames", with each frame having a
+    //header made up of:
+    // * a static 4-byte sequence (\x00\x21\xF9\x04)
+    // * 4 variable bytes
+    // * a static 2-byte sequence (\x00\x2C) (some variants may use \x00\x21 ?)
+   
+    // We read through the file til we reach the end of the file, or we've found
+    // at least 2 frame headers
+    while(!feof($fh) && $count < 2) {
+        $chunk = fread($fh, 1024 * 100); //read 100kb at a time
+        $count += preg_match_all('#\x00\x21\xF9\x04.{4}\x00(\x2C|\x21)#s', $chunk, $matches);
+   }
+   
+    fclose($fh);
+    return $count > 1;
 }
 
 /**
@@ -659,6 +711,7 @@ function ewww_image_optimizer_options () {
 			<label><input type="checkbox" id="ewww_image_optimizer_disable_optipng" name="ewww_image_optimizer_disable_optipng" <?php if (get_option('ewww_image_optimizer_disable_optipng') == TRUE) { ?>checked="true"<?php } ?> /> disable optipng</label><br>
 			<label><input type="text" style="width: 400px" id="ewww_image_optimizer_gifsicle_path" name="ewww_image_optimizer_gifsicle_path" value="<?php echo get_option('ewww_image_optimizer_gifsicle_path'); ?>" /> gifsicle path</label><br />
 			<label><input type="checkbox" id="ewww_image_optimizer_disable_gifsicle" name="ewww_image_optimizer_disable_gifsicle" <?php if (get_option('ewww_image_optimizer_disable_gifsicle') == TRUE) { ?>checked="true"<?php } ?> /> disable gifsicle</label><br />
+			<label><input type="checkbox" id="ewww_image_optimizer_gif_to_png" name="ewww_image_optimizer_gif_to_png" <?php if (get_option('ewww_image_optimizer_gif_to_png') == TRUE) { ?>checked="true"<?php } ?> /> enable GIF to PNG conversion</label> - <i>requires convert (ImageMagick). PNG is generally much better than GIF, but doesn't support animated images, so we don't convert those. Original GIFs are left in place, not deleted.</i><br />
 			<label><input type="checkbox" id="ewww_image_optimizer_disable_pngout" name="ewww_image_optimizer_disable_pngout" <?php if (get_option('ewww_image_optimizer_disable_pngout') == TRUE) { ?>checked="true"<?php } ?> /> disable pngout</label> - If you install pngout via the link below, please make sure to uncheck this box.<br />
 			<b>Install pngout</b> - Click the link below that corresponds to the architecture of your server. If in doubt, try the i386 or ask your webhost. Pngout is free closed-source software that can produce drastically reduced filesizes for PNGs, but can be very time consuming to process images<br />
 <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=i386">i386</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=athlon">athlon</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=pentium4">pentium4</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=i686">i686</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=x64">64-bit</a></p>
