@@ -346,7 +346,7 @@ function ewww_image_optimizer($file) {
 			// compare progressive vs. non-progressive
 			if ($prog_size > $non_size) {
 				$new_size = $non_size;
-				exec("rm $progfile");
+				unlink($progfile);
 			} else {
 				$new_size = $prog_size;
 				exec("mv $progfile $tempfile");
@@ -356,7 +356,7 @@ function ewww_image_optimizer($file) {
 				exec("mv $tempfile $file");
 				$result = "$file: $orig_size vs. $new_size";
 			} else {
-				exec("rm $tempfile");
+				unlink($tempfile);
 				$result = "$file: unchanged";
 			}
 			break;
@@ -409,29 +409,42 @@ function ewww_image_optimizer($file) {
 			$orig_size = filesize($file);
 			// TO DO: need to compare the converted version to the gifsicle optimized version too
 			if(get_option('ewww_image_optimizer_gif_to_png') && !ewww_image_optimizer_is_animated($file)) {
-				$pngfile = substr_replace($file, 'png', -3);
-				exec("convert $file $pngfile");
-				clearstatcache();
+			//	$pngfile = substr_replace($file, 'png', -3);
+			//	exec("convert $file $pngfile");
 				if(!get_option('ewww_image_optimizer_disable_pngout')) {
 					$pngout_level = get_option('ewww_image_optimizer_pngout_level');
 					exec("$pngout_path -s$pngout_level -q $file");
+					$pngfile = substr_replace($file, 'png', -3);
 				}
-			// TO DO: figure out what to do if pngout is enabled, and we should run optipng on the PNG, not the GIF
+				// TO DO: figure out what to do if pngout is enabled, and we should run optipng on the PNG, not the GIF
 				if(!get_option('ewww_image_optimizer_disable_optipng')) {
 					$optipng_level = get_option('ewww_image_optimizer_optipng_level');
-					exec("$optipng_path -o$optipng_level -quiet $file");
+					if (isset($pngfile)) {
+						exec("$optipng_path -o$optipng_level -quiet $pngfile");
+					} else {
+						exec("$optipng_path -o$optipng_level -quiet $file");
+						$pngfile = substr_replace($file, 'png', -3);
+					}
 				}
-				$new_size = filesize($pngfile);
-				if ($orig_size > $new_size && $new_size != 0) {
-					$gif_converted = TRUE;
-					echo "More saving, more doing, that's the power of... oh, nevermind<br>";
+				clearstatcache();
+				if (isset($pngfile)) {
+					$png_size = filesize($pngfile);
+					if ($orig_size > $png_size && $png_size != 0) {
+						$gif_converted = TRUE;
+					}
 				}
 			} 
-			// TO DO: if PNG conversion successful, optimize as PNG too (probably don't actually need 'convert')
-			if (!$gif_converted) {
-				exec("$gifsicle_path -b -O3 --careful $file");
-				clearstatcache();
-				$new_size = filesize($file);
+			exec("$gifsicle_path -b -O3 --careful $file");
+			clearstatcache();
+			$new_size = filesize($file);
+			if ($gif_converted && $new_size > $png_size && $png_size != 0) {
+				$new_size = $png_size;
+				$file = $pngfile;
+				if ( FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment') )
+	                        	add_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10, 2);
+			} elseif ($gif_converted) {
+				$gif_converted = FALSE;
+				unlink($pngfile);
 			}
 			if ($orig_size > $new_size) {
 				$result = "$file: $orig_size vs. $new_size";
@@ -460,6 +473,20 @@ function ewww_image_optimizer($file) {
 		return array($file, $results_msg);
 	}
 	return array($file, $result);
+}
+
+/**
+ * Update the attachment's meta data after being converted from GIF to PNG 
+ */
+function ewww_image_optimizer_update_attachment($data, $ID) {
+	$orig_file = get_attached_file($ID);
+	update_attached_file($ID, $data['file']);
+	$post = get_post($ID);
+	$guid = preg_replace('/.gif$/i', '.png', $post->guid);
+	wp_update_post( array('ID' => $ID,
+			      'post_mime_type' => 'image/png',
+			      'guid' => $guid) );
+	return $data;
 }
 
 /**
@@ -698,7 +725,7 @@ function ewww_image_optimizer_options () {
 		<p><a href="http://shanebishop.net/ewww-image-optimizer/">Plugin Home Page</a> |
 		<a href="http://wordpress.org/extend/plugins/ewww-image-optimizer/installation/">Installation Instructions</a> | 
 		<a href="http://wordpress.org/support/plugin/ewww-image-optimizer">Plugin Support</a></p>
-		<p>I have compiled static binaries for gifsicle and optipng for those who don't have access to a shell or build utilities. If all goes well, these will become one-click installs in the future:<br /><a href="http://shanebishop.net/uploads/gifsicle.zip">gifsicle</a> | <a href="http://shanebishop.net/uploads/optipng.zip">optipng</a></p>
+		<p><b>NEW:</b> I have compiled static binaries for gifsicle and optipng for those who don't have access to a shell or build utilities. If all goes well, these will become one-click installs in the future:<br /><a href="http://shanebishop.net/uploads/gifsicle.zip">gifsicle</a> | <a href="http://shanebishop.net/uploads/optipng.zip">optipng</a></p>
 		<p>EWWW Image Optimizer performs a check to make sure your system has the programs we use for optimization: jpegtran, optipng, and gifsicle. In some cases, these checks may erroneously report that you are missing the required utilities even though you have them installed.</p>
 		<form method="post" action="options.php">
 			<?php settings_fields('ewww_image_optimizer_options'); ?>
