@@ -3,10 +3,10 @@ Contributors: nosilver4u
 Tags: images, image, attachments, attachment
 Requires at least: 2.9
 Tested up to: 3.4.2
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPLv3
 
-Reduce image file sizes and improve performance for images within WordPress including NextGEN Gallery. Uses jpegtran, optipng and/or pngout, and gifsicle.
+Reduce file sizes and improve performance for images within WordPress including NextGEN Gallery. Uses jpegtran, optipng and/or pngout, and gifsicle.
 
 == Description ==
 
@@ -124,6 +124,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 3. Bulk optimization page. You can optimize all your images at once. This is very useful for existing blogs that have lots of images.
 
 == Changelog ==
+
+= 1.1.1 =
+* fixed not returning results of resized version of image
 
 = 1.1.0 =
 * added pngout functionality for even better PNG optimization (disabled by default)
