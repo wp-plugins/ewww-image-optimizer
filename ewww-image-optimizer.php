@@ -60,17 +60,17 @@ function ewww_image_optimizer_notice_os() {
 
 // Retrieves user specified paths or set defaults if they don't exist. We also do a basic check to make sure we weren't given a malicious path.
 function ewww_image_optimizer_path_check() {
-	$doc_root = $_SERVER['DOCUMENT_ROOT'];
+	//$doc_root = $_SERVER['DOCUMENT_ROOT'];
 	$jpegtran = get_option('ewww_image_optimizer_jpegtran_path');
-	if(!preg_match('/^\/[\w\.-\d\/_]+\/jpegtran$/', $jpegtran) || preg_match("|$doc_root|", $jpegtran)) {
+	if(!preg_match('/^\/[\w\.-\d\/_]+\/jpegtran$/', $jpegtran)) {
 		$jpegtran = 'jpegtran';
 	}
 	$optipng = get_option('ewww_image_optimizer_optipng_path');
-	if(!preg_match('/^\/[\w\.-\d\/_]+\/optipng$/', $optipng) || preg_match("|$doc_root|", $optipng)) {
+	if(!preg_match('/^\/[\w\.-\d\/_]+\/optipng$/', $optipng)) {
 		$optipng = 'optipng';
 	}
 	$gifsicle = get_option('ewww_image_optimizer_gifsicle_path');
-	if(!preg_match('/^\/[\w\.-\d\/_]+\/gifsicle$/', $gifsicle) || preg_match("|$doc_root|", $gifsicle)) {
+	if(!preg_match('/^\/[\w\.-\d\/_]+\/gifsicle$/', $gifsicle)) {
 		$gifsicle = 'gifsicle';
 	}
 	$pngout = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static";
@@ -176,6 +176,8 @@ function ewww_image_optimizer_admin_init() {
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_disable_optipng');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_disable_gifsicle');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_disable_pngout');
+	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpg_to_png');
+	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_png_to_jpg');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_gif_to_png');
 	add_option('ewww_image_optimizer_disable_pngout', TRUE);
 	add_option('ewww_image_optimizer_optipng_level', 2);
@@ -725,26 +727,78 @@ function ewww_image_optimizer_options () {
 		<p><a href="http://shanebishop.net/ewww-image-optimizer/">Plugin Home Page</a> |
 		<a href="http://wordpress.org/extend/plugins/ewww-image-optimizer/installation/">Installation Instructions</a> | 
 		<a href="http://wordpress.org/support/plugin/ewww-image-optimizer">Plugin Support</a></p>
-		<p><b>NEW:</b> I have compiled static binaries for gifsicle and optipng for those who don't have access to a shell or build utilities. If all goes well, these will become one-click installs in the future:<br /><a href="http://shanebishop.net/uploads/gifsicle.zip">gifsicle</a> | <a href="http://shanebishop.net/uploads/optipng.zip">optipng</a></p>
-		<p>EWWW Image Optimizer performs a check to make sure your system has the programs we use for optimization: jpegtran, optipng, and gifsicle. In some cases, these checks may erroneously report that you are missing the required utilities even though you have them installed.</p>
+		<div id="right_panel" style="float: right">
+		<div id="poll" style="margin: 8px"><script type="text/javascript" charset="utf-8" src="http://static.polldaddy.com/p/6602406.js"></script>
+		<noscript><a href="http://polldaddy.com/poll/6602406/">EWWW IO Feedback</a></noscript></div>
+		<div id="debug" style="border: 1px solid #ccc; padding: 0 8px; margin: 8px; width: 284px; border-radius: 12px;">
+			<h3>Debug information</h3>
+			<div style="border-top: 1px solid #e8e8e8; padding: 10px 0"><p>computed jpegtran path: <?php echo $jpegtran_path; ?><br />
+			jpegtran location (using 'which'): <?php echo trim(exec('which ' . $jpegtran_path)); ?><br />
+			computed optipng path: <?php echo $optipng_path; ?><br />
+			optipng location (using 'which'): <?php echo trim(exec('which ' . $optipng_path)); ?><br />
+			optipng version: <?php exec($optipng_path . ' -v', $optipng_version); echo $optipng_version[0]; ?><br />
+			computed gifsicle path: <?php echo $gifsicle_path; ?><br />
+			gifsicle location (using 'which'): <?php echo trim(exec('which ' . $gifsicle_path)); ?><br />
+			gifsicle version: <?php exec($gifsicle_path . ' --version', $gifsicle_version); echo $gifsicle_version[0]; ?><br />
+			<?php if( ini_get('safe_mode') ){
+				echo "safe mode: On<br />";
+			} else {
+				echo "safe mode: Off<br />";
+			}
+			echo "Operating System: " . PHP_OS . "<br>";
+			$disabled = explode(', ', ini_get('disable_functions'));
+			if(in_array('exec', $disabled)){
+				echo "exec(): disabled<br>";
+			} else {
+				echo "exec(): enabled<br>";
+			}
+			if(function_exists('getimagesize')){
+				echo "getimagesize(): OK<br>";
+			} else {
+				echo "getimagesize(): missing<br>";
+			}
+			if(function_exists('mime_content_type')){
+				echo "mime_content_type(): OK<br>";
+			} else {
+				echo "mime_content_type(): missing<br>";
+			}
+			?></p></div>
+		</div>
+		</div>
+		<h3>Installation</h3>
+		<p><b>If you are on shared hosting, and have installed the utilities in your home folder, you can provide the paths below.</b></p>
+		<p><b>NEW:</b> I have compiled static binaries for <b>gifsicle</b> and <b>optipng</b> for those who don't have access to a shell or build utilities. If all goes well, these will become one-click installs in the future:<br /><a href="http://shanebishop.net/uploads/gifsicle.zip">gifsicle</a> | <a href="http://shanebishop.net/uploads/optipng.zip">optipng</a><br />
+		<b>Install pngout</b> - Click the link below that corresponds to the architecture of your server. If in doubt, try the i386 or ask your webhost. Pngout is free closed-source software that can produce drastically reduced filesizes for PNGs, but can be very time consuming to process images<br />
+<a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=i386">i386</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=athlon">athlon</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=pentium4">pentium4</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=i686">i686</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=x64">64-bit</a></p>
 		<form method="post" action="options.php">
 			<?php settings_fields('ewww_image_optimizer_options'); ?>
+			<h3>General Settings</h3>
+			<p>The plugin performs a check to make sure your system has the programs we use for optimization: jpegtran, optipng, and gifsicle. In some rare cases, these checks may erroneously report that you are missing the required utilities even though you have them installed.</p>
 			<p><b>Do you want to skip the utils check?</b> <i>*Only do this if you are SURE that you have the utilities installed, or you don't care about the missing ones. Checking this option also bypasses our basic security checks on the paths entered below.</i><br />
-			<input type="checkbox" id="ewww_image_optimizer_skip_check" name="ewww_image_optimizer_skip_check" value="true" <?php if (get_option('ewww_image_optimizer_skip_check') == TRUE) { ?>checked="true"<?php } ?> /> <label for="ewww_image_optimizer_skip_check" />Skip utils check</label></p>
-			<p><b>If you are on shared hosting, and have compiled the utilities in your home folder, you can provide the paths below. DO NOT place the utilities in a web-accessible location.</b><br />
-			<label><input type="text" style="width: 400px" id="ewww_image_optimizer_jpegtran_path" name="ewww_image_optimizer_jpegtran_path" value="<?php echo get_option('ewww_image_optimizer_jpegtran_path'); ?>" /> jpegtran path</label><br />
-			<label><input type="checkbox" id="ewww_image_optimizer_disable_jpegtran" name="ewww_image_optimizer_disable_jpegtran" <?php if (get_option('ewww_image_optimizer_disable_jpegtran') == TRUE) { ?>checked="true"<?php } ?> /> disable jpegtran</label><br />
-			<label><input type="text" style="width: 400px" id="ewww_image_optimizer_optipng_path" name="ewww_image_optimizer_optipng_path" value="<?php echo get_option('ewww_image_optimizer_optipng_path'); ?>" /> optipng path</label><br />
-			<label><input type="checkbox" id="ewww_image_optimizer_disable_optipng" name="ewww_image_optimizer_disable_optipng" <?php if (get_option('ewww_image_optimizer_disable_optipng') == TRUE) { ?>checked="true"<?php } ?> /> disable optipng</label><br>
-			<label><input type="text" style="width: 400px" id="ewww_image_optimizer_gifsicle_path" name="ewww_image_optimizer_gifsicle_path" value="<?php echo get_option('ewww_image_optimizer_gifsicle_path'); ?>" /> gifsicle path</label><br />
-			<label><input type="checkbox" id="ewww_image_optimizer_disable_gifsicle" name="ewww_image_optimizer_disable_gifsicle" <?php if (get_option('ewww_image_optimizer_disable_gifsicle') == TRUE) { ?>checked="true"<?php } ?> /> disable gifsicle</label><br />
-			<label><input type="checkbox" id="ewww_image_optimizer_gif_to_png" name="ewww_image_optimizer_gif_to_png" <?php if (get_option('ewww_image_optimizer_gif_to_png') == TRUE) { ?>checked="true"<?php } ?> /> enable GIF to PNG conversion</label> - <i>requires convert (ImageMagick). PNG is generally much better than GIF, but doesn't support animated images, so we don't convert those. Original GIFs are left in place, not deleted.</i><br />
-			<label><input type="checkbox" id="ewww_image_optimizer_disable_pngout" name="ewww_image_optimizer_disable_pngout" <?php if (get_option('ewww_image_optimizer_disable_pngout') == TRUE) { ?>checked="true"<?php } ?> /> disable pngout</label> - If you install pngout via the link below, please make sure to uncheck this box.<br />
-			<b>Install pngout</b> - Click the link below that corresponds to the architecture of your server. If in doubt, try the i386 or ask your webhost. Pngout is free closed-source software that can produce drastically reduced filesizes for PNGs, but can be very time consuming to process images<br />
-<a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=i386">i386</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=athlon">athlon</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=pentium4">pentium4</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=i686">i686</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=x64">64-bit</a></p>
-			<p><b>Advanced options</b><br />
-			<input type="checkbox" id="ewww_image_optimizer_jpegtran_copy" name="ewww_image_optimizer_jpegtran_copy" value="true" <?php if (get_option('ewww_image_optimizer_jpegtran_copy') == TRUE) { ?>checked="true"<?php } ?> /> <label for="ewww_image_optimizer_jpegtran_copy" />Check this box to remove all metadata (EXIF and comments) from JPGs</label><br />
-			<label><select id="ewww_image_optimizer_optipng_level" name="ewww_image_optimizer_optipng_level">
+			<table class="form-table" style="display: inline">
+				<tr><th><label for="ewww_image_optimizer_skip_check">Skip utils check</label></th><td><input type="checkbox" id="ewww_image_optimizer_skip_check" name="ewww_image_optimizer_skip_check" value="true" <?php if (get_option('ewww_image_optimizer_skip_check') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
+				<tr><th><label for="ewww_image_optimizer_disable_jpegtran">disable jpegtran</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_jpegtran" name="ewww_image_optimizer_disable_jpegtran" <?php if (get_option('ewww_image_optimizer_disable_jpegtran') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
+				<tr><th><label for="ewww_image_optimizer_disable_optipng">disable optipng</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_optipng" name="ewww_image_optimizer_disable_optipng" <?php if (get_option('ewww_image_optimizer_disable_optipng') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
+				<tr><th><label for="ewww_image_optimizer_disable_pngout">disable pngout</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_pngout" name="ewww_image_optimizer_disable_pngout" <?php if (get_option('ewww_image_optimizer_disable_pngout') == TRUE) { ?>checked="true"<?php } ?> /></td><tr>
+				<tr><th><label for="ewww_image_optimizer_disable_gifsicle">disable gifsicle</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_gifsicle" name="ewww_image_optimizer_disable_gifsicle" <?php if (get_option('ewww_image_optimizer_disable_gifsicle') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
+			</table>
+			<h3>Path Settings</h3>
+			<table class="form-table" style="display: inline">
+				<tr><th><label for="ewww_image_optimizer_jpegtran_path">jpegtran path</label></th><td><input type="text" style="width: 400px" id="ewww_image_optimizer_jpegtran_path" name="ewww_image_optimizer_jpegtran_path" value="<?php echo get_option('ewww_image_optimizer_jpegtran_path'); ?>" /></td></tr>
+				<tr><th><label for="ewww_image_optimizer_optipng_path">optipng path</label></th><td><input type="text" style="width: 400px" id="ewww_image_optimizer_optipng_path" name="ewww_image_optimizer_optipng_path" value="<?php echo get_option('ewww_image_optimizer_optipng_path'); ?>" /></td></tr>
+				<tr><th><label for="ewww_image_optimizer_gifsicle_path">gifsicle path</label></th><td><input type="text" style="width: 400px" id="ewww_image_optimizer_gifsicle_path" name="ewww_image_optimizer_gifsicle_path" value="<?php echo get_option('ewww_image_optimizer_gifsicle_path'); ?>" /></td></tr>
+			</table>
+			<h3>Conversion Settings</h3>
+			<table class="form-table" style="display: inline">
+				<tr><th><label for="ewww_image_optimizer_jpg_to_png">enable JPG to PNG conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_jpg_to_png" name="ewww_image_optimizer_jpg_to_png" <?php if (get_option('ewww_image_optimizer_jpg_to_png') == TRUE) { ?>checked="true"<?php } ?> /> <i>PNG is generally much better than JPG for logos and other images with a limited range of colors. Checking this option will likely slow down JPG processing significantly, and you may want to enable it only temporarily. Original JPGs are left in place, not deleted.</i></td></tr>
+				<tr><th><label for="ewww_image_optimizer_png_to_jpg">enable PNG to JPG conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_png_to_jpg" name="ewww_image_optimizer_png_to_jpg" <?php if (get_option('ewww_image_optimizer_png_to_jpg') == TRUE) { ?>checked="true"<?php } ?> /> <i>JPG is generally much better than PNG for photographic use, but doesn't support transparency, so we don't convert PNGs with transparency. Original GIFs are left in place, not deleted.</i></td></tr>
+				<tr><th><label for="ewww_image_optimizer_gif_to_png">enable GIF to PNG conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_gif_to_png" name="ewww_image_optimizer_gif_to_png" <?php if (get_option('ewww_image_optimizer_gif_to_png') == TRUE) { ?>checked="true"<?php } ?> /> <i>PNG is generally much better than GIF, but doesn't support animated images, so we don't convert those. Original GIFs are left in place, not deleted.</i></td></tr>
+			</table>
+			<h3>Advanced options</h3>
+			<table class="form-table" style="display: inline">
+				<tr><th><label for="ewww_image_optimizer_jpegtran_copy">Remove JPG metadata</label></th><td><input type="checkbox" id="ewww_image_optimizer_jpegtran_copy" name="ewww_image_optimizer_jpegtran_copy" value="true" <?php if (get_option('ewww_image_optimizer_jpegtran_copy') == TRUE) { ?>checked="true"<?php } ?> /> <i>This wil remove ALL metadata (EXIF and comments)</i></td></tr>
+				<tr><th><label for="ewww_image_optimizer_optipng_level">optipng optimization level</label></th>
+				<td><select id="ewww_image_optimizer_optipng_level" name="ewww_image_optimizer_optipng_level">
 				<option value="1"<?php if (get_option('ewww_image_optimizer_optipng_level') == 1) { echo ' selected="selected"'; } ?>>Level 1: 1 trial</option>
 				<option value="2"<?php if (get_option('ewww_image_optimizer_optipng_level') == 2) { echo ' selected="selected"'; } ?>>Level 2: 8 trials</option>
 				<option value="3"<?php if (get_option('ewww_image_optimizer_optipng_level') == 3) { echo ' selected="selected"'; } ?>>Level 3: 16 trials</option>
@@ -752,51 +806,17 @@ function ewww_image_optimizer_options () {
 				<option value="5"<?php if (get_option('ewww_image_optimizer_optipng_level') == 5) { echo ' selected="selected"'; } ?>>Level 5: 48 trials</option>
 				<option value="6"<?php if (get_option('ewww_image_optimizer_optipng_level') == 6) { echo ' selected="selected"'; } ?>>Level 6: 120 trials</option>
 				<option value="7"<?php if (get_option('ewww_image_optimizer_optipng_level') == 7) { echo ' selected="selected"'; } ?>>Level 7: 240 trials</option>
-			</select> optipng (PNG) optimization level (default=2)</label><br />
-			<i>According to the author of optipng, 10 trials should satisfy most people, 30 trials should satisfy everyone.</i><br />
-			<label><select id="ewww_image_optimizer_pngout_level" name="ewww_image_optimizer_pngout_level">
+				</select> (default=2) - <i>According to the author of optipng, 10 trials should satisfy most people, 30 trials should satisfy everyone.</i></td></tr>
+				<tr><th><label for="ewww_image_optimizer_pngout_level">pngout optimization level</label></th>
+				<td><select id="ewww_image_optimizer_pngout_level" name="ewww_image_optimizer_pngout_level">
 				<option value="0"<?php if (get_option('ewww_image_optimizer_pngout_level') == 0) { echo ' selected="selected"'; } ?>>Level 0: Xtreme! (Slowest)</option>
 				<option value="1"<?php if (get_option('ewww_image_optimizer_pngout_level') == 1) { echo ' selected="selected"'; } ?>>Level 1: Intense (Slow)</option>
 				<option value="2"<?php if (get_option('ewww_image_optimizer_pngout_level') == 2) { echo ' selected="selected"'; } ?>>Level 2: Longest Match (Fast)</option>
 				<option value="3"<?php if (get_option('ewww_image_optimizer_pngout_level') == 3) { echo ' selected="selected"'; } ?>>Level 3: Huffman Only (Faster)</option>
-			</select> pngout (PNG) optimization level (default=2)</label><br />
-			<i>If you have CPU cycles to spare, go with level 0</i></p>
+			</select> (default=2) - <i>If you have CPU cycles to spare, go with level 0</i></td></tr>
+			</table>
 			<p class="submit"><input type="submit" class="button-primary" value="Save Changes" /></p>
 		</form>
-	</div>
-	<div id="debug" style="border: 1px solid #999; padding: 0 10px">
-		<p><b>Debug information</b><br />
-		computed jpegtran path: <?php echo $jpegtran_path; ?><br />
-		jpegtran location (using 'which'): <?php echo trim(exec('which ' . $jpegtran_path)); ?><br />
-		computed optipng path: <?php echo $optipng_path; ?><br />
-		optipng location (using 'which'): <?php echo trim(exec('which ' . $optipng_path)); ?><br />
-		optipng version: <?php exec($optipng_path . ' -v', $optipng_version); echo $optipng_version[0]; ?><br />
-		computed gifsicle path: <?php echo $gifsicle_path; ?><br />
-		gifsicle location (using 'which'): <?php echo trim(exec('which ' . $gifsicle_path)); ?><br />
-		gifsicle version: <?php exec($gifsicle_path . ' --version', $gifsicle_version); echo $gifsicle_version[0]; ?><br />
-		<?php if( ini_get('safe_mode') ){
-			echo "safe mode: On<br />";
-		} else {
-			echo "safe mode: Off<br />";
-		}
-		echo "Operating System: " . PHP_OS . "<br>";
-		$disabled = explode(', ', ini_get('disable_functions'));
-		if(in_array('exec', $disabled)){
-			echo "exec(): disabled<br>";
-		} else {
-			echo "exec(): enabled<br>";
-		}
-		if(function_exists('getimagesize')){
-			echo "getimagesize(): OK<br>";
-		} else {
-			echo "getimagesize(): missing<br>";
-		}
-		if(function_exists('mime_content_type')){
-			echo "mime_content_type(): OK<br>";
-		} else {
-			echo "mime_content_type(): missing<br>";
-		}
-		?></p>
 	</div>
 	<?php
 }
