@@ -176,12 +176,15 @@ function ewww_image_optimizer_admin_init() {
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_disable_optipng');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_disable_gifsicle');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_disable_pngout');
+	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_delete_originals');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpg_to_png');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_png_to_jpg');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_gif_to_png');
+	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpg_quality');
 	add_option('ewww_image_optimizer_disable_pngout', TRUE);
 	add_option('ewww_image_optimizer_optipng_level', 2);
 	add_option('ewww_image_optimizer_pngout_level', 2);
+	add_option('ewww_image_optimizer_jpg_quality', 85);
 }
 
 function ewww_image_optimizer_scripts () {
@@ -378,6 +381,7 @@ function ewww_image_optimizer($file) {
 				break;
 			}
 			$orig_size = filesize($file);
+			echo "transparent" . ewww_image_optimizer_png_alpha ($file) . "<br>";
 			if(!get_option('ewww_image_optimizer_disable_pngout')) {
 				$pngout_level = get_option('ewww_image_optimizer_pngout_level');
 				exec("$pngout_path -s$pngout_level -q $file");
@@ -401,8 +405,7 @@ function ewww_image_optimizer($file) {
 			}
 			$result = trim(exec('which ' . $gifsicle_path));
 
-			// TO DO: don't skip optimization if conversion to PNG is enabled
-
+			// TO DO: don't skip optimization if conversion to PNG is enabled and remove excessive check for tool disabled (here and for PNG & JPG
 			if(!$skip_gifsicle && empty($result) && !get_option('ewww_image_optimizer_disable_gifsicle')) {
 				$result = '<em>gifsicle</em> is missing';
 				break;
@@ -492,27 +495,33 @@ function ewww_image_optimizer_update_attachment($data, $ID) {
 }
 
 /**
+ * Check the submitted PNG to see if it has transparency
+ */
+function ewww_image_optimizer_png_alpha ($filename){
+	$color_type = ord(@file_get_contents($filename, NULL, NULL, 25, 1));
+	if ($color_type == 4 || $color_type == 6) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+/**
  * Check the submitted GIF to see if it is animated
  */
 function ewww_image_optimizer_is_animated($filename) {
-    if(!($fh = @fopen($filename, 'rb')))
-        return false;
-    $count = 0;
-    //an animated gif contains multiple "frames", with each frame having a
-    //header made up of:
-    // * a static 4-byte sequence (\x00\x21\xF9\x04)
-    // * 4 variable bytes
-    // * a static 2-byte sequence (\x00\x2C) (some variants may use \x00\x21 ?)
+	if(!($fh = @fopen($filename, 'rb')))
+		return false;
+	$count = 0;
    
-    // We read through the file til we reach the end of the file, or we've found
-    // at least 2 frame headers
-    while(!feof($fh) && $count < 2) {
-        $chunk = fread($fh, 1024 * 100); //read 100kb at a time
-        $count += preg_match_all('#\x00\x21\xF9\x04.{4}\x00(\x2C|\x21)#s', $chunk, $matches);
-   }
-   
-    fclose($fh);
-    return $count > 1;
+	// We read through the file til we reach the end of the file, or we've found
+	// at least 2 frame headers
+	while(!feof($fh) && $count < 2) {
+		$chunk = fread($fh, 1024 * 100); //read 100kb at a time
+		$count += preg_match_all('#\x00\x21\xF9\x04.{4}\x00(\x2C|\x21)#s', $chunk, $matches);
+	}
+	fclose($fh);
+	return $count > 1;
 }
 
 /**
@@ -790,13 +799,15 @@ function ewww_image_optimizer_options () {
 			</table>
 			<h3>Conversion Settings</h3>
 			<table class="form-table" style="display: inline">
-				<tr><th><label for="ewww_image_optimizer_jpg_to_png">enable JPG to PNG conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_jpg_to_png" name="ewww_image_optimizer_jpg_to_png" <?php if (get_option('ewww_image_optimizer_jpg_to_png') == TRUE) { ?>checked="true"<?php } ?> /> <i>PNG is generally much better than JPG for logos and other images with a limited range of colors. Checking this option will likely slow down JPG processing significantly, and you may want to enable it only temporarily. Original JPGs are left in place, not deleted.</i></td></tr>
-				<tr><th><label for="ewww_image_optimizer_png_to_jpg">enable PNG to JPG conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_png_to_jpg" name="ewww_image_optimizer_png_to_jpg" <?php if (get_option('ewww_image_optimizer_png_to_jpg') == TRUE) { ?>checked="true"<?php } ?> /> <i>JPG is generally much better than PNG for photographic use, but doesn't support transparency, so we don't convert PNGs with transparency. Original GIFs are left in place, not deleted.</i></td></tr>
-				<tr><th><label for="ewww_image_optimizer_gif_to_png">enable GIF to PNG conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_gif_to_png" name="ewww_image_optimizer_gif_to_png" <?php if (get_option('ewww_image_optimizer_gif_to_png') == TRUE) { ?>checked="true"<?php } ?> /> <i>PNG is generally much better than GIF, but doesn't support animated images, so we don't convert those. Original GIFs are left in place, not deleted.</i></td></tr>
+				<tr><th><label for="ewww_image_optimizer_delete_originals">Delete originals</label></th><td><input type="checkbox" id="ewww_image_optimizer_delete_originals" name="ewww_image_optimizer_delete_originals" <?php if (get_option('ewww_image_optimizer_delete_originals') == TRUE) { ?>checked="true"<?php } ?> /> This will remove the original image from the server after a successful conversion.</td></tr>
+				<tr><th><label for="ewww_image_optimizer_jpg_to_png">enable JPG to PNG conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_jpg_to_png" name="ewww_image_optimizer_jpg_to_png" <?php if (get_option('ewww_image_optimizer_jpg_to_png') == TRUE) { ?>checked="true"<?php } ?> /> PNG is generally much better than JPG for logos and other images with a limited range of colors. Checking this option will slow down JPG processing significantly, and you may want to enable it only temporarily.</td></tr>
+				<tr><th><label for="ewww_image_optimizer_png_to_jpg">enable PNG to JPG conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_png_to_jpg" name="ewww_image_optimizer_png_to_jpg" <?php if (get_option('ewww_image_optimizer_png_to_jpg') == TRUE) { ?>checked="true"<?php } ?> /> <b>WARNING:</b> This is not a lossless conversion and requires the 'convert' utility provided by ImageMagick. JPG is generally much better than PNG for photographic use because it compresses the image and discards pixels depending on the quality setting. JPG does not support transparency, so we don't convert PNGs with transparency.</td></tr>
+				<tr><th><label for="ewww_image_optimizer_jpg_quality">JPG quality for conversion</label></th><td><input type="text" id="ewww_image_optimizer_jpg_quality" name="ewww_image_optimizer_jpg_quality" style="width: 30px" value="<?php echo get_option('ewww_image_optimizer_jpg_quality'); ?>" /> out of 100. This is used only during conversion attempts. We never, ever reduce the JPG quality setting on a normal JPG optimization (and we're not about to start now, so don't ask).</td></tr>
+				<tr><th><label for="ewww_image_optimizer_gif_to_png">enable GIF to PNG conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_gif_to_png" name="ewww_image_optimizer_gif_to_png" <?php if (get_option('ewww_image_optimizer_gif_to_png') == TRUE) { ?>checked="true"<?php } ?> /> PNG is generally much better than GIF, but doesn't support animated images, so we don't convert those.</td></tr>
 			</table>
 			<h3>Advanced options</h3>
 			<table class="form-table" style="display: inline">
-				<tr><th><label for="ewww_image_optimizer_jpegtran_copy">Remove JPG metadata</label></th><td><input type="checkbox" id="ewww_image_optimizer_jpegtran_copy" name="ewww_image_optimizer_jpegtran_copy" value="true" <?php if (get_option('ewww_image_optimizer_jpegtran_copy') == TRUE) { ?>checked="true"<?php } ?> /> <i>This wil remove ALL metadata (EXIF and comments)</i></td></tr>
+				<tr><th><label for="ewww_image_optimizer_jpegtran_copy">Remove JPG metadata</label></th><td><input type="checkbox" id="ewww_image_optimizer_jpegtran_copy" name="ewww_image_optimizer_jpegtran_copy" value="true" <?php if (get_option('ewww_image_optimizer_jpegtran_copy') == TRUE) { ?>checked="true"<?php } ?> /> This wil remove ALL metadata (EXIF and comments)</td></tr>
 				<tr><th><label for="ewww_image_optimizer_optipng_level">optipng optimization level</label></th>
 				<td><select id="ewww_image_optimizer_optipng_level" name="ewww_image_optimizer_optipng_level">
 				<option value="1"<?php if (get_option('ewww_image_optimizer_optipng_level') == 1) { echo ' selected="selected"'; } ?>>Level 1: 1 trial</option>
