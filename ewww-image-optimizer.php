@@ -180,11 +180,11 @@ function ewww_image_optimizer_admin_init() {
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpg_to_png');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_png_to_jpg');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_gif_to_png');
-	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpg_quality');
+//	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpg_quality');
 	add_option('ewww_image_optimizer_disable_pngout', TRUE);
 	add_option('ewww_image_optimizer_optipng_level', 2);
 	add_option('ewww_image_optimizer_pngout_level', 2);
-	add_option('ewww_image_optimizer_jpg_quality', 85);
+//	add_option('ewww_image_optimizer_jpg_quality', 85);
 }
 
 function ewww_image_optimizer_scripts () {
@@ -366,32 +366,61 @@ function ewww_image_optimizer($file) {
 			}
 			break;
 		case 'image/png':
+			if (get_option('ewww_image_optimizer_png_to_jpg')) {
+				$convert = true;
+			} else {
+				$convert = false;
+			}
+			$optipng_exists = trim(exec('which ' . $optipng_path));
+			$pngout_exists = trim(exec('which ' . $pngout_path));
 			if (get_option('ewww_image_optimizer_disable_optipng') && get_option('ewww_image_optimizer_disable_pngout')) {
 				$result = 'png tools are disabled';
-				break;
-			}
-			$result = trim(exec('which ' . $optipng_path));
-			if(!$skip_optipng && empty($result) && !get_option('ewww_image_optimizer_disable_optipng')) {
+				$optimize = false;
+			} elseif (!$skip_optipng && empty($optipng_exists) && !get_option('ewww_image_optimizer_disable_optipng')) {
 				$result = '<em>optipng</em> is missing';
-				break;
-			}
-			$result = trim(exec('which ' . $pngout_path));
-			if(!$skip_pngout && empty($result) && !get_option('ewww_image_optimizer_disable_pngout')) {
+				$optimize = false;
+			} elseif (!$skip_pngout && empty($pngout_exists) && !get_option('ewww_image_optimizer_disable_pngout')) {
 				$result = '<em>pngout</em> is missing';
-				break;
+				$optimize = false;
+			} else {
+				$optimize = true;
 			}
+			$png_converted = FALSE;
 			$orig_size = filesize($file);
-			echo "transparent" . ewww_image_optimizer_png_alpha ($file) . "<br>";
-			if(!get_option('ewww_image_optimizer_disable_pngout')) {
-				$pngout_level = get_option('ewww_image_optimizer_pngout_level');
-				exec("$pngout_path -s$pngout_level -q $file");
+			// TODO: transparency cannot be detected, so lets add a way to set the background color (defaulted to white)
+			//if ($convert && !ewww_image_optimizer_png_alpha($file)) {
+			if ($convert) {
+				$jpgfile = substr_replace($file, 'jpg', -3);
+				exec ("convert -flatten $file $jpgfile");
+				$jpg_size = filesize($jpgfile);
+				if ($orig_size > $jpg_size && $jpg_size != 0) {
+					$png_converted = TRUE;
+				}
 			}
-			if(!get_option('ewww_image_optimizer_disable_optipng')) {
-				$optipng_level = get_option('ewww_image_optimizer_optipng_level');
-				exec("$optipng_path -o$optipng_level -quiet $file");
+			if ($optimize) {
+				if(!get_option('ewww_image_optimizer_disable_pngout')) {
+					$pngout_level = get_option('ewww_image_optimizer_pngout_level');
+					exec("$pngout_path -s$pngout_level -q $file");
+				}
+				if(!get_option('ewww_image_optimizer_disable_optipng')) {
+					$optipng_level = get_option('ewww_image_optimizer_optipng_level');
+					exec("$optipng_path -o$optipng_level -quiet $file");
+				}
 			}
 			clearstatcache();
 			$new_size = filesize($file);
+			if ($png_converted && $new_size > $jpg_size && $jpg_size != 0) {
+				$new_size = $jpg_size;
+				if (get_option('ewww_image_optimizer_delete_originals') == TRUE) {
+					unlink($file);
+				}
+				$file = $jpgfile;
+				if ( FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment') )
+	                        	add_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10, 2);
+			} elseif ($png_converted) {
+				$png_converted = FALSE;
+				unlink($jpgfile);
+			}
 			if ($orig_size > $new_size) {
 				$result = "$file: $orig_size vs. $new_size";    
 			} else {
@@ -399,30 +428,30 @@ function ewww_image_optimizer($file) {
 			}
 			break;
 		case 'image/gif':
+			if (get_option('ewww_image_optimizer_gif_to_png')) {
+				$convert = true;
+			} else {
+				$convert = false;
+			}
+			$gifsicle_exists = trim(exec('which ' . $gifsicle_path));
 			if (get_option('ewww_image_optimizer_disable_gifsicle')) {
 				$result = 'gifsicle is disabled';
-				break;
-			}
-			$result = trim(exec('which ' . $gifsicle_path));
-
-			// TO DO: don't skip optimization if conversion to PNG is enabled and remove excessive check for tool disabled (here and for PNG & JPG
-			if(!$skip_gifsicle && empty($result) && !get_option('ewww_image_optimizer_disable_gifsicle')) {
+				$optimize = false;
+			} elseif (!$skip_gifsicle && empty($gifsicle_exists)) {
 				$result = '<em>gifsicle</em> is missing';
-				break;
+				$optimize = false;
+			} else {
+				$optimize = true;
 			}
 			$gif_converted = FALSE;
 			$orig_size = filesize($file);
-			// TO DO: need to compare the converted version to the gifsicle optimized version too
-			if(get_option('ewww_image_optimizer_gif_to_png') && !ewww_image_optimizer_is_animated($file)) {
-			//	$pngfile = substr_replace($file, 'png', -3);
-			//	exec("convert $file $pngfile");
-				if(!get_option('ewww_image_optimizer_disable_pngout')) {
+			if ($convert && !ewww_image_optimizer_is_animated($file)) {
+				if (!get_option('ewww_image_optimizer_disable_pngout')) {
 					$pngout_level = get_option('ewww_image_optimizer_pngout_level');
 					exec("$pngout_path -s$pngout_level -q $file");
 					$pngfile = substr_replace($file, 'png', -3);
 				}
-				// TO DO: figure out what to do if pngout is enabled, and we should run optipng on the PNG, not the GIF
-				if(!get_option('ewww_image_optimizer_disable_optipng')) {
+				if (!get_option('ewww_image_optimizer_disable_optipng')) {
 					$optipng_level = get_option('ewww_image_optimizer_optipng_level');
 					if (isset($pngfile)) {
 						exec("$optipng_path -o$optipng_level -quiet $pngfile");
@@ -431,19 +460,23 @@ function ewww_image_optimizer($file) {
 						$pngfile = substr_replace($file, 'png', -3);
 					}
 				}
-				clearstatcache();
 				if (isset($pngfile)) {
 					$png_size = filesize($pngfile);
 					if ($orig_size > $png_size && $png_size != 0) {
 						$gif_converted = TRUE;
 					}
 				}
-			} 
-			exec("$gifsicle_path -b -O3 --careful $file");
+			}
+			if ($optimize) { 
+				exec("$gifsicle_path -b -O3 --careful $file");
+			}
 			clearstatcache();
 			$new_size = filesize($file);
 			if ($gif_converted && $new_size > $png_size && $png_size != 0) {
 				$new_size = $png_size;
+				if (get_option('ewww_image_optimizer_delete_originals') == TRUE) {
+					unlink($file);
+				}
 				$file = $pngfile;
 				if ( FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment') )
 	                        	add_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10, 2);
@@ -453,7 +486,7 @@ function ewww_image_optimizer($file) {
 			}
 			if ($orig_size > $new_size) {
 				$result = "$file: $orig_size vs. $new_size";
-			} else {
+			} elseif ($convert || $optimize) {
 				$result = "$file: unchanged";
 			}
 			break;
@@ -481,15 +514,26 @@ function ewww_image_optimizer($file) {
 }
 
 /**
- * Update the attachment's meta data after being converted from GIF to PNG 
+ * Update the attachment's meta data after being converted 
  */
 function ewww_image_optimizer_update_attachment($data, $ID) {
 	$orig_file = get_attached_file($ID);
 	update_attached_file($ID, $data['file']);
 	$post = get_post($ID);
-	$guid = preg_replace('/.gif$/i', '.png', $post->guid);
+	if (preg_match('/.jpe*g*$/i', $post->guid)) {
+		$guid = preg_replace('/.jpe*g*$/i', '.png', $post->guid);
+		$mime = 'image/png';
+	}
+	if (preg_match('/.png$/i', $post->guid)) {
+		$guid = preg_replace('/.png$/i', '.jpg', $post->guid);
+		$mime = 'image/jpg';
+	}
+	if (preg_match('/.gif$/i', $post->guid)) {
+		$guid = preg_replace('/.gif$/i', '.png', $post->guid);
+		$mime = 'image/png';
+	}
 	wp_update_post( array('ID' => $ID,
-			      'post_mime_type' => 'image/png',
+			      'post_mime_type' => $mime,
 			      'guid' => $guid) );
 	return $data;
 }
@@ -562,7 +606,6 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 
 	foreach($meta['sizes'] as $size => $data) {
 		list($optimized_file, $results) = ewww_image_optimizer($base_dir . $data['file']);
-
 		$meta['sizes'][$size]['file'] = str_replace($base_dir, '', $optimized_file);
 		$meta['sizes'][$size]['ewww_image_optimizer'] = $results;
 	}
@@ -801,8 +844,8 @@ function ewww_image_optimizer_options () {
 			<table class="form-table" style="display: inline">
 				<tr><th><label for="ewww_image_optimizer_delete_originals">Delete originals</label></th><td><input type="checkbox" id="ewww_image_optimizer_delete_originals" name="ewww_image_optimizer_delete_originals" <?php if (get_option('ewww_image_optimizer_delete_originals') == TRUE) { ?>checked="true"<?php } ?> /> This will remove the original image from the server after a successful conversion.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_jpg_to_png">enable JPG to PNG conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_jpg_to_png" name="ewww_image_optimizer_jpg_to_png" <?php if (get_option('ewww_image_optimizer_jpg_to_png') == TRUE) { ?>checked="true"<?php } ?> /> PNG is generally much better than JPG for logos and other images with a limited range of colors. Checking this option will slow down JPG processing significantly, and you may want to enable it only temporarily.</td></tr>
-				<tr><th><label for="ewww_image_optimizer_png_to_jpg">enable PNG to JPG conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_png_to_jpg" name="ewww_image_optimizer_png_to_jpg" <?php if (get_option('ewww_image_optimizer_png_to_jpg') == TRUE) { ?>checked="true"<?php } ?> /> <b>WARNING:</b> This is not a lossless conversion and requires the 'convert' utility provided by ImageMagick. JPG is generally much better than PNG for photographic use because it compresses the image and discards pixels depending on the quality setting. JPG does not support transparency, so we don't convert PNGs with transparency.</td></tr>
-				<tr><th><label for="ewww_image_optimizer_jpg_quality">JPG quality for conversion</label></th><td><input type="text" id="ewww_image_optimizer_jpg_quality" name="ewww_image_optimizer_jpg_quality" style="width: 30px" value="<?php echo get_option('ewww_image_optimizer_jpg_quality'); ?>" /> out of 100. This is used only during conversion attempts. We never, ever reduce the JPG quality setting on a normal JPG optimization (and we're not about to start now, so don't ask).</td></tr>
+				<tr><th><label for="ewww_image_optimizer_png_to_jpg">enable PNG to JPG conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_png_to_jpg" name="ewww_image_optimizer_png_to_jpg" <?php if (get_option('ewww_image_optimizer_png_to_jpg') == TRUE) { ?>checked="true"<?php } ?> /> <b>WARNING:</b> This is not a lossless conversion and requires the 'convert' utility provided by ImageMagick. JPG is generally much better than PNG for photographic use because it compresses the image and discards data. JPG does not support transparency, so we don't convert PNGs with transparency.</td></tr>
+				<!--<tr><th><label for="ewww_image_optimizer_jpg_quality">JPG quality for conversion</label></th><td><input type="text" id="ewww_image_optimizer_jpg_quality" name="ewww_image_optimizer_jpg_quality" style="width: 30px" value="<?php echo get_option('ewww_image_optimizer_jpg_quality'); ?>" /> out of 100. This is used only during conversion attempts. We never, ever reduce the JPG quality setting on a normal JPG optimization (and we're not about to start now, so don't ask).</td></tr>-->
 				<tr><th><label for="ewww_image_optimizer_gif_to_png">enable GIF to PNG conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_gif_to_png" name="ewww_image_optimizer_gif_to_png" <?php if (get_option('ewww_image_optimizer_gif_to_png') == TRUE) { ?>checked="true"<?php } ?> /> PNG is generally much better than GIF, but doesn't support animated images, so we don't convert those.</td></tr>
 			</table>
 			<h3>Advanced options</h3>
