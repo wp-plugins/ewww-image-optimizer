@@ -24,8 +24,9 @@ class ewwwngg {
 		$gallery_path = $wpdb->get_var($q);
 
 		if ( $gallery_path ) {
+			// TODO: optimize thumbs (when we have a hook)
 			$file_path = trailingslashit($gallery_path) . $image['filename'];
-			$res = ewww_image_optimizer(ABSPATH . $file_path);
+			$res = ewww_image_optimizer(ABSPATH . $file_path, 2, false);
 			nggdb::update_image_meta($image['id'], array('ewww_image_optimizer' => $res[1]));
 		}
 	}
@@ -43,7 +44,7 @@ class ewwwngg {
 		$id = intval($_GET['attachment_ID']);
 		$meta = new nggMeta( $id );
 		$file_path = $meta->image->imagePath;
-		$res = ewww_image_optimizer($file_path);
+		$res = ewww_image_optimizer($file_path, 2, false);
 		nggdb::update_image_meta($id, array('ewww_image_optimizer' => $res[1]));
 
 		$sendback = wp_get_referer();
@@ -123,11 +124,11 @@ class ewwwngg {
 						printf( "<strong>%s</strong>&hellip;<br>", esc_html($meta->image->filename) );
 						$file_path = $meta->image->imagePath;
 						file_put_contents($progress_file, "$id");
-						$fres = ewww_image_optimizer($file_path);
+						$fres = ewww_image_optimizer($file_path, 2, false);
 						nggdb::update_image_meta($id, array('ewww_image_optimizer' => $fres[1]));
 						printf( "Full size – %s<br>", $fres[1] );
 						$thumb_path = $meta->image->thumbPath;
-						$tres = ewww_image_optimizer($thumb_path);
+						$tres = ewww_image_optimizer($thumb_path, 2, false);
 						printf( "Thumbnail – %s<br>", $tres[1] );
 						$elapsed = time() - $started;
 						echo "Elapsed: $elapsed seconds</p>";

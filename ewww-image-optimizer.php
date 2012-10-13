@@ -180,11 +180,11 @@ function ewww_image_optimizer_admin_init() {
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpg_to_png');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_png_to_jpg');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_gif_to_png');
-//	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpg_quality');
+//	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpg_background');
 	add_option('ewww_image_optimizer_disable_pngout', TRUE);
 	add_option('ewww_image_optimizer_optipng_level', 2);
 	add_option('ewww_image_optimizer_pngout_level', 2);
-//	add_option('ewww_image_optimizer_jpg_quality', 85);
+//	add_option('ewww_image_optimizer_jpg_background', "#ffffff");
 }
 
 function ewww_image_optimizer_scripts () {
@@ -269,22 +269,24 @@ function ewww_image_optimizer_manual() {
  *
  * Returns an array of the $file $results.
  *
- * @param   string $file            Full absolute path to the image file
+ * @param   string $file		Full absolute path to the image file
+ * @param   int $gallery_type		1=wordpress, 2=nextgen, 3=flagallery
+ * @param   boolean $converted		tells us if this is a resize and the full image was converted to a new format
  * @returns array
  */
-function ewww_image_optimizer($file) {
+function ewww_image_optimizer($file, $gallery_type, $converted) {
 	$file_path = $file;
-
+	
 	// check that the file exists
 	if ( FALSE === file_exists($file_path) || FALSE === is_file($file_path) ) {
 		$msg = sprintf(__("Could not find <span class='code'>%s</span>", EWWW_IMAGE_OPTIMIZER_DOMAIN), $file_path);
-		return array($file, $msg);
+		return array($file, $msg, $converted);
 	}
 
 	// check that the file is writable
 	if ( FALSE === is_writable($file_path) ) {
 		$msg = sprintf(__("<span class='code'>%s</span> is not writable", EWWW_IMAGE_OPTIMIZER_DOMAIN), $file_path);
-		return array($file, $msg);
+		return array($file, $msg, $converted);
 	}
 
 	// check that the file is within the WP uploads folder 
@@ -294,7 +296,7 @@ function ewww_image_optimizer($file) {
 	$path_in_wp = stripos(realpath($file_path), realpath(ABSPATH));
 	if (0 !== $path_in_upload && 0 !== $path_in_wp) {
 		$msg = sprintf(__("<span class='code'>%s</span> must be within the wordpress or upload directory (<span class='code'>%s or %s</span>)", EWWW_IMAGE_OPTIMIZER_DOMAIN), htmlentities($file_path), $upload_path, ABSPATH);
-		return array($file, $msg);
+		return array($file, $msg, $converted);
 	}
 
 	if(function_exists('getimagesize')){
@@ -366,7 +368,7 @@ function ewww_image_optimizer($file) {
 			}
 			break;
 		case 'image/png':
-			if (get_option('ewww_image_optimizer_png_to_jpg')) {
+			if (get_option('ewww_image_optimizer_png_to_jpg') && $gallery_type == 1) {
 				$convert = true;
 			} else {
 				$convert = false;
@@ -385,16 +387,13 @@ function ewww_image_optimizer($file) {
 			} else {
 				$optimize = true;
 			}
-			$png_converted = FALSE;
 			$orig_size = filesize($file);
-			// TODO: transparency cannot be detected, so lets add a way to set the background color (defaulted to white)
-			//if ($convert && !ewww_image_optimizer_png_alpha($file)) {
-			if ($convert) {
+			if (($convert && !ewww_image_optimizer_png_alpha($file)) || $converted) {
 				$jpgfile = substr_replace($file, 'jpg', -3);
 				exec ("convert -flatten $file $jpgfile");
 				$jpg_size = filesize($jpgfile);
 				if ($orig_size > $jpg_size && $jpg_size != 0) {
-					$png_converted = TRUE;
+					$converted = TRUE;
 				}
 			}
 			if ($optimize) {
@@ -409,16 +408,17 @@ function ewww_image_optimizer($file) {
 			}
 			clearstatcache();
 			$new_size = filesize($file);
-			if ($png_converted && $new_size > $jpg_size && $jpg_size != 0) {
+			if ($converted && $new_size > $jpg_size && $jpg_size != 0) {
 				$new_size = $jpg_size;
 				if (get_option('ewww_image_optimizer_delete_originals') == TRUE) {
 					unlink($file);
 				}
 				$file = $jpgfile;
+				// TODO: move this up a level into the calling function
 				if ( FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment') )
 	                        	add_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10, 2);
-			} elseif ($png_converted) {
-				$png_converted = FALSE;
+			} elseif ($converted) {
+				$converted = FALSE;
 				unlink($jpgfile);
 			}
 			if ($orig_size > $new_size) {
@@ -428,7 +428,7 @@ function ewww_image_optimizer($file) {
 			}
 			break;
 		case 'image/gif':
-			if (get_option('ewww_image_optimizer_gif_to_png')) {
+			if (get_option('ewww_image_optimizer_gif_to_png') && $gallery_type == 1) {
 				$convert = true;
 			} else {
 				$convert = false;
@@ -443,9 +443,9 @@ function ewww_image_optimizer($file) {
 			} else {
 				$optimize = true;
 			}
-			$gif_converted = FALSE;
+			$converted = FALSE;
 			$orig_size = filesize($file);
-			if ($convert && !ewww_image_optimizer_is_animated($file)) {
+			if (($convert && !ewww_image_optimizer_is_animated($file)) || $converted) {
 				if (!get_option('ewww_image_optimizer_disable_pngout')) {
 					$pngout_level = get_option('ewww_image_optimizer_pngout_level');
 					exec("$pngout_path -s$pngout_level -q $file");
@@ -463,7 +463,7 @@ function ewww_image_optimizer($file) {
 				if (isset($pngfile)) {
 					$png_size = filesize($pngfile);
 					if ($orig_size > $png_size && $png_size != 0) {
-						$gif_converted = TRUE;
+						$converted = TRUE;
 					}
 				}
 			}
@@ -472,16 +472,17 @@ function ewww_image_optimizer($file) {
 			}
 			clearstatcache();
 			$new_size = filesize($file);
-			if ($gif_converted && $new_size > $png_size && $png_size != 0) {
+			if ($converted && $new_size > $png_size && $png_size != 0) {
 				$new_size = $png_size;
 				if (get_option('ewww_image_optimizer_delete_originals') == TRUE) {
 					unlink($file);
 				}
 				$file = $pngfile;
+				// TODO: move this up a level into the calling function
 				if ( FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment') )
 	                        	add_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10, 2);
-			} elseif ($gif_converted) {
-				$gif_converted = FALSE;
+			} elseif ($converted) {
+				$converted = FALSE;
 				unlink($pngfile);
 			}
 			if ($orig_size > $new_size) {
@@ -491,13 +492,13 @@ function ewww_image_optimizer($file) {
 			}
 			break;
 		default:
-			return array($file, __('Unknown type: ' . $type, EWWW_IMAGE_OPTIMIZER_DOMAIN));
+			return array($file, __('Unknown type: ' . $type, EWWW_IMAGE_OPTIMIZER_DOMAIN), $converted);
 	}
 
 	$result = str_replace($file . ': ', '', $result);
 
 	if($result == 'unchanged') {
-		return array($file, __('No savings', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+		return array($file, __('No savings', EWWW_IMAGE_OPTIMIZER_DOMAIN), $converted);
 	}
 	if(strpos($result, ' vs. ') !== false) {
 		$s = explode(' vs. ', $result);
@@ -508,9 +509,9 @@ function ewww_image_optimizer($file) {
 		$results_msg = sprintf(__("Reduced by %01.1f%% (%s)", EWWW_IMAGE_OPTIMIZER_DOMAIN),
 			$percent,
 			$savings_str);
-		return array($file, $results_msg);
+		return array($file, $results_msg, $converted);
 	}
-	return array($file, $result);
+	return array($file, $result, $converted);
 }
 
 /**
@@ -588,7 +589,7 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 		$file_path =  $upload_path . $file_path;
 	}
 
-	list($file, $msg) = ewww_image_optimizer($file_path);
+	list($file, $msg, $conv) = ewww_image_optimizer($file_path, 1, false);
 
 	$meta['file'] = $file;
 	$meta['ewww_image_optimizer'] = $msg;
@@ -605,7 +606,7 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 	$base_dir = dirname($file_path) . '/';
 
 	foreach($meta['sizes'] as $size => $data) {
-		list($optimized_file, $results) = ewww_image_optimizer($base_dir . $data['file']);
+		list($optimized_file, $results) = ewww_image_optimizer($base_dir . $data['file'], 1, $conv);
 		$meta['sizes'][$size]['file'] = str_replace($base_dir, '', $optimized_file);
 		$meta['sizes'][$size]['ewww_image_optimizer'] = $results;
 	}
@@ -845,7 +846,7 @@ function ewww_image_optimizer_options () {
 				<tr><th><label for="ewww_image_optimizer_delete_originals">Delete originals</label></th><td><input type="checkbox" id="ewww_image_optimizer_delete_originals" name="ewww_image_optimizer_delete_originals" <?php if (get_option('ewww_image_optimizer_delete_originals') == TRUE) { ?>checked="true"<?php } ?> /> This will remove the original image from the server after a successful conversion.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_jpg_to_png">enable JPG to PNG conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_jpg_to_png" name="ewww_image_optimizer_jpg_to_png" <?php if (get_option('ewww_image_optimizer_jpg_to_png') == TRUE) { ?>checked="true"<?php } ?> /> PNG is generally much better than JPG for logos and other images with a limited range of colors. Checking this option will slow down JPG processing significantly, and you may want to enable it only temporarily.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_png_to_jpg">enable PNG to JPG conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_png_to_jpg" name="ewww_image_optimizer_png_to_jpg" <?php if (get_option('ewww_image_optimizer_png_to_jpg') == TRUE) { ?>checked="true"<?php } ?> /> <b>WARNING:</b> This is not a lossless conversion and requires the 'convert' utility provided by ImageMagick. JPG is generally much better than PNG for photographic use because it compresses the image and discards data. JPG does not support transparency, so we don't convert PNGs with transparency.</td></tr>
-				<!--<tr><th><label for="ewww_image_optimizer_jpg_quality">JPG quality for conversion</label></th><td><input type="text" id="ewww_image_optimizer_jpg_quality" name="ewww_image_optimizer_jpg_quality" style="width: 30px" value="<?php echo get_option('ewww_image_optimizer_jpg_quality'); ?>" /> out of 100. This is used only during conversion attempts. We never, ever reduce the JPG quality setting on a normal JPG optimization (and we're not about to start now, so don't ask).</td></tr>-->
+				<!--<tr><th><label for="ewww_image_optimizer_jpg_quality">JPG background color</label></th><td><input type="text" id="ewww_image_optimizer_jpg_background" name="ewww_image_optimizer_jpg_background" style="width: 30px" value="<?php echo get_option('ewww_image_optimizer_jpg_background'); ?>" /> in HEX format (#123def). This is used only if the PNG has transparency.</td></tr>-->
 				<tr><th><label for="ewww_image_optimizer_gif_to_png">enable GIF to PNG conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_gif_to_png" name="ewww_image_optimizer_gif_to_png" <?php if (get_option('ewww_image_optimizer_gif_to_png') == TRUE) { ?>checked="true"<?php } ?> /> PNG is generally much better than GIF, but doesn't support animated images, so we don't convert those.</td></tr>
 			</table>
 			<h3>Advanced options</h3>
