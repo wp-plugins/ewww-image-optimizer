@@ -345,16 +345,23 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 				$optimize = true;
 			}
 			$orig_size = filesize($file);
+			$new_size = $orig_size;
 			if ($convert || $converted) {
 				//exec ("convert $file $pngfile");
-				$pngfile = substr_replace($file, 'png', -3);
 				if (!get_option('ewww_image_optimizer_disable_pngout')) {
 					$pngout_level = get_option('ewww_image_optimizer_pngout_level');
+					$pngfile = substr_replace($file, 'png', -3);
 					exec("$pngout_path -s$pngout_level -q $file $pngfile");
 				}
 				if (!get_option('ewww_image_optimizer_disable_optipng')) {
 					$optipng_level = get_option('ewww_image_optimizer_optipng_level');
-					exec("$optipng_path -o$optipng_level -quiet $pngfile");
+					if (isset($pngfile)) {
+						exec("$optipng_path -o$optipng_level -quiet $pngfile");
+					} else {
+						$pngfile = substr_replace($file, 'png', -3);
+						exec("convert $file $pngfile");
+						exec("$optipng_path -o$optipng_level -quiet $pngfile");
+					}
 				}
 				$png_size = filesize($pngfile);
 				if ($orig_size > $png_size && $png_size != 0) {
@@ -383,7 +390,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 					$new_size = $prog_size;
 					rename($progfile, $tempfile);
 				}
-			} 
 			// compare best-optimized vs. original
 			if ($orig_size > $new_size && $new_size != 0) {
 				rename($tempfile, $file);
@@ -392,6 +398,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 				unlink($tempfile);
 				$result = "$file: unchanged";
 			}
+			} 
 			if ($converted && $new_size > $png_size && $png_size != 0) {
 				$new_size = $png_size;
 				if (get_option('ewww_image_optimizer_delete_originals') == TRUE) {
@@ -883,9 +890,10 @@ function ewww_image_optimizer_options () {
 				<tr><th><label for="ewww_image_optimizer_gifsicle_path">gifsicle path</label></th><td><input type="text" style="width: 400px" id="ewww_image_optimizer_gifsicle_path" name="ewww_image_optimizer_gifsicle_path" value="<?php echo get_option('ewww_image_optimizer_gifsicle_path'); ?>" /></td></tr>
 			</table>
 			<h3>Conversion Settings</h3>
+			<p>Conversion settings do not apply to NextGEN gallery.</p>
 			<table class="form-table" style="display: inline">
 				<tr><th><label for="ewww_image_optimizer_delete_originals">Delete originals</label></th><td><input type="checkbox" id="ewww_image_optimizer_delete_originals" name="ewww_image_optimizer_delete_originals" <?php if (get_option('ewww_image_optimizer_delete_originals') == TRUE) { ?>checked="true"<?php } ?> /> This will remove the original image from the server after a successful conversion.</td></tr>
-				<tr><th><label for="ewww_image_optimizer_jpg_to_png">enable JPG to PNG conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_jpg_to_png" name="ewww_image_optimizer_jpg_to_png" <?php if (get_option('ewww_image_optimizer_jpg_to_png') == TRUE) { ?>checked="true"<?php } ?> /> This conversion requires the 'convert' utility provided by ImageMagick and should be used sparingly. PNG is generally much better than JPG for logos and other images with a limited range of colors. Checking this option will slow down JPG processing significantly, and you may want to enable it only temporarily.</td></tr>
+				<tr><th><label for="ewww_image_optimizer_jpg_to_png">enable JPG to PNG conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_jpg_to_png" name="ewww_image_optimizer_jpg_to_png" <?php if (get_option('ewww_image_optimizer_jpg_to_png') == TRUE) { ?>checked="true"<?php } ?> /> This conversion requires the 'convert' utility provided by ImageMagick or 'pngout' and should be used sparingly. PNG is generally much better than JPG for logos and other images with a limited range of colors. Checking this option will slow down JPG processing significantly, and you may want to enable it only temporarily.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_png_to_jpg">enable PNG to JPG conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_png_to_jpg" name="ewww_image_optimizer_png_to_jpg" <?php if (get_option('ewww_image_optimizer_png_to_jpg') == TRUE) { ?>checked="true"<?php } ?> /> <b>WARNING:</b> This is not a lossless conversion and requires the 'convert' utility provided by ImageMagick. JPG is generally much better than PNG for photographic use because it compresses the image and discards data. JPG does not support transparency, so we don't convert PNGs with transparency.</td></tr>
 				<!--<tr><th><label for="ewww_image_optimizer_jpg_quality">JPG background color</label></th><td><input type="text" id="ewww_image_optimizer_jpg_background" name="ewww_image_optimizer_jpg_background" style="width: 30px" value="<?php echo get_option('ewww_image_optimizer_jpg_background'); ?>" /> in HEX format (#123def). This is used only if the PNG has transparency.</td></tr>-->
 				<tr><th><label for="ewww_image_optimizer_gif_to_png">enable GIF to PNG conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_gif_to_png" name="ewww_image_optimizer_gif_to_png" <?php if (get_option('ewww_image_optimizer_gif_to_png') == TRUE) { ?>checked="true"<?php } ?> /> PNG is generally much better than GIF, but doesn't support animated images, so we don't convert those.</td></tr>
