@@ -77,6 +77,27 @@ function ewww_image_optimizer_path_check() {
 	return array($jpegtran, $optipng, $gifsicle, $pngout);
 }
 
+// Retrieves jpg background fill setting, or returns null for png2jpg conversions
+function ewww_image_optimizer_jpg_background () {
+	$background = get_option('ewww_image_optimizer_jpg_background');
+	if (preg_match('/^\#*(\d|[a-f]){6}$/',$background)) {
+		preg_replace('/#/','',$background);
+		return $background;
+	} else {
+		return NULL;
+	}
+}
+
+// Retrieves the jpg quality setting for png2jpg conversion or returns null
+function ewww_image_optimizer_jpg_quality () {
+	$quality = get_option('ewww_image_optimizer_jpg_quality');
+	if (preg_match('/^(100|[1-9][0-9]?)$/',$quality)) {
+		return $quality;
+	} else {
+		return NULL;
+	}
+}
+
 function ewww_image_optimizer_notice_utils() {
 	if( ini_get('safe_mode') ){
 		echo "<div id='ewww-image-optimizer-warning-opt-png' class='updated fade'><p><strong>PHP's Safe Mode is turned on. This plugin cannot operate in safe mode.</strong></p></div>";
@@ -180,11 +201,11 @@ function ewww_image_optimizer_admin_init() {
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpg_to_png');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_png_to_jpg');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_gif_to_png');
-//	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpg_background');
+	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpg_background');
+	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpg_quality');
 	add_option('ewww_image_optimizer_disable_pngout', TRUE);
 	add_option('ewww_image_optimizer_optipng_level', 2);
 	add_option('ewww_image_optimizer_pngout_level', 2);
-//	add_option('ewww_image_optimizer_jpg_background', "#ffffff");
 }
 
 function ewww_image_optimizer_scripts () {
@@ -432,9 +453,15 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 				$optimize = true;
 			}
 			$orig_size = filesize($file);
-			if (($convert && !ewww_image_optimizer_png_alpha($file)) || $converted) {
+			if (($convert && (!ewww_image_optimizer_png_alpha($file) || ewww_image_optimizer_jpg_background())) || $converted) {
 				$jpgfile = substr_replace($file, 'jpg', -3);
-				exec ("convert -flatten $file $jpgfile");
+				if ($background = ewww_image_optimizer_jpg_background()) {
+					$background = "-background " . '"' . "#$background" . '"';
+				}
+				if ($quality = ewww_image_optimizer_jpg_quality()) {
+					$quality = "-quality $quality";
+				}
+				exec ("convert $background -flatten $quality $file $jpgfile");
 				$jpg_size = filesize($jpgfile);
 				if ($orig_size > $jpg_size && $jpg_size != 0) {
 					$converted = TRUE;
@@ -522,9 +549,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 					unlink($file);
 				}
 				$file = $pngfile;
-				// TODO: move this up a level into the calling function
-				//if ( FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment') )
-	                        //	add_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10, 2);
 			} elseif ($converted) {
 				$converted = FALSE;
 				unlink($pngfile);
@@ -895,7 +919,8 @@ function ewww_image_optimizer_options () {
 				<tr><th><label for="ewww_image_optimizer_delete_originals">Delete originals</label></th><td><input type="checkbox" id="ewww_image_optimizer_delete_originals" name="ewww_image_optimizer_delete_originals" <?php if (get_option('ewww_image_optimizer_delete_originals') == TRUE) { ?>checked="true"<?php } ?> /> This will remove the original image from the server after a successful conversion.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_jpg_to_png">enable JPG to PNG conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_jpg_to_png" name="ewww_image_optimizer_jpg_to_png" <?php if (get_option('ewww_image_optimizer_jpg_to_png') == TRUE) { ?>checked="true"<?php } ?> /> This conversion requires the 'convert' utility provided by ImageMagick or 'pngout' and should be used sparingly. PNG is generally much better than JPG for logos and other images with a limited range of colors. Checking this option will slow down JPG processing significantly, and you may want to enable it only temporarily.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_png_to_jpg">enable PNG to JPG conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_png_to_jpg" name="ewww_image_optimizer_png_to_jpg" <?php if (get_option('ewww_image_optimizer_png_to_jpg') == TRUE) { ?>checked="true"<?php } ?> /> <b>WARNING:</b> This is not a lossless conversion and requires the 'convert' utility provided by ImageMagick. JPG is generally much better than PNG for photographic use because it compresses the image and discards data. JPG does not support transparency, so we don't convert PNGs with transparency.</td></tr>
-				<!--<tr><th><label for="ewww_image_optimizer_jpg_quality">JPG background color</label></th><td><input type="text" id="ewww_image_optimizer_jpg_background" name="ewww_image_optimizer_jpg_background" style="width: 30px" value="<?php echo get_option('ewww_image_optimizer_jpg_background'); ?>" /> in HEX format (#123def). This is used only if the PNG has transparency.</td></tr>-->
+				<tr><th><label for="ewww_image_optimizer_jpg_background">JPG background color</label></th><td>#<input type="text" id="ewww_image_optimizer_jpg_background" name="ewww_image_optimizer_jpg_background" style="width: 60px" value="<?php echo ewww_image_optimizer_jpg_background(); ?>" /> <span style="padding-left: 12px; font-size: 12px; border: solid 1px #555555; background-color: #<? echo ewww_image_optimizer_jpg_background(); ?>">&nbsp;</span> HEX format (#123def). This is used only if the PNG has transparency or leave it blank to skip PNGs with transparency.</td></tr>
+				<tr><th><label for="ewww_image_optimizer_jpg_quality">JPG background color</label></th><td><input type="text" id="ewww_image_optimizer_jpg_quality" name="ewww_image_optimizer_jpg_quality" style="width: 40px" value="<?php echo ewww_image_optimizer_jpg_quality(); ?>" /> Valid values are 1-100. If left blank, the conversion will attempt to set the optimal quality level or default to 92. Remember, this is a lossy conversion, so you are losing pixels, and it is not recommended to actually set the level here unless you want noticable loss of image quality.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_gif_to_png">enable GIF to PNG conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_gif_to_png" name="ewww_image_optimizer_gif_to_png" <?php if (get_option('ewww_image_optimizer_gif_to_png') == TRUE) { ?>checked="true"<?php } ?> /> PNG is generally much better than GIF, but doesn't support animated images, so we don't convert those.</td></tr>
 			</table>
 			<h3>Advanced options</h3>
