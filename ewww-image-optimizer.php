@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate Linux image optimizers into WordPress.
- * @version 1.1.1
+ * @version 1.2.0
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -9,7 +9,7 @@ Plugin Name: EWWW Image Optimizer
 Plugin URI: http://www.shanebishop.net/ewww-image-optimizer/
 Description: Reduce image file sizes and improve performance for images within WordPress including NextGEN Gallery. Uses jpegtran, optipng, pngout, and gifsicle.
 Author: Shane Bishop
-Version: 1.1.1
+Version: 1.2.0
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
@@ -62,15 +62,21 @@ function ewww_image_optimizer_notice_os() {
 function ewww_image_optimizer_path_check() {
 	//$doc_root = $_SERVER['DOCUMENT_ROOT'];
 	$jpegtran = get_option('ewww_image_optimizer_jpegtran_path');
-	if(!preg_match('/^\/[\w\.-\d\/_]+\/jpegtran$/', $jpegtran)) {
+	if(exec("which " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "jpegtran")) {
+		$jpegtran = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "jpegtran";
+	} elseif (!preg_match('/^\/[\w\.-\d\/_]+\/jpegtran$/', $jpegtran)) {
 		$jpegtran = 'jpegtran';
 	}
 	$optipng = get_option('ewww_image_optimizer_optipng_path');
-	if(!preg_match('/^\/[\w\.-\d\/_]+\/optipng$/', $optipng)) {
+	if(exec("which " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "optipng")) {
+		$optipng = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "optipng";
+	} elseif (!preg_match('/^\/[\w\.-\d\/_]+\/optipng$/', $optipng)) {
 		$optipng = 'optipng';
 	}
 	$gifsicle = get_option('ewww_image_optimizer_gifsicle_path');
-	if(!preg_match('/^\/[\w\.-\d\/_]+\/gifsicle$/', $gifsicle)) {
+	if(exec("which " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "gifsicle")) {
+		$gifsicle = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "gifsicle";
+	} elseif (!preg_match('/^\/[\w\.-\d\/_]+\/gifsicle$/', $gifsicle)) {
 		$gifsicle = 'gifsicle';
 	}
 	$pngout = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static";
@@ -908,6 +914,7 @@ function ewww_image_optimizer_options () {
 				<tr><th><label for="ewww_image_optimizer_disable_gifsicle">disable gifsicle</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_gifsicle" name="ewww_image_optimizer_disable_gifsicle" <?php if (get_option('ewww_image_optimizer_disable_gifsicle') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
 			</table>
 			<h3>Path Settings</h3>
+			<p><b>*Deprecated</b>: just drop the binaries in the ewww-image-optimizer plugin folder, and off you go.</p>
 			<table class="form-table" style="display: inline">
 				<tr><th><label for="ewww_image_optimizer_jpegtran_path">jpegtran path</label></th><td><input type="text" style="width: 400px" id="ewww_image_optimizer_jpegtran_path" name="ewww_image_optimizer_jpegtran_path" value="<?php echo get_option('ewww_image_optimizer_jpegtran_path'); ?>" /></td></tr>
 				<tr><th><label for="ewww_image_optimizer_optipng_path">optipng path</label></th><td><input type="text" style="width: 400px" id="ewww_image_optimizer_optipng_path" name="ewww_image_optimizer_optipng_path" value="<?php echo get_option('ewww_image_optimizer_optipng_path'); ?>" /></td></tr>

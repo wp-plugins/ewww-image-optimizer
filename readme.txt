@@ -125,6 +125,15 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 == Changelog ==
 
+= 1.2.0 =
+* deprecated manual path settings, put binaries in the plugin folder instead
+* new *optional* conversion routines check for smallest file format
+* added gif2png
+* added jpg2png
+* added png2jpg
+* reorganized settings page (it was getting ugly)
+* added poll for feedback on static binaries
+
 = 1.1.1 =
 * fixed not returning results of resized version of image
 
@@ -190,6 +199,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * First release (forked from CW Image Optimizer)
 
 == Upgrade Notice ==
+
+= 1.2.0 =
+Added conversion operations to optionally determine best file format for the smallest possible file. Also added a poll for feedback to help determine some future plans. Please visit the settings page and submit the poll if applicable.
 
 = 1.1.0 =
 Added pngout functionality for even better PNG optimization (disabled by default). Settings page now has links to stand-alone binaries of gifsicle and optipng. Please try them out and report any problems.
