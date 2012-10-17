@@ -38,6 +38,7 @@ add_action('admin_action_bulk_optimize', 'ewww_image_optimizer_bulk_action_handl
 add_action('admin_action_-1', 'ewww_image_optimizer_bulk_action_handler' ); 
 add_action('admin_print_scripts-media_page_ewww-image-optimizer-bulk', 'ewww_image_optimizer_scripts' );
 add_action('admin_action_ewww_image_optimizer_install_pngout', 'ewww_image_optimizer_install_pngout');
+add_action('admin_action_ewww_image_optimizer_install_optipng', 'ewww_image_optimizer_install_optipng');
 
 /**
  * Check if system requirements are met
@@ -820,12 +821,12 @@ function ewww_image_optimizer_bulk_action_handler() {
 	wp_redirect( add_query_arg( '_wpnonce', wp_create_nonce( 'ewww-image-optimizer-bulk' ), admin_url( 'upload.php?page=ewww-image-optimizer-bulk&goback=1&ids=' . $ids ) ) ); 
 	exit(); 
 }
-
+//TODO: fix security errors after installation, weird...
 // retrieves the pngout linux package with wget, unpacks it with tar, and then copies the appropriate version to the plugin folder
 function ewww_image_optimizer_install_pngout() {
 	$wget_command = "wget -nc -O " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static.tar.gz http://static.jonof.id.au/dl/kenutils/pngout-20120530-linux-static.tar.gz";
 	exec ($wget_command);
-	exec ("tar xvzf " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static.tar.gz -C " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
+	exec ("tar xzf " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static.tar.gz -C " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
 	$arch_type = $_REQUEST['arch'];
 	switch ($arch_type) {
 		case 'i386':
@@ -852,27 +853,9 @@ function ewww_image_optimizer_install_pngout() {
 
 
 function ewww_image_optimizer_install_optipng() {
-	$wget_command = "wget -nc -O " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "optipng.zip http://shanebishop.net/uploads/optipng.zip";
+	$wget_command = "wget -nc -O " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "optipng.tar.gz http://shanebishop.net/uploads/optipng.tar.gz";
 	exec ($wget_command);
-	exec ("unzip " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "optipng.zip -C " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
-	$arch_type = $_REQUEST['arch'];
-	switch ($arch_type) {
-		case 'i386':
-			exec ("cp " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/i386/pngout-static " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
-			break;
-		case 'i686':
-			exec ("cp " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/i686/pngout-static " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
-			break;
-		case 'athlon':
-			exec ("cp " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/athlon/pngout-static " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
-			break;
-		case 'pentium4':
-			exec ("cp " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/pentium4/pngout-static " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
-			break;
-		case 'x64':
-			exec ("cp " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/x86_64/pngout-static " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
-			break;
-	}
+	exec ("tar xzf " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "optipng.tar.gz -C " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
 	$sendback = wp_get_referer();
 	$sendback = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $sendback);
 	wp_redirect($sendback);
@@ -928,9 +911,10 @@ function ewww_image_optimizer_options () {
 		</div>
 		<h3>Installation</h3>
 		<p><b>If you are on shared hosting, and have installed the utilities in your home folder, you can provide the paths below.</b></p>
-		<p><b>NEW:</b> I have compiled static binaries for <b>gifsicle</b> and <b>optipng</b> for those who don't have access to a shell or build utilities. If all goes well, these will become one-click installs in the future:<br /><a href="http://shanebishop.net/uploads/gifsicle.zip">gifsicle</a> | <a href="http://shanebishop.net/uploads/optipng.zip">optipng</a><br />
+		<p><b>Install optipng</b> - <a href="admin.php?action=ewww_image_optimizer_install_optipng">automatically</a> | <a href="http://shanebishop.net/uploads/optipng.zip">manually</a><br>
 		<b>Install pngout</b> - Click the link below that corresponds to the architecture of your server. If in doubt, try the i386 or ask your webhost. Pngout is free closed-source software that can produce drastically reduced filesizes for PNGs, but can be very time consuming to process images<br />
-<a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=i386">i386</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=athlon">athlon</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=pentium4">pentium4</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=i686">i686</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=x64">64-bit</a></p>
+<a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=i386">i386</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=athlon">athlon</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=pentium4">pentium4</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=i686">i686</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=x64">64-bit</a><br />
+		I have compiled static binaries for <b>gifsicle</b> and <b>optipng</b> for those who don't have access to a shell or build utilities. If all goes well, these will become one-click installs in the future:<br /><a href="http://shanebishop.net/uploads/gifsicle.zip">gifsicle</a> | <a href="http://shanebishop.net/uploads/optipng.zip">optipng</a></p>
 		<form method="post" action="options.php">
 			<?php settings_fields('ewww_image_optimizer_options'); ?>
 			<h3>General Settings</h3>
