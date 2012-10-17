@@ -821,10 +821,40 @@ function ewww_image_optimizer_bulk_action_handler() {
 	exit(); 
 }
 
+// retrieves the pngout linux package with wget, unpacks it with tar, and then copies the appropriate version to the plugin folder
 function ewww_image_optimizer_install_pngout() {
 	$wget_command = "wget -nc -O " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static.tar.gz http://static.jonof.id.au/dl/kenutils/pngout-20120530-linux-static.tar.gz";
 	exec ($wget_command);
 	exec ("tar xvzf " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static.tar.gz -C " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
+	$arch_type = $_REQUEST['arch'];
+	switch ($arch_type) {
+		case 'i386':
+			exec ("cp " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/i386/pngout-static " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
+			break;
+		case 'i686':
+			exec ("cp " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/i686/pngout-static " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
+			break;
+		case 'athlon':
+			exec ("cp " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/athlon/pngout-static " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
+			break;
+		case 'pentium4':
+			exec ("cp " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/pentium4/pngout-static " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
+			break;
+		case 'x64':
+			exec ("cp " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/x86_64/pngout-static " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
+			break;
+	}
+	$sendback = wp_get_referer();
+	$sendback = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $sendback);
+	wp_redirect($sendback);
+	exit(0);
+}
+
+
+function ewww_image_optimizer_install_optipng() {
+	$wget_command = "wget -nc -O " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "optipng.zip http://shanebishop.net/uploads/optipng.zip";
+	exec ($wget_command);
+	exec ("unzip " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "optipng.zip -C " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
 	$arch_type = $_REQUEST['arch'];
 	switch ($arch_type) {
 		case 'i386':
