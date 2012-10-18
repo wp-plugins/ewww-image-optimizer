@@ -18,7 +18,9 @@ License: GPLv3
  * Constants
  */
 define('EWWW_IMAGE_OPTIMIZER_DOMAIN', 'ewww_image_optimizer');
+// this is just the name of the plugin folder
 define('EWWW_IMAGE_OPTIMIZER_PLUGIN_DIR', dirname(plugin_basename(__FILE__)));
+// this is the full system path to the plugin folder
 define('EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH', plugin_dir_path(__FILE__) );
 
 /**
@@ -43,7 +45,7 @@ add_action('admin_action_ewww_image_optimizer_install_optipng', 'ewww_image_opti
 add_action('admin_action_ewww_image_optimizer_install_gifsicle', 'ewww_image_optimizer_install_gifsicle');
 
 /**
- * Check if system requirements are met
+ * Check if system requirements are met, we only run on Linux and Mac OSX
  */
 if('Linux' != PHP_OS && 'Darwin' != PHP_OS) {
 	add_action('admin_notices', 'ewww_image_optimizer_notice_os');
@@ -57,13 +59,13 @@ if('Linux' != PHP_OS && 'Darwin' != PHP_OS) {
 
 require( dirname(__FILE__) . '/nextgen-integration.php' );
 
+// tells the user they are on an unsupported operating system
 function ewww_image_optimizer_notice_os() {
 	echo "<div id='ewww-image-optimizer-warning-os' class='updated fade'><p><strong>EWWW Image Optimizer isn't supported on your server.</strong> Unfortunately, the EWWW Image Optimizer plugin doesn't work with " . htmlentities(PHP_OS) . ".</p></div>";
 }   
 
-// Retrieves user specified paths or set defaults if they don't exist. We also do a basic check to make sure we weren't given a malicious path.
+// If the utitilites are in the plugin folder, we use that. Otherwise, we retrieve user specified paths or set defaults if all else fails. We also do a basic check to make sure we weren't given a malicious path.
 function ewww_image_optimizer_path_check() {
-	//$doc_root = $_SERVER['DOCUMENT_ROOT'];
 	$jpegtran = get_option('ewww_image_optimizer_jpegtran_path');
 	if(exec("which " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "jpegtran")) {
 		$jpegtran = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "jpegtran";
@@ -107,6 +109,7 @@ function ewww_image_optimizer_jpg_quality () {
 	}
 }
 
+// we check for safe mode and exec, then also direct the user where to go if they don't have the tools installed
 function ewww_image_optimizer_notice_utils() {
 	if( ini_get('safe_mode') ){
 		echo "<div id='ewww-image-optimizer-warning-opt-png' class='updated fade'><p><strong>PHP's Safe Mode is turned on. This plugin cannot operate in safe mode.</strong></p></div>";
@@ -189,7 +192,7 @@ function ewww_image_optimizer_notice_utils() {
 }
 
 /**
- * Plugin admin functions
+ * Plugin admin initialization function
  */
 function ewww_image_optimizer_admin_init() {
 	load_plugin_textdomain(EWWW_IMAGE_OPTIMIZER_DOMAIN);
@@ -217,10 +220,13 @@ function ewww_image_optimizer_admin_init() {
 	add_option('ewww_image_optimizer_pngout_level', 2);
 }
 
+// load the scripts for EWWW IO
 function ewww_image_optimizer_scripts () {
+	// creates a timer on the bulk optimize page
 	wp_enqueue_script ('ewwwloadscript', plugins_url('/pageload.js', __FILE__));
 }	
 
+// adds the bulk optimize and settings page to the admin menu
 function ewww_image_optimizer_admin_menu() {
 	add_media_page( 'Bulk Optimize', 'Bulk Optimize', 'edit_others_posts', 'ewww-image-optimizer-bulk', 'ewww_image_optimizer_bulk_preview');
 	add_options_page(
@@ -232,12 +238,14 @@ function ewww_image_optimizer_admin_menu() {
 	);
 }
 
+// adds a link on the Plugins page for the EWWW IO settings
 function ewww_image_optimizer_settings_link($links) {
 	$settings_link = '<a href="options-general.php?page=ewww-image-optimizer/ewww-image-optimizer.php">Settings</a>';
 	array_unshift ( $links, $settings_link );
 	return $links;
 }
 
+// presents the bulk optimize function with the number of images, and runs it once they submit the button (most of the html is in bulk.php)
 function ewww_image_optimizer_bulk_preview() {
 	$attachments = null;
 	$auto_start = false;
@@ -795,7 +803,8 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 	}
 }
 
-// Borrowed from http://www.viper007bond.com/wordpress-plugins/regenerate-thumbnails/ 
+// Borrowed from http://www.viper007bond.com/wordpress-plugins/regenerate-thumbnails/
+// adds a bulk optimize action to the drop-down on the media library page
 function ewww_image_optimizer_add_bulk_actions_via_javascript() { ?> 
 	<script type="text/javascript"> 
 		jQuery(document).ready(function($){ 
@@ -840,7 +849,6 @@ function ewww_image_optimizer_download_file ($url, $path) {
 	}
 }
 
-// TODO: research how wordpress does this stuff for updates and plugin installs
 // retrieves the jpegtran linux package with wget, and unpacks it with tar
 function ewww_image_optimizer_install_jpegtran() {
 	if ( FALSE === current_user_can('install_plugins') ) {

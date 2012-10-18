@@ -16,7 +16,7 @@ class ewwwngg {
 	function ewww_ngg_bulk_menu () {
 		add_management_page('NextGEN Gallery Bulk Optimize', 'NextGEN Bulk Optimize', 'manage_options', 'ewww-ngg-bulk', array (&$this, 'ewww_ngg_bulk'));
 	}
-
+	//TODO: add a bulk optimize action to each gallery (when we have a hook)
 	/* ngg_added_new_image hook */
 	function ewww_added_new_image( $image ) {
 		global $wpdb;
