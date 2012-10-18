@@ -50,48 +50,35 @@ Pngout is new in version 1.1.0 and is not enabled by default because it is resou
 
 = Installing optipng =
 
-If you have root access to your server, you can install optipng from the standard repositories. If you are on shared hosting, read on... These steps can/should generally all be done via the command line
-
-1. I've compiled a static binary (32-bit x86) available at http://shanebishop.net/uploads/optipng.zip
-1. Download and extract it anywhere outside your web folder, and provide the path on the plugin settings page.
-
-If the above binary isn't working for you, you can compile it like so:
-
+1. Try the one-click install on the settings page. If that doesn't work for you, keep reading
+1. If you have root access to your server, you can install optipng from the standard repositories (yum/rpm or apt/deb). If you are on shared hosting, read on... These steps can/should generally all be done via the command line
 1. Download the latest stable version of [optipng](http://optipng.sourceforge.net/) to your home directory
 1. Ensure libpng and zlib are installed. If they are not, you're on your own there (but maybe you need a new web host...)
 1. Uncompress optipng: *tar xvzf optipng-0.7.1.tar.gz && cd optipng-0.7.1*
 1. Configure and compile optipng: *./configure && make*
 1. If you have root access, install it with *make install*
-1. If necessary, provide the path to the optipng binary on the plugin settings page. It should be something similar to */home/your-username-here/optipng-0.7.1/src/optipng/optipng* if you didn't have root access to run *make install*. You can always move the binary wherever you would like, it doesn't need to stay where it is.
+1. If not, copy the binary from */optipng-0.7.1/src/optipng/optipng* to the plugin folder (wordpress/wp-content/plugins/ewww-image-optimizer).
 
 = Installing jpegtran =
 
-If you are on a standard webhost, you should already have this, if you own your own server, or have root access, it is part of the libjpeg-turbo-progs on Debian/Ubuntu, and likely something similar on rpm distros (Fedora, CentOS, RHEL, SuSE).
+1. Try the one-click install on the settings page, or download it manually and place it in the plugin folder (wordpress/wp-content/plugins/ewww-image-optimizer).
+1. If you own your own server, or have root access, it is part of the libjpeg-turbo-progs on Debian/Ubuntu, and likely something similar on rpm distros (Fedora, CentOS, RHEL, SuSE).
 
 = Installing gifsicle =
 
-If you have root access to your server, you can install gifsicle from the standard repositories. If you are on shared hosting, read on... These steps can/should generally all be done via the command line
-
-1. I've compiled a static binary (32-bit x86) available at http://shanebishop.net/uploads/gifsicle.zip
-1. Download and extract it anywhere outside your web folder, and provide the path on the plugin settings page.
-
-If the above binary isn't working for you, you can compile it like so:
-
+1. Try the one-click install on the settings page. If that doesn't work for you, keep going
+1. If you have root access to your server, you can install gifsicle from the standard repositories (yum/rpm or apt/deb). If you are on shared hosting, read on... These steps can/should generally all be done via the command line
 1. Download the latest version of [gifsicle](http://www.lcdf.org/gifsicle/) to your home directory
 1. Uncompress gifsicle: *tar xvzf gifsicle-1.67.tar.gz && cd gifsicle-1.67*
 1. Configure and compile gifsicle (we disable gifview and gifdiff as they are not needed): *./configure --disable-gifdiff --disable-gifview && make*
 1. If you have root access, install it with *make install*
-1. If necessary, provide the path to the gifsicle binary on the plugin settings page. It should be something similar to */home/your-username-here/gifsicle-1.67/src/gifsicle* if you didn't have root access to run *make install*. You can always move the binary wherever you would like, it doesn't need to stay where it is.
-
-= Troubleshooting =
-
-Have some problems, and I'll give some pointers here.
+1. If not, copy the binary from */gifsicle-1.67/src/gifsicle* to the plugin folder (wordpress/wp-content/plugins/ewww-image-optimizer).
 
 == Frequently Asked Questions ==
 
 = The bulk optimizer doesn't seem to be working, what can I do? =
 
-First, upgrade to the latest version. Since version 1.0.8, each image is given 50 seconds to complete (which actually doesn't include time used by the optimization utilities). You can also increase the setting max_execution_time in your php.ini file. That said, there are other timeouts with Apache, and possibly other limitations of your webhost. If you've tried everything else, the last thing to look for is large PNG files. In my tests on a shared hosting setup, "large" is anything over 300 KB. You can first try decreasing the PNG optimization level to 1 on the settings. If that doesn't work, perhaps you ought to convert that PNG to JPG and re-upload it. Screenshots are often done as PNG files, but that is a poor choice for anything with photographic elements.
+First, upgrade to the latest version. Since version 1.0.8, each image is given 50 seconds to complete (which actually doesn't include time used by the optimization utilities). You can also increase the setting max_execution_time in your php.ini file. That said, there are other timeouts with Apache, and possibly other limitations of your webhost. If you've tried everything else, the last thing to look for is large PNG files. In my tests on a shared hosting setup, "large" is anything over 300 KB. You can first try decreasing the PNG optimization level in the settings. If that doesn't work, perhaps you ought to convert that PNG to JPG and re-upload it. Screenshots are often done as PNG files, but that is a poor choice for anything with photographic elements.
 
 = Can I use EWWW Image Optimizer with a Windows server? =
 
@@ -111,7 +98,7 @@ Using the command *gifsicle -b -O3 --careful original file*. This is particularl
 
 = Why not just convert GIFs to PNGs then? =
 
-I tried that first, and decided against it. First, because it is hard work and I have no use for it. Second, because I don't want to automatically destroy your original GIFs. If there is enough interest, I will embark upon a quest to implement an optional conversion process that can replace the original GIF with an optimized PNG. Or maybe just give an option to download an optimized PNG that you can then re-upload.
+Go for it, version 1.2 makes this possible so long as you have either one of the PNG optimizers available.
 
 = I want to know more about image optimization, and why you chose these options/tools. =
 
@@ -126,13 +113,14 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 == Changelog ==
 
 = 1.2.0 =
-* deprecated manual path settings, put binaries in the plugin folder instead
+* deprecated manual path settings, please put binaries in the plugin folder instead
+* new one-click install options for jpegtran, optipng and gifsicle
 * new *optional* conversion routines check for smallest file format
 * added gif2png
 * added jpg2png
 * added png2jpg
 * reorganized settings page (it was getting ugly)
-* added poll for feedback on static binaries
+* added poll for feedback on one-click installs
 
 = 1.1.1 =
 * fixed not returning results of resized version of image
@@ -201,7 +189,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 == Upgrade Notice ==
 
 = 1.2.0 =
-Added conversion operations to optionally determine best file format for the smallest possible file. Also added a poll for feedback to help determine some future plans. Please visit the settings page and submit the poll if applicable.
+Added conversion operations to optionally determine best file format for the smallest possible file. Setting paths manually will be disabled in a future release, as the plugin now automatically looks in the plugin folder. It is advised to move your binaries there and remove the path settings. Also added a poll for feedback. Please visit the settings page and submit the poll if applicable.
 
 = 1.1.0 =
 Added pngout functionality for even better PNG optimization (disabled by default). Settings page now has links to stand-alone binaries of gifsicle and optipng. Please try them out and report any problems.

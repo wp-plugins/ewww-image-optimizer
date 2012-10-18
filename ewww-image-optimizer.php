@@ -37,6 +37,7 @@ add_action('admin_head-upload.php', 'ewww_image_optimizer_add_bulk_actions_via_j
 add_action('admin_action_bulk_optimize', 'ewww_image_optimizer_bulk_action_handler' ); 
 add_action('admin_action_-1', 'ewww_image_optimizer_bulk_action_handler' ); 
 add_action('admin_print_scripts-media_page_ewww-image-optimizer-bulk', 'ewww_image_optimizer_scripts' );
+add_action('admin_action_ewww_image_optimizer_install_jpegtran', 'ewww_image_optimizer_install_jpegtran');
 add_action('admin_action_ewww_image_optimizer_install_pngout', 'ewww_image_optimizer_install_pngout');
 add_action('admin_action_ewww_image_optimizer_install_optipng', 'ewww_image_optimizer_install_optipng');
 add_action('admin_action_ewww_image_optimizer_install_gifsicle', 'ewww_image_optimizer_install_gifsicle');
@@ -177,7 +178,7 @@ function ewww_image_optimizer_notice_utils() {
 	$msg = implode(', ', $missing);
 
 	if(!empty($msg)){
-		echo "<div id='ewww-image-optimizer-warning-opt-png' class='updated fade'><p><strong>EWWW Image Optimizer requires <a href='http://jpegclub.org/jpegtran/'>jpegtran</a>, <a href='http://optipng.sourceforge.net/'>optipng</a> or <a href='http://advsys.net/ken/utils.htm'>pngout</a>, and <a href='http://www.lcdf.org/gifsicle/'>gifsicle</a>.</strong> You are missing: $msg. Please install via the <a href='http://wordpress.org/extend/plugins/ewww-image-optimizer/installation/'>Installation Instructions</a> and update paths (if necessary) on the <a href='options-general.php?page=ewww-image-optimizer/ewww-image-optimizer.php'>Settings Page</a>.</p></div>";
+		echo "<div id='ewww-image-optimizer-warning-opt-png' class='updated fade'><p><strong>EWWW Image Optimizer requires <a href='http://jpegclub.org/jpegtran/'>jpegtran</a>, <a href='http://optipng.sourceforge.net/'>optipng</a> or <a href='http://advsys.net/ken/utils.htm'>pngout</a>, and <a href='http://www.lcdf.org/gifsicle/'>gifsicle</a>.</strong> You are missing: $msg. Please install via the <a href='options-general.php?page=ewww-image-optimizer/ewww-image-optimizer.php'>Settings Page</a>. If the one-click install links don't work for you, try the <a href='http://wordpress.org/extend/plugins/ewww-image-optimizer/installation/'>Installation Instructions</a>.</p></div>";
 	}
 
 	// Check if exec is disabled
@@ -351,9 +352,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 		$skip_optipng = false;
 		$skip_gifsicle = false;
 		$skip_pngout = false;
-		//$skip = true;
-	//} else {
-	//	$skip = false;
 	}
 
 	switch($type) {
@@ -376,7 +374,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 			$orig_size = filesize($file);
 			$new_size = $orig_size;
 			if ($convert || $converted) {
-				//exec ("convert $file $pngfile");
 				if (!get_option('ewww_image_optimizer_disable_pngout')) {
 					$pngout_level = get_option('ewww_image_optimizer_pngout_level');
 					$pngfile = substr_replace($file, 'png', -3);
@@ -822,40 +819,79 @@ function ewww_image_optimizer_bulk_action_handler() {
 	wp_redirect( add_query_arg( '_wpnonce', wp_create_nonce( 'ewww-image-optimizer-bulk' ), admin_url( 'upload.php?page=ewww-image-optimizer-bulk&goback=1&ids=' . $ids ) ) ); 
 	exit(); 
 }
-//TODO: make sure the user has permission to run these functions, can check the options page also
-// retrieves the pngout linux package with wget, unpacks it with tar, and then copies the appropriate version to the plugin folder
-function ewww_image_optimizer_install_pngout() {
-	$wget_command = "wget -nc -O " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static.tar.gz http://static.jonof.id.au/dl/kenutils/pngout-20120530-linux-static.tar.gz";
-	exec ($wget_command);
-	exec ("tar xzf " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static.tar.gz -C " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
-	$arch_type = $_REQUEST['arch'];
-	switch ($arch_type) {
-		case 'i386':
-			exec ("cp " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/i386/pngout-static " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
-			break;
-		case 'i686':
-			exec ("cp " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/i686/pngout-static " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
-			break;
-		case 'athlon':
-			exec ("cp " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/athlon/pngout-static " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
-			break;
-		case 'pentium4':
-			exec ("cp " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/pentium4/pngout-static " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
-			break;
-		case 'x64':
-			exec ("cp " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/x86_64/pngout-static " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
-			break;
+
+// retrieves the file located at $url and stores it at $path
+function ewww_image_optimizer_download_file ($url, $path) {
+	$newfname = $path;
+	$file = fopen($url, "rb");
+	if ($file) {
+		$newf = fopen ($newfname, "wb");
+		if ($newf) {
+			while(!feof($file)) {
+				fwrite($newf, fread($file, 1024 * 8), 1024 * 8);
+			}
+		}
 	}
+	if ($file) {
+		fclose($file);
+	}
+	if ($newf) {
+		fclose($newf);
+	}
+}
+
+// TODO: research how wordpress does this stuff for updates and plugin installs
+// retrieves the jpegtran linux package with wget, and unpacks it with tar
+function ewww_image_optimizer_install_jpegtran() {
+	if ( FALSE === current_user_can('install_plugins') ) {
+		wp_die(__('You don\'t have permission to install image optimizer utilities.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+	}
+	ewww_image_optimizer_download_file("http://jpegclub.org/droppatch.v09.tar.gz", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "jpegtran.tar.gz");
+	exec ("tar xzf " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "jpegtran.tar.gz -C " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
 	$sendback = wp_get_referer();
 	$sendback = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $sendback);
 	wp_redirect($sendback);
 	exit(0);
 }
 
+// retrieves the pngout linux package with wget, unpacks it with tar, and then copies the appropriate version to the plugin folder
+function ewww_image_optimizer_install_pngout() {
+	if ( FALSE === current_user_can('install_plugins') ) {
+		wp_die(__('You don\'t have permission to install image optimizer utilities.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+	}
+	ewww_image_optimizer_download_file("http://static.jonof.id.au/dl/kenutils/pngout-20120530-linux-static.tar.gz", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static.tar.gz");
+	exec ("tar xzf " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static.tar.gz -C " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
+	$arch_type = $_REQUEST['arch'];
+	switch ($arch_type) {
+		case 'i386':
+			copy(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/i386/pngout-static", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static");
+			break;
+		case 'i686':
+			copy(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/i686/pngout-static", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static");
+			break;
+		case 'athlon':
+			copy(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/athlon/pngout-static", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static");
+			break;
+		case 'pentium4':
+			copy(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/pentium4/pngout-static", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static");
+			break;
+		case 'x64':
+			copy(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/x86_64/pngout-static", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static");
+			break;
+	}
+	chmod(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static", 0755);
+	$sendback = wp_get_referer();
+	$sendback = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $sendback);
+	wp_redirect($sendback);
+	exit(0);
+}
 
+// retrieves the optipng linux package with wget, and unpacks it with tar
 function ewww_image_optimizer_install_optipng() {
-	$wget_command = "wget -nc -O " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "optipng.tar.gz http://shanebishop.net/uploads/optipng.tar.gz";
-	exec ($wget_command);
+	if ( FALSE === current_user_can('install_plugins') ) {
+		wp_die(__('You don\'t have permission to install image optimizer utilities.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+	}
+	ewww_image_optimizer_download_file("http://shanebishop.net/uploads/optipng.tar.gz", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "optipng.tar.gz");
 	exec ("tar xzf " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "optipng.tar.gz -C " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
 	$sendback = wp_get_referer();
 	$sendback = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $sendback);
@@ -863,9 +899,12 @@ function ewww_image_optimizer_install_optipng() {
 	exit(0);
 }
 
+// retrieves the gifsicle linux package with wget, and unpacks it with tar
 function ewww_image_optimizer_install_gifsicle() {
-	$wget_command = "wget -nc -O " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "gifsicle.tar.gz http://shanebishop.net/uploads/gifsicle.tar.gz";
-	exec ($wget_command);
+	if ( FALSE === current_user_can('install_plugins') ) {
+		wp_die(__('You don\'t have permission to install image optimizer utilities.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+	}
+	ewww_image_optimizer_download_file("http://shanebishop.net/uploads/gifsicle.tar.gz", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "gifsicle.tar.gz");
 	exec ("tar xzf " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "gifsicle.tar.gz -C " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
 	$sendback = wp_get_referer();
 	$sendback = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $sendback);
@@ -873,6 +912,7 @@ function ewww_image_optimizer_install_gifsicle() {
 	exit(0);
 }
 
+// displays the EWWW IO options and provides one-click install for the optimizer utilities
 function ewww_image_optimizer_options () {
 	list ($jpegtran_path, $optipng_path, $gifsicle_path) = ewww_image_optimizer_path_check();
 	?>
@@ -921,8 +961,8 @@ function ewww_image_optimizer_options () {
 		</div>
 		</div>
 		<h3>Installation</h3>
-		<p><b>If you are on shared hosting, and have installed the utilities in your home folder, you can provide the paths below.</b></p>
-		<p><b>Install gifsicle</b> - <a href="admin.php?action=ewww_image_optimizer_install_gifsicle">automatically</a> | <a href="http://shanebishop.net/uploads/gifsicle.zip">manually</a><br />
+		<p><b>Install jpegtran</b> - <a href="admin.php?action=ewww_image_optimizer_install_jpegtran">automatically</a> | <a href="http://jpegclub.org/droppatch.v09.tar.gz">manually</a><br />
+		<b>Install gifsicle</b> - <a href="admin.php?action=ewww_image_optimizer_install_gifsicle">automatically</a> | <a href="http://shanebishop.net/uploads/gifsicle.zip">manually</a><br />
 		<b>Install optipng</b> - <a href="admin.php?action=ewww_image_optimizer_install_optipng">automatically</a> | <a href="http://shanebishop.net/uploads/optipng.zip">manually</a><br>
 		<b>Install pngout</b> - Click the link below that corresponds to the architecture of your server. If in doubt, try the i386 or ask your webhost. Pngout is free closed-source software that can produce drastically reduced filesizes for PNGs, but can be very time consuming to process images<br />
 <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=i386">i386</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=athlon">athlon</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=pentium4">pentium4</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=i686">i686</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=x64">64-bit</a></p>
@@ -939,7 +979,9 @@ function ewww_image_optimizer_options () {
 				<tr><th><label for="ewww_image_optimizer_disable_gifsicle">disable gifsicle</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_gifsicle" name="ewww_image_optimizer_disable_gifsicle" <?php if (get_option('ewww_image_optimizer_disable_gifsicle') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
 			</table>
 			<h3>Path Settings</h3>
-			<p><b>*Deprecated</b>: just drop the binaries in the ewww-image-optimizer plugin folder, and off you go.</p>
+			<p><b>*Deprecated</b>: just drop the binaries in the ewww-image-optimizer plugin folder, and off you go:<br />
+			<i><?php echo EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH; ?></i><br />
+			If you are on shared hosting, and have installed the utilities in your home folder, you can provide the paths below.</p>
 			<table class="form-table" style="display: inline">
 				<tr><th><label for="ewww_image_optimizer_jpegtran_path">jpegtran path</label></th><td><input type="text" style="width: 400px" id="ewww_image_optimizer_jpegtran_path" name="ewww_image_optimizer_jpegtran_path" value="<?php echo get_option('ewww_image_optimizer_jpegtran_path'); ?>" /></td></tr>
 				<tr><th><label for="ewww_image_optimizer_optipng_path">optipng path</label></th><td><input type="text" style="width: 400px" id="ewww_image_optimizer_optipng_path" name="ewww_image_optimizer_optipng_path" value="<?php echo get_option('ewww_image_optimizer_optipng_path'); ?>" /></td></tr>
