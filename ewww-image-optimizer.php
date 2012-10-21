@@ -45,18 +45,22 @@ add_action('admin_action_ewww_image_optimizer_install_optipng', 'ewww_image_opti
 add_action('admin_action_ewww_image_optimizer_install_gifsicle', 'ewww_image_optimizer_install_gifsicle');
 
 /**
- * Check if system requirements are met, we only run on Linux and Mac OSX
+ * Check if this is an unsupported OS (not Linux or Mac OSX)
  */
 if('Linux' != PHP_OS && 'Darwin' != PHP_OS) {
+	// call the function to display a notice
 	add_action('admin_notices', 'ewww_image_optimizer_notice_os');
+	// turn off all the tools
 	define('EWWW_IMAGE_OPTIMIZER_PNGOUT', false);
 	define('EWWW_IMAGE_OPTIMIZER_GIFSICLE', false);
 	define('EWWW_IMAGE_OPTIMIZER_JPEGTRAN', false);
 	define('EWWW_IMAGE_OPTIMIZER_OPTIPNG', false);
-}else{
+} else {
+	//Otherwise, we run the function to check for optimization utilities
 	add_action('admin_notices', 'ewww_image_optimizer_notice_utils');
-}   
-
+} 
+  
+// include the file that loads the nextgen gallery optimization functions
 require( dirname(__FILE__) . '/nextgen-integration.php' );
 
 // tells the user they are on an unsupported operating system
@@ -84,55 +88,73 @@ function ewww_image_optimizer_path_check() {
 	} elseif (!preg_match('/^\/[\w\.-\d\/_]+\/gifsicle$/', $gifsicle)) {
 		$gifsicle = 'gifsicle';
 	}
+	// pngout is special, we only support it being in the plugin folder
 	$pngout = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static";
 	return array($jpegtran, $optipng, $gifsicle, $pngout);
 }
 
 // Retrieves jpg background fill setting, or returns null for png2jpg conversions
 function ewww_image_optimizer_jpg_background () {
+	// retrieve the user-supplied value for jpg background color
 	$background = get_option('ewww_image_optimizer_jpg_background');
+	//verify that the supplied value is in hex notation
 	if (preg_match('/^\#*(\d|[a-f]){6}$/',$background)) {
+		// we remove a leading # symbol, since we take care of it later
 		preg_replace('/#/','',$background);
+		// send back the verified, cleaned-up background color
 		return $background;
 	} else {
+		// send back a blank value
 		return NULL;
 	}
 }
 
 // Retrieves the jpg quality setting for png2jpg conversion or returns null
 function ewww_image_optimizer_jpg_quality () {
+	// retrieve the user-supplied value for jpg quality
 	$quality = get_option('ewww_image_optimizer_jpg_quality');
+	// verify that the quality level is an integer, 1-100
 	if (preg_match('/^(100|[1-9][0-9]?)$/',$quality)) {
+		// send back the valid quality level
 		return $quality;
 	} else {
+		// send back nothing
 		return NULL;
 	}
 }
 
 // we check for safe mode and exec, then also direct the user where to go if they don't have the tools installed
 function ewww_image_optimizer_notice_utils() {
+	// query the php settings for safe mode
 	if( ini_get('safe_mode') ){
+		// display a warning to the user
 		echo "<div id='ewww-image-optimizer-warning-opt-png' class='updated fade'><p><strong>PHP's Safe Mode is turned on. This plugin cannot operate in safe mode.</strong></p></div>";
 	}
+	// attempt to retrieve values for utility paths, and store them in the appropriate variables
 	list ($jpegtran_path, $optipng_path, $gifsicle_path, $pngout_path) = ewww_image_optimizer_path_check();
+	// store those values back into an array, probably a more efficient way of doing this
 	$required = array(
 		'JPEGTRAN' => $jpegtran_path,
 		'OPTIPNG' => $optipng_path,
 		'GIFSICLE' => $gifsicle_path,
 		'PNGOUT' => $pngout_path
 	);
-   
+	// TODO: cleanup these variable names, as they are a bit misleading
+	// if the user has disabled the utility checks
 	if(get_option('ewww_image_optimizer_skip_check') == TRUE){
+		// set a variable for each tool
 		$skip_jpegtran = true;
 		$skip_optipng = true;
 		$skip_gifsicle = true;
 		$skip_pngout = true;
 	} else {
+		// set the variables false otherwise
 		$skip_jpegtran = false;
 		$skip_optipng = false;
 		$skip_gifsicle = false;
 		$skip_pngout = false;
 	}
+	// if the user has disabled a variable, we aren't going to bother checking to see if it is there
 	if (get_option('ewww_image_optimizer_disable_jpegtran')) {
 		$skip_jpegtran = true;
 	}
@@ -145,41 +167,52 @@ function ewww_image_optimizer_notice_utils() {
 	if (get_option('ewww_image_optimizer_disable_pngout')) {
 		$skip_pngout = true;
 	}
+	// we are going to store our validation results in $missing
 	$missing = array();
-
+	// go through each of the required tools
 	foreach($required as $key => $req){
+		// check the paths with the unix 'which' command
 		$result = trim(exec('which ' . $req));
+		// if the tool wasn't found, add it to the $missing array if we are supposed to check the tool in question
 		if(empty($result)){
 			switch($key) {
 				case 'JPEGTRAN':
 					if (!$skip_jpegtran) {
 						$missing[] = 'jpegtran';
+						// also set the appropriate constant to false
+						define('EWWW_IMAGE_OPTIMIZER_' . $key, false);
 					}
 					break; 
 				case 'OPTIPNG':
 					if (!$skip_optipng) {
 						$missing[] = 'optipng';
+						// also set the appropriate constant to false
+						define('EWWW_IMAGE_OPTIMIZER_' . $key, false);
 					}
 					break;
 				case 'GIFSICLE':
 					if (!$skip_gifsicle) {
 						$missing[] = 'gifsicle';
+						// also set the appropriate constant to false
+						define('EWWW_IMAGE_OPTIMIZER_' . $key, false);
 					}
 					break;
 				case 'PNGOUT':
 					if (!$skip_pngout) {
 						$missing[] = 'pngout';
+						// also set the appropriate constant to false
+						define('EWWW_IMAGE_OPTIMIZER_' . $key, false);
 					}
 					break;
 			}
-			define('EWWW_IMAGE_OPTIMIZER_' . $key, false);
 		} else {
+			// otherwise we set the constant to true
 			define('EWWW_IMAGE_OPTIMIZER_' . $key, true);
 		}
 	}
-
+	// expand the missing utilities list for use in the error message
 	$msg = implode(', ', $missing);
-
+	// if there is a message, display the warning
 	if(!empty($msg)){
 		echo "<div id='ewww-image-optimizer-warning-opt-png' class='updated fade'><p><strong>EWWW Image Optimizer requires <a href='http://jpegclub.org/jpegtran/'>jpegtran</a>, <a href='http://optipng.sourceforge.net/'>optipng</a> or <a href='http://advsys.net/ken/utils.htm'>pngout</a>, and <a href='http://www.lcdf.org/gifsicle/'>gifsicle</a>.</strong> You are missing: $msg. Please install via the <a href='options-general.php?page=ewww-image-optimizer/ewww-image-optimizer.php'>Settings Page</a>. If the one-click install links don't work for you, try the <a href='http://wordpress.org/extend/plugins/ewww-image-optimizer/installation/'>Installation Instructions</a>.</p></div>";
 	}
@@ -187,6 +220,7 @@ function ewww_image_optimizer_notice_utils() {
 	// Check if exec is disabled
 	$disabled = explode(', ', ini_get('disable_functions'));
 	if(in_array('exec', $disabled)){
+		//display a warning if exec() is disabled, can't run much of anything without it
 		echo "<div id='ewww-image-optimizer-warning-opt-png' class='updated fade'><p><strong>EWWW Image Optimizer requires exec().</strong> Your system administrator has disabled this function.</p></div>";
 	}
 }
@@ -197,6 +231,7 @@ function ewww_image_optimizer_notice_utils() {
 function ewww_image_optimizer_admin_init() {
 	load_plugin_textdomain(EWWW_IMAGE_OPTIMIZER_DOMAIN);
 	wp_enqueue_script('common');
+	// register all the EWWW IO settings
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_skip_check');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_skip_gifs');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpegtran_copy');
@@ -215,12 +250,13 @@ function ewww_image_optimizer_admin_init() {
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_gif_to_png');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpg_background');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpg_quality');
+	// set a few defaults
 	add_option('ewww_image_optimizer_disable_pngout', TRUE);
 	add_option('ewww_image_optimizer_optipng_level', 2);
 	add_option('ewww_image_optimizer_pngout_level', 2);
 }
 
-// load the scripts for EWWW IO
+// load javascript for EWWW IO
 function ewww_image_optimizer_scripts () {
 	// creates a timer on the bulk optimize page
 	wp_enqueue_script ('ewwwloadscript', plugins_url('/pageload.js', __FILE__));
@@ -228,7 +264,9 @@ function ewww_image_optimizer_scripts () {
 
 // adds the bulk optimize and settings page to the admin menu
 function ewww_image_optimizer_admin_menu() {
+	// adds bulk optimize to the media library menu
 	add_media_page( 'Bulk Optimize', 'Bulk Optimize', 'edit_others_posts', 'ewww-image-optimizer-bulk', 'ewww_image_optimizer_bulk_preview');
+	// add options page to the settings menu
 	add_options_page(
 		'EWWW Image Optimizer',		//Title
 		'EWWW Image Optimizer',		//Sub-menu title
@@ -240,41 +278,58 @@ function ewww_image_optimizer_admin_menu() {
 
 // adds a link on the Plugins page for the EWWW IO settings
 function ewww_image_optimizer_settings_link($links) {
+	// load the html for the settings link
 	$settings_link = '<a href="options-general.php?page=ewww-image-optimizer/ewww-image-optimizer.php">Settings</a>';
+	// load the settings link into the plugin links array
 	array_unshift ( $links, $settings_link );
+	// send back the plugin links array
 	return $links;
 }
 
 // presents the bulk optimize function with the number of images, and runs it once they submit the button (most of the html is in bulk.php)
 function ewww_image_optimizer_bulk_preview() {
+	// initialize a few variables for the bulk operation
 	$attachments = null;
 	$auto_start = false;
 	$skip_attachments = false;
+	// get the value of the wordpress upload directory
 	$upload_dir = wp_upload_dir();
+	// set the location of our temporary status file
 	$progress_file = $upload_dir['basedir'] . "/ewww.tmp";
+	// check if the bulk operation was given any attachment IDs to work with
 	if (isset($_REQUEST['ids'])) {
+		// retrieve post information correlating to the IDs selected
 		$attachments = get_posts( array(
 			'numberposts' => -1,
 			'include' => explode(',', $_REQUEST['ids']),
 			'post_type' => 'attachment',
 			'post_mime_type' => 'image',
 		));
+		// tell the bulk optimizer to proceed without confirmation
 		$auto_start = true;
+	// check if the user asked us to resume a previous bulk operation
 	} else if (isset($_REQUEST['resume'])) {
+		// get the contents of the temp file
 		$progress_contents = file($progress_file);
+		// find out the last attachment that was optimized from the temp file
 		$last_attachment = $progress_contents[0];
+		// load the post info from the temp file into $attachments
 		$attachments = unserialize($progress_contents[1]);
+		// tell the bulk optimizer to proceed without confirmation
 		$auto_start = true;
+		// tell the optimizer to skip each attachment (until we tell it otherwise)
 		$skip_attachments = true;
 	} else {
+		// load up all the attachments we can find
 		$attachments = get_posts( array(
 			'numberposts' => -1,
 			'post_type' => 'attachment',
 			'post_mime_type' => 'image'
 		));
 	}
-	//prep $attachments for storing in a file
+	// prep $attachments for storing in a file
 	$attach_ser = serialize($attachments);
+	// require the file that does most of the work and the html
 	require( dirname(__FILE__) . '/bulk.php' );
 }
 
