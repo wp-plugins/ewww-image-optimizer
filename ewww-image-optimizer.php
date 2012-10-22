@@ -611,7 +611,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 				$optimize = true;
 			}
 			$orig_size = filesize($file);
-			// TODO: hmm, no optimization of the JPG, whoops...
 			if (($convert && (!ewww_image_optimizer_png_alpha($file) || ewww_image_optimizer_jpg_background())) || $converted) {
 				$jpgfile = substr_replace($file, 'jpg', -3);
 				if ($background = ewww_image_optimizer_jpg_background()) {
@@ -625,6 +624,52 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 				if ($orig_size > $jpg_size && $jpg_size != 0) {
 					$converted = TRUE;
 				}
+				// next we need to optimize that JPG
+				if (!get_option('ewww_image_optimizer_disable_jpegtran')) {
+					// generate temporary file-names:
+					$tempfile = $jpgfile . ".tmp"; //non-progressive jpeg
+					$progfile = $jpgfile . ".prog"; // progressive jpeg
+					// check to see if we are supposed to strip metadata (badly named)
+					if(get_option('ewww_image_optimizer_jpegtran_copy') == TRUE){
+						// don't copy metadata
+						$copy_opt = 'none';
+					} else {
+						// copy all the metadata
+						$copy_opt = 'all';
+					}
+					// run jpegtran - non-progressive
+					exec("$jpegtran_path -copy $copy_opt -optimize $jpgfile > $tempfile");
+					// run jpegtran - progressive
+					exec("$jpegtran_path -copy $copy_opt -optimize -progressive $jpgfile > $progfile");
+					// check the filesize of the non-progressive JPG
+					$non_size = filesize($tempfile);
+					// check the filesize of the progressive JPG
+					$prog_size = filesize($progfile);
+					// if the progressive file is bigger
+					if ($prog_size > $non_size) {
+						// store the size of the non-progessive JPG
+						$opt_jpg_size = $non_size;
+						// delete the progressive file
+						unlink($progfile);
+					// if the progressive file is smaller or the same
+					} else {
+						// store the size of the progressive JPG
+						$opt_jpg_size = $prog_size;
+						// replace the non-progressive with the progressive file
+						rename($progfile, $tempfile);
+					}
+					// if the best-optimized is smaller than the original JPG, and we didn't create an empty JPG
+					if ($jpg_size > $opt_jpg_size && $opt_jpg_size != 0) {
+						// replace the original with the optimized file
+						rename($tempfile, $jpgfile);
+						// store the size of the optimized JPG
+						$jpg_size = $opt_jpg_size;
+					// if the optimization didn't produce a smaller JPG
+					} else {
+						// delete the optimized file
+						unlink($tempfile);
+					}
+					}
 			} elseif (!$optimize) {
 				break;
 			}
