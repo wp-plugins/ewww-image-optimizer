@@ -119,6 +119,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * added gif2png
 * added jpg2png
 * added png2jpg
+* removed check for files to be withing wordpress folder, we were already making sure they are in the upload folder
 * reorganized settings page (it was getting ugly)
 * added poll for feedback on one-click installs
 
