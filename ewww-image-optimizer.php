@@ -375,32 +375,31 @@ function ewww_image_optimizer_manual() {
  * @returns array
  */
 function ewww_image_optimizer($file, $gallery_type, $converted) {
-	// store the file location for later use
-	$file_path = $file;
 	// check that the file exists
-	if ( FALSE === file_exists($file_path) || FALSE === is_file($file_path) ) {
+	if (FALSE === file_exists($file) || FALSE === is_file($file)) {
+		// TODO: figure out what to do about dups when the full-size wasn't converted...
 		// if the full-size image was converted, we are likely running into a duplicate resizes issue, so we just rename the resize
-		if ($converted) {
-			if (preg_match('/.jpe*g*$/i', $file)) {
-				$file = preg_replace('/.jpe*g*$/i', '.png', $file);
-			} elseif (preg_match('/.png$/i', $file)) {
-				$file = preg_replace('/.png$/i', '.jpg', $file);
-			} elseif (preg_match('/.gif$/i', $file)) {
-				$file = preg_replace('/.gif$/i', '.png', $file);
-			}
-			return array($file, __('No savings', EWWW_IMAGE_OPTIMIZER_DOMAIN), $converted);
+		if (preg_match('/.jpe*g*$/i', $file)) {
+			$newfile = preg_replace('/.jpe*g*$/i', '.png', $file);
+		} elseif (preg_match('/.png$/i', $file)) {
+			$newfile = preg_replace('/.png$/i', '.jpg', $file);
+		} elseif (preg_match('/.gif$/i', $file)) {
+			$newfile = preg_replace('/.gif$/i', '.png', $file);
+		}
+		if (TRUE === file_exists($newfile) && TRUE === is_file($newfile)) {
+			return array($newfile, __('No savings', EWWW_IMAGE_OPTIMIZER_DOMAIN), $converted);
 		} else {
 			// tell the user we couldn't find the file
-			$msg = sprintf(__("Could not find <span class='code'>%s</span>", EWWW_IMAGE_OPTIMIZER_DOMAIN), $file_path);
+			$msg = sprintf(__("Could not find <span class='code'>%s</span>", EWWW_IMAGE_OPTIMIZER_DOMAIN), $file);
 			// send back the above message
 			return array($file, $msg, $converted);
 			}
 	}
 
 	// check that the file is writable
-	if ( FALSE === is_writable($file_path) ) {
+	if ( FALSE === is_writable($file) ) {
 		// tell the user we can't write to the file
-		$msg = sprintf(__("<span class='code'>%s</span> is not writable", EWWW_IMAGE_OPTIMIZER_DOMAIN), $file_path);
+		$msg = sprintf(__("<span class='code'>%s</span> is not writable", EWWW_IMAGE_OPTIMIZER_DOMAIN), $file);
 		// send back the above message
 		return array($file, $msg, $converted);
 	}
@@ -409,18 +408,18 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 	// do some cleanup on the upload location we retrieved
 	$upload_path = trailingslashit( $upload_dir['basedir'] );
 	// see if the file path matches the upload directory
-	$path_in_upload = stripos(realpath($file_path), realpath($upload_path));
+	$path_in_upload = stripos(realpath($file), realpath($upload_path));
 	// check that the file is within the WP uploads folder
 	if (0 !== $path_in_upload) {
 		// tell the user they can only process images in the upload directory
-		$msg = sprintf(__("<span class='code'>%s</span> must be within the wordpress upload directory (<span class='code'>%s</span>)", EWWW_IMAGE_OPTIMIZER_DOMAIN), htmlentities($file_path), $upload_path);
+		$msg = sprintf(__("<span class='code'>%s</span> must be within the wordpress upload directory (<span class='code'>%s</span>)", EWWW_IMAGE_OPTIMIZER_DOMAIN), htmlentities($file), $upload_path);
 		// send back the above message
 		return array($file, $msg, $converted);
 	}
 	// see if we can use the getimagesize function
 	if (function_exists('getimagesize')) {
 		// run getimagesize on the file
-		$type = getimagesize($file_path);
+		$type = getimagesize($file);
 		// make sure we have results
 		if(false !== $type){
 			// store the mime-type
@@ -429,7 +428,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 	// see if we can use mime_content_type if getimagesize isn't available
 	} elseif (function_exists('mime_content_type')) {
 		// retrieve and store the mime-type
-		$type = mime_content_type($file_path);
+		$type = mime_content_type($file);
 	} else {
 		//otherwise we store an error message since we couldn't get the mime-type
 		$type = 'Missing getimagesize() and mime_content_type() PHP functions';
