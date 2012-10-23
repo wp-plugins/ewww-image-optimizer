@@ -379,10 +379,22 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 	$file_path = $file;
 	// check that the file exists
 	if ( FALSE === file_exists($file_path) || FALSE === is_file($file_path) ) {
-		// tell the user we couldn't find the file
-		$msg = sprintf(__("Could not find <span class='code'>%s</span>", EWWW_IMAGE_OPTIMIZER_DOMAIN), $file_path);
-		// send back the above message
-		return array($file, $msg, $converted);
+		// if the full-size image was converted, we are likely running into a duplicate resizes issue, so we just rename the resize
+		if ($converted) {
+			if (preg_match('/.jpe*g*$/i', $file)) {
+				$file = preg_replace('/.jpe*g*$/i', '.png', $file);
+			} elseif (preg_match('/.png$/i', $file)) {
+				$file = preg_replace('/.png$/i', '.jpg', $file);
+			} elseif (preg_match('/.gif$/i', $file)) {
+				$file = preg_replace('/.gif$/i', '.png', $file);
+			}
+			return array($file, __('No savings', EWWW_IMAGE_OPTIMIZER_DOMAIN), $converted);
+		} else {
+			// tell the user we couldn't find the file
+			$msg = sprintf(__("Could not find <span class='code'>%s</span>", EWWW_IMAGE_OPTIMIZER_DOMAIN), $file_path);
+			// send back the above message
+			return array($file, $msg, $converted);
+			}
 	}
 
 	// check that the file is writable
@@ -398,11 +410,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 	$upload_path = trailingslashit( $upload_dir['basedir'] );
 	// see if the file path matches the upload directory
 	$path_in_upload = stripos(realpath($file_path), realpath($upload_path));
-	// TODO: clean up this section, do we really need to check that the files are in the wordpress folder, when we are already looking in the upload folder?
-	// see if the file path matches the location where wordpress is installed
-	//$path_in_wp = stripos(realpath($file_path), realpath(ABSPATH));
-	// check that the file is within the WP uploads folder or the wordpress folder
-	//if (0 !== $path_in_upload && 0 !== $path_in_wp) {
 	// check that the file is within the WP uploads folder
 	if (0 !== $path_in_upload) {
 		// tell the user they can only process images in the upload directory
