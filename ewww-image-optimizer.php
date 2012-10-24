@@ -389,6 +389,7 @@ function ewww_image_optimizer_manual() {
  * @returns array
  */
 function ewww_image_optimizer($file, $gallery_type, $converted) {
+	// TODO: see if 'nice' exists, and use it to make the tools play nice
 	// check that the file exists
 	if (FALSE === file_exists($file) || FALSE === is_file($file)) {
 		// if the full-size image was converted, we are likely running into a duplicate resizes issue, so we just rename the resize
@@ -528,6 +529,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 						$pngfile = substr_replace($file, 'png', -3);
 						// convert the JPG to  PNG
 						// TODO: implement 'convert' functionality with GD (if installed)
+						// TODO: verify that convert actually exists
 						exec("convert $file $pngfile");
 						// then optimize the PNG with optipng
 						exec("$optipng_path -o$optipng_level -quiet $pngfile");
@@ -667,6 +669,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 				}
 				// convert the PNG to a JPG with all the proper options
 				// TODO: implement 'convert' functionality with GD (if installed)
+				// check that 'convert' actually exists
 				exec ("convert $background -flatten $quality $file $jpgfile");
 				// retrieve the filesize of the new JPG
 				$jpg_size = filesize($jpgfile);
