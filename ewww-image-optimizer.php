@@ -7,7 +7,7 @@
 /*
 Plugin Name: EWWW Image Optimizer
 Plugin URI: http://www.shanebishop.net/ewww-image-optimizer/
-Description: Reduce image file sizes and improve performance for images within WordPress including NextGEN Gallery. Uses jpegtran, optipng, pngout, and gifsicle.
+Description: Reduce file sizes and improve performance for images within WordPress including NextGEN Gallery. Uses jpegtran, optipng/pngout, and gifsicle.
 Author: Shane Bishop
 Version: 1.2.0
 Author URI: http://www.shanebishop.net/
@@ -285,6 +285,20 @@ function ewww_image_optimizer_settings_link($links) {
 	return $links;
 }
 
+// check for GD support of both PNG and JPG
+function ewww_image_optimizer_gd_support() {
+	if (function_exists('gd_info')) {
+		$gd_support = gd_info();
+		if (($gd_support["JPEG Support"] || $gd_support["JPG Support"]) && $gd_support["PNG Support"]) {
+			return TRUE;
+		} else {
+			return FALSE;
+		}
+	} else {
+		return FALSE;
+	}
+}
+
 // presents the bulk optimize function with the number of images, and runs it once they submit the button (most of the html is in bulk.php)
 function ewww_image_optimizer_bulk_preview() {
 	// initialize a few variables for the bulk operation
@@ -413,10 +427,12 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 	$upload_path = trailingslashit( $upload_dir['basedir'] );
 	// see if the file path matches the upload directory
 	$path_in_upload = stripos(realpath($file), realpath($upload_path));
-	// check that the file is within the WP uploads folder
-	if (0 !== $path_in_upload) {
-		// tell the user they can only process images in the upload directory
-		$msg = sprintf(__("<span class='code'>%s</span> must be within the wordpress upload directory (<span class='code'>%s</span>)", EWWW_IMAGE_OPTIMIZER_DOMAIN), htmlentities($file), $upload_path);
+	// see if the file path matches the location where wordpress is installed (for NextGEN and Grand FlaGallery)
+	$path_in_wp = stripos(realpath($file), realpath(ABSPATH));
+	// check that the file is within the WP uploads folder or the wordpress folder
+	if (0 !== $path_in_upload && 0 !== $path_in_wp) {
+		// tell the user they can only process images in the upload directory or the wordpress folder
+		$msg = sprintf(__("<span class='code'>%s</span> must be within the wordpress or upload directory (<span class='code'>%s or %s</span>)", EWWW_IMAGE_OPTIMIZER_DOMAIN), htmlentities($file), $upload_path, ABSPATH);
 		// send back the above message
 		return array($file, $msg, $converted);
 	}
@@ -511,6 +527,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 						// generate the filename for a PNG
 						$pngfile = substr_replace($file, 'png', -3);
 						// convert the JPG to  PNG
+						// TODO: implement 'convert' functionality with GD (if installed)
 						exec("convert $file $pngfile");
 						// then optimize the PNG with optipng
 						exec("$optipng_path -o$optipng_level -quiet $pngfile");
@@ -541,6 +558,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 					$copy_opt = 'all';
 				}
 				// run jpegtran - non-progressive
+				// TODO: push the output into php, to avoid weird hacky stuff
 				exec("$jpegtran_path -copy $copy_opt -optimize $file > $tempfile");
 				// run jpegtran - progressive
 				exec("$jpegtran_path -copy $copy_opt -optimize -progressive $file > $progfile");
@@ -648,6 +666,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 					$quality = "-quality $quality";
 				}
 				// convert the PNG to a JPG with all the proper options
+				// TODO: implement 'convert' functionality with GD (if installed)
 				exec ("convert $background -flatten $quality $file $jpgfile");
 				// retrieve the filesize of the new JPG
 				$jpg_size = filesize($jpgfile);
@@ -1304,6 +1323,7 @@ function ewww_image_optimizer_options () {
 			computed gifsicle path: <?php echo $gifsicle_path; ?><br />
 			gifsicle location (using 'which'): <?php echo trim(exec('which ' . $gifsicle_path)); ?><br />
 			gifsicle version: <?php exec($gifsicle_path . ' --version', $gifsicle_version); echo $gifsicle_version[0]; ?><br />
+			Imagemagick convert installed: <?php if (trim(exec('which convert'))) { echo "YES"; } else { echo "NO"; } ?><br />
 			<?php if( ini_get('safe_mode') ){
 				echo "safe mode: On<br />";
 			} else {
@@ -1326,13 +1346,18 @@ function ewww_image_optimizer_options () {
 			} else {
 				echo "mime_content_type(): missing<br>";
 			}
+			if (ewww_image_optimizer_gd_support()) {
+				echo "GD: OK<br>";
+			} else {
+				echo "GD: no good<br>";
+			} 
 			?></p></div>
 		</div>
 		</div>
 		<h3>Installation</h3>
 		<p><b>Install jpegtran</b> - <a href="admin.php?action=ewww_image_optimizer_install_jpegtran">automatically</a> | <a href="http://jpegclub.org/droppatch.v09.tar.gz">manually</a><br />
-		<b>Install gifsicle</b> - <a href="admin.php?action=ewww_image_optimizer_install_gifsicle">automatically</a> | <a href="http://shanebishop.net/uploads/gifsicle.zip">manually</a><br />
-		<b>Install optipng</b> - <a href="admin.php?action=ewww_image_optimizer_install_optipng">automatically</a> | <a href="http://shanebishop.net/uploads/optipng.zip">manually</a><br>
+		<a href="http://www.lcdf.org/gifsicle/gifsicle-1.67.tar.gz"><b>Download gifsicle source</b></a><br />
+		<a href="http://prdownloads.sourceforge.net/optipng/optipng-0.7.4.tar.gz?download"><b>Download optipng source</b></a><br>
 		<b>Install pngout</b> - Click the link below that corresponds to the architecture of your server. If in doubt, try the i386 or ask your webhost. Pngout is free closed-source software that can produce drastically reduced filesizes for PNGs, but can be very time consuming to process images<br />
 <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=i386">i386</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=athlon">athlon</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=pentium4">pentium4</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=i686">i686</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=x64">64-bit</a></p>
 		<form method="post" action="options.php">

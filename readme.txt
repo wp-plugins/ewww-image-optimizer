@@ -6,7 +6,7 @@ Tested up to: 3.4.2
 Stable tag: 1.1.1
 License: GPLv3
 
-Reduce file sizes and improve performance for images within WordPress including NextGEN Gallery. Uses jpegtran, optipng and/or pngout, and gifsicle.
+Reduce file sizes and improve performance for images within WordPress including NextGEN Gallery. Uses jpegtran, optipng/pngout, and gifsicle.
 
 == Description ==
 
@@ -14,9 +14,9 @@ The EWWW Image Optimizer is a WordPress plugin that will automatically and lossl
 
 Because EWWW Image Optimizer uses lossless optimization techniques, your image quality will be exactly the same before and after the optimization. The only thing that will change is your file size. The one small exception to this is GIF animations. While the optimization is technically lossless, you will not be able to properly edit the animation again without performing an --unoptimize operation with gifsicle.
 
-Images are optimized using the Linux [jpegtran](http://jpegclub.org/jpegtran/), [optipng](http://optipng.sourceforge.net/), [pngout](advsys.net/ken/utils.htm), and [gifsicle](http://www.lcdf.org/gifsicle/) image tools (available for free). For PNG files, either optipng or pngout can be used. If you want the best optimization, install both, set optipng to level 3 (beyond that is just crazy and rarely yields significant gains) and pngout to level 0.
+Images are optimized using the [jpegtran](http://jpegclub.org/jpegtran/), [optipng](http://optipng.sourceforge.net/), [pngout](advsys.net/ken/utils.htm), and [gifsicle](http://www.lcdf.org/gifsicle/) image tools (available for free). For PNG files, either optipng or pngout can be used. If you want the best optimization, install both, set optipng to level 3 (beyond that is just crazy and rarely yields significant gains) and pngout to level 0.
 
-EWWW Image Optimizer calls optimization utilities directly which is better suited to shared hosting situations where these utilities may already be installed. The programs we use (jpegtran, optipng, pngout, and gifsicle) generally have very minimal dependencies (pngout has none), so all you will need is a hosting account with shell access, and build utilities installed. You can then tell EWWW Image Optimizer where you compiled these utilities. I use Bluehost, which meets these requirements, and Dreamhost is another suitable alternative. There are likely others out there that I am not aware of.
+EWWW Image Optimizer calls optimization utilities directly which is better suited to shared hosting situations where these utilities may already be installed. The programs we use (jpegtran, optipng, pngout, and gifsicle) generally have very minimal dependencies (pngout has none), and can be installed with one-click from the settings page if your host doesn't already have them.
 
 **Why use EWWW Image Optimizer?**
 
@@ -113,8 +113,10 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 == Changelog ==
 
 = 1.2.0 =
+* SECURITY: bundled optipng updated to 0.7.4
 * deprecated manual path settings, please put binaries in the plugin folder instead
-* new one-click install options for jpegtran, optipng and gifsicle
+* new one-click install option for jpegtran
+* optipng and gifsicle now bundled with the plugin
 * new *optional* conversion routines check for smallest file format
 * added gif2png
 * added jpg2png
@@ -190,7 +192,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 == Upgrade Notice ==
 
 = 1.2.0 =
-Added conversion operations to optionally determine best file format for the smallest possible file. Setting paths manually will be disabled in a future release, as the plugin now automatically looks in the plugin folder. It is advised to move your binaries there and remove the path settings. Also added a poll for feedback. Please visit the settings page and submit the poll if applicable.
+SECURITY: bundled optipng is 0.7.4 to address a vulnerability. Added conversion operations gif2png, png2jpg, and jpg2png. Setting paths manually will be disabled in a future release, as the plugin now automatically looks in the plugin folder. It is advised to move your binaries there and remove the path settings (optipng and gifsicle are already there). Also added a poll for feedback. Please visit the settings page and submit the poll if applicable.
 
 = 1.1.0 =
 Added pngout functionality for even better PNG optimization (disabled by default). Settings page now has links to stand-alone binaries of gifsicle and optipng. Please try them out and report any problems.
