@@ -528,9 +528,14 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 						// generate the filename for a PNG
 						$pngfile = substr_replace($file, 'png', -3);
 						// convert the JPG to  PNG
-						// TODO: implement 'convert' functionality with GD (if installed)
-						// TODO: verify that convert actually exists
-						exec("convert $file $pngfile");
+						// TODO: find out why convert isn't working with the conditional (the conditional works, but not the convert)
+//						if (ewww_image_optimizer_gd_support()) {
+//							imagepng(imagecreatefromjpeg($file), $pngfile);
+//						}
+						if (trim(exec('which convert'))) {
+							echo "convert exists <br>";
+							exec("convert $file $pngfile");
+						}
 						// then optimize the PNG with optipng
 						exec("$optipng_path -o$optipng_level -quiet $pngfile");
 					}
@@ -669,8 +674,10 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 				}
 				// convert the PNG to a JPG with all the proper options
 				// TODO: implement 'convert' functionality with GD (if installed)
-				// check that 'convert' actually exists
-				exec ("convert $background -flatten $quality $file $jpgfile");
+				// TODO: verify that convert actually exists
+				if (exec('which convert')) {
+					exec ("convert $background -flatten $quality $file $jpgfile");
+				}
 				// retrieve the filesize of the new JPG
 				$jpg_size = filesize($jpgfile);
 				// next we need to optimize that JPG if jpegtran is enabled
