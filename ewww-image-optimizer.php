@@ -389,7 +389,12 @@ function ewww_image_optimizer_manual() {
  * @returns array
  */
 function ewww_image_optimizer($file, $gallery_type, $converted) {
-	// TODO: see if 'nice' exists, and use it to make the tools play nice
+	// if 'nice' doesn't exist, set $nice to NULL, otherwise, set $nice to 'nice'
+	if (exec('nice') === NULL) {
+		$nice = NULL;
+	} else {
+		$nice = 'nice';
+	}
 	// check that the file exists
 	if (FALSE === file_exists($file) || FALSE === is_file($file)) {
 		// if the full-size image was converted, we are likely running into a duplicate resizes issue, so we just rename the resize
@@ -513,7 +518,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 					// generate the filename for a PNG
 					$pngfile = substr_replace($file, 'png', -3);
 					// run pngout on the JPG to produce the PNG
-					exec("$pngout_path -s$pngout_level -q $file $pngfile");
+					exec("$nice $pngout_path -s$pngout_level -q $file $pngfile");
 				}
 				// if optipng isn't disabled
 				if (!get_option('ewww_image_optimizer_disable_optipng')) {
@@ -522,7 +527,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 					// if $pngfile is set (which means pngout was already run)
 					if (isset($pngfile)) {
 						// run optipng on the PNG file
-						exec("$optipng_path -o$optipng_level -quiet $pngfile");
+						exec("$nice $optipng_path -o$optipng_level -quiet $pngfile");
 					// otherwise, we need to use convert, since optipng doesn't do JPG conversion
 					} else {
 						// generate the filename for a PNG
@@ -534,7 +539,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 							exec("convert $file -strip $pngfile");
 						}
 						// then optimize the PNG with optipng
-						exec("$optipng_path -o$optipng_level -quiet $pngfile");
+						exec("$nice $optipng_path -o$optipng_level -quiet $pngfile");
 					}
 				}
 				// find out the size of the new PNG file
@@ -563,9 +568,9 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 				}
 				// run jpegtran - non-progressive
 				// TODO: push the output into php, to avoid weird hacky stuff
-				exec("$jpegtran_path -copy $copy_opt -optimize $file > $tempfile");
+				exec("$nice $jpegtran_path -copy $copy_opt -optimize $file > $tempfile");
 				// run jpegtran - progressive
-				exec("$jpegtran_path -copy $copy_opt -optimize -progressive $file > $progfile");
+				exec("$nice $jpegtran_path -copy $copy_opt -optimize -progressive $file > $progfile");
 				// check the filesize of the non-progressive JPG
 				$non_size = filesize($tempfile);
 				// check the filesize of the progressive JPG
@@ -676,9 +681,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 					$cquality = "-quality $quality";
 				}
 				// convert the PNG to a JPG with all the proper options (try GD first, then 'convert')
-				if (exec('which convert')) {
-					exec ("convert $background -flatten $cquality $file $jpgfile");
-				} elseif (ewww_image_optimizer_gd_support()) {
+				if (ewww_image_optimizer_gd_support()) {
 					// retrieve the data from the PNG
 					$input = imagecreatefrompng($file);
 					// retrieve the dimensions of the PNG
@@ -699,10 +702,12 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 						// output the JPG with the quality setting
 						imagejpeg($output, $jpgfile, $gquality);
 					} else {
-						// otherwise, just output the JPG
-						imagejpeg($output, $jpgfile);
+						// otherwise, output the JPG at quality 92
+						imagejpeg($output, $jpgfile, 92);
 					}
-				}
+				} elseif (exec('which convert')) {
+					exec ("convert $background -flatten $cquality $file $jpgfile");
+				} 
 				// retrieve the filesize of the new JPG
 				$jpg_size = filesize($jpgfile);
 				// next we need to optimize that JPG if jpegtran is enabled
@@ -719,9 +724,9 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 						$copy_opt = 'all';
 					}
 					// run jpegtran - non-progressive
-					exec("$jpegtran_path -copy $copy_opt -optimize $jpgfile > $tempfile");
+					exec("$nice $jpegtran_path -copy $copy_opt -optimize $jpgfile > $tempfile");
 					// run jpegtran - progressive
-					exec("$jpegtran_path -copy $copy_opt -optimize -progressive $jpgfile > $progfile");
+					exec("$nice $jpegtran_path -copy $copy_opt -optimize -progressive $jpgfile > $progfile");
 					// check the filesize of the non-progressive JPG
 					$non_size = filesize($tempfile);
 					// check the filesize of the progressive JPG
@@ -767,14 +772,14 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 					// retrieve the optimization level for pngout
 					$pngout_level = get_option('ewww_image_optimizer_pngout_level');
 					// run pngout on the PNG file
-					exec("$pngout_path -s$pngout_level -q $file");
+					exec("$nice $pngout_path -s$pngout_level -q $file");
 				}
 				// if optipng is enabled
 				if(!get_option('ewww_image_optimizer_disable_optipng')) {
 					// retrieve the optimization level for optipng
 					$optipng_level = get_option('ewww_image_optimizer_optipng_level');
 					// run optipng on the PNG file
-					exec("$optipng_path -o$optipng_level -quiet $file");
+					exec("$nice $optipng_path -o$optipng_level -quiet $file");
 				}
 			}
 			// flush the cache for filesize
@@ -844,7 +849,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 					// retrieve the pngout optimization level
 					$pngout_level = get_option('ewww_image_optimizer_pngout_level');
 					// run pngout on the file
-					exec("$pngout_path -s$pngout_level -q $file");
+					exec("$nice $pngout_path -s$pngout_level -q $file");
 					// generate the filename of the new PNG
 					$pngfile = substr_replace($file, 'png', -3);
 				}
@@ -855,11 +860,11 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 					// if $pngfile exists (which means pngout was run already)
 					if (isset($pngfile)) {
 						// run optipng on the PNG file
-						exec("$optipng_path -o$optipng_level -quiet $pngfile");
+						exec("$nice $optipng_path -o$optipng_level -quiet $pngfile");
 					// otherwise, if pngout was not used
 					} else {
 						// run optipng on the GIF file
-						exec("$optipng_path -o$optipng_level -quiet $file");
+						exec("$nice $optipng_path -o$optipng_level -quiet $file");
 						// generate the filename of the new PNG
 						$pngfile = substr_replace($file, 'png', -3);
 					}
@@ -881,7 +886,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 			// if optimization is turned ON
 			if ($optimize) {
 				// run gifsicle on the GIF
-				exec("$gifsicle_path -b -O3 --careful $file");
+				exec("$nice $gifsicle_path -b -O3 --careful $file");
 			}
 			// flush the cache for filesize
 			clearstatcache();
@@ -1350,14 +1355,20 @@ function ewww_image_optimizer_options () {
 		<noscript><a href="http://polldaddy.com/poll/6602406/">EWWW IO Feedback</a></noscript></div>
 		<div id="debug" style="border: 1px solid #ccc; padding: 0 8px; margin: 8px; width: 284px; border-radius: 12px;">
 			<h3>Debug information</h3>
-			<div style="border-top: 1px solid #e8e8e8; padding: 10px 0"><p>computed jpegtran path: <?php echo $jpegtran_path; ?><br />
-			jpegtran location (using 'which'): <?php echo trim(exec('which ' . $jpegtran_path)); ?><br />
-			computed optipng path: <?php echo $optipng_path; ?><br />
-			optipng location (using 'which'): <?php echo trim(exec('which ' . $optipng_path)); ?><br />
+			<div style="border-top: 1px solid #e8e8e8; padding: 10px 0"><p><!--computed jpegtran path: <?php echo $jpegtran_path; ?><br />
+			jpegtran location (using 'which'): <?php echo trim(exec('which ' . $jpegtran_path)); ?><br />-->
+			jpegtran version: <?php exec($jpegtran_path . ' -v ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'sample.jpg 2>&1', $jpegtran_version); foreach ($jpegtran_version as $jout) { if (preg_match('/Independent JPEG Group/', $jout)) { echo $jout; } } ?><br />
+			<!--computed optipng path: <?php echo $optipng_path; ?><br />
+			optipng location (using 'which'): <?php echo trim(exec('which ' . $optipng_path)); ?><br />-->
 			optipng version: <?php exec($optipng_path . ' -v', $optipng_version); echo $optipng_version[0]; ?><br />
-			computed gifsicle path: <?php echo $gifsicle_path; ?><br />
-			gifsicle location (using 'which'): <?php echo trim(exec('which ' . $gifsicle_path)); ?><br />
+			<!--computed gifsicle path: <?php echo $gifsicle_path; ?><br />
+			gifsicle location (using 'which'): <?php echo trim(exec('which ' . $gifsicle_path)); ?><br />-->
 			gifsicle version: <?php exec($gifsicle_path . ' --version', $gifsicle_version); echo $gifsicle_version[0]; ?><br />
+			<?php if (ewww_image_optimizer_gd_support()) {
+				echo "GD: OK<br>";
+			} else {
+				echo "GD: no good<br>";
+			} ?>
 			Imagemagick convert installed: <?php if (trim(exec('which convert'))) { echo "YES"; } else { echo "NO"; } ?><br />
 			<?php if( ini_get('safe_mode') ){
 				echo "safe mode: On<br />";
@@ -1381,11 +1392,6 @@ function ewww_image_optimizer_options () {
 			} else {
 				echo "mime_content_type(): missing<br>";
 			}
-			if (ewww_image_optimizer_gd_support()) {
-				echo "GD: OK<br>";
-			} else {
-				echo "GD: no good<br>";
-			} 
 			?></p></div>
 		</div>
 		</div>
@@ -1423,7 +1429,7 @@ function ewww_image_optimizer_options () {
 				<tr><th><label for="ewww_image_optimizer_jpg_to_png">enable <b>JPG</b> to <b>PNG</b> conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_jpg_to_png" name="ewww_image_optimizer_jpg_to_png" <?php if (get_option('ewww_image_optimizer_jpg_to_png') == TRUE) { ?>checked="true"<?php } ?> /> <b>WARNING:</b> Removes metadata! Requires GD support in PHP, 'convert' from ImageMagick, or 'pngout' and should be used sparingly. PNG is generally much better than JPG for logos and other images with a limited range of colors. Checking this option will slow down JPG processing significantly, and you may want to enable it only temporarily.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_png_to_jpg">enable <b>PNG</b> to <b>JPG</b> conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_png_to_jpg" name="ewww_image_optimizer_png_to_jpg" <?php if (get_option('ewww_image_optimizer_png_to_jpg') == TRUE) { ?>checked="true"<?php } ?> /> <b>WARNING:</b> This is not a lossless conversion and requires the 'convert' utility provided by ImageMagick. JPG is generally much better than PNG for photographic use because it compresses the image and discards data. JPG does not support transparency, so we don't convert PNGs with transparency.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_jpg_background">JPG background color</label></th><td>#<input type="text" id="ewww_image_optimizer_jpg_background" name="ewww_image_optimizer_jpg_background" style="width: 60px" value="<?php echo ewww_image_optimizer_jpg_background(); ?>" /> <span style="padding-left: 12px; font-size: 12px; border: solid 1px #555555; background-color: #<? echo ewww_image_optimizer_jpg_background(); ?>">&nbsp;</span> HEX format (#123def). This is used only if the PNG has transparency or leave it blank to skip PNGs with transparency.</td></tr>
-				<tr><th><label for="ewww_image_optimizer_jpg_quality">JPG quality level</label></th><td><input type="text" id="ewww_image_optimizer_jpg_quality" name="ewww_image_optimizer_jpg_quality" style="width: 40px" value="<?php echo ewww_image_optimizer_jpg_quality(); ?>" /> Valid values are 1-100. If left blank, GD defaults to 75, whereas 'convert' will attempt to set the optimal quality level or default to 92 (so we prefer 'convert' if it is available). Remember, this is a lossy conversion, so you are losing pixels, and it is not recommended to actually set the level here unless you want noticable loss of image quality.</td></tr>
+				<tr><th><label for="ewww_image_optimizer_jpg_quality">JPG quality level</label></th><td><input type="text" id="ewww_image_optimizer_jpg_quality" name="ewww_image_optimizer_jpg_quality" style="width: 40px" value="<?php echo ewww_image_optimizer_jpg_quality(); ?>" /> Valid values are 1-100. If left blank, the conversion process will attempt to set the optimal quality level or default to 92. Remember, this is a lossy conversion, so you are losing pixels, and it is not recommended to actually set the level here unless you want noticable loss of image quality.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_gif_to_png">enable <b>GIF</b> to <b>PNG</b> conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_gif_to_png" name="ewww_image_optimizer_gif_to_png" <?php if (get_option('ewww_image_optimizer_gif_to_png') == TRUE) { ?>checked="true"<?php } ?> /> PNG is generally much better than GIF, but doesn't support animated images, so we don't convert those.</td></tr>
 			</table>
 			<h3>Advanced options</h3>
