@@ -527,14 +527,11 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 					} else {
 						// generate the filename for a PNG
 						$pngfile = substr_replace($file, 'png', -3);
-						// convert the JPG to  PNG
-						// TODO: find out why convert isn't working with the conditional (the conditional works, but not the convert)
-//						if (ewww_image_optimizer_gd_support()) {
-//							imagepng(imagecreatefromjpeg($file), $pngfile);
-//						}
-						if (trim(exec('which convert'))) {
-							echo "convert exists <br>";
-							exec("convert $file $pngfile");
+						// convert the JPG to  PNG (try with GD if possible, 'convert' if not)
+						if (ewww_image_optimizer_gd_support()) {
+							imagepng(imagecreatefromjpeg($file), $pngfile);
+						} elseif (trim(exec('which convert'))) {
+							exec("convert $file -strip $pngfile");
 						}
 						// then optimize the PNG with optipng
 						exec("$optipng_path -o$optipng_level -quiet $pngfile");
@@ -664,19 +661,47 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 				$jpgfile = substr_replace($file, 'jpg', -3);
 				// if the user set a fill background for transparency
 				if ($background = ewww_image_optimizer_jpg_background()) {
-					// set the proper flag for background color
+					// set background color for GD
+					$r = '0x' . substr($background, 0, 2);
+                                        $g = '0x' . substr($background, 2, 2);
+					$b = '0x' . substr($background, 4, 2);
+					// set the background flag for 'convert'
 					$background = "-background " . '"' . "#$background" . '"';
 				}
 				// if the user manually set the JPG quality
 				if ($quality = ewww_image_optimizer_jpg_quality()) {
-					// set the proper flag for JPG quality
-					$quality = "-quality $quality";
+					// set the quality for GD
+					$gquality = $quality;
+					// set the quality flag for 'convert'
+					$cquality = "-quality $quality";
 				}
-				// convert the PNG to a JPG with all the proper options
-				// TODO: implement 'convert' functionality with GD (if installed)
-				// TODO: verify that convert actually exists
+				// convert the PNG to a JPG with all the proper options (try GD first, then 'convert')
 				if (exec('which convert')) {
-					exec ("convert $background -flatten $quality $file $jpgfile");
+					exec ("convert $background -flatten $cquality $file $jpgfile");
+				} elseif (ewww_image_optimizer_gd_support()) {
+					// retrieve the data from the PNG
+					$input = imagecreatefrompng($file);
+					// retrieve the dimensions of the PNG
+					list($width, $height) = getimagesize($file);
+					// create a new image with those dimensions
+					$output = imagecreatetruecolor($width, $height);
+					// if the red color is set
+					if (isset($r)) {
+						// allocate the background color
+						$color = imagecolorallocate($output,  $r, $g, $b);
+						// fill the new image with the background color 
+						imagefilledrectangle($output, 0, 0, $width, $height, $color);
+					}
+					// copy the original image to the new image
+					imagecopy($output, $input, 0, 0, 0, 0, $width, $height);
+					// if the JPG quality is set
+					if (isset($gquality)) {
+						// output the JPG with the quality setting
+						imagejpeg($output, $jpgfile, $gquality);
+					} else {
+						// otherwise, just output the JPG
+						imagejpeg($output, $jpgfile);
+					}
 				}
 				// retrieve the filesize of the new JPG
 				$jpg_size = filesize($jpgfile);
@@ -1395,10 +1420,10 @@ function ewww_image_optimizer_options () {
 			<p>Conversion settings do not apply to NextGEN gallery.</p>
 			<table class="form-table" style="display: inline">
 				<tr><th><label for="ewww_image_optimizer_delete_originals">Delete originals</label></th><td><input type="checkbox" id="ewww_image_optimizer_delete_originals" name="ewww_image_optimizer_delete_originals" <?php if (get_option('ewww_image_optimizer_delete_originals') == TRUE) { ?>checked="true"<?php } ?> /> This will remove the original image from the server after a successful conversion.</td></tr>
-				<tr><th><label for="ewww_image_optimizer_jpg_to_png">enable <b>JPG</b> to <b>PNG</b> conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_jpg_to_png" name="ewww_image_optimizer_jpg_to_png" <?php if (get_option('ewww_image_optimizer_jpg_to_png') == TRUE) { ?>checked="true"<?php } ?> /> This conversion requires the 'convert' utility provided by ImageMagick or 'pngout' and should be used sparingly. PNG is generally much better than JPG for logos and other images with a limited range of colors. Checking this option will slow down JPG processing significantly, and you may want to enable it only temporarily.</td></tr>
+				<tr><th><label for="ewww_image_optimizer_jpg_to_png">enable <b>JPG</b> to <b>PNG</b> conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_jpg_to_png" name="ewww_image_optimizer_jpg_to_png" <?php if (get_option('ewww_image_optimizer_jpg_to_png') == TRUE) { ?>checked="true"<?php } ?> /> <b>WARNING:</b> Removes metadata! Requires GD support in PHP, 'convert' from ImageMagick, or 'pngout' and should be used sparingly. PNG is generally much better than JPG for logos and other images with a limited range of colors. Checking this option will slow down JPG processing significantly, and you may want to enable it only temporarily.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_png_to_jpg">enable <b>PNG</b> to <b>JPG</b> conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_png_to_jpg" name="ewww_image_optimizer_png_to_jpg" <?php if (get_option('ewww_image_optimizer_png_to_jpg') == TRUE) { ?>checked="true"<?php } ?> /> <b>WARNING:</b> This is not a lossless conversion and requires the 'convert' utility provided by ImageMagick. JPG is generally much better than PNG for photographic use because it compresses the image and discards data. JPG does not support transparency, so we don't convert PNGs with transparency.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_jpg_background">JPG background color</label></th><td>#<input type="text" id="ewww_image_optimizer_jpg_background" name="ewww_image_optimizer_jpg_background" style="width: 60px" value="<?php echo ewww_image_optimizer_jpg_background(); ?>" /> <span style="padding-left: 12px; font-size: 12px; border: solid 1px #555555; background-color: #<? echo ewww_image_optimizer_jpg_background(); ?>">&nbsp;</span> HEX format (#123def). This is used only if the PNG has transparency or leave it blank to skip PNGs with transparency.</td></tr>
-				<tr><th><label for="ewww_image_optimizer_jpg_quality">JPG background color</label></th><td><input type="text" id="ewww_image_optimizer_jpg_quality" name="ewww_image_optimizer_jpg_quality" style="width: 40px" value="<?php echo ewww_image_optimizer_jpg_quality(); ?>" /> Valid values are 1-100. If left blank, the conversion will attempt to set the optimal quality level or default to 92. Remember, this is a lossy conversion, so you are losing pixels, and it is not recommended to actually set the level here unless you want noticable loss of image quality.</td></tr>
+				<tr><th><label for="ewww_image_optimizer_jpg_quality">JPG quality level</label></th><td><input type="text" id="ewww_image_optimizer_jpg_quality" name="ewww_image_optimizer_jpg_quality" style="width: 40px" value="<?php echo ewww_image_optimizer_jpg_quality(); ?>" /> Valid values are 1-100. If left blank, GD defaults to 75, whereas 'convert' will attempt to set the optimal quality level or default to 92 (so we prefer 'convert' if it is available). Remember, this is a lossy conversion, so you are losing pixels, and it is not recommended to actually set the level here unless you want noticable loss of image quality.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_gif_to_png">enable <b>GIF</b> to <b>PNG</b> conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_gif_to_png" name="ewww_image_optimizer_gif_to_png" <?php if (get_option('ewww_image_optimizer_gif_to_png') == TRUE) { ?>checked="true"<?php } ?> /> PNG is generally much better than GIF, but doesn't support animated images, so we don't convert those.</td></tr>
 			</table>
 			<h3>Advanced options</h3>
