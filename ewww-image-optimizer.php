@@ -483,6 +483,14 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 			if (get_option('ewww_image_optimizer_jpg_to_png') && $gallery_type == 1) {
 				// toggle the convert process to ON
 				$convert = true;
+				// generate the filename for a PNG
+				$filename = preg_replace('/.jpe*g*$/i', '', $file);
+				$filenum = NULL;
+				$fileext = '.png';
+				while (file_exists($filename . $filenum . $fileext)) {
+					$filenum++;
+				}
+				$pngfile = $filename . $filenum . $fileext;
 			} else {
 				// otherwise, set it to OFF
 				$convert = false;
@@ -516,8 +524,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 				if (!get_option('ewww_image_optimizer_disable_pngout')) {
 					// retrieve the pngout optimization level
 					$pngout_level = get_option('ewww_image_optimizer_pngout_level');
-					// generate the filename for a PNG
-					$pngfile = substr_replace($file, 'png', -3);
 					// run pngout on the JPG to produce the PNG
 					exec("$nice $pngout_path -s$pngout_level -q $file $pngfile");
 				}
@@ -525,14 +531,12 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 				if (!get_option('ewww_image_optimizer_disable_optipng')) {
 					// retrieve the optipng optimization level
 					$optipng_level = get_option('ewww_image_optimizer_optipng_level');
-					// if $pngfile is set (which means pngout was already run)
-					if (isset($pngfile)) {
+					// if $pngfile exists (which means pngout was already run)
+					if (file_exists($pngfile)) {
 						// run optipng on the PNG file
 						exec("$nice $optipng_path -o$optipng_level -quiet $pngfile");
 					// otherwise, we need to use convert, since optipng doesn't do JPG conversion
 					} else {
-						// generate the filename for a PNG
-						$pngfile = substr_replace($file, 'png', -3);
 						// convert the JPG to  PNG (try with GD if possible, 'convert' if not)
 						if (ewww_image_optimizer_gd_support()) {
 							imagepng(imagecreatefromjpeg($file), $pngfile);
@@ -629,6 +633,14 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 			if (get_option('ewww_image_optimizer_png_to_jpg') && $gallery_type == 1) {
 				// turn the conversion process ON
 				$convert = true;
+				// generate the filename for a JPG
+				$filename = preg_replace('/.png$/i', '', $file);
+				$filenum = NULL;
+				$fileext = '.jpg';
+				while (file_exists($filename . $filenum . $fileext)) {
+					$filenum++;
+				}
+				$jpgfile = $filename . $filenum . $fileext;
 			} else {
 				// turn the conversion process OFF
 				$convert = false;
@@ -664,7 +676,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 			// if conversion is on and the PNG doesn't have transparency or the user set a background color to replace transparency, or this is a resize and the full-size image was converted
 			if (($convert && (!ewww_image_optimizer_png_alpha($file) || ewww_image_optimizer_jpg_background())) || $converted) {
 				// generate the name of the JPG
-				$jpgfile = substr_replace($file, 'jpg', -3);
+				//$jpgfile = substr_replace($file, 'jpg', -3);
 				// if the user set a fill background for transparency
 				if ($background = ewww_image_optimizer_jpg_background()) {
 					// set background color for GD
@@ -712,7 +724,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 				// retrieve the filesize of the new JPG
 				$jpg_size = filesize($jpgfile);
 				// next we need to optimize that JPG if jpegtran is enabled
-				if (!get_option('ewww_image_optimizer_disable_jpegtran')) {
+				if (!get_option('ewww_image_optimizer_disable_jpegtran') && file_exists($jpgfile)) {
 					// generate temporary file-names:
 					$tempfile = $jpgfile . ".tmp"; //non-progressive jpeg
 					$progfile = $jpgfile . ".prog"; // progressive jpeg
@@ -819,6 +831,14 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 			if (get_option('ewww_image_optimizer_gif_to_png') && $gallery_type == 1) {
 				// turn conversion ON
 				$convert = true;
+				// generate the filename for a PNG
+				$filename = preg_replace('/.gif$/i', '', $file);
+				$filenum = NULL;
+				$fileext = '.png';
+				while (file_exists($filename . $filenum . $fileext)) {
+					$filenum++;
+				}
+				$pngfile = $filename . $filenum . $fileext;
 			} else {
 				// turn conversion OFF
 				$convert = false;
@@ -850,28 +870,28 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 					// retrieve the pngout optimization level
 					$pngout_level = get_option('ewww_image_optimizer_pngout_level');
 					// run pngout on the file
-					exec("$nice $pngout_path -s$pngout_level -q $file");
+					exec("$nice $pngout_path -s$pngout_level -q $file $pngfile");
 					// generate the filename of the new PNG
-					$pngfile = substr_replace($file, 'png', -3);
+					//$pngfile = substr_replace($file, 'png', -3);
 				}
 				// if optipng is enabled
 				if (!get_option('ewww_image_optimizer_disable_optipng')) {
 					// retrieve the optipng optimization level
 					$optipng_level = get_option('ewww_image_optimizer_optipng_level');
 					// if $pngfile exists (which means pngout was run already)
-					if (isset($pngfile)) {
+					if (file_exists($pngfile)) {
 						// run optipng on the PNG file
 						exec("$nice $optipng_path -o$optipng_level -quiet $pngfile");
 					// otherwise, if pngout was not used
 					} else {
 						// run optipng on the GIF file
-						exec("$nice $optipng_path -o$optipng_level -quiet $file");
+						exec("$nice $optipng_path -out $pngfile -o$optipng_level -quiet $file");
 						// generate the filename of the new PNG
-						$pngfile = substr_replace($file, 'png', -3);
+						//$pngfile = substr_replace($file, 'png', -3);
 					}
 				}
 				// if a PNG file was created
-				if (isset($pngfile)) {
+				if (file_exists($pngfile)) {
 					// retrieve the filesize of the PNG
 					$png_size = filesize($pngfile);
 					// if the new PNG is smaller than the original GIF
