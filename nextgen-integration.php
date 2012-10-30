@@ -29,7 +29,7 @@ class ewwwngg {
 			// construct the absolute path of the current image
 			$file_path = trailingslashit($gallery_path) . $image['filename'];
 			// run the optimizer on the current image
-			$res = ewww_image_optimizer(ABSPATH . $file_path, 2, false);
+			$res = ewww_image_optimizer(ABSPATH . $file_path, 2, false, false);
 			// update the metadata for the optimized image
 			nggdb::update_image_meta($image['id'], array('ewww_image_optimizer' => $res[1]));
 		}
@@ -37,6 +37,7 @@ class ewwwngg {
 
 	/* Manually process an image from the NextGEN Gallery */
 	function ewww_ngg_manual() {
+		// TODO: resize thumbs (don't know why we don't...)
 		// check permission of current user
 		if ( FALSE === current_user_can('upload_files') ) {
 			wp_die(__('You don\'t have permission to work with uploaded files.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
@@ -52,9 +53,13 @@ class ewwwngg {
 		// retrieve the image path
 		$file_path = $meta->image->imagePath;
 		// run the optimizer on the current image
-		$res = ewww_image_optimizer($file_path, 2, false);
+		$res = ewww_image_optimizer($file_path, 2, false, false);
 		// update the metadata for the optimized image
 		nggdb::update_image_meta($id, array('ewww_image_optimizer' => $res[1]));
+		// get the filepath of the thumbnail image
+		$thumb_path = $meta->image->thumbPath;
+		// run the optimization on the thumbnail
+		ewww_image_optimizer($thumb_path, 2, false, true);
 		// get the referring page, and send the user back there
 		$sendback = wp_get_referer();
 		$sendback = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $sendback);
@@ -158,7 +163,7 @@ class ewwwngg {
 						// update the temp file with our current status
 						file_put_contents($progress_file, "$id");
 						// run the optimizer on the current image
-						$fres = ewww_image_optimizer($file_path, 2, false);
+						$fres = ewww_image_optimizer($file_path, 2, false, false);
 						// update the metadata of the optimized image
 						nggdb::update_image_meta($id, array('ewww_image_optimizer' => $fres[1]));
 						// output the results of the optimization
@@ -166,7 +171,7 @@ class ewwwngg {
 						// get the filepath of the thumbnail image
 						$thumb_path = $meta->image->thumbPath;
 						// run the optimization on the thumbnail
-						$tres = ewww_image_optimizer($thumb_path, 2, false);
+						$tres = ewww_image_optimizer($thumb_path, 2, false, true);
 						// output the results of the thumb optimization
 						printf( "Thumbnail – %s<br>", $tres[1] );
 						// outupt how much time we've spent optimizing so far
