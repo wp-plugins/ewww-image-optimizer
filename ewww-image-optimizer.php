@@ -419,7 +419,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 			$msg = sprintf(__("Could not find <span class='code'>%s</span>", EWWW_IMAGE_OPTIMIZER_DOMAIN), $file);
 			// send back the above message
 			return array($file, $msg, $converted);
-			}
+		}
 	}
 
 	// check that the file is writable
@@ -554,6 +554,8 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 				if ($orig_size > $png_size && $png_size != 0) {
 					// successful conversion (for now)
 					$converted = TRUE;
+				} else {
+					unlink ($pngfile);
 				}
 			// if conversion and optimization are both turned OFF, finish the JPG processing
 			} elseif (!$optimize) {
@@ -981,35 +983,45 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 function ewww_image_optimizer_update_attachment($data, $ID) {
 	// retrieve the original filename based on the $ID
 	$orig_file = get_attached_file($ID);
+	$new_file = basename($data['file']);
+//	echo "$new_file";
 	// update the file location in the post metadata based on the new path stored in the attachment metadata
 	update_attached_file($ID, $data['file']);
 	// retrieve the post information based on the $ID
+//	echo "<br>----------------------------------------------------------------------<br>";
 	$post = get_post($ID);
+//	print_r ($post);
+//	echo "<br>----------------------------------------------------------------------<br>";
 	// if the original image was a JPG
-	if (preg_match('/.jpe*g*$/i', $post->guid)) {
+	$guid = dirname($post->guid) . "/" . basename($data['file']);
+	if (preg_match('/.jpg$/i', basename($data['file']))) {
 		// update the guid to reference the new PNG
-		$guid = preg_replace('/.jpe*g*$/i', '.png', $post->guid);
+		//$guid = preg_replace('/.jpe*g*$/i', '.png', $post->guid);
 		// set the mimetype to PNG
-		$mime = 'image/png';
-	}
-	// if the original image was a PNG
-	if (preg_match('/.png$/i', $post->guid)) {
-		// update the guid to reference the new JPG
-		$guid = preg_replace('/.png$/i', '.jpg', $post->guid);
-		// set the mimetype to JPG
 		$mime = 'image/jpg';
 	}
-	// if the original image was a GIF
-	if (preg_match('/.gif$/i', $post->guid)) {
-		// update the guid to reference the new PNG
-		$guid = preg_replace('/.gif$/i', '.png', $post->guid);
-		// set the mimetype to PNG
+	// if the original image was a PNG
+	if (preg_match('/.png$/i', basename($data['file']))) {
+		// update the guid to reference the new JPG
+		//$guid = preg_replace('/.png$/i', '.jpg', $post->guid);
+		// set the mimetype to JPG
 		$mime = 'image/png';
 	}
+	// if the original image was a GIF
+//	if (preg_match('/.gif$/i', $post->guid)) {
+		// update the guid to reference the new PNG
+//		$guid = preg_replace('/.gif$/i', '.png', $post->guid);
+		// set the mimetype to PNG
+//		$mime = 'image/png';
+//	}
 	// update the attachment post with the new mimetype and guid
 	wp_update_post( array('ID' => $ID,
 			      'post_mime_type' => $mime,
 			      'guid' => $guid) );
+	// temp code
+//	$post = get_post($ID);
+//	print_r ($post);
+//	echo "<br>----------------------------------------------------------------------<br>";
 	return $data;
 }
 
