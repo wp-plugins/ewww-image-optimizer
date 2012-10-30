@@ -400,6 +400,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 	if (FALSE === file_exists($file) || FALSE === is_file($file)) {
 		// if the full-size image was converted, we are likely running into a duplicate resizes issue, so we just rename the resize
 		// for a JPG, rename it to a PNG
+		// TODO: see if this is necessary with the new duplicate checking code
 		if (preg_match('/.jpe*g*$/i', $file)) {
 			$newfile = preg_replace('/.jpe*g*$/i', '.png', $file);
 		// for a PNG, rename to a JPG
