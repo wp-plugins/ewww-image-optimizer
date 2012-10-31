@@ -389,7 +389,7 @@ function ewww_image_optimizer_manual() {
  * @returns array
  */
 function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
-	// TODO: properly rename resizes, with the increment before the dimensions
+	// TODO: properly rename resizes the same as the full version, and avoid conflicts somehow
 	// if 'nice' doesn't exist, set $nice to NULL, otherwise, set $nice to 'nice'
 	if (exec('nice') === NULL) {
 		$nice = NULL;
@@ -484,15 +484,20 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				// toggle the convert process to ON
 				$convert = true;
 				// generate the filename for a PNG
-				$filename = preg_replace('/(-\d+x\d+).jpe*g*$/i', '', $file);
-				preg_match('/-\d+x\d+$/', $file, $fileresize);
-				$filename = 
+				$filename = preg_replace('/.jpe*g*$/i', '', $file);
+				if (preg_match('/-\d+x\d+$/', $file, $fileresize)) {
+					$filename = preg_replace('/-\d+x\d+$/', '', $filename);
+					print_r ($fileresize);
+					echo "<br>-------------------------------<br>";
+				} else {
+					$fileresize[0] = NULL;
+				}
 				$filenum = NULL;
 				$fileext = '.png';
-				while (file_exists($filename . $filenum . $fileext)) {
+				while (file_exists($filename . $filenum . $fileresize[0] . $fileext)) {
 					$filenum++;
 				}
-				$pngfile = $filename . $filenum . $fileext;
+				$pngfile = $filename . $filenum . $fileresize[0] . $fileext;
 			} else {
 				// otherwise, set it to OFF
 				$convert = false;
