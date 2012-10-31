@@ -389,7 +389,7 @@ function ewww_image_optimizer_manual() {
  * @returns array
  */
 function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
-	// TODO: properly rename resizes the same as the full version, and avoid conflicts somehow
+	// TODO: properly rename resizes the same as the full version, and rewrite the file renamer to use a - before the increment
 	// if 'nice' doesn't exist, set $nice to NULL, otherwise, set $nice to 'nice'
 	if (exec('nice') === NULL) {
 		$nice = NULL;
@@ -476,6 +476,15 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 		$skip_gifsicle_check = false;
 		$skip_pngout_check = false;
 	}
+	if ($converted) {
+		preg_match('/\.\w+$/', $file, $fileext);
+		$filename = preg_replace('/\.\w+$/', '', $file);
+		preg_match('/-\d+x\d+$/', $filename, $fileresize);
+		$filename = preg_replace('/-\d+x\d+$/', '', $filename);
+		$refile = $filename . '-' . $converted . $fileresize[0] . $fileext[0];
+		rename($file, $refile);
+		$file = $refile;
+	}
 	// run the appropriate optimization/conversion for the mime-type
 	switch($type) {
 		case 'image/jpeg':
@@ -484,20 +493,25 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				// toggle the convert process to ON
 				$convert = true;
 				// generate the filename for a PNG
-				$filename = preg_replace('/.jpe*g*$/i', '', $file);
-				if (preg_match('/-\d+x\d+$/', $file, $fileresize)) {
-					$filename = preg_replace('/-\d+x\d+$/', '', $filename);
-					print_r ($fileresize);
-					echo "<br>-------------------------------<br>";
+				if ($converted) {
+					$pngfile = preg_replace('/\.jpe*g*$/i', '.png', $file);
 				} else {
-					$fileresize[0] = NULL;
+					// TODO: properly escape the . metacharacter (check PNG and GIF still)
+					$filename = preg_replace('/\.jpe*g*$/i', '', $file);
+					if (preg_match('/-\d+x\d+$/', $filename, $fileresize)) {
+						$filename = preg_replace('/-\d+x\d+$/', '', $filename);
+						print_r ($fileresize);
+						echo "<br>-------------------------------<br>";
+					} else {
+						$fileresize[0] = NULL;
+					}
+					$filenum = 1;
+					$fileext = '.png';
+					while (file_exists($filename . '-' . $filenum . $fileresize[0] . $fileext)) {
+						$filenum++;
+					}
+					$pngfile = $filename . '-' . $filenum . $fileresize[0] . $fileext;
 				}
-				$filenum = NULL;
-				$fileext = '.png';
-				while (file_exists($filename . $filenum . $fileresize[0] . $fileext)) {
-					$filenum++;
-				}
-				$pngfile = $filename . $filenum . $fileresize[0] . $fileext;
 			} else {
 				// otherwise, set it to OFF
 				$convert = false;
@@ -527,12 +541,20 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 			$new_size = $orig_size;
 			// if the conversion process is turned ON, or if this is a resize and the full-size was converted
 			if ($convert || $converted) {
+						// convert the JPG to  PNG (try with GD if possible, 'convert' if not)
+						if (ewww_image_optimizer_gd_support()) {
+							imagepng(imagecreatefromjpeg($file), $pngfile);
+						} elseif (trim(exec('which convert'))) {
+							exec("convert $file -strip $pngfile");
+						}
 				// if pngout isn't disabled
 				if (!get_option('ewww_image_optimizer_disable_pngout')) {
 					// retrieve the pngout optimization level
 					$pngout_level = get_option('ewww_image_optimizer_pngout_level');
-					// run pngout on the JPG to produce the PNG
-					exec("$nice $pngout_path -s$pngout_level -q $file $pngfile");
+					if (file_exists($pngfile)) {
+						// run pngout on the JPG to produce the PNG
+						exec("$nice $pngout_path -s$pngout_level -q $pngfile");
+					}
 				}
 				// if optipng isn't disabled
 				if (!get_option('ewww_image_optimizer_disable_optipng')) {
@@ -543,23 +565,17 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 						// run optipng on the PNG file
 						exec("$nice $optipng_path -o$optipng_level -quiet $pngfile");
 					// otherwise, we need to use convert, since optipng doesn't do JPG conversion
-					} else {
-						// convert the JPG to  PNG (try with GD if possible, 'convert' if not)
-						if (ewww_image_optimizer_gd_support()) {
-							imagepng(imagecreatefromjpeg($file), $pngfile);
-						} elseif (trim(exec('which convert'))) {
-							exec("convert $file -strip $pngfile");
-						}
+					} //else {
 						// then optimize the PNG with optipng
-						exec("$nice $optipng_path -o$optipng_level -quiet $pngfile");
-					}
+					//	exec("$nice $optipng_path -o$optipng_level -quiet $pngfile");
+					//}
 				}
 				// find out the size of the new PNG file
 				$png_size = filesize($pngfile);
 				// if the PNG is smaller than the original JPG, and we didn't end up with an empty file
 				if ($orig_size > $png_size && $png_size != 0) {
 					// successful conversion (for now)
-					$converted = TRUE;
+					$converted = $filenum;
 				} else {
 					unlink ($pngfile);
 				}
