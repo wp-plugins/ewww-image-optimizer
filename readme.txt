@@ -123,7 +123,8 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * added png2jpg
 * reorganized settings page (it was getting ugly) and cleaned up debug area
 * added poll for feedback
-* thumbnails are now optimized in NextGEN during a manual optimize
+* thumbnails are now optimized in NextGEN during a manual optimize (but not on initial upload
+* utilities have a 'niceness' value of 10 added to give them lower priority
 
 = 1.1.1 =
 * fixed not returning results of resized version of image

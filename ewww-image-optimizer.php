@@ -389,7 +389,6 @@ function ewww_image_optimizer_manual() {
  * @returns array
  */
 function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
-	// TODO: properly rename resizes the same as the full version, and rewrite the file renamer to use a - before the increment
 	// if 'nice' doesn't exist, set $nice to NULL, otherwise, set $nice to 'nice'
 	if (exec('nice') === NULL) {
 		$nice = NULL;
@@ -478,9 +477,11 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 	}
 	if ($converted) {
 		preg_match('/\.\w+$/', $file, $fileext);
-		$filename = preg_replace('/\.\w+$/', '', $file);
+		$filename = str_replace($fileext[0], '', $file);
+		//$filename = preg_replace('/\.\w+$/', '', $file);
 		preg_match('/-\d+x\d+$/', $filename, $fileresize);
-		$filename = preg_replace('/-\d+x\d+$/', '', $filename);
+		$filename = str_replace($fileresize[0], '', $filename);
+		//$filename = preg_replace('/-\d+x\d+$/', '', $filename);
 		$refile = $filename . '-' . $converted . $fileresize[0] . $fileext[0];
 		rename($file, $refile);
 		$file = $refile;
@@ -493,24 +494,24 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				// toggle the convert process to ON
 				$convert = true;
 				// generate the filename for a PNG
-				if ($converted) {
-					$pngfile = preg_replace('/\.jpe*g*$/i', '.png', $file);
+				if ($resize) {
+					$pngfile = preg_replace('/\.\w+$/', '.png', $file);
 				} else {
 					// TODO: properly escape the . metacharacter (check PNG and GIF still)
-					$filename = preg_replace('/\.jpe*g*$/i', '', $file);
-					if (preg_match('/-\d+x\d+$/', $filename, $fileresize)) {
-						$filename = preg_replace('/-\d+x\d+$/', '', $filename);
-						print_r ($fileresize);
-						echo "<br>-------------------------------<br>";
-					} else {
-						$fileresize[0] = NULL;
-					}
+					$filename = preg_replace('/\.\w+$/', '', $file);
+				//	if (preg_match('/-\d+x\d+$/', $filename, $fileresize)) {
+				//		$filename = preg_replace('/-\d+x\d+$/', '', $filename);
+				//		print_r ($fileresize);
+				//		echo "<br>-------------------------------<br>";
+				//	} else {
+				//		$fileresize[0] = NULL;
+				//	}
 					$filenum = 1;
 					$fileext = '.png';
-					while (file_exists($filename . '-' . $filenum . $fileresize[0] . $fileext)) {
+					while (file_exists($filename . '-' . $filenum . $fileext)) {
 						$filenum++;
 					}
-					$pngfile = $filename . '-' . $filenum . $fileresize[0] . $fileext;
+					$pngfile = $filename . '-' . $filenum . $fileext;
 				}
 			} else {
 				// otherwise, set it to OFF
@@ -659,13 +660,17 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				// turn the conversion process ON
 				$convert = true;
 				// generate the filename for a JPG
-				$filename = preg_replace('/.png$/i', '', $file);
-				$filenum = NULL;
-				$fileext = '.jpg';
-				while (file_exists($filename . $filenum . $fileext)) {
-					$filenum++;
+				if ($resize) {
+					$jpgfile = preg_replace('/\.\w+$/', '.jpg', $file);
+				} else {
+					$filename = preg_replace('/\.\w+$/', '', $file);
+					$filenum = 1;
+					$fileext = '.jpg';
+					while (file_exists($filename . '-' . $filenum . $fileext)) {
+						$filenum++;
+					}
+					$jpgfile = $filename . '-' . $filenum . $fileext;
 				}
-				$jpgfile = $filename . $filenum . $fileext;
 			} else {
 				// turn the conversion process OFF
 				$convert = false;
@@ -797,7 +802,8 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				// if the new JPG is smaller than the original PNG
 				if ($orig_size > $jpg_size && $jpg_size != 0) {
 					// successful conversion (for now)
-					$converted = TRUE;
+					$converted = $filenum;
+					//$converted = TRUE;
 				} else {
 					unlink ($jpgfile);
 				}
@@ -859,13 +865,17 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				// turn conversion ON
 				$convert = true;
 				// generate the filename for a PNG
-				$filename = preg_replace('/.gif$/i', '', $file);
-				$filenum = NULL;
-				$fileext = '.png';
-				while (file_exists($filename . $filenum . $fileext)) {
-					$filenum++;
+				if ($resize) {
+					$pngfile = preg_replace('/\.\w+$/', '.png', $file);
+				} else {
+					$filename = preg_replace('/\.\w+$/', '', $file);
+					$filenum = 1;
+					$fileext = '.png';
+					while (file_exists($filename . '-' . $filenum . $fileext)) {
+						$filenum++;
+					}
+					$pngfile = $filename . '-' . $filenum . $fileext;
 				}
-				$pngfile = $filename . $filenum . $fileext;
 			} else {
 				// turn conversion OFF
 				$convert = false;
@@ -924,7 +934,8 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					// if the new PNG is smaller than the original GIF
 					if ($orig_size > $png_size && $png_size != 0) {
 						// successful conversion (for now)
-						$converted = TRUE;
+						$converted = $filenum;
+						//$converted = TRUE;
 					} else {
 						unlink ($pngfile);
 					}
