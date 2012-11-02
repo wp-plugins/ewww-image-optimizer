@@ -444,7 +444,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 	}
 	// get the utility paths
 	list ($jpegtran_path, $optipng_path, $gifsicle_path, $pngout_path) = ewww_image_optimizer_path_check();
-	// To skip binary checking, you can visit the EWWW Image Optimizer options page
 	// if the user has disabled the utility checks
 	if(get_option('ewww_image_optimizer_skip_check') == TRUE){
 		$skip_jpegtran_check = true;
@@ -460,6 +459,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 	}
 	// if the full-size image was converted
 	if ($converted) {
+		$filenum = $converted;
 		// grab the file extension
 		preg_match('/\.\w+$/', $file, $fileext);
 		// strip the file extension
@@ -469,7 +469,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 		// strip the dimensions
 		$filename = str_replace($fileresize[0], '', $filename);
 		// reconstruct the filename with the same increment (stored in $converted) as the full version
-		$refile = $filename . '-' . $converted . $fileresize[0] . $fileext[0];
+		$refile = $filename . '-' . $filenum . $fileresize[0] . $fileext[0];
 		// rename the file
 		rename($file, $refile);
 		// and set $file to the new filename
@@ -566,6 +566,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					$converted = $filenum;
 				} else {
 					// otherwise delete the PNG
+					$converted = FALSE;
 					unlink ($pngfile);
 				}
 			// if conversion and optimization are both turned OFF, finish the JPG processing
@@ -643,6 +644,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 			}
 			break;
 		case 'image/png':
+			// When we don't delete the original images, they don't get converted it seems?
 			// png2jpg conversion is turned on, and the image is in the wordpress media library
 			if (get_option('ewww_image_optimizer_png_to_jpg') && $gallery_type == 1) {
 				// turn the conversion process ON
@@ -801,6 +803,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					// successful conversion (for now), so we store the increment
 					$converted = $filenum;
 				} else {
+					$converted = FALSE;
 					// otherwise delete the new JPG
 					unlink ($jpgfile);
 				}
@@ -938,6 +941,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 						// successful conversion (for now), so we store the increment
 						$converted = $filenum;
 					} else {
+						$converted = FALSE;
 						unlink ($pngfile);
 					}
 				}
