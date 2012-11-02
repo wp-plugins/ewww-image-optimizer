@@ -37,7 +37,6 @@ class ewwwngg {
 
 	/* Manually process an image from the NextGEN Gallery */
 	function ewww_ngg_manual() {
-		// TODO: resize thumbs (don't know why we don't...)
 		// check permission of current user
 		if ( FALSE === current_user_can('upload_files') ) {
 			wp_die(__('You don\'t have permission to work with uploaded files.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
