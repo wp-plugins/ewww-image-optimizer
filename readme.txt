@@ -116,6 +116,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * SECURITY: bundled optipng updated to 0.7.4
 * deprecated manual path settings, please put binaries in the plugin folder instead
 * new one-click install option for jpegtran
+* one-click for pngout is more efficient (doesn't redownload tarball) if it exists
 * optipng and gifsicle now bundled with the plugin
 * new *optional* conversion routines check for smallest file format
 * added gif2png

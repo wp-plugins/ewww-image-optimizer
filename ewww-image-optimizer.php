@@ -1361,8 +1361,8 @@ function ewww_image_optimizer_install_jpegtran() {
 	if ( FALSE === current_user_can('install_plugins') ) {
 		wp_die(__('You don\'t have permission to install image optimizer utilities.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 	}
-	ewww_image_optimizer_download_file("http://jpegclub.org/droppatch.v09.tar.gz", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "jpegtran.tar.gz");
-	exec ("tar xzf " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "jpegtran.tar.gz -C " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
+	ewww_image_optimizer_download_file('http://jpegclub.org/droppatch.v09.tar.gz', EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'jpegtran.tar.gz');
+	exec ('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'jpegtran.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' jpegtran');
 	$sendback = wp_get_referer();
 	#$sendback = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $sendback);
 	wp_redirect($sendback);
@@ -1375,24 +1375,36 @@ function ewww_image_optimizer_install_pngout() {
 	if ( FALSE === current_user_can('install_plugins') ) {
 		wp_die(__('You don\'t have permission to install image optimizer utilities.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 	}
-	ewww_image_optimizer_download_file("http://static.jonof.id.au/dl/kenutils/pngout-20120530-linux-static.tar.gz", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static.tar.gz");
-	exec ("tar xzf " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static.tar.gz -C " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
+	if (!file_exists(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz')) {
+		ewww_image_optimizer_download_file('http://static.jonof.id.au/dl/kenutils/pngout-20120530-linux-static.tar.gz', EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz');
+	}
 	$arch_type = $_REQUEST['arch'];
 	switch ($arch_type) {
 		case 'i386':
-			copy(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/i386/pngout-static", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static");
+			exec('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-20120530-linux-static/i386/pngout-static');
+			//exec('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz -O pngout-20120530-linux-static/i386/pngout-static', $pngout_static);
+			rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/i386/pngout-static", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static");
+			//$pngout_file = fopen(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-static', 'wb');
+			//foreach($pngout_static as $pngout_line) {
+			//	fwrite($pngout_file, $pngout_line);
+			//}
+			//fclose($pngout_file);
 			break;
 		case 'i686':
-			copy(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/i686/pngout-static", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static");
+			exec('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-20120530-linux-static/i686/pngout-static');
+			rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/i686/pngout-static", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static");
 			break;
 		case 'athlon':
-			copy(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/athlon/pngout-static", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static");
+			exec('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-20120530-linux-static/athlon/pngout-static');
+			rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/athlon/pngout-static", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static");
 			break;
 		case 'pentium4':
-			copy(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/pentium4/pngout-static", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static");
+			exec('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-20120530-linux-static/pentium4/pngout-static');
+			rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/pentium4/pngout-static", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static");
 			break;
 		case 'x64':
-			copy(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/x86_64/pngout-static", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static");
+			exec('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-20120530-linux-static/x86_64/pngout-static');
+			rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/x86_64/pngout-static", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static");
 			break;
 	}
 	chmod(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static", 0755);
@@ -1544,6 +1556,10 @@ function ewww_image_optimizer_options () {
 			</table>
 			<p class="submit"><input type="submit" class="button-primary" value="Save Changes" /></p>
 		</form>
+			<?php 
+			$tar_command = 'tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-20120530-linux-static/i386/pngout-static';
+			echo $tar_command; 
+			?>
 	</div>
 	<?php
 }
