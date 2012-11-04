@@ -1556,10 +1556,6 @@ function ewww_image_optimizer_options () {
 			</table>
 			<p class="submit"><input type="submit" class="button-primary" value="Save Changes" /></p>
 		</form>
-			<?php 
-			$tar_command = 'tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-20120530-linux-static/i386/pngout-static';
-			echo $tar_command; 
-			?>
 	</div>
 	<?php
 }
