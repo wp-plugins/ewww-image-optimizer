@@ -3,16 +3,16 @@ Contributors: nosilver4u
 Tags: images, image, attachments, attachment
 Requires at least: 2.9
 Tested up to: 3.4.2
-Stable tag: 1.1.1
+Stable tag: 1.2.0
 License: GPLv3
 
 Reduce file sizes and improve performance for images within WordPress including NextGEN Gallery. Uses jpegtran, optipng/pngout, and gifsicle.
 
 == Description ==
 
-The EWWW Image Optimizer is a WordPress plugin that will automatically and losslessly optimize your images as you upload them to your blog. It can also optimize the images that you have already uploaded in the past. It is also now possible to convert your images automatically to the file format that will produce the smallest image.
+The EWWW Image Optimizer is a WordPress plugin that will automatically and losslessly optimize your images as you upload them to your blog. It can also optimize the images that you have already uploaded in the past. It is also now possible to convert your images automatically to the file format that will produce the smallest image (make sure you read the WARNINGS).
 
-By default, EWWW Image Optimizer uses lossless optimization techniques, so your image quality will be exactly the same before and after the optimization. The only thing that will change is your file size. The one small exception to this is GIF animations. While the optimization is technically lossless, you will not be able to properly edit the animation again without performing an --unoptimize operation with gifsicle. The gif2png and jpg2png conversions are also lossless but the png2jpg process is not lossles.
+By default, EWWW Image Optimizer uses lossless optimization techniques, so your image quality will be exactly the same before and after the optimization. The only thing that will change is your file size. The one small exception to this is GIF animations. While the optimization is technically lossless, you will not be able to properly edit the animation again without performing an --unoptimize operation with gifsicle. The gif2png and jpg2png conversions are also lossless but the png2jpg process is not lossless.
 
 Images are optimized using the [jpegtran](http://jpegclub.org/jpegtran/), [optipng](http://optipng.sourceforge.net/), [pngout](advsys.net/ken/utils.htm), and [gifsicle](http://www.lcdf.org/gifsicle/) image tools (available for free). For PNG files, either optipng or pngout can be used. If you want the best optimization, install both, set optipng to level 3 (beyond that is just crazy and rarely yields significant gains) and pngout to level 0. Images are converted using the above tools and GD or 'convert' (ImageMagick).
 
@@ -45,7 +45,7 @@ NOTE: Does not optimize thumbnails on initial upload, must re-optimize images to
 Pngout is new in version 1.1.0 and is not enabled by default because it is resource intensive. Optipng is the preferred PNG optimizer if you have resource (CPU) constraints. Pngout is also not open-source for those who care about such things, but is free.
 1. Go to the settings page.
 1. Click one of the links near the middle of the page to install pngout for your server, and the plugin will download the pngout archive, unpack it, and install the version that you chose. If you don't know what architecture your server is, you can stick with the i386 or ask your webhost about it. You can always choose a different version later, and the plugin will simply update the version that is used.
-1. Adjust the pngout level according to your needs. Level 0 gives the best results, but can take up to a minute or so on a single image.
+1. Adjust the pngout level according to your needs. Level 0 gives the best results, but can take up to a minute or more on a single image.
 1. If the one-click install isn't working for you, download the latest version from http://www.jonof.id.au/kenutils and extract the appropriate pngout-static to the plugins/ewww-image-optimizer/ folder.
 
 = Installing optipng =
@@ -116,6 +116,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * SECURITY: bundled optipng updated to 0.7.4
 * deprecated manual path settings, please put binaries in the plugin folder instead
 * new one-click install option for jpegtran
+* one-click for pngout is more efficient (doesn't redownload tarball) if it exists
 * optipng and gifsicle now bundled with the plugin
 * new *optional* conversion routines check for smallest file format
 * added gif2png
@@ -123,6 +124,8 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * added png2jpg
 * reorganized settings page (it was getting ugly) and cleaned up debug area
 * added poll for feedback
+* thumbnails are now optimized in NextGEN during a manual optimize (but not on initial upload)
+* utilities have a 'niceness' value of 10 added to give them lower priority
 
 = 1.1.1 =
 * fixed not returning results of resized version of image
