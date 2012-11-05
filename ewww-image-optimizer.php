@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate Linux image optimizers into WordPress.
- * @version 1.2.0
+ * @version 1.2.1
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -9,7 +9,7 @@ Plugin Name: EWWW Image Optimizer
 Plugin URI: http://www.shanebishop.net/ewww-image-optimizer/
 Description: Reduce file sizes and improve performance for images within WordPress including NextGEN Gallery. Uses jpegtran, optipng/pngout, and gifsicle.
 Author: Shane Bishop
-Version: 1.2.0
+Version: 1.2.1
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
@@ -93,6 +93,15 @@ function ewww_image_optimizer_path_check() {
 	return array($jpegtran, $optipng, $gifsicle, $pngout);
 }
 
+function ewww_image_optimizer_chmod_tools () {
+	if (!is_executable(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'gifsicle')) {
+		chmod(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'gifsicle', 0755);
+	}
+	if (!is_executable(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'optipng')) {
+		chmod(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'optipng', 0755);
+	}
+}
+		
 // Retrieves jpg background fill setting, or returns null for png2jpg conversions
 function ewww_image_optimizer_jpg_background () {
 	// retrieve the user-supplied value for jpg background color
@@ -223,6 +232,14 @@ function ewww_image_optimizer_notice_utils() {
 		echo "<div id='ewww-image-optimizer-warning-opt-png' class='updated fade'><p><strong>EWWW Image Optimizer requires exec().</strong> Your system administrator has disabled this function.</p></div>";
 	}
 }
+
+/**
+ * Plugin activation function
+ */
+function ewww_image_optimizer_activate () {
+	ewww_image_optimizer_chmod_tools();
+}
+register_activation_hook(__FILE__, 'ewww_image_optimizer_activate');
 
 /**
  * Plugin admin initialization function
@@ -1407,7 +1424,7 @@ function ewww_image_optimizer_install_pngout() {
 			rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/x86_64/pngout-static", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static");
 			break;
 	}
-	chmod(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static", 0755);
+	chmod(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-static', 0755);
 	$sendback = wp_get_referer();
 	#$sendback = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $sendback);
 	wp_redirect($sendback);
