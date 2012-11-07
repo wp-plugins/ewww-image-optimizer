@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate Linux image optimizers into WordPress.
- * @version 1.2.1
+ * @version 1.2.2
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -9,7 +9,7 @@ Plugin Name: EWWW Image Optimizer
 Plugin URI: http://www.shanebishop.net/ewww-image-optimizer/
 Description: Reduce file sizes and improve performance for images within WordPress including NextGEN Gallery. Uses jpegtran, optipng/pngout, and gifsicle.
 Author: Shane Bishop
-Version: 1.2.1
+Version: 1.2.2
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
@@ -1063,17 +1063,6 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 	}
 	// run the image optimizer on the file, and store the results
 	list($file, $msg, $conv) = ewww_image_optimizer($file_path, 1, false, false);
-	// if the file was converted
-	if ($conv) {
-		// if we don't already have the update attachment filter
-		if ( FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment') )
-			// add the update attachment filter
-			add_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10, 2);
-		// store the conversion status in the metadata
-		$meta['converted'] = 1;
-		// store the old filename in the database
-		$meta['orig_file'] = $file;
-	}
 	// update the filename in the metadata
 	$meta['file'] = $file;
 	// update the optimization results in the metadata
@@ -1089,6 +1078,7 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 	// meta sizes don't contain a path, so we calculate one
 	$base_dir = dirname($file_path) . '/';
 	// process each resized version
+	$processed = array();
 	foreach($meta['sizes'] as $size => $data) {
 		// initialize $dup_size
 		$dup_size = false;
@@ -1122,6 +1112,19 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 		$processed[$size]['width'] = $data['width'];
 		$processed[$size]['height'] = $data['height'];
 	}
+	// if the file was converted
+	if ($conv) {
+		// if we don't already have the update attachment filter
+		if ( FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment') )
+			// add the update attachment filter
+			add_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10, 2);
+		// store the conversion status in the metadata
+		$meta['converted'] = 1;
+		// store the old filename in the database
+		$meta['orig_file'] = $file_path;
+	} else {
+		remove_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10);
+	}
 	// send back the updated metadata
 	return $meta;
 }
@@ -1129,26 +1132,57 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 /**
  * Update the attachment's meta data after being converted 
  */
-function ewww_image_optimizer_update_attachment($data, $ID) {
+function ewww_image_optimizer_update_attachment($meta, $ID) {
 	// retrieve the original filename based on the $ID
-	$new_file = basename($data['file']);
+	$new_file = basename($meta['file']);
 	// update the file location in the post metadata based on the new path stored in the attachment metadata
-	update_attached_file($ID, $data['file']);
+	update_attached_file($ID, $meta['file']);
 	// retrieve the post information based on the $ID
 	$post = get_post($ID);
+	//echo "<br>----------------------------------------<br>";
+	//print_r ($post);
+	//echo "<br>----------------------------------------<br>";
+	//print_r ($meta);
+	//echo "<br>----------------------------------------<br>";
+	// save the previous attachment address
+	$old_guid = $post->guid;
 	// construct the new guid based on the filename from the attachment metadata
-	$guid = dirname($post->guid) . "/" . basename($data['file']);
+	$guid = dirname($post->guid) . "/" . basename($meta['file']);
+	// retrieve any posts that link the image
+	global $wpdb;
+	$table_name = $wpdb->prefix . "posts";
+	$esql = "SELECT ID, post_content FROM $table_name WHERE post_content LIKE '%$old_guid%'";
+	$es = mysql_query($esql);
+	while($rows = mysql_fetch_assoc($es)) {
+		$post_content = $rows["post_content"];
+		$post_content = addslashes(str_replace($old_guid, $guid, $post_content));
+		mysql_query("UPDATE $table_name SET post_content = '$post_content' WHERE ID = {$rows["ID"]}");
+	}
+	foreach($meta['sizes'] as $size => $data) {
+		if (isset($data['converted'])) {
+			$old_sguid = dirname($post->guid) . "/" . basename($data['orig_file']);
+			$sguid = dirname($post->guid) . "/" . basename($data['file']);
+			$ersql = "SELECT ID, post_content FROM $table_name WHERE post_content LIKE '%$old_sguid%'";
+			$ers = mysql_query($ersql);
+			while($rows = mysql_fetch_assoc($ers)) {
+				$post_content = $rows["post_content"];
+				$post_content = addslashes(str_replace($old_sguid, $sguid, $post_content));
+				mysql_query("UPDATE $table_name SET post_content = '$post_content' WHERE ID = {$rows["ID"]}");
+			}
+		}
+		//echo "$old_sguid <br> $sguid <br>";
+	}
 	// if the new image is a JPG
-	if (preg_match('/.jpg$/i', basename($data['file']))) {
+	if (preg_match('/.jpg$/i', basename($meta['file']))) {
 		// set the mimetype to JPG
 		$mime = 'image/jpg';
 	}
 	// if the new image is a PNG
-	if (preg_match('/.png$/i', basename($data['file']))) {
+	if (preg_match('/.png$/i', basename($meta['file']))) {
 		// set the mimetype to PNG
 		$mime = 'image/png';
 	}
-	if (preg_match('/.gif$/i', basename($data['file']))) {
+	if (preg_match('/.gif$/i', basename($meta['file']))) {
 		// set the mimetype to GIF
 		$mime = 'image/gif';
 	}
@@ -1156,7 +1190,7 @@ function ewww_image_optimizer_update_attachment($data, $ID) {
 	wp_update_post( array('ID' => $ID,
 			      'post_mime_type' => $mime,
 			      'guid' => $guid) );
-	return $data;
+	return $meta;
 }
 
 /**
@@ -1277,6 +1311,7 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 				break; 
 			case 'image/png':
 				// if pngout and optipng are missing, tell the user
+				// TODO: fix warning on pngout
 				if(EWWW_IMAGE_OPTIMIZER_PNGOUT == false && EWWW_IMAGE_OPTIMIZER_OPTIPNG == false) {
 					$valid = false;
 					$msg = '<br>' . __('<em>optipng/pngout</em> is missing');
@@ -1541,7 +1576,8 @@ function ewww_image_optimizer_options () {
 				<tr><th><label for="ewww_image_optimizer_gifsicle_path">gifsicle path</label></th><td><input type="text" style="width: 400px" id="ewww_image_optimizer_gifsicle_path" name="ewww_image_optimizer_gifsicle_path" value="<?php echo get_option('ewww_image_optimizer_gifsicle_path'); ?>" /></td></tr>
 			</table>
 			<h3>Conversion Settings</h3>
-			<p>Conversion settings do not apply to NextGEN gallery.</p>
+			<p>Conversion settings do not apply to NextGEN gallery.<br />
+				<b>NOTE:</b> Converting images does not update any posts that contain those images. You will need to manually update your image urls after you convert any images.</p>
 			<table class="form-table" style="display: inline">
 				<tr><th><label for="ewww_image_optimizer_delete_originals">Delete originals</label></th><td><input type="checkbox" id="ewww_image_optimizer_delete_originals" name="ewww_image_optimizer_delete_originals" <?php if (get_option('ewww_image_optimizer_delete_originals') == TRUE) { ?>checked="true"<?php } ?> /> This will remove the original image from the server after a successful conversion.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_jpg_to_png">enable <b>JPG</b> to <b>PNG</b> conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_jpg_to_png" name="ewww_image_optimizer_jpg_to_png" <?php if (get_option('ewww_image_optimizer_jpg_to_png') == TRUE) { ?>checked="true"<?php } ?> /> <b>WARNING:</b> Removes metadata! Requires GD support in PHP or 'convert' from ImageMagick and should be used sparingly. PNG is generally much better than JPG for logos and other images with a limited range of colors. Checking this option will slow down JPG processing significantly, and you may want to enable it only temporarily.</td></tr>

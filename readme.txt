@@ -112,6 +112,10 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 == Changelog ==
 
+= 1.2.2 =
+* fixed warnings on uninitialized variable $processed
+* update links in posts for converted images
+
 = 1.2.1 =
 * fixed bug: wordpress plugin installer removes executable bit from bundled tools
 
