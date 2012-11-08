@@ -189,6 +189,8 @@ function ewww_image_optimizer_notice_utils() {
 						$missing[] = 'jpegtran';
 						// also set the appropriate constant to false
 						define('EWWW_IMAGE_OPTIMIZER_' . $key, false);
+					} else {
+						define('EWWW_IMAGE_OPTIMIZER_' . $key, true);
 					}
 					break; 
 				case 'OPTIPNG':
@@ -196,6 +198,8 @@ function ewww_image_optimizer_notice_utils() {
 						$missing[] = 'optipng';
 						// also set the appropriate constant to false
 						define('EWWW_IMAGE_OPTIMIZER_' . $key, false);
+					} else {
+						define('EWWW_IMAGE_OPTIMIZER_' . $key, true);
 					}
 					break;
 				case 'GIFSICLE':
@@ -203,14 +207,18 @@ function ewww_image_optimizer_notice_utils() {
 						$missing[] = 'gifsicle';
 						// also set the appropriate constant to false
 						define('EWWW_IMAGE_OPTIMIZER_' . $key, false);
+					} else {
+						define('EWWW_IMAGE_OPTIMIZER_' . $key, true);
 					}
 					break;
 				case 'PNGOUT':
 					if (!$skip_pngout_check) {
 						$missing[] = 'pngout';
 						// also set the appropriate constant to false
-						define('EWWW_IMAGE_OPTIMIZER_' . $key, false);
+					} else {
+						define('EWWW_IMAGE_OPTIMIZER_' . $key, true);
 					}
+						
 					break;
 			}
 		} else {
@@ -726,9 +734,9 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				// if the user set a fill background for transparency
 				if ($background = ewww_image_optimizer_jpg_background()) {
 					// set background color for GD
-					$r = '0x' . substr($background, 0, 2);
-                                        $g = '0x' . substr($background, 2, 2);
-					$b = '0x' . substr($background, 4, 2);
+					$r = '0x' . strtoupper(substr($background, 0, 2));
+                                        $g = '0x' . strtoupper(substr($background, 2, 2));
+					$b = '0x' . strtoupper(substr($background, 4, 2));
 					// set the background flag for 'convert'
 					$background = "-background " . '"' . "#$background" . '"';
 				}
@@ -750,7 +758,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					// if the red color is set
 					if (isset($r)) {
 						// allocate the background color
-						$color = imagecolorallocate($output,  $r, $g, $b);
+						$color = imagecolorallocate($output, $r, $g, $b);
 						// fill the new image with the background color 
 						imagefilledrectangle($output, 0, 0, $width, $height, $color);
 					}
@@ -1139,11 +1147,6 @@ function ewww_image_optimizer_update_attachment($meta, $ID) {
 	update_attached_file($ID, $meta['file']);
 	// retrieve the post information based on the $ID
 	$post = get_post($ID);
-	//echo "<br>----------------------------------------<br>";
-	//print_r ($post);
-	//echo "<br>----------------------------------------<br>";
-	//print_r ($meta);
-	//echo "<br>----------------------------------------<br>";
 	// save the previous attachment address
 	$old_guid = $post->guid;
 	// construct the new guid based on the filename from the attachment metadata
@@ -1153,24 +1156,34 @@ function ewww_image_optimizer_update_attachment($meta, $ID) {
 	$table_name = $wpdb->prefix . "posts";
 	$esql = "SELECT ID, post_content FROM $table_name WHERE post_content LIKE '%$old_guid%'";
 	$es = mysql_query($esql);
+	// while there are posts to process
 	while($rows = mysql_fetch_assoc($es)) {
-		$post_content = $rows["post_content"];
-		$post_content = addslashes(str_replace($old_guid, $guid, $post_content));
+		//$post_content = $rows["post_content"];
+		// replace all occurences of the old guid with the new guid
+		$post_content = addslashes(str_replace($old_guid, $guid, $rows['post_content']));
+		// send the updated content back to the database
 		mysql_query("UPDATE $table_name SET post_content = '$post_content' WHERE ID = {$rows["ID"]}");
 	}
+	// for each resized version
 	foreach($meta['sizes'] as $size => $data) {
+		// if the resize was converted
 		if (isset($data['converted'])) {
+			// generate the url for the old image
 			$old_sguid = dirname($post->guid) . "/" . basename($data['orig_file']);
+			// generate the url for the new image
 			$sguid = dirname($post->guid) . "/" . basename($data['file']);
+			// retrieve any posts that link the resize
 			$ersql = "SELECT ID, post_content FROM $table_name WHERE post_content LIKE '%$old_sguid%'";
 			$ers = mysql_query($ersql);
+			// while there are posts to process
 			while($rows = mysql_fetch_assoc($ers)) {
-				$post_content = $rows["post_content"];
-				$post_content = addslashes(str_replace($old_sguid, $sguid, $post_content));
+				//$post_content = $rows["post_content"];
+				// replace all occurences of the old guid with the new guid
+				$post_content = addslashes(str_replace($old_sguid, $sguid, $rows['post_content']));
+				// send the updated content back to the database
 				mysql_query("UPDATE $table_name SET post_content = '$post_content' WHERE ID = {$rows["ID"]}");
 			}
 		}
-		//echo "$old_sguid <br> $sguid <br>";
 	}
 	// if the new image is a JPG
 	if (preg_match('/.jpg$/i', basename($meta['file']))) {
@@ -1311,7 +1324,6 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 				break; 
 			case 'image/png':
 				// if pngout and optipng are missing, tell the user
-				// TODO: fix warning on pngout
 				if(EWWW_IMAGE_OPTIMIZER_PNGOUT == false && EWWW_IMAGE_OPTIMIZER_OPTIPNG == false) {
 					$valid = false;
 					$msg = '<br>' . __('<em>optipng/pngout</em> is missing');

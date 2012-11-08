@@ -113,11 +113,13 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 == Changelog ==
 
 = 1.2.2 =
-* fixed warnings on uninitialized variable $processed
+* fixed: warnings on uninitialized variable $processed
 * update links in posts for converted images
+* fixed: png2jpg sometimes fills with black instead of chosen color
+* fixed: uninitialized constants
 
 = 1.2.1 =
-* fixed bug: wordpress plugin installer removes executable bit from bundled tools
+* fixed: wordpress plugin installer removes executable bit from bundled tools
 
 = 1.2.0 =
 * SECURITY: bundled optipng updated to 0.7.4
