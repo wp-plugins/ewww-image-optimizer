@@ -107,7 +107,7 @@ function ewww_image_optimizer_jpg_background () {
 	// retrieve the user-supplied value for jpg background color
 	$background = get_option('ewww_image_optimizer_jpg_background');
 	//verify that the supplied value is in hex notation
-	if (preg_match('/^\#*(\d|[a-f]){6}$/',$background)) {
+	if (preg_match('/^\#*([0-9a-fA-F]){6}$/',$background)) {
 		// we remove a leading # symbol, since we take care of it later
 		preg_replace('/#/','',$background);
 		// send back the verified, cleaned-up background color
@@ -509,7 +509,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				$convert = true;
 				// generate the filename for a PNG
 				// if this is a resize version
-				if ($resize) {
+				if ($converted) {
 					// just change the file extension
 					$pngfile = preg_replace('/\.\w+$/', '.png', $file);
 				// if this is a full size image
@@ -676,7 +676,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				$convert = true;
 				// generate the filename for a JPG
 				// if this is a resize version
-				if ($resize) {
+				if ($converted) {
 					// just replace the file extension with a .jpg
 					$jpgfile = preg_replace('/\.\w+$/', '.jpg', $file);
 				// if this is a full version
@@ -734,9 +734,9 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				// if the user set a fill background for transparency
 				if ($background = ewww_image_optimizer_jpg_background()) {
 					// set background color for GD
-					$r = '0x' . strtoupper(substr($background, 0, 2));
-                                        $g = '0x' . strtoupper(substr($background, 2, 2));
-					$b = '0x' . strtoupper(substr($background, 4, 2));
+					$r = hexdec('0x' . strtoupper(substr($background, 0, 2)));
+                                        $g = hexdec('0x' . strtoupper(substr($background, 2, 2)));
+					$b = hexdec('0x' . strtoupper(substr($background, 4, 2)));
 					// set the background flag for 'convert'
 					$background = "-background " . '"' . "#$background" . '"';
 				}
@@ -758,9 +758,9 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					// if the red color is set
 					if (isset($r)) {
 						// allocate the background color
-						$color = imagecolorallocate($output, $r, $g, $b);
+						$rgb = imagecolorallocate($output, $r, $g, $b);
 						// fill the new image with the background color 
-						imagefilledrectangle($output, 0, 0, $width, $height, $color);
+						imagefilledrectangle($output, 0, 0, $width, $height, $rgb);
 					}
 					// copy the original image to the new image
 					imagecopy($output, $input, 0, 0, 0, 0, $width, $height);
@@ -891,7 +891,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				$convert = true;
 				// generate the filename for a PNG
 				// if this is a resize version
-				if ($resize) {
+				if ($converted) {
 					// just change the file extension
 					$pngfile = preg_replace('/\.\w+$/', '.png', $file);
 				// if this is the full version
@@ -1079,9 +1079,22 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 	if ( FALSE === $store_absolute_path ) {
 		$meta['file'] = str_replace($upload_path, '', $meta['file']);
 	}
-	// no resized versions, so we can exit
-	if ( !isset($meta['sizes']) )
-		return $meta;
+	// if the file was converted
+	if ($conv) {
+		// if we don't already have the update attachment filter
+		if ( FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment') )
+			// add the update attachment filter
+			add_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10, 2);
+		// store the conversion status in the metadata
+		$meta['converted'] = 1;
+		// store the old filename in the database
+		$meta['orig_file'] = $file_path;
+	} else {
+		remove_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10);
+	}
+	// resized versions, so we can continue
+	if (isset($meta['sizes']) ) {
+	//	return $meta;
 
 	// meta sizes don't contain a path, so we calculate one
 	$base_dir = dirname($file_path) . '/';
@@ -1108,6 +1121,10 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 			list($optimized_file, $results, $resize_conv) = ewww_image_optimizer($base_dir . $data['file'], 1, $conv, true);
 			// if the resize was converted, store the result and the original filename in the metadata for later recovery
 			if ($resize_conv) {
+			// if we don't already have the update attachment filter
+			if ( FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment') )
+				// add the update attachment filter
+				add_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10, 2);
 				$meta['sizes'][$size]['converted'] = 1;
 				$meta['sizes'][$size]['orig_file'] = $data['file'];
 			}
@@ -1120,18 +1137,6 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 		$processed[$size]['width'] = $data['width'];
 		$processed[$size]['height'] = $data['height'];
 	}
-	// if the file was converted
-	if ($conv) {
-		// if we don't already have the update attachment filter
-		if ( FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment') )
-			// add the update attachment filter
-			add_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10, 2);
-		// store the conversion status in the metadata
-		$meta['converted'] = 1;
-		// store the old filename in the database
-		$meta['orig_file'] = $file_path;
-	} else {
-		remove_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10);
 	}
 	// send back the updated metadata
 	return $meta;
@@ -1164,6 +1169,7 @@ function ewww_image_optimizer_update_attachment($meta, $ID) {
 		// send the updated content back to the database
 		mysql_query("UPDATE $table_name SET post_content = '$post_content' WHERE ID = {$rows["ID"]}");
 	}
+	if (isset($meta['sizes']) ) {
 	// for each resized version
 	foreach($meta['sizes'] as $size => $data) {
 		// if the resize was converted
@@ -1184,6 +1190,7 @@ function ewww_image_optimizer_update_attachment($meta, $ID) {
 				mysql_query("UPDATE $table_name SET post_content = '$post_content' WHERE ID = {$rows["ID"]}");
 			}
 		}
+	}
 	}
 	// if the new image is a JPG
 	if (preg_match('/.jpg$/i', basename($meta['file']))) {
@@ -1506,7 +1513,7 @@ function ewww_image_optimizer_install_gifsicle() {
 
 // displays the EWWW IO options and provides one-click install for the optimizer utilities
 function ewww_image_optimizer_options () {
-	list ($jpegtran_path, $optipng_path, $gifsicle_path) = ewww_image_optimizer_path_check();
+	list ($jpegtran_path, $optipng_path, $gifsicle_path, $pngout_path) = ewww_image_optimizer_path_check();
 	?>
 	<div class="wrap">
 		<div id="icon-options-general" class="icon32"><br /></div>
@@ -1524,11 +1531,11 @@ function ewww_image_optimizer_options () {
 			jpegtran version: <?php exec($jpegtran_path . ' -v ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'sample.jpg 2>&1', $jpegtran_version); foreach ($jpegtran_version as $jout) { if (preg_match('/Independent JPEG Group/', $jout)) { echo $jout; } } ?><br />
 			<!--computed optipng path: <?php echo $optipng_path; ?><br />
 			optipng location (using 'which'): <?php echo trim(exec('which ' . $optipng_path)); ?><br />-->
-			optipng version: <?php exec($optipng_path . ' -v', $optipng_version); echo $optipng_version[0]; ?><br />
+			optipng version: <?php exec($optipng_path . ' -v', $optipng_version); if (preg_match('/OptiPNG/', $optipng_version[0])) { echo $optipng_version[0]; } ?><br />
 			<!--computed gifsicle path: <?php echo $gifsicle_path; ?><br />
 			gifsicle location (using 'which'): <?php echo trim(exec('which ' . $gifsicle_path)); ?><br />-->
-			gifsicle version: <?php exec($gifsicle_path . ' --version', $gifsicle_version); echo $gifsicle_version[0]; ?><br />
-			<!--pngout version: <?php //exec("$pngout_path 2>&1", $pngout_version); preg_replace('/PNGOUT.+\)/', '', $pngout_version[0]); print_r ($pngout_version); ?><br />-->
+			gifsicle version: <?php exec($gifsicle_path . ' --version', $gifsicle_version); if (preg_match('/LCDF/', $gifsicle_version[0])) { echo $gifsicle_version[0]; } ?><br />
+			pngout version: <?php exec("$pngout_path 2>&1", $pngout_version); if (preg_match('/PNGOUT/', $pngout_version[0])) { echo preg_replace('/PNGOUT \[.*\)\s*?/', '', $pngout_version[0]); } ?><br />
 			<?php if (ewww_image_optimizer_gd_support()) {
 				echo "GD: OK<br>";
 			} else {

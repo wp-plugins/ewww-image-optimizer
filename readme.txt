@@ -3,7 +3,7 @@ Contributors: nosilver4u
 Tags: images, image, attachments, attachment
 Requires at least: 2.9
 Tested up to: 3.4.2
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 License: GPLv3
 
 Reduce file sizes and improve performance for images within WordPress including NextGEN Gallery. Uses jpegtran, optipng/pngout, and gifsicle.
@@ -113,10 +113,11 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 == Changelog ==
 
 = 1.2.2 =
-* fixed: warnings on uninitialized variable $processed
+* fixed: uninitialized variables
 * update links in posts for converted images
 * fixed: png2jpg sometimes fills with black instead of chosen color
-* fixed: uninitialized constants
+* fixed: thumbnails for animated gifs were not allowed to convert to png
+* added pngout version to debug
 
 = 1.2.1 =
 * fixed: wordpress plugin installer removes executable bit from bundled tools
