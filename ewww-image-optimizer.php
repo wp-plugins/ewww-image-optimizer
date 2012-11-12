@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate Linux image optimizers into WordPress.
- * @version 1.2.0
+ * @version 1.2.2
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -9,7 +9,7 @@ Plugin Name: EWWW Image Optimizer
 Plugin URI: http://www.shanebishop.net/ewww-image-optimizer/
 Description: Reduce file sizes and improve performance for images within WordPress including NextGEN Gallery. Uses jpegtran, optipng/pngout, and gifsicle.
 Author: Shane Bishop
-Version: 1.2.0
+Version: 1.2.2
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
@@ -93,12 +93,21 @@ function ewww_image_optimizer_path_check() {
 	return array($jpegtran, $optipng, $gifsicle, $pngout);
 }
 
+function ewww_image_optimizer_chmod_tools () {
+	if (!is_executable(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'gifsicle')) {
+		chmod(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'gifsicle', 0755);
+	}
+	if (!is_executable(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'optipng')) {
+		chmod(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'optipng', 0755);
+	}
+}
+		
 // Retrieves jpg background fill setting, or returns null for png2jpg conversions
 function ewww_image_optimizer_jpg_background () {
 	// retrieve the user-supplied value for jpg background color
 	$background = get_option('ewww_image_optimizer_jpg_background');
 	//verify that the supplied value is in hex notation
-	if (preg_match('/^\#*(\d|[a-f]){6}$/',$background)) {
+	if (preg_match('/^\#*([0-9a-fA-F]){6}$/',$background)) {
 		// we remove a leading # symbol, since we take care of it later
 		preg_replace('/#/','',$background);
 		// send back the verified, cleaned-up background color
@@ -180,6 +189,8 @@ function ewww_image_optimizer_notice_utils() {
 						$missing[] = 'jpegtran';
 						// also set the appropriate constant to false
 						define('EWWW_IMAGE_OPTIMIZER_' . $key, false);
+					} else {
+						define('EWWW_IMAGE_OPTIMIZER_' . $key, true);
 					}
 					break; 
 				case 'OPTIPNG':
@@ -187,6 +198,8 @@ function ewww_image_optimizer_notice_utils() {
 						$missing[] = 'optipng';
 						// also set the appropriate constant to false
 						define('EWWW_IMAGE_OPTIMIZER_' . $key, false);
+					} else {
+						define('EWWW_IMAGE_OPTIMIZER_' . $key, true);
 					}
 					break;
 				case 'GIFSICLE':
@@ -194,14 +207,18 @@ function ewww_image_optimizer_notice_utils() {
 						$missing[] = 'gifsicle';
 						// also set the appropriate constant to false
 						define('EWWW_IMAGE_OPTIMIZER_' . $key, false);
+					} else {
+						define('EWWW_IMAGE_OPTIMIZER_' . $key, true);
 					}
 					break;
 				case 'PNGOUT':
 					if (!$skip_pngout_check) {
 						$missing[] = 'pngout';
 						// also set the appropriate constant to false
-						define('EWWW_IMAGE_OPTIMIZER_' . $key, false);
+					} else {
+						define('EWWW_IMAGE_OPTIMIZER_' . $key, true);
 					}
+						
 					break;
 			}
 		} else {
@@ -223,6 +240,14 @@ function ewww_image_optimizer_notice_utils() {
 		echo "<div id='ewww-image-optimizer-warning-opt-png' class='updated fade'><p><strong>EWWW Image Optimizer requires exec().</strong> Your system administrator has disabled this function.</p></div>";
 	}
 }
+
+/**
+ * Plugin activation function
+ */
+function ewww_image_optimizer_activate () {
+	ewww_image_optimizer_chmod_tools();
+}
+register_activation_hook(__FILE__, 'ewww_image_optimizer_activate');
 
 /**
  * Plugin admin initialization function
@@ -364,7 +389,7 @@ function ewww_image_optimizer_manual() {
 	$attachment_ID = intval($_GET['attachment_ID']);
 	// retrieve the existing attachment metadata
 	$original_meta = wp_get_attachment_metadata( $attachment_ID );
-	// call the optime from metadata function and store the resulting new metadata
+	// call the optimize from metadata function and store the resulting new metadata
 	$new_meta = ewww_image_optimizer_resize_from_meta_data( $original_meta, $attachment_ID );
 	// update the attachment metadata in the database
 	wp_update_attachment_metadata( $attachment_ID, $new_meta );
@@ -388,8 +413,7 @@ function ewww_image_optimizer_manual() {
  * @param   boolean $converted		tells us if this is a resize and the full image was converted to a new format
  * @returns array
  */
-function ewww_image_optimizer($file, $gallery_type, $converted) {
-	// TODO: find out why duplicate images aren't being renamed, or something...
+function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 	// if 'nice' doesn't exist, set $nice to NULL, otherwise, set $nice to 'nice'
 	if (exec('nice') === NULL) {
 		$nice = NULL;
@@ -398,28 +422,10 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 	}
 	// check that the file exists
 	if (FALSE === file_exists($file) || FALSE === is_file($file)) {
-		// if the full-size image was converted, we are likely running into a duplicate resizes issue, so we just rename the resize
-		// for a JPG, rename it to a PNG
-		// TODO: see if this is necessary with the new duplicate checking code
-		if (preg_match('/.jpe*g*$/i', $file)) {
-			$newfile = preg_replace('/.jpe*g*$/i', '.png', $file);
-		// for a PNG, rename to a JPG
-		} elseif (preg_match('/.png$/i', $file)) {
-			$newfile = preg_replace('/.png$/i', '.jpg', $file);
-		// for a GIF, rename to a PNG
-		} elseif (preg_match('/.gif$/i', $file)) {
-			$newfile = preg_replace('/.gif$/i', '.png', $file);
-		}
-		// if we find a match with the $newfile
-		if (TRUE === file_exists($newfile) && TRUE === is_file($newfile)) {
-			// return the updated filename, and the appropriate message
-			return array($newfile, __('No savings', EWWW_IMAGE_OPTIMIZER_DOMAIN), $converted);
-		} else {
-			// tell the user we couldn't find the file
-			$msg = sprintf(__("Could not find <span class='code'>%s</span>", EWWW_IMAGE_OPTIMIZER_DOMAIN), $file);
-			// send back the above message
-			return array($file, $msg, $converted);
-			}
+		// tell the user we couldn't find the file
+		$msg = sprintf(__("Could not find <span class='code'>%s</span>", EWWW_IMAGE_OPTIMIZER_DOMAIN), $file);
+		// send back the above message
+		return array($file, $msg, $converted);
 	}
 
 	// check that the file is writable
@@ -463,7 +469,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 	}
 	// get the utility paths
 	list ($jpegtran_path, $optipng_path, $gifsicle_path, $pngout_path) = ewww_image_optimizer_path_check();
-	// To skip binary checking, you can visit the EWWW Image Optimizer options page
 	// if the user has disabled the utility checks
 	if(get_option('ewww_image_optimizer_skip_check') == TRUE){
 		$skip_jpegtran_check = true;
@@ -477,6 +482,24 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 		$skip_gifsicle_check = false;
 		$skip_pngout_check = false;
 	}
+	// if the full-size image was converted
+	if ($converted) {
+		$filenum = $converted;
+		// grab the file extension
+		preg_match('/\.\w+$/', $file, $fileext);
+		// strip the file extension
+		$filename = str_replace($fileext[0], '', $file);
+		// grab the dimensions
+		preg_match('/-\d+x\d+$/', $filename, $fileresize);
+		// strip the dimensions
+		$filename = str_replace($fileresize[0], '', $filename);
+		// reconstruct the filename with the same increment (stored in $converted) as the full version
+		$refile = $filename . '-' . $filenum . $fileresize[0] . $fileext[0];
+		// rename the file
+		rename($file, $refile);
+		// and set $file to the new filename
+		$file = $refile;
+	}
 	// run the appropriate optimization/conversion for the mime-type
 	switch($type) {
 		case 'image/jpeg':
@@ -485,13 +508,26 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 				// toggle the convert process to ON
 				$convert = true;
 				// generate the filename for a PNG
-				$filename = preg_replace('/.jpe*g*$/i', '', $file);
-				$filenum = NULL;
-				$fileext = '.png';
-				while (file_exists($filename . $filenum . $fileext)) {
-					$filenum++;
+				// if this is a resize version
+				if ($converted) {
+					// just change the file extension
+					$pngfile = preg_replace('/\.\w+$/', '.png', $file);
+				// if this is a full size image
+				} else {
+					// strip the file extension
+					$filename = preg_replace('/\.\w+$/', '', $file);
+					// set the increment to 1 (we always rename converted files with an increment)
+					$filenum = 1;
+					// set the new file extension
+					$fileext = '.png';
+					// while a file exists with the current increment
+					while (file_exists($filename . '-' . $filenum . $fileext)) {
+						// increment the increment...
+						$filenum++;
+					}
+					// all done, let's reconstruct the filename
+					$pngfile = $filename . '-' . $filenum . $fileext;
 				}
-				$pngfile = $filename . $filenum . $fileext;
 			} else {
 				// otherwise, set it to OFF
 				$convert = false;
@@ -521,30 +557,29 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 			$new_size = $orig_size;
 			// if the conversion process is turned ON, or if this is a resize and the full-size was converted
 			if ($convert || $converted) {
-				// if pngout isn't disabled
-				if (!get_option('ewww_image_optimizer_disable_pngout')) {
-					// retrieve the pngout optimization level
-					$pngout_level = get_option('ewww_image_optimizer_pngout_level');
-					// run pngout on the JPG to produce the PNG
-					exec("$nice $pngout_path -s$pngout_level -q $file $pngfile");
-				}
-				// if optipng isn't disabled
-				if (!get_option('ewww_image_optimizer_disable_optipng')) {
-					// retrieve the optipng optimization level
-					$optipng_level = get_option('ewww_image_optimizer_optipng_level');
-					// if $pngfile exists (which means pngout was already run)
-					if (file_exists($pngfile)) {
-						// run optipng on the PNG file
-						exec("$nice $optipng_path -o$optipng_level -quiet $pngfile");
-					// otherwise, we need to use convert, since optipng doesn't do JPG conversion
-					} else {
 						// convert the JPG to  PNG (try with GD if possible, 'convert' if not)
 						if (ewww_image_optimizer_gd_support()) {
 							imagepng(imagecreatefromjpeg($file), $pngfile);
 						} elseif (trim(exec('which convert'))) {
 							exec("convert $file -strip $pngfile");
 						}
-						// then optimize the PNG with optipng
+				// if pngout isn't disabled
+				if (!get_option('ewww_image_optimizer_disable_pngout')) {
+					// retrieve the pngout optimization level
+					$pngout_level = get_option('ewww_image_optimizer_pngout_level');
+					// if the PNG file was created
+					if (file_exists($pngfile)) {
+						// run pngout on the new PNG
+						exec("$nice $pngout_path -s$pngout_level -q $pngfile");
+					}
+				}
+				// if optipng isn't disabled
+				if (!get_option('ewww_image_optimizer_disable_optipng')) {
+					// retrieve the optipng optimization level
+					$optipng_level = get_option('ewww_image_optimizer_optipng_level');
+					// if the PNG file was created
+					if (file_exists($pngfile)) {
+						// run optipng on the new PNG
 						exec("$nice $optipng_path -o$optipng_level -quiet $pngfile");
 					}
 				}
@@ -552,8 +587,12 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 				$png_size = filesize($pngfile);
 				// if the PNG is smaller than the original JPG, and we didn't end up with an empty file
 				if ($orig_size > $png_size && $png_size != 0) {
-					// successful conversion (for now)
-					$converted = TRUE;
+					// successful conversion (for now), and we store the increment
+					$converted = $filenum;
+				} else {
+					// otherwise delete the PNG
+					$converted = FALSE;
+					unlink ($pngfile);
 				}
 			// if conversion and optimization are both turned OFF, finish the JPG processing
 			} elseif (!$optimize) {
@@ -573,7 +612,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 					$copy_opt = 'all';
 				}
 				// run jpegtran - non-progressive
-				// TODO: push the output into php, to avoid weird hacky stuff
+				// TODO: push the output into php, to avoid weird hacky stuff (maybe)
 				exec("$nice $jpegtran_path -copy $copy_opt -optimize $file > $tempfile");
 				// run jpegtran - progressive
 				exec("$nice $jpegtran_path -copy $copy_opt -optimize -progressive $file > $progfile");
@@ -630,18 +669,32 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 			}
 			break;
 		case 'image/png':
+			// When we don't delete the original images, they don't get converted it seems?
 			// png2jpg conversion is turned on, and the image is in the wordpress media library
 			if (get_option('ewww_image_optimizer_png_to_jpg') && $gallery_type == 1) {
 				// turn the conversion process ON
 				$convert = true;
 				// generate the filename for a JPG
-				$filename = preg_replace('/.png$/i', '', $file);
-				$filenum = NULL;
-				$fileext = '.jpg';
-				while (file_exists($filename . $filenum . $fileext)) {
-					$filenum++;
+				// if this is a resize version
+				if ($converted) {
+					// just replace the file extension with a .jpg
+					$jpgfile = preg_replace('/\.\w+$/', '.jpg', $file);
+				// if this is a full version
+				} else {
+					// strip the file extension
+					$filename = preg_replace('/\.\w+$/', '', $file);
+					// set the increment
+					$filenum = 1;
+					// set the new extension
+					$fileext = '.jpg';
+					// if a file exists with the current increment
+					while (file_exists($filename . '-' . $filenum . $fileext)) {
+						// increase the increment
+						$filenum++;
+					}
+					// construct the filename for the new JPG
+					$jpgfile = $filename . '-' . $filenum . $fileext;
 				}
-				$jpgfile = $filename . $filenum . $fileext;
 			} else {
 				// turn the conversion process OFF
 				$convert = false;
@@ -681,9 +734,9 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 				// if the user set a fill background for transparency
 				if ($background = ewww_image_optimizer_jpg_background()) {
 					// set background color for GD
-					$r = '0x' . substr($background, 0, 2);
-                                        $g = '0x' . substr($background, 2, 2);
-					$b = '0x' . substr($background, 4, 2);
+					$r = hexdec('0x' . strtoupper(substr($background, 0, 2)));
+                                        $g = hexdec('0x' . strtoupper(substr($background, 2, 2)));
+					$b = hexdec('0x' . strtoupper(substr($background, 4, 2)));
 					// set the background flag for 'convert'
 					$background = "-background " . '"' . "#$background" . '"';
 				}
@@ -705,9 +758,9 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 					// if the red color is set
 					if (isset($r)) {
 						// allocate the background color
-						$color = imagecolorallocate($output,  $r, $g, $b);
+						$rgb = imagecolorallocate($output, $r, $g, $b);
 						// fill the new image with the background color 
-						imagefilledrectangle($output, 0, 0, $width, $height, $color);
+						imagefilledrectangle($output, 0, 0, $width, $height, $rgb);
 					}
 					// copy the original image to the new image
 					imagecopy($output, $input, 0, 0, 0, 0, $width, $height);
@@ -772,8 +825,12 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 				}
 				// if the new JPG is smaller than the original PNG
 				if ($orig_size > $jpg_size && $jpg_size != 0) {
-					// successful conversion (for now)
-					$converted = TRUE;
+					// successful conversion (for now), so we store the increment
+					$converted = $filenum;
+				} else {
+					$converted = FALSE;
+					// otherwise delete the new JPG
+					unlink ($jpgfile);
 				}
 			// if conversion and optimization are both disabled we are done here
 			} elseif (!$optimize) {
@@ -833,13 +890,26 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 				// turn conversion ON
 				$convert = true;
 				// generate the filename for a PNG
-				$filename = preg_replace('/.gif$/i', '', $file);
-				$filenum = NULL;
-				$fileext = '.png';
-				while (file_exists($filename . $filenum . $fileext)) {
-					$filenum++;
+				// if this is a resize version
+				if ($converted) {
+					// just change the file extension
+					$pngfile = preg_replace('/\.\w+$/', '.png', $file);
+				// if this is the full version
+				} else {
+					// strip the file extension
+					$filename = preg_replace('/\.\w+$/', '', $file);
+					// set the increment
+					$filenum = 1;
+					// set the new extension
+					$fileext = '.png';
+					// if a file exists with the current increment
+					while (file_exists($filename . '-' . $filenum . $fileext)) {
+						// increase the increment
+						$filenum++;
+					}
+					// construct the filename for the new PNG
+					$pngfile = $filename . '-' . $filenum . $fileext;
 				}
-				$pngfile = $filename . $filenum . $fileext;
 			} else {
 				// turn conversion OFF
 				$convert = false;
@@ -872,8 +942,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 					$pngout_level = get_option('ewww_image_optimizer_pngout_level');
 					// run pngout on the file
 					exec("$nice $pngout_path -s$pngout_level -q $file $pngfile");
-					// generate the filename of the new PNG
-					//$pngfile = substr_replace($file, 'png', -3);
 				}
 				// if optipng is enabled
 				if (!get_option('ewww_image_optimizer_disable_optipng')) {
@@ -887,8 +955,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 					} else {
 						// run optipng on the GIF file
 						exec("$nice $optipng_path -out $pngfile -o$optipng_level -quiet $file");
-						// generate the filename of the new PNG
-						//$pngfile = substr_replace($file, 'png', -3);
 					}
 				}
 				// if a PNG file was created
@@ -897,8 +963,11 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 					$png_size = filesize($pngfile);
 					// if the new PNG is smaller than the original GIF
 					if ($orig_size > $png_size && $png_size != 0) {
-						// successful conversion (for now)
-						$converted = TRUE;
+						// successful conversion (for now), so we store the increment
+						$converted = $filenum;
+					} else {
+						$converted = FALSE;
+						unlink ($pngfile);
 					}
 				}
 			// if conversion and optimization are both turned OFF, we are done here
@@ -945,8 +1014,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 			// if not a JPG, PNG, or GIF, tell the user we don't work with strangers
 			return array($file, __('Unknown type: ' . $type, EWWW_IMAGE_OPTIMIZER_DOMAIN), $converted);
 	}
-	// this is unnecessary
-	//$result = str_replace($file . ': ', '', $result);
 	// if the image is unchanged
 	if($result == 'unchanged') {
 		// tell the user we couldn't save them anything
@@ -976,41 +1043,174 @@ function ewww_image_optimizer($file, $gallery_type, $converted) {
 }
 
 /**
+ * Read the image paths from an attachment's meta data and process each image
+ * with ewww_image_optimizer().
+ *
+ * This method also adds a `ewww_image_optimizer` meta key for use in the media library 
+ * and may add a 'converted' and 'orig_file' key if conversion is enabled.
+ *
+ * Called after `wp_generate_attachment_metadata` is completed.
+ */
+function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
+	// get the filepath from the metadata
+	$file_path = $meta['file'];
+	// store absolute paths for older wordpress versions
+	$store_absolute_path = true;
+	// retrieve the location of the wordpress upload folder
+	$upload_dir = wp_upload_dir();
+	// retrieve the path of the upload folder
+	$upload_path = trailingslashit( $upload_dir['basedir'] );
+	// TODO: determine if this is really necessary, since we only claim to support 2.9 or better
+	// WordPress >= 2.6.2: determine the absolute $file_path (http://core.trac.wordpress.org/changeset/8796)
+	// if the wp content folder is not contained in the file path
+	if ( FALSE === strpos($file_path, WP_CONTENT_DIR) ) {
+		// don't store absolute paths
+		$store_absolute_path = false;
+		// generate the absolute path
+		$file_path =  $upload_path . $file_path;
+	}
+	// run the image optimizer on the file, and store the results
+	list($file, $msg, $conv) = ewww_image_optimizer($file_path, 1, false, false);
+	// update the filename in the metadata
+	$meta['file'] = $file;
+	// update the optimization results in the metadata
+	$meta['ewww_image_optimizer'] = $msg;
+	// strip absolute path for Wordpress >= 2.6.2
+	if ( FALSE === $store_absolute_path ) {
+		$meta['file'] = str_replace($upload_path, '', $meta['file']);
+	}
+	// if the file was converted
+	if ($conv) {
+		// if we don't already have the update attachment filter
+		if ( FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment') )
+			// add the update attachment filter
+			add_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10, 2);
+		// store the conversion status in the metadata
+		$meta['converted'] = 1;
+		// store the old filename in the database
+		$meta['orig_file'] = $file_path;
+	} else {
+		remove_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10);
+	}
+	// resized versions, so we can continue
+	if (isset($meta['sizes']) ) {
+	//	return $meta;
+
+	// meta sizes don't contain a path, so we calculate one
+	$base_dir = dirname($file_path) . '/';
+	// process each resized version
+	$processed = array();
+	foreach($meta['sizes'] as $size => $data) {
+		// initialize $dup_size
+		$dup_size = false;
+		// check through all the sizes we've processed so far
+		foreach($processed as $proc => $scan) {
+			// if a previous resize had identical dimensions
+			if ($scan['height'] == $data['height'] && $scan['width'] == $data['width']) {
+				// found a duplicate resize
+				$dup_size = true;
+				// point this resize at the same image as the previous one
+				$meta['sizes'][$size]['file'] = $meta['sizes'][$proc]['file'];
+				// and tell the user we didn't do any further optimization
+				$meta['sizes'][$size]['ewww_image_optimizer'] = 'No savings';
+			}
+		}
+		// if this is a unique size
+		if (!$dup_size) {
+			// run the optimization and store the results
+			list($optimized_file, $results, $resize_conv) = ewww_image_optimizer($base_dir . $data['file'], 1, $conv, true);
+			// if the resize was converted, store the result and the original filename in the metadata for later recovery
+			if ($resize_conv) {
+			// if we don't already have the update attachment filter
+			if ( FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment') )
+				// add the update attachment filter
+				add_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10, 2);
+				$meta['sizes'][$size]['converted'] = 1;
+				$meta['sizes'][$size]['orig_file'] = $data['file'];
+			}
+			// update the filename
+			$meta['sizes'][$size]['file'] = str_replace($base_dir, '', $optimized_file);
+			// update the optimization results
+			$meta['sizes'][$size]['ewww_image_optimizer'] = $results;
+		}
+		// store info on the sizes we've processed, so we can check the list for duplicate sizes
+		$processed[$size]['width'] = $data['width'];
+		$processed[$size]['height'] = $data['height'];
+	}
+	}
+	// send back the updated metadata
+	return $meta;
+}
+
+/**
  * Update the attachment's meta data after being converted 
  */
-function ewww_image_optimizer_update_attachment($data, $ID) {
+function ewww_image_optimizer_update_attachment($meta, $ID) {
 	// retrieve the original filename based on the $ID
-	$orig_file = get_attached_file($ID);
+	$new_file = basename($meta['file']);
 	// update the file location in the post metadata based on the new path stored in the attachment metadata
-	update_attached_file($ID, $data['file']);
+	update_attached_file($ID, $meta['file']);
 	// retrieve the post information based on the $ID
 	$post = get_post($ID);
-	// if the original image was a JPG
-	if (preg_match('/.jpe*g*$/i', $post->guid)) {
-		// update the guid to reference the new PNG
-		$guid = preg_replace('/.jpe*g*$/i', '.png', $post->guid);
-		// set the mimetype to PNG
-		$mime = 'image/png';
+	// save the previous attachment address
+	$old_guid = $post->guid;
+	// construct the new guid based on the filename from the attachment metadata
+	$guid = dirname($post->guid) . "/" . basename($meta['file']);
+	// retrieve any posts that link the image
+	global $wpdb;
+	$table_name = $wpdb->prefix . "posts";
+	$esql = "SELECT ID, post_content FROM $table_name WHERE post_content LIKE '%$old_guid%'";
+	$es = mysql_query($esql);
+	// while there are posts to process
+	while($rows = mysql_fetch_assoc($es)) {
+		//$post_content = $rows["post_content"];
+		// replace all occurences of the old guid with the new guid
+		$post_content = addslashes(str_replace($old_guid, $guid, $rows['post_content']));
+		// send the updated content back to the database
+		mysql_query("UPDATE $table_name SET post_content = '$post_content' WHERE ID = {$rows["ID"]}");
 	}
-	// if the original image was a PNG
-	if (preg_match('/.png$/i', $post->guid)) {
-		// update the guid to reference the new JPG
-		$guid = preg_replace('/.png$/i', '.jpg', $post->guid);
+	if (isset($meta['sizes']) ) {
+	// for each resized version
+	foreach($meta['sizes'] as $size => $data) {
+		// if the resize was converted
+		if (isset($data['converted'])) {
+			// generate the url for the old image
+			$old_sguid = dirname($post->guid) . "/" . basename($data['orig_file']);
+			// generate the url for the new image
+			$sguid = dirname($post->guid) . "/" . basename($data['file']);
+			// retrieve any posts that link the resize
+			$ersql = "SELECT ID, post_content FROM $table_name WHERE post_content LIKE '%$old_sguid%'";
+			$ers = mysql_query($ersql);
+			// while there are posts to process
+			while($rows = mysql_fetch_assoc($ers)) {
+				//$post_content = $rows["post_content"];
+				// replace all occurences of the old guid with the new guid
+				$post_content = addslashes(str_replace($old_sguid, $sguid, $rows['post_content']));
+				// send the updated content back to the database
+				mysql_query("UPDATE $table_name SET post_content = '$post_content' WHERE ID = {$rows["ID"]}");
+			}
+		}
+	}
+	}
+	// if the new image is a JPG
+	if (preg_match('/.jpg$/i', basename($meta['file']))) {
 		// set the mimetype to JPG
 		$mime = 'image/jpg';
 	}
-	// if the original image was a GIF
-	if (preg_match('/.gif$/i', $post->guid)) {
-		// update the guid to reference the new PNG
-		$guid = preg_replace('/.gif$/i', '.png', $post->guid);
+	// if the new image is a PNG
+	if (preg_match('/.png$/i', basename($meta['file']))) {
 		// set the mimetype to PNG
 		$mime = 'image/png';
+	}
+	if (preg_match('/.gif$/i', basename($meta['file']))) {
+		// set the mimetype to GIF
+		$mime = 'image/gif';
 	}
 	// update the attachment post with the new mimetype and guid
 	wp_update_post( array('ID' => $ID,
 			      'post_mime_type' => $mime,
 			      'guid' => $guid) );
-	return $data;
+	return $meta;
 }
 
 /**
@@ -1046,69 +1246,6 @@ function ewww_image_optimizer_is_animated($filename) {
 	fclose($fh);
 	// return TRUE if there was more than one frame, or FALSE if there was only one
 	return $count > 1;
-}
-
-/**
- * Read the image paths from an attachment's meta data and process each image
- * with ewww_image_optimizer().
- *
- * This method also adds a `ewww_image_optimizer` meta key for use in the media library.
- *
- * Called after `wp_generate_attachment_metadata` is completed.
- */
-function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
-	// get the filepath from the metadata
-	$file_path = $meta['file'];
-	// store absolute paths for older wordpress versions
-	$store_absolute_path = true;
-	// retrieve the location of the wordpress upload folder
-	$upload_dir = wp_upload_dir();
-	// retrieve the path of the upload folder
-	$upload_path = trailingslashit( $upload_dir['basedir'] );
-	// TODO: determine if this is really necessary, since we only claim to support 2.9 or better
-	// WordPress >= 2.6.2: determine the absolute $file_path (http://core.trac.wordpress.org/changeset/8796)
-	// if the wp content folder is not contained in the file path
-	if ( FALSE === strpos($file_path, WP_CONTENT_DIR) ) {
-		// don't store absolute paths
-		$store_absolute_path = false;
-		// generate the absolute path
-		$file_path =  $upload_path . $file_path;
-	}
-	// run the image optimizer on the file, and store the results
-	list($file, $msg, $conv) = ewww_image_optimizer($file_path, 1, false);
-	// if the file was converted
-	if ($conv) {
-		// if we don't already have the update attachment filter
-		if ( FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment') )
-			// add the update attachment filter
-			add_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10, 2);
-	}
-	// update the filename in the metadata
-	$meta['file'] = $file;
-	// update the optimization results in the metadata
-	$meta['ewww_image_optimizer'] = $msg;
-
-	// strip absolute path for Wordpress >= 2.6.2
-	if ( FALSE === $store_absolute_path ) {
-		$meta['file'] = str_replace($upload_path, '', $meta['file']);
-	}
-	// no resized versions, so we can exit
-	if ( !isset($meta['sizes']) )
-		return $meta;
-
-	// meta sizes don't contain a path, so we calculate one
-	$base_dir = dirname($file_path) . '/';
-	// process each resized version
-	foreach($meta['sizes'] as $size => $data) {
-		// run the optimization and store the results
-		list($optimized_file, $results) = ewww_image_optimizer($base_dir . $data['file'], 1, $conv);
-		// update the filename
-		$meta['sizes'][$size]['file'] = str_replace($base_dir, '', $optimized_file);
-		// update the optimization results
-		$meta['sizes'][$size]['ewww_image_optimizer'] = $results;
-	}
-	// send back the updated metadata
-	return $meta;
 }
 
 /**
@@ -1295,10 +1432,10 @@ function ewww_image_optimizer_install_jpegtran() {
 	if ( FALSE === current_user_can('install_plugins') ) {
 		wp_die(__('You don\'t have permission to install image optimizer utilities.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 	}
-	ewww_image_optimizer_download_file("http://jpegclub.org/droppatch.v09.tar.gz", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "jpegtran.tar.gz");
-	exec ("tar xzf " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "jpegtran.tar.gz -C " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
+	ewww_image_optimizer_download_file('http://jpegclub.org/droppatch.v09.tar.gz', EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'jpegtran.tar.gz');
+	exec ('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'jpegtran.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' jpegtran');
 	$sendback = wp_get_referer();
-	$sendback = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $sendback);
+	#$sendback = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $sendback);
 	wp_redirect($sendback);
 	exit(0);
 }
@@ -1309,29 +1446,41 @@ function ewww_image_optimizer_install_pngout() {
 	if ( FALSE === current_user_can('install_plugins') ) {
 		wp_die(__('You don\'t have permission to install image optimizer utilities.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 	}
-	ewww_image_optimizer_download_file("http://static.jonof.id.au/dl/kenutils/pngout-20120530-linux-static.tar.gz", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static.tar.gz");
-	exec ("tar xzf " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static.tar.gz -C " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
+	if (!file_exists(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz')) {
+		ewww_image_optimizer_download_file('http://static.jonof.id.au/dl/kenutils/pngout-20120530-linux-static.tar.gz', EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz');
+	}
 	$arch_type = $_REQUEST['arch'];
 	switch ($arch_type) {
 		case 'i386':
-			copy(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/i386/pngout-static", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static");
+			exec('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-20120530-linux-static/i386/pngout-static');
+			//exec('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz -O pngout-20120530-linux-static/i386/pngout-static', $pngout_static);
+			rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/i386/pngout-static", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static");
+			//$pngout_file = fopen(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-static', 'wb');
+			//foreach($pngout_static as $pngout_line) {
+			//	fwrite($pngout_file, $pngout_line);
+			//}
+			//fclose($pngout_file);
 			break;
 		case 'i686':
-			copy(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/i686/pngout-static", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static");
+			exec('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-20120530-linux-static/i686/pngout-static');
+			rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/i686/pngout-static", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static");
 			break;
 		case 'athlon':
-			copy(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/athlon/pngout-static", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static");
+			exec('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-20120530-linux-static/athlon/pngout-static');
+			rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/athlon/pngout-static", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static");
 			break;
 		case 'pentium4':
-			copy(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/pentium4/pngout-static", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static");
+			exec('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-20120530-linux-static/pentium4/pngout-static');
+			rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/pentium4/pngout-static", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static");
 			break;
 		case 'x64':
-			copy(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/x86_64/pngout-static", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static");
+			exec('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-20120530-linux-static/x86_64/pngout-static');
+			rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/x86_64/pngout-static", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static");
 			break;
 	}
-	chmod(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static", 0755);
+	chmod(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-static', 0755);
 	$sendback = wp_get_referer();
-	$sendback = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $sendback);
+	#$sendback = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $sendback);
 	wp_redirect($sendback);
 	exit(0);
 }
@@ -1364,7 +1513,7 @@ function ewww_image_optimizer_install_gifsicle() {
 
 // displays the EWWW IO options and provides one-click install for the optimizer utilities
 function ewww_image_optimizer_options () {
-	list ($jpegtran_path, $optipng_path, $gifsicle_path) = ewww_image_optimizer_path_check();
+	list ($jpegtran_path, $optipng_path, $gifsicle_path, $pngout_path) = ewww_image_optimizer_path_check();
 	?>
 	<div class="wrap">
 		<div id="icon-options-general" class="icon32"><br /></div>
@@ -1382,10 +1531,11 @@ function ewww_image_optimizer_options () {
 			jpegtran version: <?php exec($jpegtran_path . ' -v ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'sample.jpg 2>&1', $jpegtran_version); foreach ($jpegtran_version as $jout) { if (preg_match('/Independent JPEG Group/', $jout)) { echo $jout; } } ?><br />
 			<!--computed optipng path: <?php echo $optipng_path; ?><br />
 			optipng location (using 'which'): <?php echo trim(exec('which ' . $optipng_path)); ?><br />-->
-			optipng version: <?php exec($optipng_path . ' -v', $optipng_version); echo $optipng_version[0]; ?><br />
+			optipng version: <?php exec($optipng_path . ' -v', $optipng_version); if (preg_match('/OptiPNG/', $optipng_version[0])) { echo $optipng_version[0]; } ?><br />
 			<!--computed gifsicle path: <?php echo $gifsicle_path; ?><br />
 			gifsicle location (using 'which'): <?php echo trim(exec('which ' . $gifsicle_path)); ?><br />-->
-			gifsicle version: <?php exec($gifsicle_path . ' --version', $gifsicle_version); echo $gifsicle_version[0]; ?><br />
+			gifsicle version: <?php exec($gifsicle_path . ' --version', $gifsicle_version); if (preg_match('/LCDF/', $gifsicle_version[0])) { echo $gifsicle_version[0]; } ?><br />
+			pngout version: <?php exec("$pngout_path 2>&1", $pngout_version); if (preg_match('/PNGOUT/', $pngout_version[0])) { echo preg_replace('/PNGOUT \[.*\)\s*?/', '', $pngout_version[0]); } ?><br />
 			<?php if (ewww_image_optimizer_gd_support()) {
 				echo "GD: OK<br>";
 			} else {
@@ -1426,7 +1576,7 @@ function ewww_image_optimizer_options () {
 		<form method="post" action="options.php">
 			<?php settings_fields('ewww_image_optimizer_options'); ?>
 			<h3>General Settings</h3>
-			<p>The plugin performs a check to make sure your system has the programs we use for optimization: jpegtran, optipng, and gifsicle. In some rare cases, these checks may erroneously report that you are missing the required utilities even though you have them installed.</p>
+			<p>The plugin performs a check to make sure your system has the programs we use for optimization: jpegtran, optipng, pngout, and gifsicle. In some rare cases, these checks may erroneously report that you are missing the required utilities even though you have them installed.</p>
 			<p><b>Do you want to skip the utils check?</b> <i>*Only do this if you are SURE that you have the utilities installed, or you don't care about the missing ones. Checking this option also bypasses our basic security checks on the paths entered below.</i><br />
 			<table class="form-table" style="display: inline">
 				<tr><th><label for="ewww_image_optimizer_skip_check">Skip utils check</label></th><td><input type="checkbox" id="ewww_image_optimizer_skip_check" name="ewww_image_optimizer_skip_check" value="true" <?php if (get_option('ewww_image_optimizer_skip_check') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
@@ -1445,11 +1595,12 @@ function ewww_image_optimizer_options () {
 				<tr><th><label for="ewww_image_optimizer_gifsicle_path">gifsicle path</label></th><td><input type="text" style="width: 400px" id="ewww_image_optimizer_gifsicle_path" name="ewww_image_optimizer_gifsicle_path" value="<?php echo get_option('ewww_image_optimizer_gifsicle_path'); ?>" /></td></tr>
 			</table>
 			<h3>Conversion Settings</h3>
-			<p>Conversion settings do not apply to NextGEN gallery.</p>
+			<p>Conversion settings do not apply to NextGEN gallery.<br />
+				<b>NOTE:</b> Converting images does not update any posts that contain those images. You will need to manually update your image urls after you convert any images.</p>
 			<table class="form-table" style="display: inline">
 				<tr><th><label for="ewww_image_optimizer_delete_originals">Delete originals</label></th><td><input type="checkbox" id="ewww_image_optimizer_delete_originals" name="ewww_image_optimizer_delete_originals" <?php if (get_option('ewww_image_optimizer_delete_originals') == TRUE) { ?>checked="true"<?php } ?> /> This will remove the original image from the server after a successful conversion.</td></tr>
-				<tr><th><label for="ewww_image_optimizer_jpg_to_png">enable <b>JPG</b> to <b>PNG</b> conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_jpg_to_png" name="ewww_image_optimizer_jpg_to_png" <?php if (get_option('ewww_image_optimizer_jpg_to_png') == TRUE) { ?>checked="true"<?php } ?> /> <b>WARNING:</b> Removes metadata! Requires GD support in PHP, 'convert' from ImageMagick, or 'pngout' and should be used sparingly. PNG is generally much better than JPG for logos and other images with a limited range of colors. Checking this option will slow down JPG processing significantly, and you may want to enable it only temporarily.</td></tr>
-				<tr><th><label for="ewww_image_optimizer_png_to_jpg">enable <b>PNG</b> to <b>JPG</b> conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_png_to_jpg" name="ewww_image_optimizer_png_to_jpg" <?php if (get_option('ewww_image_optimizer_png_to_jpg') == TRUE) { ?>checked="true"<?php } ?> /> <b>WARNING:</b> This is not a lossless conversion and requires the 'convert' utility provided by ImageMagick. JPG is generally much better than PNG for photographic use because it compresses the image and discards data. JPG does not support transparency, so we don't convert PNGs with transparency.</td></tr>
+				<tr><th><label for="ewww_image_optimizer_jpg_to_png">enable <b>JPG</b> to <b>PNG</b> conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_jpg_to_png" name="ewww_image_optimizer_jpg_to_png" <?php if (get_option('ewww_image_optimizer_jpg_to_png') == TRUE) { ?>checked="true"<?php } ?> /> <b>WARNING:</b> Removes metadata! Requires GD support in PHP or 'convert' from ImageMagick and should be used sparingly. PNG is generally much better than JPG for logos and other images with a limited range of colors. Checking this option will slow down JPG processing significantly, and you may want to enable it only temporarily.</td></tr>
+				<tr><th><label for="ewww_image_optimizer_png_to_jpg">enable <b>PNG</b> to <b>JPG</b> conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_png_to_jpg" name="ewww_image_optimizer_png_to_jpg" <?php if (get_option('ewww_image_optimizer_png_to_jpg') == TRUE) { ?>checked="true"<?php } ?> /> <b>WARNING:</b> This is not a lossless conversion and requires GD support in PHP or the 'convert' utility provided by ImageMagick. JPG is generally much better than PNG for photographic use because it compresses the image and discards data. JPG does not support transparency, so we don't convert PNGs with transparency.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_jpg_background">JPG background color</label></th><td>#<input type="text" id="ewww_image_optimizer_jpg_background" name="ewww_image_optimizer_jpg_background" style="width: 60px" value="<?php echo ewww_image_optimizer_jpg_background(); ?>" /> <span style="padding-left: 12px; font-size: 12px; border: solid 1px #555555; background-color: #<? echo ewww_image_optimizer_jpg_background(); ?>">&nbsp;</span> HEX format (#123def). This is used only if the PNG has transparency or leave it blank to skip PNGs with transparency.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_jpg_quality">JPG quality level</label></th><td><input type="text" id="ewww_image_optimizer_jpg_quality" name="ewww_image_optimizer_jpg_quality" style="width: 40px" value="<?php echo ewww_image_optimizer_jpg_quality(); ?>" /> Valid values are 1-100. If left blank, the conversion process will attempt to set the optimal quality level or default to 92. Remember, this is a lossy conversion, so you are losing pixels, and it is not recommended to actually set the level here unless you want noticable loss of image quality.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_gif_to_png">enable <b>GIF</b> to <b>PNG</b> conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_gif_to_png" name="ewww_image_optimizer_gif_to_png" <?php if (get_option('ewww_image_optimizer_gif_to_png') == TRUE) { ?>checked="true"<?php } ?> /> PNG is generally much better than GIF, but doesn't support animated images, so we don't convert those.</td></tr>
