@@ -113,6 +113,11 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 == Changelog ==
 
+= 1.2.3 =
+* fixed: tools get deleted after every upgrade
+* fixed: using activation hook incorrectly to fix permissions on upgrades (now we check when you visit the settings page)
+* TODO: update readme to note that visiting settings page fixes bundled tools
+
 = 1.2.2 =
 * fixed: uninitialized variables
 * update links in posts for converted images

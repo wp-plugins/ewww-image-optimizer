@@ -22,6 +22,8 @@ define('EWWW_IMAGE_OPTIMIZER_DOMAIN', 'ewww_image_optimizer');
 define('EWWW_IMAGE_OPTIMIZER_PLUGIN_DIR', dirname(plugin_basename(__FILE__)));
 // this is the full system path to the plugin folder
 define('EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH', plugin_dir_path(__FILE__) );
+// the folder where we install optimization tools
+define('EWWW_IMAGE_OPTIMIZER_TOOL_PATH', WP_CONTENT_DIR . '/ewww/');
 
 /**
  * Hooks
@@ -56,6 +58,9 @@ if('Linux' != PHP_OS && 'Darwin' != PHP_OS) {
 	define('EWWW_IMAGE_OPTIMIZER_JPEGTRAN', false);
 	define('EWWW_IMAGE_OPTIMIZER_OPTIPNG', false);
 } else {
+	// TODO: probably only want to run this on the settings page
+	// make sure the bundled tools are installed
+	ewww_image_optimizer_install_tools ();
 	//Otherwise, we run the function to check for optimization utilities
 	add_action('admin_notices', 'ewww_image_optimizer_notice_utils');
 } 
@@ -68,37 +73,72 @@ function ewww_image_optimizer_notice_os() {
 	echo "<div id='ewww-image-optimizer-warning-os' class='updated fade'><p><strong>EWWW Image Optimizer isn't supported on your server.</strong> Unfortunately, the EWWW Image Optimizer plugin doesn't work with " . htmlentities(PHP_OS) . ".</p></div>";
 }   
 
-// If the utitilites are in the plugin folder, we use that. Otherwise, we retrieve user specified paths or set defaults if all else fails. We also do a basic check to make sure we weren't given a malicious path.
+function ewww_image_optimizer_notice_tool_install() {
+	echo "<div id='ewww-image-optimizer-warning-tool-install' class='updated fade'><p><strong>EWWW Image Optimizer couldn't install the tools in " . htmlentities(EWWW_IMAGE_OPTIMIZER_TOOL_PATH) . ".</strong> Please adjust permissions or create the folder.</p></div>";
+}
+
+//function ewww_image_optimizer_notice_perms() {
+//	echo "<div id='ewww-image-optimizer-warning-tooldir' class='updated fade'><p><strong>EWWW Image Optimizer couldn't set permissions on tools.</strong> Please adjust permissions for gifsicle and optipng manually in this folder: " . htmlentities(EWWW_IMAGE_OPTIMIZER_TOOL_PATH) . ".</p></div>";
+//}
+
+// If the utitilites are in the content folder, we use that. Otherwise, we retrieve user specified paths or set defaults if all else fails. We also do a basic check to make sure we weren't given a malicious path.
 function ewww_image_optimizer_path_check() {
 	$jpegtran = get_option('ewww_image_optimizer_jpegtran_path');
-	if(exec("which " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "jpegtran")) {
-		$jpegtran = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "jpegtran";
+	if(exec("which " . EWWW_IMAGE_OPTIMIZER_TOOL_PATH . "jpegtran")) {
+		$jpegtran = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . "jpegtran";
 	} elseif (!preg_match('/^\/[\w\.-\d\/_]+\/jpegtran$/', $jpegtran)) {
 		$jpegtran = 'jpegtran';
 	}
 	$optipng = get_option('ewww_image_optimizer_optipng_path');
-	if(exec("which " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "optipng")) {
-		$optipng = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "optipng";
+	if(exec("which " . EWWW_IMAGE_OPTIMIZER_TOOL_PATH . "optipng")) {
+		$optipng = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . "optipng";
 	} elseif (!preg_match('/^\/[\w\.-\d\/_]+\/optipng$/', $optipng)) {
 		$optipng = 'optipng';
 	}
 	$gifsicle = get_option('ewww_image_optimizer_gifsicle_path');
-	if(exec("which " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "gifsicle")) {
-		$gifsicle = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "gifsicle";
+	if(exec("which " . EWWW_IMAGE_OPTIMIZER_TOOL_PATH . "gifsicle")) {
+		$gifsicle = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . "gifsicle";
 	} elseif (!preg_match('/^\/[\w\.-\d\/_]+\/gifsicle$/', $gifsicle)) {
 		$gifsicle = 'gifsicle';
 	}
-	// pngout is special, we only support it being in the plugin folder
-	$pngout = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static";
+	// pngout is special, we only support it being in the content folder
+	$pngout = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . "pngout-static";
 	return array($jpegtran, $optipng, $gifsicle, $pngout);
 }
 
-function ewww_image_optimizer_chmod_tools () {
-	if (!is_executable(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'gifsicle')) {
-		chmod(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'gifsicle', 0755);
+function ewww_image_optimizer_install_tools () {
+	if (!is_dir(EWWW_IMAGE_OPTIMIZER_TOOL_PATH)) {
+		if (!mkdir(EWWW_IMAGE_OPTIMIZER_TOOL_PATH)) {
+			add_action('admin_notices', 'ewww_image_optimizer_notice_tool_install');
+		}
 	}
-	if (!is_executable(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'optipng')) {
-		chmod(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'optipng', 0755);
+//	add_action('admin_notices', 'ewww_image_optimizer_notice_perms');
+	// TODO: need to see if old tool matches new tool, not just that it exists, so we can bundle security fixes too
+	if (!file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle')) {
+		if (!copy(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'gifsicle', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle')) {
+			add_action('admin_notices', 'ewww_image_optimizer_notice_tool_install');
+			echo "<br> couldn't move gifsicle <br>";
+		}
+	}
+	$gifsicle_perms = substr(sprintf('%o', fileperms(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle')), -4);
+	if ($gifsicle_perms != '0755') {
+		if (!chmod(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle', 0755)) {
+			add_action('admin_notices', 'ewww_image_optimizer_notice_tool_install');
+			echo "<br> couldn't chmod gifsicle <br>";
+		}
+	}
+	if (!file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng')) {
+		if (!copy(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'optipng', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng')) {
+			add_action('admin_notices', 'ewww_image_optimizer_notice_tool_install');
+			echo "<br> couldn't move optipng <br>";
+		}
+	}
+	$optipng_perms = substr(sprintf('%o', fileperms(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng')), -4);
+	if ($optipng_perms != '0755') {
+		if (!chmod(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng', 0755)) {
+			add_action('admin_notices', 'ewww_image_optimizer_notice_tool_install');
+			echo "<br> couldn't chmod optipng <br>";
+		}
 	}
 }
 		
@@ -244,10 +284,10 @@ function ewww_image_optimizer_notice_utils() {
 /**
  * Plugin activation function
  */
-function ewww_image_optimizer_activate () {
-	ewww_image_optimizer_chmod_tools();
-}
-register_activation_hook(__FILE__, 'ewww_image_optimizer_activate');
+//function ewww_image_optimizer_activate () {
+//	ewww_image_optimizer_chmod_tools();
+//}
+//register_activation_hook(__FILE__, 'ewww_image_optimizer_activate');
 
 /**
  * Plugin admin initialization function
@@ -1433,7 +1473,7 @@ function ewww_image_optimizer_install_jpegtran() {
 		wp_die(__('You don\'t have permission to install image optimizer utilities.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 	}
 	ewww_image_optimizer_download_file('http://jpegclub.org/droppatch.v09.tar.gz', EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'jpegtran.tar.gz');
-	exec ('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'jpegtran.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' jpegtran');
+	exec ('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'jpegtran.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_TOOL_PATH . ' jpegtran');
 	$sendback = wp_get_referer();
 	#$sendback = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $sendback);
 	wp_redirect($sendback);
@@ -1453,29 +1493,23 @@ function ewww_image_optimizer_install_pngout() {
 	switch ($arch_type) {
 		case 'i386':
 			exec('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-20120530-linux-static/i386/pngout-static');
-			//exec('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz -O pngout-20120530-linux-static/i386/pngout-static', $pngout_static);
-			rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/i386/pngout-static", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static");
-			//$pngout_file = fopen(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-static', 'wb');
-			//foreach($pngout_static as $pngout_line) {
-			//	fwrite($pngout_file, $pngout_line);
-			//}
-			//fclose($pngout_file);
+			rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/i386/pngout-static", EWWW_IMAGE_OPTIMIZER_TOOL_PATH . "pngout-static");
 			break;
 		case 'i686':
 			exec('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-20120530-linux-static/i686/pngout-static');
-			rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/i686/pngout-static", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static");
+			rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/i686/pngout-static", EWWW_IMAGE_OPTIMIZER_TOOL_PATH . "pngout-static");
 			break;
 		case 'athlon':
 			exec('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-20120530-linux-static/athlon/pngout-static');
-			rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/athlon/pngout-static", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static");
+			rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/athlon/pngout-static", EWWW_IMAGE_OPTIMIZER_TOOL_PATH . "pngout-static");
 			break;
 		case 'pentium4':
 			exec('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-20120530-linux-static/pentium4/pngout-static');
-			rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/pentium4/pngout-static", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static");
+			rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/pentium4/pngout-static", EWWW_IMAGE_OPTIMIZER_TOOL_PATH . "pngout-static");
 			break;
 		case 'x64':
 			exec('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-20120530-linux-static/x86_64/pngout-static');
-			rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/x86_64/pngout-static", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-static");
+			rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "pngout-20120530-linux-static/x86_64/pngout-static", EWWW_IMAGE_OPTIMIZER_TOOL_PATH . "pngout-static");
 			break;
 	}
 	chmod(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-static', 0755);
