@@ -58,9 +58,6 @@ if('Linux' != PHP_OS && 'Darwin' != PHP_OS) {
 	define('EWWW_IMAGE_OPTIMIZER_JPEGTRAN', false);
 	define('EWWW_IMAGE_OPTIMIZER_OPTIPNG', false);
 } else {
-	// TODO: probably only want to run this on the settings page
-	// make sure the bundled tools are installed
-	ewww_image_optimizer_install_tools ();
 	//Otherwise, we run the function to check for optimization utilities
 	add_action('admin_notices', 'ewww_image_optimizer_notice_utils');
 } 
@@ -83,6 +80,8 @@ function ewww_image_optimizer_notice_tool_install() {
 
 // If the utitilites are in the content folder, we use that. Otherwise, we retrieve user specified paths or set defaults if all else fails. We also do a basic check to make sure we weren't given a malicious path.
 function ewww_image_optimizer_path_check() {
+	// make sure the bundled tools are installed
+	ewww_image_optimizer_install_tools ();
 	$jpegtran = get_option('ewww_image_optimizer_jpegtran_path');
 	if(exec("which " . EWWW_IMAGE_OPTIMIZER_TOOL_PATH . "jpegtran")) {
 		$jpegtran = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . "jpegtran";
@@ -112,32 +111,34 @@ function ewww_image_optimizer_install_tools () {
 			add_action('admin_notices', 'ewww_image_optimizer_notice_tool_install');
 		}
 	}
-//	add_action('admin_notices', 'ewww_image_optimizer_notice_perms');
-	// TODO: need to see if old tool matches new tool, not just that it exists, so we can bundle security fixes too
 	if (!file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle')) {
 		if (!copy(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'gifsicle', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle')) {
 			add_action('admin_notices', 'ewww_image_optimizer_notice_tool_install');
-			echo "<br> couldn't move gifsicle <br>";
+		}
+	} else if (filesize(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle') != filesize(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'gifsicle')) {
+		if (!copy(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'gifsicle', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle')) {
+			add_action('admin_notices', 'ewww_image_optimizer_notice_tool_install');
 		}
 	}
 	$gifsicle_perms = substr(sprintf('%o', fileperms(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle')), -4);
 	if ($gifsicle_perms != '0755') {
 		if (!chmod(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle', 0755)) {
 			add_action('admin_notices', 'ewww_image_optimizer_notice_tool_install');
-			echo "<br> couldn't chmod gifsicle <br>";
 		}
 	}
 	if (!file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng')) {
 		if (!copy(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'optipng', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng')) {
 			add_action('admin_notices', 'ewww_image_optimizer_notice_tool_install');
-			echo "<br> couldn't move optipng <br>";
+		}
+	} else if (filesize(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng') != filesize(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'optipng')) {
+		if (!copy(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'optipng', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng')) {
+			add_action('admin_notices', 'ewww_image_optimizer_notice_tool_install');
 		}
 	}
 	$optipng_perms = substr(sprintf('%o', fileperms(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng')), -4);
 	if ($optipng_perms != '0755') {
 		if (!chmod(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng', 0755)) {
 			add_action('admin_notices', 'ewww_image_optimizer_notice_tool_install');
-			echo "<br> couldn't chmod optipng <br>";
 		}
 	}
 }
@@ -1547,6 +1548,7 @@ function ewww_image_optimizer_install_gifsicle() {
 
 // displays the EWWW IO options and provides one-click install for the optimizer utilities
 function ewww_image_optimizer_options () {
+	// retrieve the tool paths for the version checks later
 	list ($jpegtran_path, $optipng_path, $gifsicle_path, $pngout_path) = ewww_image_optimizer_path_check();
 	?>
 	<div class="wrap">
@@ -1611,18 +1613,18 @@ function ewww_image_optimizer_options () {
 			<?php settings_fields('ewww_image_optimizer_options'); ?>
 			<h3>General Settings</h3>
 			<p>The plugin performs a check to make sure your system has the programs we use for optimization: jpegtran, optipng, pngout, and gifsicle. In some rare cases, these checks may erroneously report that you are missing the required utilities even though you have them installed.</p>
-			<p><b>Do you want to skip the utils check?</b> <i>*Only do this if you are SURE that you have the utilities installed, or you don't care about the missing ones. Checking this option also bypasses our basic security checks on the paths entered below.</i><br />
+			<!--<p><b>Do you want to skip the utils check?</b> <i>*Only do this if you are SURE that you have the utilities installed.</i><br />-->
 			<table class="form-table" style="display: inline">
-				<tr><th><label for="ewww_image_optimizer_skip_check">Skip utils check</label></th><td><input type="checkbox" id="ewww_image_optimizer_skip_check" name="ewww_image_optimizer_skip_check" value="true" <?php if (get_option('ewww_image_optimizer_skip_check') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
+				<tr><th><label for="ewww_image_optimizer_skip_check">Skip utils check</label></th><td><input type="checkbox" id="ewww_image_optimizer_skip_check" name="ewww_image_optimizer_skip_check" value="true" <?php if (get_option('ewww_image_optimizer_skip_check') == TRUE) { ?>checked="true"<?php } ?> /> <i>*Only do this if you are SURE that you have the utilities installed.</i></td></tr>
 				<tr><th><label for="ewww_image_optimizer_disable_jpegtran">disable jpegtran</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_jpegtran" name="ewww_image_optimizer_disable_jpegtran" <?php if (get_option('ewww_image_optimizer_disable_jpegtran') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
 				<tr><th><label for="ewww_image_optimizer_disable_optipng">disable optipng</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_optipng" name="ewww_image_optimizer_disable_optipng" <?php if (get_option('ewww_image_optimizer_disable_optipng') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
 				<tr><th><label for="ewww_image_optimizer_disable_pngout">disable pngout</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_pngout" name="ewww_image_optimizer_disable_pngout" <?php if (get_option('ewww_image_optimizer_disable_pngout') == TRUE) { ?>checked="true"<?php } ?> /></td><tr>
 				<tr><th><label for="ewww_image_optimizer_disable_gifsicle">disable gifsicle</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_gifsicle" name="ewww_image_optimizer_disable_gifsicle" <?php if (get_option('ewww_image_optimizer_disable_gifsicle') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
 			</table>
 			<h3>Path Settings</h3>
-			<p><b>*Deprecated</b>: just drop the binaries in the ewww-image-optimizer plugin folder, and off you go:<br />
-			<i><?php echo EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH; ?></i><br />
-			If you are on shared hosting, and have installed the utilities in your home folder, you can provide the paths below.</p>
+			<p><b>*Deprecated</b>: put the binaries (executables) in this folder instead:<br />
+			<i><?php echo EWWW_IMAGE_OPTIMIZER_TOOL_PATH; ?></i><br />
+			If you are on shared hosting or do not have root access, you can provide the paths below.</p>
 			<table class="form-table" style="display: inline">
 				<tr><th><label for="ewww_image_optimizer_jpegtran_path">jpegtran path</label></th><td><input type="text" style="width: 400px" id="ewww_image_optimizer_jpegtran_path" name="ewww_image_optimizer_jpegtran_path" value="<?php echo get_option('ewww_image_optimizer_jpegtran_path'); ?>" /></td></tr>
 				<tr><th><label for="ewww_image_optimizer_optipng_path">optipng path</label></th><td><input type="text" style="width: 400px" id="ewww_image_optimizer_optipng_path" name="ewww_image_optimizer_optipng_path" value="<?php echo get_option('ewww_image_optimizer_optipng_path'); ?>" /></td></tr>
