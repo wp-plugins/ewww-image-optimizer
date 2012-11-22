@@ -24,7 +24,7 @@ EWWW Image Optimizer calls optimization utilities directly which is better suite
 1. **Faster backups.** Smaller image sizes also means faster backups.
 1. **Less bandwidth usage.** Optimizing your images can save you hundreds of KB per image, which means significantly less bandwidth usage.
 1. **Super fast.** Because it runs on your own server, you don’t have to wait for a third party service to receive, process, and return your images. You can optimize hundreds of images in just a few minutes. PNG files take the longest, but you can adjust the settings for your situation.
-1. **Better PNG optimization using pngout and optipng in conjunction.
+1. **Better PNG optimization.** YOu can use pngout and optipng in conjunction.
 1. **Root access not needed** Pre-compiled binaries are made available to install directly within the plugin folder. 
 
 = NextGEN Integration =
