@@ -23,20 +23,21 @@ EWWW Image Optimizer calls optimization utilities directly which is better suite
 1. **Your pages will load faster.** Smaller image sizes means faster page loads. This will make your visitors happy, and can increase ad revenue.
 1. **Faster backups.** Smaller image sizes also means faster backups.
 1. **Less bandwidth usage.** Optimizing your images can save you hundreds of KB per image, which means significantly less bandwidth usage.
-1. **Super fast.** Because it runs on your own server, you don’t have to wait for a third party service to receive, process, and return your images. You can optimize hundreds of images in just a few minutes. Png files take the longest, but you can adjust the settings for your situation.
+1. **Super fast.** Because it runs on your own server, you don’t have to wait for a third party service to receive, process, and return your images. You can optimize hundreds of images in just a few minutes. PNG files take the longest, but you can adjust the settings for your situation.
 1. **Better PNG optimization using pngout and optipng in conjunction.
 1. **Root access not needed** Pre-compiled binaries are made available to install directly within the plugin folder. 
 
 = NextGEN Integration =
 
-Features re-optimization capability, and bulk optimizing. The NextGEN Bulk Optimize function is located under the Wordpress Tools menu, and should optimize all images in all galleries. If anyone has a better idea for where the tool should go, feel free to post in the support area, or on the plugin homepage. Alternatively, if you can figure out a way to hook into the existing NextGEN menu, that would be ideal. I just can't seem to find a way to do that.
+Features re-optimization capability, and bulk optimizing. The NextGEN Bulk Optimize function is located under the Wordpress Tools menu, and will optimize all images in all galleries. If anyone has a better idea for where the tool should go, feel free to post in the support area, or on the plugin homepage. Alternatively, if you can figure out a way to hook into the existing NextGEN menu, that would be ideal. I just can't seem to find a way to do that.
 NOTE: Does not optimize thumbnails on initial upload, must re-optimize images to optimize thumbnails.
 
 == Installation ==
 
 1. Upload the 'ewww-image-optimizer' plugin to your '/wp-content/plugins/' directory.
 1. Activate the plugin through the 'Plugins' menu in WordPress.
-1. Ensure jpegtran, optipng, pngout and gifsicle are installed on your Linux server (basic installation instructions are below if they are not). You will receive a warning when you activate the plugin if they are not present. This message will go away once you have them installed. 
+1. Ensure jpegtran, optipng, pngout and gifsicle are installed on your Linux server (basic installation instructions are below if they are not). You will receive a warning when you activate the plugin if they are not present. This message will go away once you have them installed.
+1. You MAY need to make the wp-content folder writable so the plugin can install gifsicle and optipng.
 1. *Optional* Visit the settings page to configure paths, enable/disable specific tools and turn on advanced optimization features.
 1. Done!
 
@@ -47,7 +48,7 @@ Pngout is new in version 1.1.0 and is not enabled by default because it is resou
 1. Go to the settings page.
 1. Click one of the links near the middle of the page to install pngout for your server, and the plugin will download the pngout archive, unpack it, and install the version that you chose. If you don't know what architecture your server is, you can stick with the i386 or ask your webhost about it. You can always choose a different version later, and the plugin will simply update the version that is used.
 1. Adjust the pngout level according to your needs. Level 0 gives the best results, but can take up to a minute or more on a single image.
-1. If the one-click install isn't working for you, download the latest version from http://www.jonof.id.au/kenutils and extract the appropriate pngout-static to the plugins/ewww-image-optimizer/ folder.
+1. If the one-click install isn't working for you, download the latest version from http://www.jonof.id.au/kenutils and extract the appropriate pngout-static to the ewww tool folder (wordpress/wp-content/ewww/).
 
 = Installing optipng =
 
@@ -58,11 +59,11 @@ Pngout is new in version 1.1.0 and is not enabled by default because it is resou
 1. Uncompress optipng: *tar xvzf optipng-0.7.4.tar.gz && cd optipng-0.7.4*
 1. Configure and compile optipng: *./configure && make*
 1. If you have root access, install it with *make install*
-1. If not, copy the binary from */optipng-0.7.4/src/optipng/optipng* to the plugin folder (wordpress/wp-content/plugins/ewww-image-optimizer).
+1. If not, copy the binary from */optipng-0.7.4/src/optipng/optipng* to the ewww tool folder (wordpress/wp-content/ewww/).
 
 = Installing jpegtran =
 
-1. Try the one-click install on the settings page, or download it manually and place it in the plugin folder (wordpress/wp-content/plugins/ewww-image-optimizer).
+1. Try the one-click install on the settings page, or download it manually and place it in the plugin folder (wordpress/wp-content/ewww/).
 1. If you own your own server, or have root access, it is part of the libjpeg-turbo-progs on Debian/Ubuntu, and likely something similar on rpm distros (Fedora, CentOS, RHEL, SuSE).
 
 = Installing gifsicle =
@@ -73,7 +74,7 @@ Pngout is new in version 1.1.0 and is not enabled by default because it is resou
 1. Uncompress gifsicle: *tar xvzf gifsicle-1.67.tar.gz && cd gifsicle-1.67*
 1. Configure and compile gifsicle (we disable gifview and gifdiff as they are not needed): *./configure --disable-gifdiff --disable-gifview && make*
 1. If you have root access, install it with *make install*
-1. If not, copy the binary from */gifsicle-1.67/src/gifsicle* to the plugin folder (wordpress/wp-content/plugins/ewww-image-optimizer).
+1. If not, copy the binary from */gifsicle-1.67/src/gifsicle* to the ewww tool folder (wordpress/wp-content/ewww/).
 
 == Frequently Asked Questions ==
 
@@ -114,9 +115,8 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 == Changelog ==
 
 = 1.2.3 =
-* fixed: tools get deleted after every upgrade
-* fixed: using activation hook incorrectly to fix permissions on upgrades (now we check when you visit the settings page)
-* TODO: update readme to note that visiting settings page fixes bundled tools
+* fixed: tools get deleted after every upgrade (moved to wp-content/ewww)
+* fixed: using activation hook incorrectly to fix permissions on upgrades (now we check when you visit the wordpress admin)
 
 = 1.2.2 =
 * fixed: uninitialized variables
@@ -208,6 +208,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * First release (forked from CW Image Optimizer)
 
 == Upgrade Notice ==
+
+= 1.2.3 =
+Moved default folder for tools to wp-content/ewww so that they no longer get deleted every time the plugin is upgraded. Requires write permissions on the wp-content folder.
 
 = 1.2.1 =
 SECURITY: bundled optipng is 0.7.4 to address a vulnerability. Fixed invalid missing tools warning. Added conversion operations gif2png, png2jpg, and jpg2png. Setting paths manually will be disabled in a future release, as the plugin now automatically looks in the plugin folder.
