@@ -75,15 +75,15 @@ else:
 				// dump post info for all attachments to temp file
 				file_put_contents($progress_file, $attach_ser, FILE_APPEND);
 				// do the optimization for the current attachment (including resizes)
-				$meta = ewww_image_optimizer_resize_from_meta_data( wp_get_attachment_metadata( $attachment->ID, true ), $attachment->ID );
+				$meta = ewww_image_optimizer_resize_from_meta_data (wp_get_attachment_metadata( $attachment->ID, true ), $attachment->ID);
 				// tell the user what the results were for the original image
 				printf( "Full size – %s<br>", $meta['ewww_image_optimizer'] );
 				// check to see if there are resized version of the image
-				if(isset($meta['sizes']) && is_array($meta['sizes'])){
+				if (isset($meta['sizes']) && is_array($meta['sizes'])) {
 					// cycle through each resize
-					foreach( $meta['sizes'] as $size ) {
+					foreach ($meta['sizes'] as $size) {
 						// output the results for the current resized version
-						printf( "%s – %s<br>", $size['file'], $size['ewww_image_optimizer'] );
+						printf("%s – %s<br>", $size['file'], $size['ewww_image_optimizer']);
 					}
 				}
 				// calculate how much time has elapsed since we started

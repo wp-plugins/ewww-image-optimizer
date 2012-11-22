@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate Linux image optimizers into WordPress.
- * @version 1.2.2
+ * @version 1.2.3
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -9,7 +9,7 @@ Plugin Name: EWWW Image Optimizer
 Plugin URI: http://www.shanebishop.net/ewww-image-optimizer/
 Description: Reduce file sizes and improve performance for images within WordPress including NextGEN Gallery. Uses jpegtran, optipng/pngout, and gifsicle.
 Author: Shane Bishop
-Version: 1.2.2
+Version: 1.2.3
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
@@ -36,6 +36,7 @@ add_filter ("plugin_action_links_$plugin", 'ewww_image_optimizer_settings_link' 
 add_action('manage_media_custom_column', 'ewww_image_optimizer_custom_column', 10, 2);
 add_action('admin_init', 'ewww_image_optimizer_admin_init');
 add_action('admin_action_ewww_image_optimizer_manual', 'ewww_image_optimizer_manual');
+add_action('admin_action_ewww_image_optimizer_restore', 'ewww_image_optimizer_restore');
 add_action('admin_menu', 'ewww_image_optimizer_admin_menu' );
 add_action('admin_head-upload.php', 'ewww_image_optimizer_add_bulk_actions_via_javascript' ); 
 add_action('admin_action_bulk_optimize', 'ewww_image_optimizer_bulk_action_handler' ); 
@@ -283,14 +284,6 @@ function ewww_image_optimizer_notice_utils() {
 }
 
 /**
- * Plugin activation function
- */
-//function ewww_image_optimizer_activate () {
-//	ewww_image_optimizer_chmod_tools();
-//}
-//register_activation_hook(__FILE__, 'ewww_image_optimizer_activate');
-
-/**
  * Plugin admin initialization function
  */
 function ewww_image_optimizer_admin_init() {
@@ -440,6 +433,89 @@ function ewww_image_optimizer_manual() {
 	$sendback = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $sendback);
 	// send the user back where they came from
 	wp_redirect($sendback);
+	// we are done, nothing to see here
+	exit(0);
+}
+
+/**
+ * Manually restore a converted image
+ */
+function ewww_image_optimizer_restore() {
+	// check permissions of current user
+	if ( FALSE === current_user_can('upload_files') ) {
+		// display error message if insufficient permissions
+		wp_die(__('You don\'t have permission to work with uploaded files.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+	}
+	// make sure we didn't accidentally get to this page without an attachment to work on
+	if ( FALSE === isset($_GET['attachment_ID'])) {
+		// display an error message since we don't have anything to work on
+		wp_die(__('No attachment ID was provided.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+	}
+	// store the attachment ID value
+	$attachment_ID = intval($_GET['attachment_ID']);
+	// retrieve the existing attachment metadata
+	$meta = wp_get_attachment_metadata($attachment_ID);
+	// get the filepath from the metadata
+	$file_path = $meta['file'];
+	// store absolute paths for older wordpress versions
+	$store_absolute_path = true;
+	// WordPress >= 2.6.2: determine the absolute $file_path (http://core.trac.wordpress.org/changeset/8796)
+	// if the wp content folder is not contained in the file path
+	if (FALSE === strpos($file_path, WP_CONTENT_DIR)) {
+		// don't store absolute paths
+		$store_absolute_path = false;
+		// retrieve the location of the wordpress upload folder
+		$upload_dir = wp_upload_dir();
+		// retrieve the path of the upload folder
+		$upload_path = trailingslashit( $upload_dir['basedir'] );
+		// generate the absolute path
+		$file_path =  $upload_path . $file_path;
+	}
+	if (isset($meta['converted'])) {
+		if (file_exists($meta['orig_file'])) {
+			echo "restoring original file " . $meta['orig_file'] . "<br>replacing " . $file_path . "<br>";
+			// update the filename in the metadata
+			$meta['file'] = $meta['orig_file'];
+			// update the optimization results in the metadata
+			$meta['ewww_image_optimizer'] = 'Original Restored';
+			$meta['orig_file'] = $file_path;
+			$meta['converted'] = 0;
+			unlink($meta['orig_file']);
+			// strip absolute path for Wordpress >= 2.6.2
+			if ( FALSE === $store_absolute_path ) {
+				$meta['file'] = str_replace($upload_path, '', $meta['file']);
+			}
+			// if we don't already have the update attachment filter
+			if ( FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment') )
+				// add the update attachment filter
+				add_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10, 2);
+//			unset($meta['converted'], $meta['orig_file'];
+		} else {
+			remove_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10);
+		}
+	}
+	if (isset($meta['sizes']) ) {
+		foreach($meta['sizes'] as $size => $data) {
+			if (isset($data['converted'])) {
+				// meta sizes don't contain a path, so we calculate one
+				$base_dir = dirname($file_path) . '/';
+				if (file_exists($base_dir . $data['orig_file'])) {
+					echo "restoring original file " . $base_dir . $data['orig_file'] . "<br>replacing " . $base_dir . $data['file'] . "<br>";
+//					unset($meta['sizes'][$size]['converted'], $meta['sizes'][$size]['orig_file'];
+				}
+			}		
+		}
+	}
+//	print_r ($meta);
+
+	// update the attachment metadata in the database
+	wp_update_attachment_metadata($attachment_ID, $meta );
+	// store the referring webpage location
+	$sendback = wp_get_referer();
+	// sanitize the referring webpage location
+	$sendback = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $sendback);
+	// send the user back where they came from
+//	wp_redirect($sendback);
 	// we are done, nothing to see here
 	exit(0);
 }
@@ -1101,7 +1177,6 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 	$upload_dir = wp_upload_dir();
 	// retrieve the path of the upload folder
 	$upload_path = trailingslashit( $upload_dir['basedir'] );
-	// TODO: determine if this is really necessary, since we only claim to support 2.9 or better
 	// WordPress >= 2.6.2: determine the absolute $file_path (http://core.trac.wordpress.org/changeset/8796)
 	// if the wp content folder is not contained in the file path
 	if ( FALSE === strpos($file_path, WP_CONTENT_DIR) ) {
@@ -1188,7 +1263,8 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
  */
 function ewww_image_optimizer_update_attachment($meta, $ID) {
 	// retrieve the original filename based on the $ID
-	$new_file = basename($meta['file']);
+	// TODO: isn't used anywhere, should be removed
+//	$new_file = basename($meta['file']);
 	// update the file location in the post metadata based on the new path stored in the attachment metadata
 	update_attached_file($ID, $meta['file']);
 	// retrieve the post information based on the $ID
@@ -1319,20 +1395,19 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 	// once we get to the EWWW IO custom column
 	if( $column_name == 'ewww-image-optimizer' ) {
 		// retrieve the metadata
-		$data = wp_get_attachment_metadata($id);
+		$meta = wp_get_attachment_metadata($id);
 		// if the filepath isn't set in the metadata (which happens sometimes, oddly)
-		if(!isset($data['file'])){
+		if(!isset($meta['file'])){
 			$msg = '<br>Metadata is missing file path.';
 			print __('Unsupported file type', EWWW_IMAGE_OPTIMIZER_DOMAIN) . $msg;
 			return;
 		}
 		// retrieve the filepath from the metadata
-		$file_path = $data['file'];
+		$file_path = $meta['file'];
 		// retrieve the wordpress upload folder
 		$upload_dir = wp_upload_dir();
 		// retrieve the wordpress upload folder path
 		$upload_path = trailingslashit( $upload_dir['basedir'] );
-		// TODO: again, is this really necessary?
 		// WordPress >= 2.6.2: determine the absolute $file_path (http://core.trac.wordpress.org/changeset/8796)
 		// if $file_path isn't an absolute path
 		if ( FALSE === strpos($file_path, WP_CONTENT_DIR) ) {
@@ -1394,15 +1469,38 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 			return;
 		}
 		// if the optimizer metadata exists
-		if ( isset($data['ewww_image_optimizer']) && !empty($data['ewww_image_optimizer']) ) {
+		if (isset($meta['ewww_image_optimizer']) && !empty($meta['ewww_image_optimizer']) ) {
 			// output the optimizer results
-			print $data['ewww_image_optimizer'];
+			print $meta['ewww_image_optimizer'];
 			// output the filesize
 			print "<br>Image Size: $file_size";
 			// output a link to re-optimize manually
 			printf("<br><a href=\"admin.php?action=ewww_image_optimizer_manual&amp;attachment_ID=%d\">%s</a>",
 				$id,
 				__('Re-optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+			//print_r($meta);
+			$restorable = false;
+			if (isset($meta['converted'])) {
+				if (file_exists($meta['orig_file'])) {
+					$restorable = true;
+				}
+			}
+			if (isset($meta['sizes']) ) {
+				foreach($meta['sizes'] as $size => $data) {
+					if (isset($data['converted'])) {
+						// meta sizes don't contain a path, so we calculate one
+						$base_dir = dirname($file_path) . '/';
+						if (file_exists($base_dir . $data['orig_file'])) {
+							$restorable = true;
+						}
+					}		
+				}
+			}
+			if ($restorable) {
+				printf("<br><a href=\"admin.php?action=ewww_image_optimizer_restore&amp;attachment_ID=%d\">%s</a>",
+					$id,
+					__('Restore original', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+			}
 		} else {
 			// otherwise, this must be an image we haven't processed
 			print __('Not processed', EWWW_IMAGE_OPTIMIZER_DOMAIN);
@@ -1516,32 +1614,6 @@ function ewww_image_optimizer_install_pngout() {
 	chmod(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-static', 0755);
 	$sendback = wp_get_referer();
 	#$sendback = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $sendback);
-	wp_redirect($sendback);
-	exit(0);
-}
-
-// retrieves the optipng linux package with wget, unpacks it with tar, and sends the user back where they came from
-function ewww_image_optimizer_install_optipng() {
-	if ( FALSE === current_user_can('install_plugins') ) {
-		wp_die(__('You don\'t have permission to install image optimizer utilities.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
-	}
-	ewww_image_optimizer_download_file("http://shanebishop.net/uploads/optipng.tar.gz", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "optipng.tar.gz");
-	exec ("tar xzf " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "optipng.tar.gz -C " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
-	$sendback = wp_get_referer();
-	$sendback = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $sendback);
-	wp_redirect($sendback);
-	exit(0);
-}
-
-// retrieves the gifsicle linux package with wget, unpacks it with tar, and sends the user back where they came from
-function ewww_image_optimizer_install_gifsicle() {
-	if ( FALSE === current_user_can('install_plugins') ) {
-		wp_die(__('You don\'t have permission to install image optimizer utilities.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
-	}
-	ewww_image_optimizer_download_file("http://shanebishop.net/uploads/gifsicle.tar.gz", EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "gifsicle.tar.gz");
-	exec ("tar xzf " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . "gifsicle.tar.gz -C " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
-	$sendback = wp_get_referer();
-	$sendback = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $sendback);
 	wp_redirect($sendback);
 	exit(0);
 }
