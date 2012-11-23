@@ -473,7 +473,7 @@ function ewww_image_optimizer_restore() {
 	}
 	if (isset($meta['converted'])) {
 		if (file_exists($meta['orig_file'])) {
-			echo "restoring original file " . $meta['orig_file'] . "<br>replacing " . $file_path . "<br>";
+	//		echo "restoring original file " . $meta['orig_file'] . "<br>replacing " . $file_path . "<br>";
 			// update the filename in the metadata
 			$meta['file'] = $meta['orig_file'];
 			// update the optimization results in the metadata
@@ -495,14 +495,42 @@ function ewww_image_optimizer_restore() {
 		}
 	}
 	if (isset($meta['sizes']) ) {
+		// process each resized version
+		$processed = array();
+		// meta sizes don't contain a path, so we calculate one
+		$base_dir = dirname($file_path) . '/';
 		foreach($meta['sizes'] as $size => $data) {
 			if (isset($data['converted'])) {
-				// meta sizes don't contain a path, so we calculate one
-				$base_dir = dirname($file_path) . '/';
+				// initialize $dup_size
+//				$dup_size = false;
+				// check through all the sizes we've processed so far
+				foreach($processed as $proc => $scan) {
+					// if a previous resize had identical dimensions
+					if ($scan['height'] == $data['height'] && $scan['width'] == $data['width']) {
+						// found a duplicate resize
+					//	$dup_size = true;
+						// point this resize at the same image as the previous one
+						$meta['sizes'][$size]['file'] = $meta['sizes'][$proc]['file'];
+					}
+				}
+				// if this is a unique size
 				if (file_exists($base_dir . $data['orig_file'])) {
 					echo "restoring original file " . $base_dir . $data['orig_file'] . "<br>replacing " . $base_dir . $data['file'] . "<br>";
-//					unset($meta['sizes'][$size]['converted'], $meta['sizes'][$size]['orig_file'];
+					// update the filename
+					$meta['sizes'][$size]['file'] = $data['orig_file'];
+					// update the optimization results
+					$meta['sizes'][$size]['ewww_image_optimizer'] = 'Original Restored';
+					$meta['sizes'][$size]['orig_file'] = $data['file'];
+					$meta['sizes'][$size]['converted'] = 0;
+						// if we don't already have the update attachment filter
+						if ( FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment') )
+							// add the update attachment filter
+							add_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10, 2);
+					// TODO: delete the converted resize
 				}
+				// store info on the sizes we've processed, so we can check the list for duplicate sizes
+				$processed[$size]['width'] = $data['width'];
+				$processed[$size]['height'] = $data['height'];
 			}		
 		}
 	}
@@ -515,7 +543,7 @@ function ewww_image_optimizer_restore() {
 	// sanitize the referring webpage location
 	$sendback = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $sendback);
 	// send the user back where they came from
-//	wp_redirect($sendback);
+	wp_redirect($sendback);
 	// we are done, nothing to see here
 	exit(0);
 }
@@ -1210,49 +1238,48 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 	}
 	// resized versions, so we can continue
 	if (isset($meta['sizes']) ) {
-	//	return $meta;
-
-	// meta sizes don't contain a path, so we calculate one
-	$base_dir = dirname($file_path) . '/';
-	// process each resized version
-	$processed = array();
-	foreach($meta['sizes'] as $size => $data) {
-		// initialize $dup_size
-		$dup_size = false;
-		// check through all the sizes we've processed so far
-		foreach($processed as $proc => $scan) {
-			// if a previous resize had identical dimensions
-			if ($scan['height'] == $data['height'] && $scan['width'] == $data['width']) {
-				// found a duplicate resize
-				$dup_size = true;
-				// point this resize at the same image as the previous one
-				$meta['sizes'][$size]['file'] = $meta['sizes'][$proc]['file'];
-				// and tell the user we didn't do any further optimization
-				$meta['sizes'][$size]['ewww_image_optimizer'] = 'No savings';
+		// meta sizes don't contain a path, so we calculate one
+		$base_dir = dirname($file_path) . '/';
+		// process each resized version
+		$processed = array();
+		foreach($meta['sizes'] as $size => $data) {
+			// initialize $dup_size
+			$dup_size = false;
+			// check through all the sizes we've processed so far
+			foreach($processed as $proc => $scan) {
+				// if a previous resize had identical dimensions
+				if ($scan['height'] == $data['height'] && $scan['width'] == $data['width']) {
+					// found a duplicate resize
+					$dup_size = true;
+					// point this resize at the same image as the previous one
+					$meta['sizes'][$size]['file'] = $meta['sizes'][$proc]['file'];
+					// and tell the user we didn't do any further optimization
+					$meta['sizes'][$size]['ewww_image_optimizer'] = 'No savings';
+				}
 			}
-		}
-		// if this is a unique size
-		if (!$dup_size) {
-			// run the optimization and store the results
-			list($optimized_file, $results, $resize_conv) = ewww_image_optimizer($base_dir . $data['file'], 1, $conv, true);
-			// if the resize was converted, store the result and the original filename in the metadata for later recovery
-			if ($resize_conv) {
-			// if we don't already have the update attachment filter
-			if ( FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment') )
-				// add the update attachment filter
-				add_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10, 2);
-				$meta['sizes'][$size]['converted'] = 1;
-				$meta['sizes'][$size]['orig_file'] = $data['file'];
+			// if this is a unique size
+			if (!$dup_size) {
+				// run the optimization and store the results
+				list($optimized_file, $results, $resize_conv) = ewww_image_optimizer($base_dir . $data['file'], 1, $conv, true);
+				// if the resize was converted, store the result and the original filename in the metadata for later recovery
+				if ($resize_conv) {
+					// if we don't already have the update attachment filter
+					if ( FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment') )
+						// add the update attachment filter
+						add_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10, 2);
+					$meta['sizes'][$size]['converted'] = 1;
+					// TODO: when the full size is converted and the resizes are also, we renamed the original file, so we need to somehow retrieve the proper name for the original file
+					$meta['sizes'][$size]['orig_file'] = $data['file'];
+				}
+				// update the filename
+				$meta['sizes'][$size]['file'] = str_replace($base_dir, '', $optimized_file);
+				// update the optimization results
+				$meta['sizes'][$size]['ewww_image_optimizer'] = $results;
 			}
-			// update the filename
-			$meta['sizes'][$size]['file'] = str_replace($base_dir, '', $optimized_file);
-			// update the optimization results
-			$meta['sizes'][$size]['ewww_image_optimizer'] = $results;
+			// store info on the sizes we've processed, so we can check the list for duplicate sizes
+			$processed[$size]['width'] = $data['width'];
+			$processed[$size]['height'] = $data['height'];
 		}
-		// store info on the sizes we've processed, so we can check the list for duplicate sizes
-		$processed[$size]['width'] = $data['width'];
-		$processed[$size]['height'] = $data['height'];
-	}
 	}
 	// send back the updated metadata
 	return $meta;
@@ -1412,7 +1439,7 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 		// if $file_path isn't an absolute path
 		if ( FALSE === strpos($file_path, WP_CONTENT_DIR) ) {
 			// find the absolute path
-			$file_path =  $upload_path . $file_path;
+			$file_path = $upload_path . $file_path;
 		}
 		// initialize $msg
 		$msg = '';
@@ -1486,10 +1513,10 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 				}
 			}
 			if (isset($meta['sizes']) ) {
+				// meta sizes don't contain a path, so we calculate one
+				$base_dir = dirname($file_path) . '/';
 				foreach($meta['sizes'] as $size => $data) {
 					if (isset($data['converted'])) {
-						// meta sizes don't contain a path, so we calculate one
-						$base_dir = dirname($file_path) . '/';
 						if (file_exists($base_dir . $data['orig_file'])) {
 							$restorable = true;
 						}
