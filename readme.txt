@@ -115,6 +115,8 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 == Changelog ==
 
 = 1.2.3 =
+* added ability to restore originals after a conversion (we were already storing the original paths in the database)
+* fixed: resized converted images had the wrong original path stored
 * fixed: tools get deleted after every upgrade (moved to wp-content/ewww)
 * fixed: using activation hook incorrectly to fix permissions on upgrades (now we check when you visit the wordpress admin)
 

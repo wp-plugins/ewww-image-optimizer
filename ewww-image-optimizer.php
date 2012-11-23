@@ -473,7 +473,6 @@ function ewww_image_optimizer_restore() {
 	}
 	if (isset($meta['converted'])) {
 		if (file_exists($meta['orig_file'])) {
-	//		echo "restoring original file " . $meta['orig_file'] . "<br>replacing " . $file_path . "<br>";
 			// update the filename in the metadata
 			$meta['file'] = $meta['orig_file'];
 			// update the optimization results in the metadata
@@ -500,22 +499,17 @@ function ewww_image_optimizer_restore() {
 		// meta sizes don't contain a path, so we calculate one
 		$base_dir = dirname($file_path) . '/';
 		foreach($meta['sizes'] as $size => $data) {
-			if (isset($data['converted'])) {
-				// initialize $dup_size
-//				$dup_size = false;
 				// check through all the sizes we've processed so far
 				foreach($processed as $proc => $scan) {
 					// if a previous resize had identical dimensions
-					if ($scan['height'] == $data['height'] && $scan['width'] == $data['width']) {
-						// found a duplicate resize
-					//	$dup_size = true;
+					if ($scan['height'] == $data['height'] && $scan['width'] == $data['width'] && isset($meta['sizes'][$proc]['converted'])) {
 						// point this resize at the same image as the previous one
 						$meta['sizes'][$size]['file'] = $meta['sizes'][$proc]['file'];
 					}
 				}
+			if (isset($data['converted'])) {
 				// if this is a unique size
 				if (file_exists($base_dir . $data['orig_file'])) {
-					echo "restoring original file " . $base_dir . $data['orig_file'] . "<br>replacing " . $base_dir . $data['file'] . "<br>";
 					// update the filename
 					$meta['sizes'][$size]['file'] = $data['orig_file'];
 					// update the optimization results
@@ -526,7 +520,7 @@ function ewww_image_optimizer_restore() {
 						if ( FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment') )
 							// add the update attachment filter
 							add_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10, 2);
-					// TODO: delete the converted resize
+					unlink($base_dir . $data['file']);
 				}
 				// store info on the sizes we've processed, so we can check the list for duplicate sizes
 				$processed[$size]['width'] = $data['width'];
@@ -534,8 +528,6 @@ function ewww_image_optimizer_restore() {
 			}		
 		}
 	}
-//	print_r ($meta);
-
 	// update the attachment metadata in the database
 	wp_update_attachment_metadata($attachment_ID, $meta );
 	// store the referring webpage location
@@ -551,7 +543,7 @@ function ewww_image_optimizer_restore() {
 /**
  * Process an image.
  *
- * Returns an array of the $file $results and $converted to tell us if an image changes formats.
+ * Returns an array of the $file, $results, $converted to tell us if an image changes formats, and the $original file if it did.
  *
  * @param   string $file		Full absolute path to the image file
  * @param   int $gallery_type		1=wordpress, 2=nextgen, 3=flagallery
@@ -559,6 +551,8 @@ function ewww_image_optimizer_restore() {
  * @returns array
  */
 function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
+	// initialize the original filename 
+	$original = $file;
 	// if 'nice' doesn't exist, set $nice to NULL, otherwise, set $nice to 'nice'
 	if (exec('nice') === NULL) {
 		$nice = NULL;
@@ -570,7 +564,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 		// tell the user we couldn't find the file
 		$msg = sprintf(__("Could not find <span class='code'>%s</span>", EWWW_IMAGE_OPTIMIZER_DOMAIN), $file);
 		// send back the above message
-		return array($file, $msg, $converted);
+		return array($file, $msg, $converted, $original);
 	}
 
 	// check that the file is writable
@@ -578,7 +572,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 		// tell the user we can't write to the file
 		$msg = sprintf(__("<span class='code'>%s</span> is not writable", EWWW_IMAGE_OPTIMIZER_DOMAIN), $file);
 		// send back the above message
-		return array($file, $msg, $converted);
+		return array($file, $msg, $converted, $original);
 	}
 	// retrieve the wordpress upload directory location
 	$upload_dir = wp_upload_dir();
@@ -593,7 +587,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 		// tell the user they can only process images in the upload directory or the wordpress folder
 		$msg = sprintf(__("<span class='code'>%s</span> must be within the wordpress or upload directory (<span class='code'>%s or %s</span>)", EWWW_IMAGE_OPTIMIZER_DOMAIN), htmlentities($file), $upload_path, ABSPATH);
 		// send back the above message
-		return array($file, $msg, $converted);
+		return array($file, $msg, $converted, $original);
 	}
 	// see if we can use the getimagesize function
 	if (function_exists('getimagesize')) {
@@ -644,6 +638,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 		rename($file, $refile);
 		// and set $file to the new filename
 		$file = $refile;
+		$original = $file;
 	}
 	// run the appropriate optimization/conversion for the mime-type
 	switch($type) {
@@ -814,12 +809,10 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 			}
 			break;
 		case 'image/png':
-			// When we don't delete the original images, they don't get converted it seems?
 			// png2jpg conversion is turned on, and the image is in the wordpress media library
 			if (get_option('ewww_image_optimizer_png_to_jpg') && $gallery_type == 1) {
 				// turn the conversion process ON
 				$convert = true;
-				// generate the filename for a JPG
 				// if this is a resize version
 				if ($converted) {
 					// just replace the file extension with a .jpg
@@ -1157,12 +1150,12 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 			break;
 		default:
 			// if not a JPG, PNG, or GIF, tell the user we don't work with strangers
-			return array($file, __('Unknown type: ' . $type, EWWW_IMAGE_OPTIMIZER_DOMAIN), $converted);
+			return array($file, __('Unknown type: ' . $type, EWWW_IMAGE_OPTIMIZER_DOMAIN), $converted, $original);
 	}
 	// if the image is unchanged
 	if($result == 'unchanged') {
 		// tell the user we couldn't save them anything
-		return array($file, __('No savings', EWWW_IMAGE_OPTIMIZER_DOMAIN), $converted);
+		return array($file, __('No savings', EWWW_IMAGE_OPTIMIZER_DOMAIN), $converted, $original);
 	}
 	// if the image changed
 	if(strpos($result, ' vs. ') !== false) {
@@ -1181,10 +1174,10 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 			$percent,
 			$savings_str);
 		// send back the filename, the results, and the $converted flag
-		return array($file, $results_msg, $converted);
+		return array($file, $results_msg, $converted, $original);
 	}
-	// otherwise, send back the filename, the results (some sort of error message), and the $converted flag
-	return array($file, $result, $converted);
+	// otherwise, send back the filename, the results (some sort of error message), the $converted flag, and the name of the original image
+	return array($file, $result, $converted, $original);
 }
 
 /**
@@ -1214,7 +1207,7 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 		$file_path =  $upload_path . $file_path;
 	}
 	// run the image optimizer on the file, and store the results
-	list($file, $msg, $conv) = ewww_image_optimizer($file_path, 1, false, false);
+	list($file, $msg, $conv, $original) = ewww_image_optimizer($file_path, 1, false, false);
 	// update the filename in the metadata
 	$meta['file'] = $file;
 	// update the optimization results in the metadata
@@ -1232,7 +1225,7 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 		// store the conversion status in the metadata
 		$meta['converted'] = 1;
 		// store the old filename in the database
-		$meta['orig_file'] = $file_path;
+		$meta['orig_file'] = $original;
 	} else {
 		remove_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10);
 	}
@@ -1260,7 +1253,7 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 			// if this is a unique size
 			if (!$dup_size) {
 				// run the optimization and store the results
-				list($optimized_file, $results, $resize_conv) = ewww_image_optimizer($base_dir . $data['file'], 1, $conv, true);
+				list($optimized_file, $results, $resize_conv, $original) = ewww_image_optimizer($base_dir . $data['file'], 1, $conv, true);
 				// if the resize was converted, store the result and the original filename in the metadata for later recovery
 				if ($resize_conv) {
 					// if we don't already have the update attachment filter
@@ -1268,8 +1261,7 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 						// add the update attachment filter
 						add_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10, 2);
 					$meta['sizes'][$size]['converted'] = 1;
-					// TODO: when the full size is converted and the resizes are also, we renamed the original file, so we need to somehow retrieve the proper name for the original file
-					$meta['sizes'][$size]['orig_file'] = $data['file'];
+					$meta['sizes'][$size]['orig_file'] = str_replace($base_dir, '', $original);
 				}
 				// update the filename
 				$meta['sizes'][$size]['file'] = str_replace($base_dir, '', $optimized_file);
@@ -1289,9 +1281,6 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
  * Update the attachment's meta data after being converted 
  */
 function ewww_image_optimizer_update_attachment($meta, $ID) {
-	// retrieve the original filename based on the $ID
-	// TODO: isn't used anywhere, should be removed
-//	$new_file = basename($meta['file']);
 	// update the file location in the post metadata based on the new path stored in the attachment metadata
 	update_attached_file($ID, $meta['file']);
 	// retrieve the post information based on the $ID
@@ -1505,7 +1494,9 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 			printf("<br><a href=\"admin.php?action=ewww_image_optimizer_manual&amp;attachment_ID=%d\">%s</a>",
 				$id,
 				__('Re-optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+			//echo "<!-- \n";
 			//print_r($meta);
+			//echo "\n -->";
 			$restorable = false;
 			if (isset($meta['converted'])) {
 				if (file_exists($meta['orig_file'])) {
