@@ -6,7 +6,7 @@ Tested up to: 3.4.2
 Stable tag: 1.2.2
 License: GPLv3
 
-Reduce file sizes and improve performance for images within WordPress including NextGEN Gallery. Uses jpegtran, optipng/pngout, and gifsicle.
+Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
 
 == Description ==
 
