@@ -40,13 +40,15 @@ else:
 		$total = sizeof($attachments);
 		// start a live javascript timer
 		?>
-		<script type="text/javascript">
+		<!--<script type="text/javascript">
 			document.write('Bulk Optimization has taken <span id="endTime">0.0</span> seconds.');
 			var loopTime=setInterval("currentTime()",100);
-		</script>
+		</script>-->
 		<?php
-		// TODO: do some research on output buffering, since it seems we are doing some extra work here
-		// turns off the need to call flush() although there are still other buffers to worry about
+		// turn off compression, since it causes unwanted buffering
+		@apache_setenv('no-gzip', 1);
+		@ini_set('zlib.output_compression', 0);
+		// tells php to flush the buffers after every output call
 		ob_implicit_flush(true);
 		// flush the output buffer and turn off buffering
 		ob_end_flush();
@@ -93,7 +95,7 @@ else:
 				// update the metadata for the current attachment
 				wp_update_attachment_metadata( $attachment->ID, $meta );
 			}
-			// flushes the output buffers (yes, both are required)
+			// flushes the output buffers (yes, both are necessary)
 			@ob_flush();
 			flush();
 		}

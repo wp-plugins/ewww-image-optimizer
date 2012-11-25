@@ -14,7 +14,7 @@ class ewwwngg {
 
 	/* adds the Bulk Optimize page to the tools menu */
 	function ewww_ngg_bulk_menu () {
-		add_management_page('NextGEN Gallery Bulk Optimize', 'NextGEN Bulk Optimize', 'manage_options', 'ewww-ngg-bulk', array (&$this, 'ewww_ngg_bulk'));
+			add_submenu_page(NGGFOLDER, 'NextGEN Bulk Optimize', 'Bulk Optimize', 'NextGEN Manage gallery', 'ewww-ngg-bulk', array (&$this, 'ewww_ngg_bulk'));
 	}
 	//TODO: add a bulk optimize action to each gallery (when we have a hook)
 	/* ngg_added_new_image hook */
@@ -129,11 +129,14 @@ class ewwwngg {
 				// find out how many images we have
 				$total = sizeof($images);
 				?>
-				<script type="text/javascript">
+				<!--<script type="text/javascript">
 					document.write('Bulk Optimization has taken <span id="endTime">0.0</span> seconds.');
 					var loopTime=setInterval("currentTime()",100);
-				</script>
+				</script>-->
 				<?php
+				// turn off compression, since it causes unwanted buffering
+				@apache_setenv('no-gzip', 1);
+				@ini_set('zlib.output_compression', 0);
 				// functions to flush HTML output buffers
 				ob_implicit_flush(true);
 				ob_end_flush();
@@ -272,8 +275,8 @@ class ewwwngg {
 	}
 }
 // initialize the plugin and the class
-add_action( 'init', 'ewwwngg' );
-add_action('admin_print_scripts-tools_page_ewww-ngg-bulk', 'ewww_image_optimizer_scripts' );
+add_action('init', 'ewwwngg');
+//add_action('admin_print_scripts-tools_page_ewww-ngg-bulk', 'ewww_image_optimizer_scripts');
 
 function ewwwngg() {
 	global $ewwwngg;

@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate Linux image optimizers into WordPress.
- * @version 1.2.3
+ * @version 1.3.0
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -9,7 +9,7 @@ Plugin Name: EWWW Image Optimizer
 Plugin URI: http://www.shanebishop.net/ewww-image-optimizer/
 Description: Reduce file sizes and improve performance for images within WordPress including NextGEN Gallery. Uses jpegtran, optipng/pngout, and gifsicle.
 Author: Shane Bishop
-Version: 1.2.3
+Version: 1.3.0
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
@@ -41,7 +41,7 @@ add_action('admin_menu', 'ewww_image_optimizer_admin_menu' );
 add_action('admin_head-upload.php', 'ewww_image_optimizer_add_bulk_actions_via_javascript' ); 
 add_action('admin_action_bulk_optimize', 'ewww_image_optimizer_bulk_action_handler' ); 
 add_action('admin_action_-1', 'ewww_image_optimizer_bulk_action_handler' ); 
-add_action('admin_print_scripts-media_page_ewww-image-optimizer-bulk', 'ewww_image_optimizer_scripts' );
+//add_action('admin_print_scripts-media_page_ewww-image-optimizer-bulk', 'ewww_image_optimizer_scripts' );
 add_action('admin_action_ewww_image_optimizer_install_jpegtran', 'ewww_image_optimizer_install_jpegtran');
 add_action('admin_action_ewww_image_optimizer_install_pngout', 'ewww_image_optimizer_install_pngout');
 add_action('admin_action_ewww_image_optimizer_install_optipng', 'ewww_image_optimizer_install_optipng');
@@ -63,8 +63,14 @@ if('Linux' != PHP_OS && 'Darwin' != PHP_OS) {
 	add_action('admin_notices', 'ewww_image_optimizer_notice_utils');
 } 
 
+// need to include the plugin library for the is_plugin_active function (even though it isn't supposed to be necessary in the admin)
+include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 // include the file that loads the nextgen gallery optimization functions
+if (is_plugin_active('nextgen-gallery/nggallery.php'))
 require( dirname(__FILE__) . '/nextgen-integration.php' );
+// include the file that loads the grand flagallery optimization functions
+if (is_plugin_active('flash-album-gallery/flag.php'))
+require( dirname(__FILE__) . '/flag-integration.php' );
 
 // tells the user they are on an unsupported operating system
 function ewww_image_optimizer_notice_os() {

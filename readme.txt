@@ -29,7 +29,12 @@ EWWW Image Optimizer calls optimization utilities directly which is better suite
 
 = NextGEN Integration =
 
-Features re-optimization capability, and bulk optimizing. The NextGEN Bulk Optimize function is located under the Wordpress Tools menu, and will optimize all images in all galleries. If anyone has a better idea for where the tool should go, feel free to post in the support area, or on the plugin homepage. Alternatively, if you can figure out a way to hook into the existing NextGEN menu, that would be ideal. I just can't seem to find a way to do that.
+Features re-optimization capability, and bulk optimizing. The NextGEN Bulk Optimize function is located near the bottom of the NextGEN menu, and will optimize all images in all galleries.
+NOTE: Does not optimize thumbnails on initial upload, must re-optimize images to optimize thumbnails.
+
+= GRAND Flash Album Gallery Integration =
+
+Features optimization on upload capability, and bulk optimizing. The Bulk Optimize function is located near the bottom of the FlAGallery menu, and will optimize all images in all galleries. Re-optimization via the gallery management pages is pending an update from the FlAGallery author.
 NOTE: Does not optimize thumbnails on initial upload, must re-optimize images to optimize thumbnails.
 
 == Installation ==
@@ -114,11 +119,15 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 == Changelog ==
 
-= 1.2.3 =
+= 1.3.0 =
+* support for GRAND FlAGallery (flash album gallery)
 * added ability to restore originals after a conversion (we were already storing the original paths in the database)
 * fixed: resized converted images had the wrong original path stored
 * fixed: tools get deleted after every upgrade (moved to wp-content/ewww)
 * fixed: using activation hook incorrectly to fix permissions on upgrades (now we check when you visit the wordpress admin)
+* moved NextGEN bulk optimize into NextGEN menu
+* NextGEN and FlAGallery functions only run when the associated gallery plugin is active
+* turn off page compression for bulk operations to avoid output buffering
 
 = 1.2.2 =
 * fixed: uninitialized variables
