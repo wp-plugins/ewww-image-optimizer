@@ -64,12 +64,12 @@ if('Linux' != PHP_OS && 'Darwin' != PHP_OS) {
 } 
 
 // need to include the plugin library for the is_plugin_active function (even though it isn't supposed to be necessary in the admin)
-include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 // include the file that loads the nextgen gallery optimization functions
-if (is_plugin_active('nextgen-gallery/nggallery.php'))
+if (is_plugin_active('nextgen-gallery/nggallery.php') || is_plugin_active_for_network('nextgen-gallery/nggallery.php'))
 require( dirname(__FILE__) . '/nextgen-integration.php' );
 // include the file that loads the grand flagallery optimization functions
-if (is_plugin_active('flash-album-gallery/flag.php'))
+if (is_plugin_active('flash-album-gallery/flag.php') || is_plugin_active_for_network('flash-album-gallery/flag.php'))
 require( dirname(__FILE__) . '/flag-integration.php' );
 
 // tells the user they are on an unsupported operating system
