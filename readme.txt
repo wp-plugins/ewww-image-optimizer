@@ -128,6 +128,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * moved NextGEN bulk optimize into NextGEN menu
 * NextGEN and FlAGallery functions only run when the associated gallery plugin is active
 * turn off page compression for bulk operations to avoid output buffering
+* added status messages when attempting automatic installation of jpegtran or pngout
 
 = 1.2.2 =
 * fixed: uninitialized variables

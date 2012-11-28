@@ -74,21 +74,15 @@ require( dirname(__FILE__) . '/flag-integration.php' );
 
 // tells the user they are on an unsupported operating system
 function ewww_image_optimizer_notice_os() {
-	echo "<div id='ewww-image-optimizer-warning-os' class='updated fade'><p><strong>EWWW Image Optimizer isn't supported on your server.</strong> Unfortunately, the EWWW Image Optimizer plugin doesn't work with " . htmlentities(PHP_OS) . ".</p></div>";
+	echo "<div id='ewww-image-optimizer-warning-os' class='error'><p><strong>EWWW Image Optimizer isn't supported on your server.</strong> Unfortunately, the EWWW Image Optimizer plugin doesn't work with " . htmlentities(PHP_OS) . ".</p></div>";
 }   
 
 function ewww_image_optimizer_notice_tool_install() {
-	echo "<div id='ewww-image-optimizer-warning-tool-install' class='updated fade'><p><strong>EWWW Image Optimizer couldn't install the tools in " . htmlentities(EWWW_IMAGE_OPTIMIZER_TOOL_PATH) . ".</strong> Please adjust permissions or create the folder.</p></div>";
+	echo "<div id='ewww-image-optimizer-warning-tool-install' class='error'><p><strong>EWWW Image Optimizer couldn't install the tools in " . htmlentities(EWWW_IMAGE_OPTIMIZER_TOOL_PATH) . ".</strong> Please adjust permissions or create the folder.</p></div>";
 }
-
-//function ewww_image_optimizer_notice_perms() {
-//	echo "<div id='ewww-image-optimizer-warning-tooldir' class='updated fade'><p><strong>EWWW Image Optimizer couldn't set permissions on tools.</strong> Please adjust permissions for gifsicle and optipng manually in this folder: " . htmlentities(EWWW_IMAGE_OPTIMIZER_TOOL_PATH) . ".</p></div>";
-//}
 
 // If the utitilites are in the content folder, we use that. Otherwise, we retrieve user specified paths or set defaults if all else fails. We also do a basic check to make sure we weren't given a malicious path.
 function ewww_image_optimizer_path_check() {
-	// make sure the bundled tools are installed
-	ewww_image_optimizer_install_tools ();
 	$jpegtran = get_option('ewww_image_optimizer_jpegtran_path');
 	if(exec("which " . EWWW_IMAGE_OPTIMIZER_TOOL_PATH . "jpegtran")) {
 		$jpegtran = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . "jpegtran";
@@ -113,40 +107,45 @@ function ewww_image_optimizer_path_check() {
 }
 
 function ewww_image_optimizer_install_tools () {
+	$toolfail = false;
 	if (!is_dir(EWWW_IMAGE_OPTIMIZER_TOOL_PATH)) {
 		if (!mkdir(EWWW_IMAGE_OPTIMIZER_TOOL_PATH)) {
-			add_action('admin_notices', 'ewww_image_optimizer_notice_tool_install');
+			$toolfail = true;
 		}
 	}
 	if (!file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle')) {
 		if (!copy(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'gifsicle', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle')) {
-			add_action('admin_notices', 'ewww_image_optimizer_notice_tool_install');
+			$toolfail = true;
 		}
 	} else if (filesize(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle') != filesize(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'gifsicle')) {
 		if (!copy(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'gifsicle', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle')) {
-			add_action('admin_notices', 'ewww_image_optimizer_notice_tool_install');
+			$toolfail = true;
 		}
 	}
 	$gifsicle_perms = substr(sprintf('%o', fileperms(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle')), -4);
 	if ($gifsicle_perms != '0755') {
 		if (!chmod(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle', 0755)) {
-			add_action('admin_notices', 'ewww_image_optimizer_notice_tool_install');
+			$toolfail = true;
 		}
 	}
 	if (!file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng')) {
 		if (!copy(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'optipng', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng')) {
-			add_action('admin_notices', 'ewww_image_optimizer_notice_tool_install');
+			$toolfail = true;
 		}
 	} else if (filesize(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng') != filesize(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'optipng')) {
 		if (!copy(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'optipng', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng')) {
-			add_action('admin_notices', 'ewww_image_optimizer_notice_tool_install');
+			$toolfail = true;
 		}
 	}
 	$optipng_perms = substr(sprintf('%o', fileperms(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng')), -4);
 	if ($optipng_perms != '0755') {
 		if (!chmod(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng', 0755)) {
-			add_action('admin_notices', 'ewww_image_optimizer_notice_tool_install');
+			$toolfail = true;
+			//add_action('admin_notices', 'ewww_image_optimizer_notice_tool_install');
 		}
+	}
+	if ($toolfail) {
+		echo "<div id='ewww-image-optimizer-warning-tool-install' class='error'><p><strong>EWWW Image Optimizer couldn't install the tools in " . htmlentities(EWWW_IMAGE_OPTIMIZER_TOOL_PATH) . ".</strong> Please adjust permissions or create the folder.</p></div>";
 	}
 }
 		
@@ -185,8 +184,10 @@ function ewww_image_optimizer_notice_utils() {
 	// query the php settings for safe mode
 	if( ini_get('safe_mode') ){
 		// display a warning to the user
-		echo "<div id='ewww-image-optimizer-warning-opt-png' class='updated fade'><p><strong>PHP's Safe Mode is turned on. This plugin cannot operate in safe mode.</strong></p></div>";
+		echo "<div id='ewww-image-optimizer-warning-opt-png' class='error'><p><strong>PHP's Safe Mode is turned on. This plugin cannot operate in safe mode.</strong></p></div>";
 	}
+	// make sure the bundled tools are installed
+	ewww_image_optimizer_install_tools ();
 	// attempt to retrieve values for utility paths, and store them in the appropriate variables
 	list ($jpegtran_path, $optipng_path, $gifsicle_path, $pngout_path) = ewww_image_optimizer_path_check();
 	// store those values back into an array, probably a more efficient way of doing this
@@ -278,14 +279,14 @@ function ewww_image_optimizer_notice_utils() {
 	$msg = implode(', ', $missing);
 	// if there is a message, display the warning
 	if(!empty($msg)){
-		echo "<div id='ewww-image-optimizer-warning-opt-png' class='updated fade'><p><strong>EWWW Image Optimizer requires <a href='http://jpegclub.org/jpegtran/'>jpegtran</a>, <a href='http://optipng.sourceforge.net/'>optipng</a> or <a href='http://advsys.net/ken/utils.htm'>pngout</a>, and <a href='http://www.lcdf.org/gifsicle/'>gifsicle</a>.</strong> You are missing: $msg. Please install via the <a href='options-general.php?page=ewww-image-optimizer/ewww-image-optimizer.php'>Settings Page</a>. If the one-click install links don't work for you, try the <a href='http://wordpress.org/extend/plugins/ewww-image-optimizer/installation/'>Installation Instructions</a>.</p></div>";
+		echo "<div id='ewww-image-optimizer-warning-opt-png' class='updated'><p><strong>EWWW Image Optimizer requires <a href='http://jpegclub.org/jpegtran/'>jpegtran</a>, <a href='http://optipng.sourceforge.net/'>optipng</a> or <a href='http://advsys.net/ken/utils.htm'>pngout</a>, and <a href='http://www.lcdf.org/gifsicle/'>gifsicle</a>.</strong> You are missing: $msg. Please install via the <a href='options-general.php?page=ewww-image-optimizer/ewww-image-optimizer.php'>Settings Page</a>. If the one-click install links don't work for you, try the <a href='http://wordpress.org/extend/plugins/ewww-image-optimizer/installation/'>Installation Instructions</a>.</p></div>";
 	}
 
 	// Check if exec is disabled
 	$disabled = explode(', ', ini_get('disable_functions'));
 	if(in_array('exec', $disabled)){
 		//display a warning if exec() is disabled, can't run much of anything without it
-		echo "<div id='ewww-image-optimizer-warning-opt-png' class='updated fade'><p><strong>EWWW Image Optimizer requires exec().</strong> Your system administrator has disabled this function.</p></div>";
+		echo "<div id='ewww-image-optimizer-warning-opt-png' class='error'><p><strong>EWWW Image Optimizer requires exec().</strong> Your system administrator has disabled this function.</p></div>";
 	}
 }
 
@@ -1591,21 +1592,31 @@ function ewww_image_optimizer_download_file ($url, $path) {
 }
 
 // retrieves the jpegtran linux package with wget, unpacks it with tar, and sends the user back where they came from
-function ewww_image_optimizer_install_jpegtran() {
+function ewww_image_optimizer_install_jpegtran () {
 	if ( FALSE === current_user_can('install_plugins') ) {
 		wp_die(__('You don\'t have permission to install image optimizer utilities.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 	}
 	ewww_image_optimizer_download_file('http://jpegclub.org/droppatch.v09.tar.gz', EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'jpegtran.tar.gz');
 	exec ('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'jpegtran.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_TOOL_PATH . ' jpegtran');
-	$sendback = wp_get_referer();
-	#$sendback = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $sendback);
+	list ($jpegtran_path) = ewww_image_optimizer_path_check();
+	exec($jpegtran_path . ' -v ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'sample.jpg 2>&1', $jpegtran_version);
+	foreach ($jpegtran_version as $jout) { 
+		if (preg_match('/Independent JPEG Group/', $jout)) {
+			$sendback = wp_get_referer();
+			$sendback = preg_replace('/\&jpegtran\=\w+/', '', $sendback) . "&jpegtran=success";
+		}
+	}
+	if (!isset($sendback)) {
+		$sendback = wp_get_referer();
+		$sendback = preg_replace('/\&jpegtran\=\w+/', '', $sendback) . "&jpegtran=failed";
+	}
 	wp_redirect($sendback);
 	exit(0);
 }
 
 // retrieves the pngout linux package with wget, unpacks it with tar, 
 // copies the appropriate version to the plugin folder, and sends the user back where they came from
-function ewww_image_optimizer_install_pngout() {
+function ewww_image_optimizer_install_pngout () {
 	if ( FALSE === current_user_can('install_plugins') ) {
 		wp_die(__('You don\'t have permission to install image optimizer utilities.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 	}
@@ -1636,14 +1647,52 @@ function ewww_image_optimizer_install_pngout() {
 			break;
 	}
 	chmod(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-static', 0755);
-	$sendback = wp_get_referer();
-	#$sendback = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $sendback);
+	list ($jpegtran_path, $optipng_path, $gifsicle_path, $pngout_path) = ewww_image_optimizer_path_check();
+	exec("$pngout_path 2>&1", $pngout_version);
+	if (preg_match('/PNGOUT/', $pngout_version[0])) {
+		$sendback = wp_get_referer();
+		$sendback = preg_replace('/\&pngout\=\w+/', '', $sendback) . "&pngout=success";
+	}
+	if (!isset($sendback)) {
+		$sendback = wp_get_referer();
+		$sendback = preg_replace('/\&pngout\=\w+/', '', $sendback) . "&pngout=failed";
+	}
 	wp_redirect($sendback);
 	exit(0);
 }
 
 // displays the EWWW IO options and provides one-click install for the optimizer utilities
 function ewww_image_optimizer_options () {
+	if (isset($_REQUEST['jpegtran'])) {
+		if ($_REQUEST['jpegtran'] == 'success') { ?>
+			<div id='ewww-image-optimizer-jpegtran-success' class='updated fade'>
+				<p>jpegtran was successfully installed, check the Debug Information for version information.</p>
+			</div>
+<?php		}
+		if ($_REQUEST['jpegtran'] == 'failed') { ?>
+			<div id='ewww-image-optimizer-jpegtran-failure' class='error'>
+				<p>jpegtran was not installed, check permissions on the wp-content/ewww folder.</p>
+			</div>
+<?php		} ?>
+		<script type='text/javascript'>
+			jQuery(document).ready(function($) {$('.fade').fadeTo(5000,1).fadeOut(3000);});
+		</script>
+<?php	}
+	if (isset($_REQUEST['pngout'])) {
+		if ($_REQUEST['pngout'] == 'success') { ?>
+			<div id='ewww-image-optimizer-pngout-success' class='updated fade'>
+				<p>pngout was successfully installed, check the Debug Information for version information.</p>
+			</div>
+<?php		}
+		if ($_REQUEST['pngout'] == 'failed') { ?>
+			<div id='ewww-image-optimizer-pngout-failure' class='error'>
+				<p>pngout was not installed, check permissions on the wp-content/ewww folder.</p>
+			</div>
+<?php		} ?>
+		<script type='text/javascript'>
+			jQuery(document).ready(function($) {$('.fade').fadeTo(5000,1).fadeOut(3000);});
+		</script>
+<?php	}
 	// retrieve the tool paths for the version checks later
 	list ($jpegtran_path, $optipng_path, $gifsicle_path, $pngout_path) = ewww_image_optimizer_path_check();
 	?>
