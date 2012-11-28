@@ -114,8 +114,8 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 == Screenshots ==
 
 1. Plugin settings page.
-2. Additional optimize column added to media listing. You can see your savings, or manually optimize individual images.
-3. Bulk optimization page. You can optimize all your images at once. This is very useful for existing blogs that have lots of images.
+2. Additional optimize column added to media listing. You can see your savings, manually optimize individual images, and restore originals (converted only).
+3. Bulk optimization page. You can optimize all your images at once and resume a previous bulk optimization. This is very useful for existing blogs that have lots of images.
 
 == Changelog ==
 
