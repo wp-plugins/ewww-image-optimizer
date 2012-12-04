@@ -125,10 +125,14 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * fixed: resized converted images had the wrong original path stored
 * fixed: tools get deleted after every upgrade (moved to wp-content/ewww)
 * fixed: using activation hook incorrectly to fix permissions on upgrades (now we check when you visit the wordpress admin)
+* removed deprecated path settings, custom-built binaries will be copied automatically to the wp-content/ewww folder
+* better validation of tools, no longer using 'which'
+* removed redundant path checks to avoid extra processing time
 * moved NextGEN bulk optimize into NextGEN menu
 * NextGEN and FlAGallery functions only run when the associated gallery plugin is active
 * turn off page compression for bulk operations to avoid output buffering
 * added status messages when attempting automatic installation of jpegtran or pngout
+* NEW version of gifsicle bundled potentially produces better optimized GIFs
 
 = 1.2.2 =
 * fixed: uninitialized variables
@@ -221,8 +225,8 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 == Upgrade Notice ==
 
-= 1.2.3 =
-Moved default folder for tools to wp-content/ewww so that they no longer get deleted every time the plugin is upgraded. Requires write permissions on the wp-content folder.
+= 1.3.0 =
+Removed path options, and moved optimizers to wp-content/ewww. Requires write permissions on the wp-content folder. Custom compiled binaries should automatically be moved to the wp-content/ewww folder also.
 
 = 1.2.1 =
 SECURITY: bundled optipng is 0.7.4 to address a vulnerability. Fixed invalid missing tools warning. Added conversion operations gif2png, png2jpg, and jpg2png. Setting paths manually will be disabled in a future release, as the plugin now automatically looks in the plugin folder.
