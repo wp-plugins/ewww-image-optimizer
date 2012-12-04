@@ -133,6 +133,8 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * turn off page compression for bulk operations to avoid output buffering
 * added status messages when attempting automatic installation of jpegtran or pngout
 * NEW version of gifsicle bundled potentially produces better optimized GIFs
+* revamped settings page to combine version info, optimizer status, and installation options
+* support for pngout on Mac OS X
 
 = 1.2.2 =
 * fixed: uninitialized variables
