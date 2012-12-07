@@ -134,7 +134,8 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * added status messages when attempting automatic installation of jpegtran or pngout
 * NEW version of gifsicle bundled potentially produces better optimized GIFs
 * revamped settings page to combine version info, optimizer status, and installation options
-* support for pngout on Mac OS X
+* binaries for Mac OS X added: gifsicle, optipng, and pngout on Mac OS X
+* images are re-optimized when you use the WP Image Editor (but never converted)
 
 = 1.2.2 =
 * fixed: uninitialized variables
