@@ -1,14 +1,16 @@
 <?php 
 class ewwwflag {
-
-	//static $plugins_ok = true; 
-
+	// TODO: add bulk action routine to manage images page
+	// TODO: add bulk action routine to manage galleries page (optimized whole galleries at once, nice...)
 	/* initializes the flagallery integration functions */
 	function ewwwflag() {
-		add_filter( 'flag_manage_images_columns', array( &$this, 'ewww_manage_images_columns' ) );
-		add_action( 'flag_manage_gallery_custom_column', array( &$this, 'ewww_manage_image_custom_column' ), 10, 2 );
-		add_action( 'flag_added_new_image', array( &$this, 'ewww_added_new_image' ) );
-		add_action('admin_action_ewww_flag_manual', array( &$this, 'ewww_flag_manual') );
+		add_filter('flag_manage_images_columns', array(&$this, 'ewww_manage_images_columns'));
+		add_action('flag_manage_gallery_custom_column', array(&$this, 'ewww_manage_image_custom_column'), 10, 2);
+//		add_action('flag_manage_images_bulkaction', array(&$this, 'ewww_manage_images_bulkaction'));
+		add_action('flag_thumbnail_created', array(&$this, 'ewww_added_new_image'));
+		add_action('flag_image_resized', array(&$this, 'ewww_added_new_image'));
+//		add_action('flag_added_new_image', array( &$this, 'ewww_added_new_image'));
+		add_action('admin_action_ewww_flag_manual', array(&$this, 'ewww_flag_manual'));
 		add_action('admin_menu', array(&$this, 'ewww_flag_bulk_menu') );
 	}
 
@@ -17,14 +19,19 @@ class ewwwflag {
 		add_submenu_page('flag-overview', 'FlAG Bulk Optimize', 'Bulk Optimize', 'FlAG Manage gallery', 'flag-bulk-optimize', array (&$this, 'ewww_flag_bulk'));
 	}
 
+	/* add bulk optimize action to image management page */
+	function ewww_manage_images_bulkaction () {
+		echo '<option value="bulk_optimize_images">Bulk Optimize</option>';
+	}
 	/* flag_added_new_image hook */
-	function ewww_added_new_image( $image ) {
-		$meta = flagdb::find_image($image['id']);
-		if (isset($meta->imagePath)) {
-			$res = ewww_image_optimizer($meta->imagePath, 3, false, false);
-			// TODO: optimize thumbs on upload, probably need a hook, just like nextgen
-			//$tres = ewww_image_optimizer($meta->thumbPath, 3, false, true);
-			flagdb::update_image_meta($image['id'], array('ewww_image_optimizer' => $res[1]));
+	function ewww_added_new_image ($image) {
+//		print_r ($image);
+//		$meta = flagdb::find_image($image['id']);
+		if (isset($image->imagePath)) {
+			$res = ewww_image_optimizer($image->imagePath, 3, false, false);
+			$tres = ewww_image_optimizer($image->thumbPath, 3, false, true);
+			$pid = $image->pid;
+			flagdb::update_image_meta($pid, array('ewww_image_optimizer' => $res[1]));
 		}
 	}
 

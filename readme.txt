@@ -34,8 +34,7 @@ NOTE: Does not optimize thumbnails on initial upload, must re-optimize images to
 
 = GRAND Flash Album Gallery Integration =
 
-Features optimization on upload capability, and bulk optimizing. The Bulk Optimize function is located near the bottom of the FlAGallery menu, and will optimize all images in all galleries. Re-optimization via the gallery management pages is pending an update from the FlAGallery author.
-NOTE: Does not optimize thumbnails on initial upload, must re-optimize images to optimize thumbnails.
+Features optimization on upload capability, and bulk optimizing. The Bulk Optimize function is located near the bottom of the FlAGallery menu, and will optimize all images in all galleries.
 
 == Installation ==
 
