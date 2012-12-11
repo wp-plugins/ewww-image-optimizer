@@ -1416,7 +1416,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 	// don't do anything else if the attachment has no metadata
 	if (!isset($meta['file'])) {
-//		return $meta;
+		return $meta;
 	}
 	if (FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_saved_file')) {
 		$gallery_type = 1;
