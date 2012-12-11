@@ -709,6 +709,22 @@ function ewww_image_optimizer_restore() {
 // deletes 'orig_file' when an attachment is being deleted
 function ewww_image_optimizer_delete ($id) {
 	$meta = wp_get_attachment_metadata($id);
+	// construct the new guid based on the filename from the attachment metadata
+	$filename = basename($meta['orig_file']);
+	// retrieve any posts that link the image
+	global $wpdb;
+	$table_name = $wpdb->prefix . "posts";
+	$esql = "SELECT ID, post_content FROM $table_name WHERE post_content LIKE '%$filename%'";
+	$es = mysql_query($esql);
+	echo "<br>";
+	print_r ($es);
+	echo "<br>";
+	// while there are posts to process
+//	while($rows = mysql_fetch_assoc($es)) {
+		// replace all occurences of the old guid with the new guid
+//		$post_content = addslashes(str_replace($old_guid, $guid, $rows['post_content']));
+		// send the updated content back to the database
+	}
 	if (!empty($meta['orig_file'])) {
 		// get the filepath from the metadata
 		$file_path = $meta['orig_file'];
@@ -1529,7 +1545,6 @@ function ewww_image_optimizer_update_attachment($meta, $ID) {
 	$es = mysql_query($esql);
 	// while there are posts to process
 	while($rows = mysql_fetch_assoc($es)) {
-		//$post_content = $rows["post_content"];
 		// replace all occurences of the old guid with the new guid
 		$post_content = addslashes(str_replace($old_guid, $guid, $rows['post_content']));
 		// send the updated content back to the database
@@ -1549,7 +1564,6 @@ function ewww_image_optimizer_update_attachment($meta, $ID) {
 				$ers = mysql_query($ersql);
 				// while there are posts to process
 				while($rows = mysql_fetch_assoc($ers)) {
-					//$post_content = $rows["post_content"];
 					// replace all occurences of the old guid with the new guid
 					$post_content = addslashes(str_replace($old_sguid, $sguid, $rows['post_content']));
 					// send the updated content back to the database
