@@ -135,6 +135,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * revamped settings page to combine version info, optimizer status, and installation options
 * binaries for Mac OS X added: gifsicle, optipng, and pngout on Mac OS X
 * images are re-optimized when you use the WP Image Editor (but never converted)
+* fixed: unsupported files have empty path stored in meta
+* fixed: files with empty paths throw PHP notices in Media Library (DEBUG mode only)
+* when a converted attachment is deleted from wordpress, original images are also cleaned up
 
 = 1.2.2 =
 * fixed: uninitialized variables

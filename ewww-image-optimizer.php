@@ -29,7 +29,6 @@ define('EWWW_IMAGE_OPTIMIZER_TOOL_PATH', WP_CONTENT_DIR . '/ewww/');
  * Hooks
  */
 add_filter('wp_generate_attachment_metadata', 'ewww_image_optimizer_resize_from_meta_data', 10, 2);
-// TODO: delete 'originals' when an image is deleted using the delete_attachment action
 add_filter('manage_media_columns', 'ewww_image_optimizer_columns');
 // variable for plugin settings link
 $plugin = plugin_basename ( __FILE__ );
@@ -40,6 +39,7 @@ add_action('manage_media_custom_column', 'ewww_image_optimizer_custom_column', 1
 add_action('admin_init', 'ewww_image_optimizer_admin_init');
 add_action('admin_action_ewww_image_optimizer_manual', 'ewww_image_optimizer_manual');
 add_action('admin_action_ewww_image_optimizer_restore', 'ewww_image_optimizer_restore');
+add_action('delete_attachment', 'ewww_image_optimizer_delete');
 add_action('admin_menu', 'ewww_image_optimizer_admin_menu' );
 add_action('admin_head-upload.php', 'ewww_image_optimizer_add_bulk_actions_via_javascript' ); 
 add_action('admin_action_bulk_optimize', 'ewww_image_optimizer_bulk_action_handler' ); 
@@ -704,6 +704,38 @@ function ewww_image_optimizer_restore() {
 	wp_redirect($sendback);
 	// we are done, nothing to see here
 	exit(0);
+}
+
+// deletes 'orig_file' when an attachment is being deleted
+function ewww_image_optimizer_delete ($id) {
+	$meta = wp_get_attachment_metadata($id);
+	if (!empty($meta['orig_file'])) {
+		// get the filepath from the metadata
+		$file_path = $meta['orig_file'];
+		// retrieve the location of the wordpress upload folder
+		$upload_dir = wp_upload_dir();
+		// retrieve the path of the upload folder
+		$upload_path = trailingslashit( $upload_dir['basedir'] );
+		// WordPress >= 2.6.2: determine the absolute $file_path (http://core.trac.wordpress.org/changeset/8796)
+		// if the wp content folder is not contained in the file path
+		if ( FALSE === strpos($file_path, WP_CONTENT_DIR) ) {
+			// generate the absolute path
+			$file_path =  $upload_path . $file_path;
+		}
+		if (file_exists($file_path))
+			unlink($file_path);
+	}
+	// TODO: make sure originals aren't still in use somewhere
+	// resized versions, so we can continue
+	if (isset($meta['sizes']) ) {
+		// meta sizes don't contain a path, so we calculate one
+		$base_dir = dirname($file_path) . '/';
+		foreach($meta['sizes'] as $size => $data) {
+			if (!empty($data['orig_file']) && file_exists($base_dir . $data['orig_file']))
+				unlink($base_dir . $data['orig_file']);
+		}
+	}
+	return;
 }
 
 /**
@@ -1384,7 +1416,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 	// don't do anything else if the attachment has no metadata
 	if (!isset($meta['file'])) {
-		return $meta;
+//		return $meta;
 	}
 	if (FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_saved_file')) {
 		$gallery_type = 1;
@@ -1613,11 +1645,21 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 	if( $column_name == 'ewww-image-optimizer' ) {
 		// retrieve the metadata
 		$meta = wp_get_attachment_metadata($id);
-			//echo "<!-- \n";
-			//print_r($meta);
-			//echo "\n -->";
+			echo "<!-- \n";
+			print_r($meta);
+			echo "\n -->";
 		// if the filepath isn't set in the metadata
 		if(empty($meta['file'])){
+			if (isset($meta['file'])) {
+				unset($meta['file']);
+				if (strpos($meta['ewww_image_optimizer'], 'Could not find') === 0) {
+					unset($meta['ewww_image_optimizer']);
+				}
+				wp_update_attachment_metadata($id, $meta);
+			}
+			echo "<!-- \n";
+			print_r($meta);
+			echo "\n -->";
 			$msg = '<br>Metadata is missing file path.';
 			print __('Unsupported file type', EWWW_IMAGE_OPTIMIZER_DOMAIN) . $msg;
 			return;
