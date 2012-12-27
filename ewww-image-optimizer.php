@@ -638,7 +638,7 @@ function ewww_image_optimizer_restore() {
 		// generate the absolute path
 		$file_path =  $upload_path . $file_path;
 	}
-	if (isset($meta['converted'])) {
+	if (!empty($meta['converted'])) {
 		if (file_exists($meta['orig_file'])) {
 			// update the filename in the metadata
 			$meta['file'] = $meta['orig_file'];
@@ -708,47 +708,64 @@ function ewww_image_optimizer_restore() {
 
 // deletes 'orig_file' when an attachment is being deleted
 function ewww_image_optimizer_delete ($id) {
-	$meta = wp_get_attachment_metadata($id);
-	// construct the new guid based on the filename from the attachment metadata
-	$filename = basename($meta['orig_file']);
-	// retrieve any posts that link the image
 	global $wpdb;
-	$table_name = $wpdb->prefix . "posts";
-	$esql = "SELECT ID, post_content FROM $table_name WHERE post_content LIKE '%$filename%'";
-	$es = mysql_query($esql);
-	echo "<br>";
-	print_r ($es);
-	echo "<br>";
-	// while there are posts to process
-//	while($rows = mysql_fetch_assoc($es)) {
-		// replace all occurences of the old guid with the new guid
-//		$post_content = addslashes(str_replace($old_guid, $guid, $rows['post_content']));
-		// send the updated content back to the database
-	}
+	// retrieve the image metadata
+	$meta = wp_get_attachment_metadata($id);
+	// if the attachment has an original file set
 	if (!empty($meta['orig_file'])) {
+		unset($rows);
 		// get the filepath from the metadata
 		$file_path = $meta['orig_file'];
-		// retrieve the location of the wordpress upload folder
-		$upload_dir = wp_upload_dir();
-		// retrieve the path of the upload folder
-		$upload_path = trailingslashit( $upload_dir['basedir'] );
-		// WordPress >= 2.6.2: determine the absolute $file_path (http://core.trac.wordpress.org/changeset/8796)
-		// if the wp content folder is not contained in the file path
-		if ( FALSE === strpos($file_path, WP_CONTENT_DIR) ) {
-			// generate the absolute path
-			$file_path =  $upload_path . $file_path;
-		}
-		if (file_exists($file_path))
+		// get the filename
+		$filename = basename($file_path);
+		// retrieve any posts that link the original image
+		$table_name = $wpdb->prefix . "posts";
+		$esql = "SELECT ID, post_content FROM $table_name WHERE post_content LIKE '%$filename%'";
+		$es = mysql_query($esql);
+		$rows = mysql_fetch_assoc($es);
+		// if the original file still exists and no posts contain links to the image
+		if (file_exists($file_path) && empty($rows))
 			unlink($file_path);
 	}
-	// TODO: make sure originals aren't still in use somewhere
 	// resized versions, so we can continue
 	if (isset($meta['sizes']) ) {
-		// meta sizes don't contain a path, so we calculate one
+		// meta sizes don't contain a path, so we derive one
+		// if the full-size didn't have an original image, so $file_path isn't set
+		if(empty($file_path)) {
+			// get the filepath from the metadata
+			$file_path = $meta['file'];
+			// retrieve the location of the wordpress upload folder
+			$upload_dir = wp_upload_dir();
+			// retrieve the path of the upload folder
+			$upload_path = trailingslashit( $upload_dir['basedir'] );
+			// WordPress >= 2.6.2: determine the absolute $file_path (http://core.trac.wordpress.org/changeset/8796)
+			// if the wp content folder is not contained in the file path
+			if ( FALSE === strpos($file_path, WP_CONTENT_DIR) ) {
+				// don't store absolute paths
+				$store_absolute_path = false;
+				// generate the absolute path
+				$file_path =  $upload_path . $file_path;
+			}
+		}
+		// one way or another, $file_path is now set, and we can get the base folder name
 		$base_dir = dirname($file_path) . '/';
+		// check each resized version
 		foreach($meta['sizes'] as $size => $data) {
-			if (!empty($data['orig_file']) && file_exists($base_dir . $data['orig_file']))
-				unlink($base_dir . $data['orig_file']);
+			// if the original resize is set, and still exists
+			if (!empty($data['orig_file']) && file_exists($base_dir . $data['orig_file'])) {
+				unset($srows);
+				// retrieve the filename from the metadata
+				$filename = $data['orig_file'];
+				// retrieve any posts that link the image
+				$table_name = $wpdb->prefix . "posts";
+				$esql = "SELECT ID, post_content FROM $table_name WHERE post_content LIKE '%$filename%'";
+				$es = mysql_query($esql);
+				$srows = mysql_fetch_assoc($es);
+				// if there are no posts containing links to the original, delete it
+				if(empty($srows)) {
+					unlink($base_dir . $data['orig_file']);
+				}
+			}
 		}
 	}
 	return;
@@ -1659,9 +1676,9 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 	if( $column_name == 'ewww-image-optimizer' ) {
 		// retrieve the metadata
 		$meta = wp_get_attachment_metadata($id);
-			echo "<!-- \n";
-			print_r($meta);
-			echo "\n -->";
+		//	echo "<!-- \n";
+		//	print_r($meta);
+		//	echo "\n -->";
 		// if the filepath isn't set in the metadata
 		if(empty($meta['file'])){
 			if (isset($meta['file'])) {
@@ -1671,9 +1688,9 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 				}
 				wp_update_attachment_metadata($id, $meta);
 			}
-			echo "<!-- \n";
-			print_r($meta);
-			echo "\n -->";
+		//	echo "<!-- \n";
+		//	print_r($meta);
+		//	echo "\n -->";
 			$msg = '<br>Metadata is missing file path.';
 			print __('Unsupported file type', EWWW_IMAGE_OPTIMIZER_DOMAIN) . $msg;
 			return;
@@ -1755,8 +1772,8 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 				$id,
 				__('Re-optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 			$restorable = false;
-			if (isset($meta['converted'])) {
-				if (file_exists($meta['orig_file'])) {
+			if (!empty($meta['converted'])) {
+				if (!empty($meta['orig_file']) && file_exists($meta['orig_file'])) {
 					$restorable = true;
 				}
 			}
@@ -1764,8 +1781,8 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 				// meta sizes don't contain a path, so we calculate one
 				$base_dir = dirname($file_path) . '/';
 				foreach($meta['sizes'] as $size => $data) {
-					if (isset($data['converted'])) {
-						if (file_exists($base_dir . $data['orig_file'])) {
+					if (!empty($data['converted'])) {
+						if (!empty($data['orig_file']) && file_exists($base_dir . $data['orig_file'])) {
 							$restorable = true;
 						}
 					}		
