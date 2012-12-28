@@ -3,7 +3,7 @@ Contributors: nosilver4u
 Tags: images, image, attachments, attachment
 Requires at least: 2.9
 Tested up to: 3.4.2
-Stable tag: 1.2.2
+Stable tag: 1.3.0
 License: GPLv3
 
 Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
@@ -132,9 +132,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * NextGEN and FlAGallery functions only run when the associated gallery plugin is active
 * turn off page compression for bulk operations to avoid output buffering
 * added status messages when attempting automatic installation of jpegtran or pngout
-* NEW version of gifsicle bundled potentially produces better optimized GIFs
+* NEW version of bundled gifsicle can produce better-optimized GIFs
 * revamped settings page to combine version info, optimizer status, and installation options
-* binaries for Mac OS X added: gifsicle, optipng, and pngout on Mac OS X
+* binaries for Mac OS X available: gifsicle, optipng, and pngout
 * images are re-optimized when you use the WP Image Editor (but never converted)
 * fixed: unsupported files have empty path stored in meta
 * fixed: files with empty paths throw PHP notices in Media Library (DEBUG mode only)
@@ -232,7 +232,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 == Upgrade Notice ==
 
 = 1.3.0 =
-Removed path options, and moved optimizers to wp-content/ewww. Requires write permissions on the wp-content folder. Custom compiled binaries should automatically be moved to the wp-content/ewww folder also.
+Removed path options, moved optimizers to wp-content/ewww. Requires write permissions on the wp-content folder. Custom compiled binaries should automatically be moved to the wp-content/ewww folder also.
 
 = 1.2.1 =
 SECURITY: bundled optipng is 0.7.4 to address a vulnerability. Fixed invalid missing tools warning. Added conversion operations gif2png, png2jpg, and jpg2png. Setting paths manually will be disabled in a future release, as the plugin now automatically looks in the plugin folder.
