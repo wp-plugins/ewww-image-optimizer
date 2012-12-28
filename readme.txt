@@ -25,7 +25,7 @@ EWWW Image Optimizer calls optimization utilities directly which is better suite
 1. **Less bandwidth usage.** Optimizing your images can save you hundreds of KB per image, which means significantly less bandwidth usage.
 1. **Super fast.** Because it runs on your own server, you don’t have to wait for a third party service to receive, process, and return your images. You can optimize hundreds of images in just a few minutes. PNG files take the longest, but you can adjust the settings for your situation.
 1. **Better PNG optimization.** YOu can use pngout and optipng in conjunction.
-1. **Root access not needed** Pre-compiled binaries are made available to install directly within the plugin folder. 
+1. **Root access not needed** Pre-compiled binaries are made available to install directly within the Wordpress folder. 
 
 = NextGEN Integration =
 
@@ -34,7 +34,7 @@ NOTE: Does not optimize thumbnails on initial upload, must re-optimize images to
 
 = GRAND Flash Album Gallery Integration =
 
-Features optimization on upload capability, and bulk optimizing. The Bulk Optimize function is located near the bottom of the FlAGallery menu, and will optimize all images in all galleries.
+Features optimization on upload capability, re-optimization, and bulk optimizing. The Bulk Optimize function is located near the bottom of the FlAGallery menu, and will optimize all images in all galleries.
 
 == Installation ==
 
@@ -47,10 +47,11 @@ Features optimization on upload capability, and bulk optimizing. The Bulk Optimi
 
 = Installing pngout =
 
-Pngout is new in version 1.1.0 and is not enabled by default because it is resource intensive. Optipng is the preferred PNG optimizer if you have resource (CPU) constraints. Pngout is also not open-source for those who care about such things, but is free.
+Pngout is new in version 1.1.0 and is not enabled by default because it is resource intensive. Optipng is the preferred PNG optimizer if you have resource (CPU) constraints. Pngout is also not open-source for those who care about such things, but the command-line version is free.
 
 1. Go to the settings page.
-1. Click one of the links near the middle of the page to install pngout for your server, and the plugin will download the pngout archive, unpack it, and install the version that you chose. If you don't know what architecture your server is, you can stick with the i386 or ask your webhost about it. You can always choose a different version later, and the plugin will simply update the version that is used.
+1. Uncheck the option to disable pngout and Save your settings.
+1. Click the link in the Plugin Status area to install pngout for your server, and the plugin will download the pngout archive, unpack it, and install the appropriate version for your server.
 1. Adjust the pngout level according to your needs. Level 0 gives the best results, but can take up to a minute or more on a single image.
 1. If the one-click install isn't working for you, download the latest version from http://www.jonof.id.au/kenutils and extract the appropriate pngout-static to the ewww tool folder (wordpress/wp-content/ewww/).
 
@@ -67,7 +68,7 @@ Pngout is new in version 1.1.0 and is not enabled by default because it is resou
 
 = Installing jpegtran =
 
-1. Try the one-click install on the settings page, or download it manually and place it in the plugin folder (wordpress/wp-content/ewww/).
+1. Click the link in the Plugin Status area, or download it manually and place it in the plugin folder (wordpress/wp-content/ewww/).
 1. If you own your own server, or have root access, it is part of the libjpeg-turbo-progs on Debian/Ubuntu, and likely something similar on rpm distros (Fedora, CentOS, RHEL, SuSE).
 
 = Installing gifsicle =
@@ -104,7 +105,7 @@ Using the command *gifsicle -b -O3 --careful original file*. This is particularl
 
 = Why not just convert GIFs to PNGs then? =
 
-Go for it, version 1.2 makes this possible so long as you have either one of the PNG optimizers available.
+Go for it, version 1.2+ makes this possible so long as you have either one of the PNG optimizers available.
 
 = I want to know more about image optimization, and why you chose these options/tools. =
 

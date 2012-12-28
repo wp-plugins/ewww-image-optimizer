@@ -1,6 +1,6 @@
 <?php
 /**
- * Integrate Linux image optimizers into WordPress.
+ * Integrate image optimizers into WordPress.
  * @version 1.3.0
  * @package EWWW_Image_Optimizer
  */
@@ -721,6 +721,8 @@ function ewww_image_optimizer_delete ($id) {
 		// retrieve any posts that link the original image
 		$table_name = $wpdb->prefix . "posts";
 		$esql = "SELECT ID, post_content FROM $table_name WHERE post_content LIKE '%$filename%'";
+		//$table_name = $wpdb->prefix . "postmeta";
+		//$esql = "SELECT meta_id, meta_value FROM $table_name WHERE meta_value LIKE '%$filename%' AND post_id <> '$id'";
 		$es = mysql_query($esql);
 		$rows = mysql_fetch_assoc($es);
 		// if the original file still exists and no posts contain links to the image
@@ -1943,7 +1945,7 @@ function ewww_image_optimizer_options () {
 	if (isset($_REQUEST['jpegtran'])) {
 		if ($_REQUEST['jpegtran'] == 'success') { ?>
 			<div id='ewww-image-optimizer-jpegtran-success' class='updated fade'>
-				<p>jpegtran was successfully installed, check the Debug Information for version information.</p>
+				<p>jpegtran was successfully installed, check the Plugin Status area for version information.</p>
 			</div>
 <?php		}
 		if ($_REQUEST['jpegtran'] == 'failed') { ?>
@@ -1958,7 +1960,7 @@ function ewww_image_optimizer_options () {
 	if (isset($_REQUEST['pngout'])) {
 		if ($_REQUEST['pngout'] == 'success') { ?>
 			<div id='ewww-image-optimizer-pngout-success' class='updated fade'>
-				<p>pngout was successfully installed, check the Debug Information for version information.</p>
+				<p>pngout was successfully installed, check the Plugin Status area for version information.</p>
 			</div>
 <?php		}
 		if ($_REQUEST['pngout'] == 'failed') { ?>
