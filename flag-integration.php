@@ -1,17 +1,26 @@
 <?php 
 class ewwwflag {
 	// TODO: add bulk action routine to manage images page
-	// TODO: add bulk action routine to manage galleries page (optimized whole galleries at once, nice...)
+	// TODO: add bulk action routine to manage galleries page (optimize multiple galleries at once, nice...)
 	/* initializes the flagallery integration functions */
 	function ewwwflag() {
 		add_filter('flag_manage_images_columns', array(&$this, 'ewww_manage_images_columns'));
 		add_action('flag_manage_gallery_custom_column', array(&$this, 'ewww_manage_image_custom_column'), 10, 2);
-//		add_action('flag_manage_images_bulkaction', array(&$this, 'ewww_manage_images_bulkaction'));
+		add_action('flag_manage_images_bulkaction', array(&$this, 'ewww_manage_images_bulkaction'));
+		add_action('flag_manage_galleries_bulkaction', array(&$this, 'ewww_manage_galleries_bulkaction'));
+		add_action('flag_manage_post_processor_images', array(&$this, 'ewww_post_processor'));
+		add_action('flag_manage_post_processor_galleries', array(&$this, 'ewww_post_processor'));
 		add_action('flag_thumbnail_created', array(&$this, 'ewww_added_new_image'));
 		add_action('flag_image_resized', array(&$this, 'ewww_added_new_image'));
 //		add_action('flag_added_new_image', array( &$this, 'ewww_added_new_image'));
 		add_action('admin_action_ewww_flag_manual', array(&$this, 'ewww_flag_manual'));
-		add_action('admin_menu', array(&$this, 'ewww_flag_bulk_menu') );
+		add_action('admin_menu', array(&$this, 'ewww_flag_bulk_menu'));
+		add_action('admin_init', array(&$this, 'do_output_buffer'));
+	}
+
+	/* needed to ensure bulk action redirects fire before content is displayed */
+	function do_output_buffer() {
+		ob_start();
 	}
 
 	/* adds the Bulk Optimize page to the menu */
@@ -23,6 +32,49 @@ class ewwwflag {
 	function ewww_manage_images_bulkaction () {
 		echo '<option value="bulk_optimize_images">Bulk Optimize</option>';
 	}
+
+	/* add bulk optimize action to gallery management page */
+	function ewww_manage_galleries_bulkaction () {
+		echo '<option value="bulk_optimize_galleries">Bulk Optimize</option>';
+	}
+// Handles the bulk actions POST
+function ewww_post_processor () {
+	// if there is no requested bulk action, do nothing
+	if (empty($_REQUEST['bulkaction'])) {
+		return;
+	}
+	// if there is no media to optimize, do nothing
+	if (empty($_REQUEST['doaction']) || !is_array($_REQUEST['doaction'])) {
+		return;
+	}
+
+	if ($_REQUEST['page'] == 'manage-images' && $_REQUEST['bulkaction'] == 'bulk_optimize_images') {
+		// check the referring page
+		check_admin_referer('flag_updategallery');
+		// prep the attachment IDs for optimization
+		$ids = implode( ',', array_map( 'intval', $_REQUEST['doaction'] ) );
+		// Can't use wp_nonce_url() as it escapes HTML entities, call the optimizer with the $ids selected
+		wp_redirect( add_query_arg( '_wpnonce', wp_create_nonce( 'ewww-flag-bulk' ), admin_url( 'admin.php?page=flag-bulk-optimize&ids=' . $ids ) ) );
+		exit();
+	}
+
+	if ($_REQUEST['page'] == 'manage-galleries' && $_REQUEST['bulkaction'] == 'bulk_optimize_galleries') {
+		check_admin_referer('flag_bulkgallery');
+		global $flagdb;
+		$ids = '';
+		$id_list = array();
+		foreach ($_REQUEST['doaction'] as $gid) {
+			$gallery_list = $flagdb->get_gallery($gid);
+			foreach ($gallery_list as $image) {
+				$id_list[] = $image->pid;
+			}	
+		}
+		$ids = implode( ',', array_map( 'intval', $id_list ) );
+		// Can't use wp_nonce_url() as it escapes HTML entities, call the optimizer with the $ids selected
+		wp_redirect( add_query_arg( '_wpnonce', wp_create_nonce( 'ewww-flag-bulk' ), admin_url( 'admin.php?page=flag-bulk-optimize&ids=' . $ids ) ) );
+		exit();
+	}
+}
 	/* flag_added_new_image hook */
 	function ewww_added_new_image ($image) {
 //		print_r ($image);
@@ -60,22 +112,29 @@ class ewwwflag {
 	/* function to optimize all images in all galleries */
 	function ewww_flag_bulk() {
 		global $flag;
+		$auto_start = false;
 		$progress_file = ABSPATH . $flag->options['galleryPath'] . "ewww.tmp";
 		$skip_attachments = false;
-		if (isset($_REQUEST['resume'])) {
+		if (!empty($_REQUEST['ids'])) {
+			$images = explode(',', $_REQUEST['ids']);
+			$auto_start = true;
+		} elseif (isset($_REQUEST['resume'])) {
 			$progress_contents = file($progress_file);
 			$last_attachment = $progress_contents[0];
+			$images = unserialize($progress_contents[1]);
 			$skip_attachments = true;
+		} else {
+			global $wpdb;
+			$images = $wpdb->get_col("SELECT pid FROM $wpdb->flagpictures ORDER BY sortorder ASC");
 		}
-		global $wpdb;
-		$images = $wpdb->get_col("SELECT pid FROM $wpdb->flagpictures ORDER BY sortorder ASC");
+		$attach_ser = serialize($images);
 		?>
 		<div class="wrap"><div id="icon-upload" class="icon32"><br /></div><h2>GRAND FlAGallery Bulk Optimize</h2>
 		<?php
 		if ( sizeof($images) < 1 ):
 			echo '<p>You don’t appear to have uploaded any images yet.</p>';
 		else:
-			if ( empty($_POST) ): // instructions page
+			if (empty($_POST) && !$auto_start): // instructions page
 				?>
 				<p>This tool will run all of the images in your Galleries through the Linux image optimization programs.</p>
 				<p>We found <?php echo sizeof($images); ?> images in your media library.</p>
@@ -119,6 +178,7 @@ class ewwwflag {
 					printf( "<strong>%s</strong>&hellip;<br>", esc_html($meta->image->filename) );
 					$file_path = $meta->image->imagePath;
 					file_put_contents($progress_file, "$id");
+					file_put_contents($progress_file, $attach_ser, FILE_APPEND);
 					$fres = ewww_image_optimizer($file_path, 3, false, false);
 					flagdb::update_image_meta($id, array('ewww_image_optimizer' => $fres[1]));
 					printf( "Full size – %s<br>", $fres[1] );

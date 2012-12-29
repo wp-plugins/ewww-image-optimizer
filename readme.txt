@@ -119,6 +119,12 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 == Changelog ==
 
+= 1.3.3 =
+* use finfo functions in PHP 5.3+ instead of deprecated mime_content_type
+* use shell_exec() to make calls to jpegtran more secure and avoid output redirection
+* added bulk action to optimize multiple galleries from the manage galleries page - FlAGallery
+* added bulk action to optimize multiple images from the manage images page - FlAGallery
+
 = 1.3.2 =
 * fixed: forgot to apply gzip fix to NextGEN and FlAGallery
 
@@ -237,7 +243,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 == Upgrade Notice ==
 
-= 1.3.2 =
+= 1.3.0 =
 Removed path options, moved optimizers to wp-content/ewww. Requires write permissions on the wp-content folder. Custom compiled binaries should automatically be moved to the wp-content/ewww folder also.
 
 = 1.2.1 =

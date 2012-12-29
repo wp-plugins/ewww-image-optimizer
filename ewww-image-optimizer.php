@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate image optimizers into WordPress.
- * @version 1.3.2
+ * @version 1.3.3
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -9,7 +9,7 @@ Plugin Name: EWWW Image Optimizer
 Plugin URI: http://www.shanebishop.net/ewww-image-optimizer/
 Description: Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
 Author: Shane Bishop
-Version: 1.3.2
+Version: 1.3.3
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
@@ -87,6 +87,31 @@ function ewww_image_optimizer_notice_tool_install() {
 // If the utitilites are in the content folder, we use that. Otherwise, we retrieve user specified paths or set defaults if all else fails. We also do a basic check to make sure we weren't given a malicious path.
 function ewww_image_optimizer_path_check() {
 //	$start_time = microtime(true);
+/*	if( ini_get('safe_mode') ){
+		$exec_dir = ini_get('safe_mode_exec_dir');
+		$jpt = $exec_dir . 'jpegtran';
+		exec($jpt . ' -v ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'sample.jpg 2>&1', $jpegtran_version); 
+		foreach ($jpegtran_version as $jout) { 
+			if (preg_match('/Independent JPEG Group/', $jout)) { 
+				$jpegtran = $jpt;
+			} 
+		}
+		$opt = $exec_dir . 'optipng';
+		exec($opt . ' -v', $optipng_version); 
+		if (strpos($optipng_version[0], 'OptiPNG version') === 0) {
+			$optipng = $opt;
+		}
+		$ppt = $exec_dir . 'pngout-static';
+		exec("$ppt 2>&1", $pngout_version);
+		if (strpos($pngout_version[0], 'PNGOUT') === 0) {
+			$pngout = $ppt;
+		}
+		$gpt = $exec_dir . 'gifsicle';
+		exec($gpt . ' --version', $gifsicle_version);
+		if (strpos($gifsicle_version[0], 'LCDF Gifsicle') === 0) {
+			$gifsicle = $gpt;
+		}
+	} */
 	// first check for the jpegtran binary in the ewww tool folder
 	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran')) {
 		$jpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran';
@@ -116,7 +141,7 @@ function ewww_image_optimizer_path_check() {
 			}
 		}
 	}
-	// if we still haven't found a usable binary, try a system-install version
+	// if we still haven't found a usable binary, try a system-installed version
 	if (!isset($jpegtran)) {
 		$jpt = 'jpegtran';
 		exec($jpt . ' -v ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'sample.jpg 2>&1', $jpegtran_version); 
@@ -536,7 +561,7 @@ function ewww_image_optimizer_bulk_preview() {
 	// set the location of our temporary status file
 	$progress_file = $upload_dir['basedir'] . "/ewww.tmp";
 	// check if the bulk operation was given any attachment IDs to work with
-	if (isset($_REQUEST['ids'])) {
+	if (!empty($_REQUEST['ids'])) {
 		// retrieve post information correlating to the IDs selected
 		$attachments = get_posts( array(
 			'numberposts' => -1,
@@ -839,8 +864,14 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 		// send back the above message
 		return array($file, $msg, $converted, $original);
 	}
+	// use finfo functions when available (only in PHP 5.3)
+	if (function_exists('finfo_file')) {
+		// create a finfo resource
+		$finfo = finfo_open(FILEINFO_MIME_TYPE);
+		// retrieve the mimetype
+		$type = finfo_file($finfo, $file);
 	// see if we can use the getimagesize function
-	if (function_exists('getimagesize')) {
+	} elseif (function_exists('getimagesize')) {
 		// run getimagesize on the file
 		$type = getimagesize($file);
 		// make sure we have results
@@ -854,7 +885,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 		$type = mime_content_type($file);
 	} else {
 		//otherwise we store an error message since we couldn't get the mime-type
-		$type = 'Missing getimagesize() and mime_content_type() PHP functions';
+		$type = 'Missing finfo_file(), getimagesize() and mime_content_type() PHP functions';
 	}
 	// get the utility paths
 	list ($jpegtran_path, $optipng_path, $gifsicle_path, $pngout_path) = ewww_image_optimizer_path_check();
@@ -1004,15 +1035,21 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					// copy all the metadata
 					$copy_opt = 'all';
 				}
-				// run jpegtran - non-progressive
-				// TODO: push the output into php, to avoid weird hacky stuff (maybe)
-				//exec("$nice $jpegtran_path -copy $copy_opt -optimize $file > $tempfile");
-				$tempdata = shell_exec("$nice $jpegtran_path -copy $copy_opt -optimize $file");
-				file_put_contents($tempfile, $tempdata);
-				// run jpegtran - progressive
-				//exec("$nice $jpegtran_path -copy $copy_opt -optimize -progressive $file > $progfile");
-				$progdata = shell_exec("$nice $jpegtran_path -copy $copy_opt -optimize -progressive $file");
-				file_put_contents($progfile, $progdata);
+				// Check if shell_exec() is disabled
+				$disabled = explode(', ', ini_get('disable_functions'));
+				if(in_array('shell_exec', $disabled)){
+					// run jpegtran - non-progressive
+					exec("$nice $jpegtran_path -copy $copy_opt -optimize $file > $tempfile");
+					// run jpegtran - progressive
+					exec("$nice $jpegtran_path -copy $copy_opt -optimize -progressive $file > $progfile");
+				} else {
+					// run jpegtran - non-progressive
+					$tempdata = shell_exec("$nice $jpegtran_path -copy $copy_opt -optimize $file");
+					file_put_contents($tempfile, $tempdata);
+					// run jpegtran - progressive
+					$progdata = shell_exec("$nice $jpegtran_path -copy $copy_opt -optimize -progressive $file");
+					file_put_contents($progfile, $progdata);
+				}
 				// check the filesize of the non-progressive JPG
 				$non_size = filesize($tempfile);
 				// check the filesize of the progressive JPG
@@ -1715,8 +1752,13 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 		}
 		// initialize $msg
 		$msg = '';
-		// TODO: eventually use finfo when available (only in PHP 5.3)
-		if(function_exists('getimagesize')){
+		// use finfo functions when available (only in PHP 5.3)
+		if (function_exists('finfo_file')) {
+			// create a finfo resource
+			$finfo = finfo_open(FILEINFO_MIME_TYPE);
+			// retrieve the mimetype
+			$type = finfo_file($finfo, $file_path);
+		} elseif(function_exists('getimagesize')){
 			// run getimagesize on the file
 			$type = getimagesize($file_path);
 			// if we were successful
@@ -1729,7 +1771,7 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 			$type = mime_content_type($file_path);
 		} else {
 			$type = false;
-			$msg = '<br>getimagesize() and mime_content_type() PHP functions are missing';
+			$msg = '<br>finfo_file(), getimagesize() and mime_content_type() PHP functions are missing';
 		}
 		// get a human readable filesize
 		$file_size = ewww_image_optimizer_format_bytes(filesize($file_path));
@@ -2058,11 +2100,22 @@ function ewww_image_optimizer_options () {
 			} else {
 				echo 'safe mode: <span style="color: green; font-weight: bolder">Off</span>&emsp;&emsp;';
 			}
+			//echo ini_get('safe_mode_exec_dir') . '<br>';
 			$disabled = explode(', ', ini_get('disable_functions'));
 			if(in_array('exec', $disabled)){
 				echo 'exec(): <span style="color: red; font-weight: bolder">DISABLED</span>&emsp;&emsp;';
 			} else {
 				echo 'exec(): <span style="color: green; font-weight: bolder">OK</span>&emsp;&emsp;';
+			}
+			if(in_array('shell_exec', $disabled)){
+				echo 'shell_exec(): <span style="color: red; font-weight: bolder">DISABLED</span>&emsp;&emsp;';
+			} else {
+				echo 'shell_exec(): <span style="color: green; font-weight: bolder">OK</span>&emsp;&emsp;';
+			}
+			if(function_exists('finfo_file')){
+				echo 'finfo: <span style="color: green; font-weight: bolder">OK</span>&emsp;&emsp;';
+			} else {
+				echo 'finfo: <span style="color: red; font-weight: bolder">MISSING</span>&emsp;&emsp;';
 			}
 			if(function_exists('getimagesize')){
 				echo 'getimagesize(): <span style="color: green; font-weight: bolder">OK</span>&emsp;&emsp;';
