@@ -45,9 +45,6 @@ else:
 			var loopTime=setInterval("currentTime()",100);
 		</script>-->
 		<?php
-		// turn off compression, since it causes unwanted buffering
-		@apache_setenv('no-gzip', 1);
-		@ini_set('zlib.output_compression', 0);
 		// tells php to flush the buffers after every output call
 		ob_implicit_flush(true);
 		// flush the output buffer and turn off buffering

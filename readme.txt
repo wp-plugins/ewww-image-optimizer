@@ -3,7 +3,7 @@ Contributors: nosilver4u
 Tags: images, image, attachments, attachment
 Requires at least: 2.9
 Tested up to: 3.5
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 License: GPLv3
 
 Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
@@ -119,6 +119,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 == Changelog ==
 
+= 1.3.1 =
+* fixed: turning off gzip for Apache broke bulk operations
+
 = 1.3.0 =
 * support for GRAND FlAGallery (flash album gallery)
 * added ability to restore originals after a conversion (we were already storing the original paths in the database)
@@ -231,7 +234,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 == Upgrade Notice ==
 
-= 1.3.0 =
+= 1.3.1 =
 Removed path options, moved optimizers to wp-content/ewww. Requires write permissions on the wp-content folder. Custom compiled binaries should automatically be moved to the wp-content/ewww folder also.
 
 = 1.2.1 =
