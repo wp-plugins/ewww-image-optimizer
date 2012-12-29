@@ -103,9 +103,6 @@ class ewwwflag {
 				$current = 0;
 				$started = time();
 				$total = sizeof($images);
-				// turn off compression, since it causes unwanted buffering
-				@apache_setenv('no-gzip', 1);
-				@ini_set('zlib.output_compression', 0);
 				ob_implicit_flush(true);
 				ob_end_flush();
 				foreach ($images as $id) {
