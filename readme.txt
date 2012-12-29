@@ -119,6 +119,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 == Changelog ==
 
+= 1.3.2 =
+* fixed: forgot to apply gzip fix to NextGEN and FlAGallery
+
 = 1.3.1 =
 * fixed: turning off gzip for Apache broke bulk operations
 
@@ -234,7 +237,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 == Upgrade Notice ==
 
-= 1.3.1 =
+= 1.3.2 =
 Removed path options, moved optimizers to wp-content/ewww. Requires write permissions on the wp-content folder. Custom compiled binaries should automatically be moved to the wp-content/ewww folder also.
 
 = 1.2.1 =

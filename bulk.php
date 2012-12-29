@@ -45,6 +45,7 @@ else:
 			var loopTime=setInterval("currentTime()",100);
 		</script>-->
 		<?php
+		@apache_setenv('deflatebuffersize','100');
 		// tells php to flush the buffers after every output call
 		ob_implicit_flush(true);
 		// flush the output buffer and turn off buffering
