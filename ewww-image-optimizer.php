@@ -9,7 +9,7 @@ Plugin Name: EWWW Image Optimizer
 Plugin URI: http://www.shanebishop.net/ewww-image-optimizer/
 Description: Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
 Author: Shane Bishop
-Version: 1.3.1
+Version: 1.3.2
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
@@ -1006,9 +1006,13 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				}
 				// run jpegtran - non-progressive
 				// TODO: push the output into php, to avoid weird hacky stuff (maybe)
-				exec("$nice $jpegtran_path -copy $copy_opt -optimize $file > $tempfile");
+				//exec("$nice $jpegtran_path -copy $copy_opt -optimize $file > $tempfile");
+				$tempdata = shell_exec("$nice $jpegtran_path -copy $copy_opt -optimize $file");
+				file_put_contents($tempfile, $tempdata);
 				// run jpegtran - progressive
-				exec("$nice $jpegtran_path -copy $copy_opt -optimize -progressive $file > $progfile");
+				//exec("$nice $jpegtran_path -copy $copy_opt -optimize -progressive $file > $progfile");
+				$progdata = shell_exec("$nice $jpegtran_path -copy $copy_opt -optimize -progressive $file");
+				file_put_contents($progfile, $progdata);
 				// check the filesize of the non-progressive JPG
 				$non_size = filesize($tempfile);
 				// check the filesize of the progressive JPG
