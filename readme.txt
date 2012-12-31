@@ -122,8 +122,8 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 = 1.3.3 =
 * use finfo functions in PHP 5.3+ instead of deprecated mime_content_type
 * use shell_exec() to make calls to jpegtran more secure and avoid output redirection
-* added bulk action to optimize multiple galleries from the manage galleries page - FlAGallery
-* added bulk action to optimize multiple images from the manage images page - FlAGallery
+* added bulk action to optimize multiple galleries on the manage galleries page - FlAGallery
+* added bulk action to optimize multiple images on the manage images page - FlAGallery
 
 = 1.3.2 =
 * fixed: forgot to apply gzip fix to NextGEN and FlAGallery

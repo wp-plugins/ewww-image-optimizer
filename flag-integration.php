@@ -1,7 +1,5 @@
 <?php 
 class ewwwflag {
-	// TODO: add bulk action routine to manage images page
-	// TODO: add bulk action routine to manage galleries page (optimize multiple galleries at once, nice...)
 	/* initializes the flagallery integration functions */
 	function ewwwflag() {
 		add_filter('flag_manage_images_columns', array(&$this, 'ewww_manage_images_columns'));
@@ -15,10 +13,11 @@ class ewwwflag {
 //		add_action('flag_added_new_image', array( &$this, 'ewww_added_new_image'));
 		add_action('admin_action_ewww_flag_manual', array(&$this, 'ewww_flag_manual'));
 		add_action('admin_menu', array(&$this, 'ewww_flag_bulk_menu'));
-		add_action('admin_init', array(&$this, 'do_output_buffer'));
+//		add_action('admin_init', array(&$this, 'do_output_buffer'));
 	}
 
 	/* needed to ensure bulk action redirects fire before content is displayed */
+	// not anymore...
 	function do_output_buffer() {
 		ob_start();
 	}
@@ -39,6 +38,7 @@ class ewwwflag {
 	}
 // Handles the bulk actions POST
 function ewww_post_processor () {
+	global $ewwwflag;
 	// if there is no requested bulk action, do nothing
 	if (empty($_REQUEST['bulkaction'])) {
 		return;
@@ -52,27 +52,32 @@ function ewww_post_processor () {
 		// check the referring page
 		check_admin_referer('flag_updategallery');
 		// prep the attachment IDs for optimization
-		$ids = implode( ',', array_map( 'intval', $_REQUEST['doaction'] ) );
+		//$ids = implode( ',', array_map( 'intval', $_REQUEST['doaction'] ) );
+		$ids = array_map( 'intval', $_REQUEST['doaction']);
+		$ewwwflag->ewww_flag_bulk($ids);
 		// Can't use wp_nonce_url() as it escapes HTML entities, call the optimizer with the $ids selected
-		wp_redirect( add_query_arg( '_wpnonce', wp_create_nonce( 'ewww-flag-bulk' ), admin_url( 'admin.php?page=flag-bulk-optimize&ids=' . $ids ) ) );
-		exit();
+		//wp_redirect( add_query_arg( '_wpnonce', wp_create_nonce( 'ewww-flag-bulk' ), admin_url( 'admin.php?page=flag-bulk-optimize&ids=' . $ids ) ) );
+		//exit();
+		return;
 	}
 
 	if ($_REQUEST['page'] == 'manage-galleries' && $_REQUEST['bulkaction'] == 'bulk_optimize_galleries') {
 		check_admin_referer('flag_bulkgallery');
 		global $flagdb;
-		$ids = '';
-		$id_list = array();
+		$ids = array();
+//		$id_list = array();
 		foreach ($_REQUEST['doaction'] as $gid) {
 			$gallery_list = $flagdb->get_gallery($gid);
 			foreach ($gallery_list as $image) {
-				$id_list[] = $image->pid;
+				$ids[] = $image->pid;
 			}	
 		}
-		$ids = implode( ',', array_map( 'intval', $id_list ) );
+		$ewwwflag->ewww_flag_bulk($ids);
+		//$ids = implode( ',', array_map( 'intval', $id_list ) );
 		// Can't use wp_nonce_url() as it escapes HTML entities, call the optimizer with the $ids selected
-		wp_redirect( add_query_arg( '_wpnonce', wp_create_nonce( 'ewww-flag-bulk' ), admin_url( 'admin.php?page=flag-bulk-optimize&ids=' . $ids ) ) );
-		exit();
+//		wp_redirect( add_query_arg( '_wpnonce', wp_create_nonce( 'ewww-flag-bulk' ), admin_url( 'admin.php?page=flag-bulk-optimize&ids=' . $ids ) ) );
+//		exit();
+		return;
 	}
 }
 	/* flag_added_new_image hook */
@@ -109,15 +114,16 @@ function ewww_post_processor () {
 		exit(0);
 	}
 
-	/* function to optimize all images in all galleries */
-	function ewww_flag_bulk() {
+	/* function to bulk optimize images */
+	function ewww_flag_bulk($images = null) {
 		global $flag;
 		$auto_start = false;
 		$progress_file = ABSPATH . $flag->options['galleryPath'] . "ewww.tmp";
 		$skip_attachments = false;
-		if (!empty($_REQUEST['ids'])) {
-			$images = explode(',', $_REQUEST['ids']);
+		if (!empty($images)) {
+//			$images = explode(',', $_REQUEST['ids']);
 			$auto_start = true;
+			//$_REQUEST['_wpnonce'] = wp_create_nonce('ewww-flag-bulk');
 		} elseif (isset($_REQUEST['resume'])) {
 			$progress_contents = file($progress_file);
 			$last_attachment = $progress_contents[0];
@@ -156,7 +162,7 @@ function ewww_post_processor () {
 <?php
 				endif;
 			else: // run the script
-				if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-flag-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
+				if ((!wp_verify_nonce($_REQUEST['_wpnonce'], 'ewww-flag-bulk') || !current_user_can('edit_others_posts')) && !$auto_start) {
 				wp_die( __( 'Cheatin&#8217; eh?' ) );
 				}
 				$current = 0;
@@ -192,7 +198,7 @@ function ewww_post_processor () {
 					}
 				}
 				unlink($progress_file);	
-				echo '<p><b>Finished</b></p></div>';	
+				echo '<p><b>Finished Optimization</b></p></div>';	
 			endif;
 		endif;
 	}
