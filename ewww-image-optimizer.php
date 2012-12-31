@@ -113,6 +113,7 @@ function ewww_image_optimizer_path_check() {
 		}
 	} */
 	// first check for the jpegtran binary in the ewww tool folder
+	$jpegtran = false;
 	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran')) {
 		$jpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran';
 		exec("file $jpt", $jpt_filetype);
@@ -151,11 +152,8 @@ function ewww_image_optimizer_path_check() {
 			}
 		}
 	}
-	// if no usable binaries were found
-	if (!isset($jpegtran)) {
-		$jpegtran = false;
-	}
 	//$optipng = get_option('ewww_image_optimizer_optipng_path');
+	$optipng = false;
 	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng')) {
 		$opt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng';
 		exec("file $opt", $opt_filetype);
@@ -167,7 +165,7 @@ function ewww_image_optimizer_path_check() {
 		}
 	}
 	//} elseif (!preg_match('/^\/[\w\.-\d\/_]+\/optipng$/', $optipng)) {
-	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng-custom') && !isset($optipng)) {
+	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng-custom') && empty($optipng)) {
 		$opt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng-custom';
 		exec("file $opt", $opt_filetype);
 		if (filesize($opt) > 15000 && ((strpos($opt_filetype[0], 'ELF') && strpos($opt_filetype[0], 'executable')) || strpos($opt_filetype[0], 'Mach-O universal binary'))) {
@@ -177,16 +175,15 @@ function ewww_image_optimizer_path_check() {
 			}
 		}
 	}
-	if (!isset($optipng)) {
+	if (empty($optipng)) {
 		$opt = 'optipng';
 		exec($opt . ' -v', $optipng_version); 
 		if (strpos($optipng_version[0], 'OptiPNG version') === 0) {
 			$optipng = $opt;
-		} else {
-			$optipng = false;
 		}
 	}
 	//$gifsicle = get_option('ewww_image_optimizer_gifsicle_path');
+	$gifsicle = false;
 	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle')) {
 		$gpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle';
 		exec("file $gpt", $gpt_filetype);
@@ -208,17 +205,15 @@ function ewww_image_optimizer_path_check() {
 			}
 		}
 	}
-	if (!isset($gifsicle)) {
+	if (empty($gifsicle)) {
 		$gpt = 'gifsicle';
 		exec($gpt . ' --version', $gifsicle_version);
 		if (strpos($gifsicle_version[0], 'LCDF Gifsicle') === 0) {
 			$gifsicle = $gpt;
-		} else {
-			$gifsicle = false;
 		}
 	}
-	// TODO: make pngout un-special, check system paths, and check for the dynamic binary also
-	// pngout is special, we only support it being in the content folder, but we still do validation
+	// pngout is special and has a dynamic and static binary to check
+	$pngout = false;
 	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static')) {
 		$ppt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static';
 		exec("file $ppt", $ppt_filetype);
@@ -238,8 +233,19 @@ function ewww_image_optimizer_path_check() {
 			}
 		}
 	}
-	if (!isset($pngout)) {
-		$pngout = false;
+	if (empty($pngout)) {
+		$ppt = 'pngout-static';
+		exec("$ppt 2>&1", $pngout_version);
+		if (strpos($pngout_version[0], 'PNGOUT') === 0) {
+			$pngout = $ppt;
+		}
+	}
+	if (empty($pngout)) {
+		$ppt = 'pngout';
+		exec("$ppt 2>&1", $pngout_version);
+		if (strpos($pngout_version[0], 'PNGOUT') === 0) {
+			$pngout = $ppt;
+		}
 	}
 //	$elapsed_time = microtime(true) - $start_time;
 //	echo "<br> running path check took: $elapsed_time <br>";
@@ -2137,13 +2143,14 @@ function ewww_image_optimizer_options () {
 		<a href="http://www.lcdf.org/gifsicle/gifsicle-1.68.tar.gz"><b>Download gifsicle source</b></a><br />
 		<a href="http://prdownloads.sourceforge.net/optipng/optipng-0.7.4.tar.gz?download"><b>Download optipng source</b></a><br>
 		<b>Install pngout</b> - <a href="admin.php?action=ewww_image_optimizer_install_pngout">automatically</a> | <a href="http://www.jonof.id.au/kenutils">manually</a> - Click the link below that corresponds to the architecture of your server to automatically install pngout. If in doubt, try the i386 or ask your webhost. Pngout is free closed-source software that can produce drastically reduced filesizes for PNGs, but can be very time consuming to process images<br />
-Detected your architecture to be: <?php echo php_uname('m'); ?> <br />
+Detected your architecture to be: <?php //echo php_uname('m'); ?> <br />
 <a href="admin.php?action=ewww_image_optimizer_install_pngout">automatically</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=athlon">athlon</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=pentium4">pentium4</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=i686">i686</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=x64">64-bit</a>--></p>
 		<form method="post" action="options.php">
 			<?php settings_fields('ewww_image_optimizer_options'); ?>
 			<h3>General Settings</h3>
 			<p>The plugin performs a check to make sure your system has the programs we use for optimization: jpegtran, optipng, pngout, and gifsicle. In some rare cases, these checks may erroneously report that you are missing the required utilities even though you have them installed.</p>
 			<table class="form-table" style="display: inline">
+				<tr><td><label for="ewww_image_optimizer_skip_bundle">Use system paths</label></td><td>><input type="checkbox" id="ewww_image_optimizer_skip_bundle" name="ewww_image_optimizer_skip_bundle" value="true" <?php if (get_option('ewww_image_optimizer_skip_bundle') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
 				<tr><th><label for="ewww_image_optimizer_skip_check">Skip utils check</label></th><td><input type="checkbox" id="ewww_image_optimizer_skip_check" name="ewww_image_optimizer_skip_check" value="true" <?php if (get_option('ewww_image_optimizer_skip_check') == TRUE) { ?>checked="true"<?php } ?> /> <i>*DEPRECATED - please uncheck this and report any errors in the support forum.</i></td></tr>
 				<tr><th><label for="ewww_image_optimizer_disable_jpegtran">disable jpegtran</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_jpegtran" name="ewww_image_optimizer_disable_jpegtran" <?php if (get_option('ewww_image_optimizer_disable_jpegtran') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
 				<tr><th><label for="ewww_image_optimizer_disable_optipng">disable optipng</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_optipng" name="ewww_image_optimizer_disable_optipng" <?php if (get_option('ewww_image_optimizer_disable_optipng') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
