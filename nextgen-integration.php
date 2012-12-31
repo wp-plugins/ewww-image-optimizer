@@ -134,9 +134,6 @@ class ewwwngg {
 					var loopTime=setInterval("currentTime()",100);
 				</script>-->
 				<?php
-				// turn off compression, since it causes unwanted buffering
-				@apache_setenv('no-gzip', 1);
-				@ini_set('zlib.output_compression', 0);
 				// functions to flush HTML output buffers
 				ob_implicit_flush(true);
 				ob_end_flush();

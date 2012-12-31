@@ -1,7 +1,7 @@
 <?php
 /**
- * Integrate Linux image optimizers into WordPress.
- * @version 1.3.0
+ * Integrate image optimizers into WordPress.
+ * @version 1.3.3
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -9,7 +9,7 @@ Plugin Name: EWWW Image Optimizer
 Plugin URI: http://www.shanebishop.net/ewww-image-optimizer/
 Description: Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
 Author: Shane Bishop
-Version: 1.3.0
+Version: 1.3.3
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
@@ -87,6 +87,31 @@ function ewww_image_optimizer_notice_tool_install() {
 // If the utitilites are in the content folder, we use that. Otherwise, we retrieve user specified paths or set defaults if all else fails. We also do a basic check to make sure we weren't given a malicious path.
 function ewww_image_optimizer_path_check() {
 //	$start_time = microtime(true);
+/*	if( ini_get('safe_mode') ){
+		$exec_dir = ini_get('safe_mode_exec_dir');
+		$jpt = $exec_dir . 'jpegtran';
+		exec($jpt . ' -v ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'sample.jpg 2>&1', $jpegtran_version); 
+		foreach ($jpegtran_version as $jout) { 
+			if (preg_match('/Independent JPEG Group/', $jout)) { 
+				$jpegtran = $jpt;
+			} 
+		}
+		$opt = $exec_dir . 'optipng';
+		exec($opt . ' -v', $optipng_version); 
+		if (strpos($optipng_version[0], 'OptiPNG version') === 0) {
+			$optipng = $opt;
+		}
+		$ppt = $exec_dir . 'pngout-static';
+		exec("$ppt 2>&1", $pngout_version);
+		if (strpos($pngout_version[0], 'PNGOUT') === 0) {
+			$pngout = $ppt;
+		}
+		$gpt = $exec_dir . 'gifsicle';
+		exec($gpt . ' --version', $gifsicle_version);
+		if (strpos($gifsicle_version[0], 'LCDF Gifsicle') === 0) {
+			$gifsicle = $gpt;
+		}
+	} */
 	// first check for the jpegtran binary in the ewww tool folder
 	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran')) {
 		$jpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran';
@@ -116,7 +141,7 @@ function ewww_image_optimizer_path_check() {
 			}
 		}
 	}
-	// if we still haven't found a usable binary, try a system-install version
+	// if we still haven't found a usable binary, try a system-installed version
 	if (!isset($jpegtran)) {
 		$jpt = 'jpegtran';
 		exec($jpt . ' -v ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'sample.jpg 2>&1', $jpegtran_version); 
@@ -536,7 +561,7 @@ function ewww_image_optimizer_bulk_preview() {
 	// set the location of our temporary status file
 	$progress_file = $upload_dir['basedir'] . "/ewww.tmp";
 	// check if the bulk operation was given any attachment IDs to work with
-	if (isset($_REQUEST['ids'])) {
+	if (!empty($_REQUEST['ids'])) {
 		// retrieve post information correlating to the IDs selected
 		$attachments = get_posts( array(
 			'numberposts' => -1,
@@ -638,7 +663,7 @@ function ewww_image_optimizer_restore() {
 		// generate the absolute path
 		$file_path =  $upload_path . $file_path;
 	}
-	if (isset($meta['converted'])) {
+	if (!empty($meta['converted'])) {
 		if (file_exists($meta['orig_file'])) {
 			// update the filename in the metadata
 			$meta['file'] = $meta['orig_file'];
@@ -708,47 +733,66 @@ function ewww_image_optimizer_restore() {
 
 // deletes 'orig_file' when an attachment is being deleted
 function ewww_image_optimizer_delete ($id) {
-	$meta = wp_get_attachment_metadata($id);
-	// construct the new guid based on the filename from the attachment metadata
-	$filename = basename($meta['orig_file']);
-	// retrieve any posts that link the image
 	global $wpdb;
-	$table_name = $wpdb->prefix . "posts";
-	$esql = "SELECT ID, post_content FROM $table_name WHERE post_content LIKE '%$filename%'";
-	$es = mysql_query($esql);
-	echo "<br>";
-	print_r ($es);
-	echo "<br>";
-	// while there are posts to process
-//	while($rows = mysql_fetch_assoc($es)) {
-		// replace all occurences of the old guid with the new guid
-//		$post_content = addslashes(str_replace($old_guid, $guid, $rows['post_content']));
-		// send the updated content back to the database
-	}
+	// retrieve the image metadata
+	$meta = wp_get_attachment_metadata($id);
+	// if the attachment has an original file set
 	if (!empty($meta['orig_file'])) {
+		unset($rows);
 		// get the filepath from the metadata
 		$file_path = $meta['orig_file'];
-		// retrieve the location of the wordpress upload folder
-		$upload_dir = wp_upload_dir();
-		// retrieve the path of the upload folder
-		$upload_path = trailingslashit( $upload_dir['basedir'] );
-		// WordPress >= 2.6.2: determine the absolute $file_path (http://core.trac.wordpress.org/changeset/8796)
-		// if the wp content folder is not contained in the file path
-		if ( FALSE === strpos($file_path, WP_CONTENT_DIR) ) {
-			// generate the absolute path
-			$file_path =  $upload_path . $file_path;
-		}
-		if (file_exists($file_path))
+		// get the filename
+		$filename = basename($file_path);
+		// retrieve any posts that link the original image
+		$table_name = $wpdb->prefix . "posts";
+		$esql = "SELECT ID, post_content FROM $table_name WHERE post_content LIKE '%$filename%'";
+		//$table_name = $wpdb->prefix . "postmeta";
+		//$esql = "SELECT meta_id, meta_value FROM $table_name WHERE meta_value LIKE '%$filename%' AND post_id <> '$id'";
+		$es = mysql_query($esql);
+		$rows = mysql_fetch_assoc($es);
+		// if the original file still exists and no posts contain links to the image
+		if (file_exists($file_path) && empty($rows))
 			unlink($file_path);
 	}
-	// TODO: make sure originals aren't still in use somewhere
 	// resized versions, so we can continue
 	if (isset($meta['sizes']) ) {
-		// meta sizes don't contain a path, so we calculate one
+		// meta sizes don't contain a path, so we derive one
+		// if the full-size didn't have an original image, so $file_path isn't set
+		if(empty($file_path)) {
+			// get the filepath from the metadata
+			$file_path = $meta['file'];
+			// retrieve the location of the wordpress upload folder
+			$upload_dir = wp_upload_dir();
+			// retrieve the path of the upload folder
+			$upload_path = trailingslashit( $upload_dir['basedir'] );
+			// WordPress >= 2.6.2: determine the absolute $file_path (http://core.trac.wordpress.org/changeset/8796)
+			// if the wp content folder is not contained in the file path
+			if ( FALSE === strpos($file_path, WP_CONTENT_DIR) ) {
+				// don't store absolute paths
+				$store_absolute_path = false;
+				// generate the absolute path
+				$file_path =  $upload_path . $file_path;
+			}
+		}
+		// one way or another, $file_path is now set, and we can get the base folder name
 		$base_dir = dirname($file_path) . '/';
+		// check each resized version
 		foreach($meta['sizes'] as $size => $data) {
-			if (!empty($data['orig_file']) && file_exists($base_dir . $data['orig_file']))
-				unlink($base_dir . $data['orig_file']);
+			// if the original resize is set, and still exists
+			if (!empty($data['orig_file']) && file_exists($base_dir . $data['orig_file'])) {
+				unset($srows);
+				// retrieve the filename from the metadata
+				$filename = $data['orig_file'];
+				// retrieve any posts that link the image
+				$table_name = $wpdb->prefix . "posts";
+				$esql = "SELECT ID, post_content FROM $table_name WHERE post_content LIKE '%$filename%'";
+				$es = mysql_query($esql);
+				$srows = mysql_fetch_assoc($es);
+				// if there are no posts containing links to the original, delete it
+				if(empty($srows)) {
+					unlink($base_dir . $data['orig_file']);
+				}
+			}
 		}
 	}
 	return;
@@ -820,8 +864,14 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 		// send back the above message
 		return array($file, $msg, $converted, $original);
 	}
+	// use finfo functions when available (only in PHP 5.3)
+	if (function_exists('finfo_file')) {
+		// create a finfo resource
+		$finfo = finfo_open(FILEINFO_MIME_TYPE);
+		// retrieve the mimetype
+		$type = finfo_file($finfo, $file);
 	// see if we can use the getimagesize function
-	if (function_exists('getimagesize')) {
+	} elseif (function_exists('getimagesize')) {
 		// run getimagesize on the file
 		$type = getimagesize($file);
 		// make sure we have results
@@ -835,7 +885,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 		$type = mime_content_type($file);
 	} else {
 		//otherwise we store an error message since we couldn't get the mime-type
-		$type = 'Missing getimagesize() and mime_content_type() PHP functions';
+		$type = 'Missing finfo_file(), getimagesize() and mime_content_type() PHP functions';
 	}
 	// get the utility paths
 	list ($jpegtran_path, $optipng_path, $gifsicle_path, $pngout_path) = ewww_image_optimizer_path_check();
@@ -985,11 +1035,21 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					// copy all the metadata
 					$copy_opt = 'all';
 				}
-				// run jpegtran - non-progressive
-				// TODO: push the output into php, to avoid weird hacky stuff (maybe)
-				exec("$nice $jpegtran_path -copy $copy_opt -optimize $file > $tempfile");
-				// run jpegtran - progressive
-				exec("$nice $jpegtran_path -copy $copy_opt -optimize -progressive $file > $progfile");
+				// Check if shell_exec() is disabled
+				$disabled = explode(', ', ini_get('disable_functions'));
+				if(in_array('shell_exec', $disabled)){
+					// run jpegtran - non-progressive
+					exec("$nice $jpegtran_path -copy $copy_opt -optimize $file > $tempfile");
+					// run jpegtran - progressive
+					exec("$nice $jpegtran_path -copy $copy_opt -optimize -progressive $file > $progfile");
+				} else {
+					// run jpegtran - non-progressive
+					$tempdata = shell_exec("$nice $jpegtran_path -copy $copy_opt -optimize $file");
+					file_put_contents($tempfile, $tempdata);
+					// run jpegtran - progressive
+					$progdata = shell_exec("$nice $jpegtran_path -copy $copy_opt -optimize -progressive $file");
+					file_put_contents($progfile, $progdata);
+				}
 				// check the filesize of the non-progressive JPG
 				$non_size = filesize($tempfile);
 				// check the filesize of the progressive JPG
@@ -1659,9 +1719,9 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 	if( $column_name == 'ewww-image-optimizer' ) {
 		// retrieve the metadata
 		$meta = wp_get_attachment_metadata($id);
-			echo "<!-- \n";
-			print_r($meta);
-			echo "\n -->";
+		//	echo "<!-- \n";
+		//	print_r($meta);
+		//	echo "\n -->";
 		// if the filepath isn't set in the metadata
 		if(empty($meta['file'])){
 			if (isset($meta['file'])) {
@@ -1671,9 +1731,9 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 				}
 				wp_update_attachment_metadata($id, $meta);
 			}
-			echo "<!-- \n";
-			print_r($meta);
-			echo "\n -->";
+		//	echo "<!-- \n";
+		//	print_r($meta);
+		//	echo "\n -->";
 			$msg = '<br>Metadata is missing file path.';
 			print __('Unsupported file type', EWWW_IMAGE_OPTIMIZER_DOMAIN) . $msg;
 			return;
@@ -1692,8 +1752,13 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 		}
 		// initialize $msg
 		$msg = '';
-		// TODO: eventually use finfo when available (only in PHP 5.3)
-		if(function_exists('getimagesize')){
+		// use finfo functions when available (only in PHP 5.3)
+		if (function_exists('finfo_file')) {
+			// create a finfo resource
+			$finfo = finfo_open(FILEINFO_MIME_TYPE);
+			// retrieve the mimetype
+			$type = finfo_file($finfo, $file_path);
+		} elseif(function_exists('getimagesize')){
 			// run getimagesize on the file
 			$type = getimagesize($file_path);
 			// if we were successful
@@ -1706,7 +1771,7 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 			$type = mime_content_type($file_path);
 		} else {
 			$type = false;
-			$msg = '<br>getimagesize() and mime_content_type() PHP functions are missing';
+			$msg = '<br>finfo_file(), getimagesize() and mime_content_type() PHP functions are missing';
 		}
 		// get a human readable filesize
 		$file_size = ewww_image_optimizer_format_bytes(filesize($file_path));
@@ -1755,8 +1820,8 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 				$id,
 				__('Re-optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 			$restorable = false;
-			if (isset($meta['converted'])) {
-				if (file_exists($meta['orig_file'])) {
+			if (!empty($meta['converted'])) {
+				if (!empty($meta['orig_file']) && file_exists($meta['orig_file'])) {
 					$restorable = true;
 				}
 			}
@@ -1764,8 +1829,8 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 				// meta sizes don't contain a path, so we calculate one
 				$base_dir = dirname($file_path) . '/';
 				foreach($meta['sizes'] as $size => $data) {
-					if (isset($data['converted'])) {
-						if (file_exists($base_dir . $data['orig_file'])) {
+					if (!empty($data['converted'])) {
+						if (!empty($data['orig_file']) && file_exists($base_dir . $data['orig_file'])) {
 							$restorable = true;
 						}
 					}		
@@ -1926,7 +1991,7 @@ function ewww_image_optimizer_options () {
 	if (isset($_REQUEST['jpegtran'])) {
 		if ($_REQUEST['jpegtran'] == 'success') { ?>
 			<div id='ewww-image-optimizer-jpegtran-success' class='updated fade'>
-				<p>jpegtran was successfully installed, check the Debug Information for version information.</p>
+				<p>jpegtran was successfully installed, check the Plugin Status area for version information.</p>
 			</div>
 <?php		}
 		if ($_REQUEST['jpegtran'] == 'failed') { ?>
@@ -1941,7 +2006,7 @@ function ewww_image_optimizer_options () {
 	if (isset($_REQUEST['pngout'])) {
 		if ($_REQUEST['pngout'] == 'success') { ?>
 			<div id='ewww-image-optimizer-pngout-success' class='updated fade'>
-				<p>pngout was successfully installed, check the Debug Information for version information.</p>
+				<p>pngout was successfully installed, check the Plugin Status area for version information.</p>
 			</div>
 <?php		}
 		if ($_REQUEST['pngout'] == 'failed') { ?>
@@ -2035,11 +2100,22 @@ function ewww_image_optimizer_options () {
 			} else {
 				echo 'safe mode: <span style="color: green; font-weight: bolder">Off</span>&emsp;&emsp;';
 			}
+			//echo ini_get('safe_mode_exec_dir') . '<br>';
 			$disabled = explode(', ', ini_get('disable_functions'));
 			if(in_array('exec', $disabled)){
 				echo 'exec(): <span style="color: red; font-weight: bolder">DISABLED</span>&emsp;&emsp;';
 			} else {
 				echo 'exec(): <span style="color: green; font-weight: bolder">OK</span>&emsp;&emsp;';
+			}
+			if(in_array('shell_exec', $disabled)){
+				echo 'shell_exec(): <span style="color: red; font-weight: bolder">DISABLED</span>&emsp;&emsp;';
+			} else {
+				echo 'shell_exec(): <span style="color: green; font-weight: bolder">OK</span>&emsp;&emsp;';
+			}
+			if(function_exists('finfo_file')){
+				echo 'finfo: <span style="color: green; font-weight: bolder">OK</span>&emsp;&emsp;';
+			} else {
+				echo 'finfo: <span style="color: red; font-weight: bolder">MISSING</span>&emsp;&emsp;';
 			}
 			if(function_exists('getimagesize')){
 				echo 'getimagesize(): <span style="color: green; font-weight: bolder">OK</span>&emsp;&emsp;';
