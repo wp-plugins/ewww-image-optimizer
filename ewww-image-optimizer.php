@@ -217,6 +217,7 @@ function ewww_image_optimizer_path_check() {
 			$gifsicle = false;
 		}
 	}
+	// TODO: make pngout un-special, check system paths, and check for the dynamic binary also
 	// pngout is special, we only support it being in the content folder, but we still do validation
 	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static')) {
 		$ppt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static';
@@ -1988,6 +1989,7 @@ function ewww_image_optimizer_install_pngout () {
 
 // displays the EWWW IO options and provides one-click install for the optimizer utilities
 function ewww_image_optimizer_options () {
+// TODO: add option to use system binaries instead of bundled
 	if (isset($_REQUEST['jpegtran'])) {
 		if ($_REQUEST['jpegtran'] == 'success') { ?>
 			<div id='ewww-image-optimizer-jpegtran-success' class='updated fade'>
