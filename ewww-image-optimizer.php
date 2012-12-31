@@ -81,7 +81,7 @@ function ewww_image_optimizer_notice_os() {
 }   
 
 function ewww_image_optimizer_notice_tool_install() {
-	echo "<div id='ewww-image-optimizer-warning-tool-install' class='error'><p><strong>EWWW Image Optimizer couldn't install the tools in " . htmlentities(EWWW_IMAGE_OPTIMIZER_TOOL_PATH) . ".</strong> Please adjust permissions or create the folder.</p></div>";
+	echo "<div id='ewww-image-optimizer-warning-tool-install' class='error'><p><strong>EWWW Image Optimizer couldn't install the tools in " . htmlentities(EWWW_IMAGE_OPTIMIZER_TOOL_PATH) . ".</strong> Please adjust permissions or create the folder. If you have installed the tools elsewhere on your system, check the option to 'Use system paths'.</p></div>";
 }
 
 // If the utitilites are in the content folder, we use that. Otherwise, we retrieve user specified paths or set defaults if all else fails. We also do a basic check to make sure we weren't given a malicious path.
@@ -113,8 +113,9 @@ function ewww_image_optimizer_path_check() {
 		}
 	} */
 	// first check for the jpegtran binary in the ewww tool folder
+	$use_system = get_option('ewww_image_optimizer_skip_bundle');
 	$jpegtran = false;
-	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran')) {
+	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran') && !$use_system) {
 		$jpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran';
 		exec("file $jpt", $jpt_filetype);
 		// linux md5 first, then mac md5
@@ -130,7 +131,7 @@ function ewww_image_optimizer_path_check() {
 //	} elseif (!preg_match('/^\/[\w\.-\d\/_]+\/jpegtran$/', $jpegtran)) {
 	}
 	// if the standard jpegtran binary didn't work, see if the user custom compiled one and check that
-	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran-custom') && !isset($jpegtran)) {
+	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran-custom') && !$jpegtran && !$use_system) {
 		$jpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran-custom';
 		exec("file $jpt", $jpt_filetype);
 		if (filesize($jpt) > 15000 && ((strpos($jpt_filetype[0], 'ELF') && strpos($jpt_filetype[0], 'executable')) || strpos($jpt_filetype[0], 'Mach-O universal binary'))) {
@@ -143,7 +144,7 @@ function ewww_image_optimizer_path_check() {
 		}
 	}
 	// if we still haven't found a usable binary, try a system-installed version
-	if (!isset($jpegtran)) {
+	if (!$jpegtran) {
 		$jpt = 'jpegtran';
 		exec($jpt . ' -v ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'sample.jpg 2>&1', $jpegtran_version); 
 		foreach ($jpegtran_version as $jout) { 
@@ -154,37 +155,37 @@ function ewww_image_optimizer_path_check() {
 	}
 	//$optipng = get_option('ewww_image_optimizer_optipng_path');
 	$optipng = false;
-	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng')) {
+	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng') && !$use_system) {
 		$opt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng';
 		exec("file $opt", $opt_filetype);
 		if ((md5_file($opt) == '5a0f4e8159bbb9b57948529ed5618795' || md5_file($opt) == '899e3c569080a55bcc5de06a01c8e23a') && ((strpos($opt_filetype[0], 'ELF') && strpos($opt_filetype[0], 'executable')) || strpos($opt_filetype[0], 'Mach-O universal binary'))) {
 			exec($opt . ' -v', $optipng_version); 
-			if (strpos($optipng_version[0], 'OptiPNG version') === 0) {
+			if (strpos($optipng_version[0], 'OptiPNG') === 0) {
 				$optipng = $opt;
 			}
 		}
 	}
 	//} elseif (!preg_match('/^\/[\w\.-\d\/_]+\/optipng$/', $optipng)) {
-	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng-custom') && empty($optipng)) {
+	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng-custom') && !$optipng && !$use_system) {
 		$opt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng-custom';
 		exec("file $opt", $opt_filetype);
 		if (filesize($opt) > 15000 && ((strpos($opt_filetype[0], 'ELF') && strpos($opt_filetype[0], 'executable')) || strpos($opt_filetype[0], 'Mach-O universal binary'))) {
 			exec($opt . ' -v', $optipng_version); 
-			if (strpos($optipng_version[0], 'OptiPNG version') === 0) {
+			if (strpos($optipng_version[0], 'OptiPNG') === 0) {
 				$optipng = $opt;
 			}
 		}
 	}
-	if (empty($optipng)) {
+	if (!$optipng) {
 		$opt = 'optipng';
 		exec($opt . ' -v', $optipng_version); 
-		if (strpos($optipng_version[0], 'OptiPNG version') === 0) {
+		if (!empty($optipng_version) && strpos($optipng_version[0], 'OptiPNG') === 0) {
 			$optipng = $opt;
 		}
 	}
 	//$gifsicle = get_option('ewww_image_optimizer_gifsicle_path');
 	$gifsicle = false;
-	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle')) {
+	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle') && !$use_system) {
 		$gpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle';
 		exec("file $gpt", $gpt_filetype);
 		if ((md5_file($gpt) == '28e1b4770f7d4e760400409ab306ced6' || md5_file($gpt) == '24fc5f33b33c0d11fb2e88f5a93949d0') && ((strpos($gpt_filetype[0], 'ELF') && strpos($gpt_filetype[0], 'executable')) || strpos($gpt_filetype[0], 'Mach-O universal binary'))) {
@@ -195,7 +196,7 @@ function ewww_image_optimizer_path_check() {
 		}
 	}
 	// } elseif (!preg_match('/^\/[\w\.-\d\/_]+\/gifsicle$/', $gifsicle)) {
-	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle-custom') && !isset($gifsicle)) {
+	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle-custom') && !$gifsicle && !$use_system) {
 		$gpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle-custom';
 		exec("file $gpt", $gpt_filetype);
 		if (filesize($gpt) > 15000 && ((strpos($gpt_filetype[0], 'ELF') && strpos($gpt_filetype[0], 'executable')) || strpos($gpt_filetype[0], 'Mach-O universal binary'))) {
@@ -205,16 +206,16 @@ function ewww_image_optimizer_path_check() {
 			}
 		}
 	}
-	if (empty($gifsicle)) {
+	if (!$gifsicle) {
 		$gpt = 'gifsicle';
 		exec($gpt . ' --version', $gifsicle_version);
-		if (strpos($gifsicle_version[0], 'LCDF Gifsicle') === 0) {
+		if (!empty($gifsicle_version) && strpos($gifsicle_version[0], 'LCDF Gifsicle') === 0) {
 			$gifsicle = $gpt;
 		}
 	}
 	// pngout is special and has a dynamic and static binary to check
 	$pngout = false;
-	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static')) {
+	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static') && !$use_system) {
 		$ppt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static';
 		exec("file $ppt", $ppt_filetype);
 		$ppt_md5 = array(
@@ -233,14 +234,14 @@ function ewww_image_optimizer_path_check() {
 			}
 		}
 	}
-	if (empty($pngout)) {
+	if (!$pngout) {
 		$ppt = 'pngout-static';
 		exec("$ppt 2>&1", $pngout_version);
 		if (strpos($pngout_version[0], 'PNGOUT') === 0) {
 			$pngout = $ppt;
 		}
 	}
-	if (empty($pngout)) {
+	if (!$pngout) {
 		$ppt = 'pngout';
 		exec("$ppt 2>&1", $pngout_version);
 		if (strpos($pngout_version[0], 'PNGOUT') === 0) {
@@ -314,7 +315,7 @@ function ewww_image_optimizer_install_tools () {
 		}
 	}
 	if ($toolfail) {
-		echo "<div id='ewww-image-optimizer-warning-tool-install' class='error'><p><strong>EWWW Image Optimizer couldn't install optipng and gifsicle in " . htmlentities(EWWW_IMAGE_OPTIMIZER_TOOL_PATH) . ".</strong> Please adjust permissions or create the folder.</p></div>";
+		echo "<div id='ewww-image-optimizer-warning-tool-install' class='error'><p><strong>EWWW Image Optimizer couldn't install optipng and gifsicle in " . htmlentities(EWWW_IMAGE_OPTIMIZER_TOOL_PATH) . ".</strong> Please adjust permissions or create the folder. If you have installed the tools elsewhere on your system, check the option to 'Use system paths'.</p></div>";
 	}
 	$migrate_fail = false;
 	if ($jpegtran_path = get_option('ewww_image_optimizer_jpegtran_path')) {
@@ -387,7 +388,9 @@ function ewww_image_optimizer_notice_utils() {
 		echo "<div id='ewww-image-optimizer-warning-opt-png' class='error'><p><strong>PHP's Safe Mode is turned on. This plugin cannot operate in safe mode.</strong></p></div>";
 	}
 	// make sure the bundled tools are installed
-	ewww_image_optimizer_install_tools ();
+	if(!get_option('ewww_image_optimizer_skip_bundle')) {
+		ewww_image_optimizer_install_tools ();
+	}
 	// attempt to retrieve values for utility paths, and store them in the appropriate variables
 	list ($jpegtran_path, $optipng_path, $gifsicle_path, $pngout_path) = ewww_image_optimizer_path_check();
 	// store those values back into an array, probably a more efficient way of doing this
@@ -490,6 +493,7 @@ function ewww_image_optimizer_admin_init() {
 	wp_enqueue_script('common');
 	// register all the EWWW IO settings
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_skip_check');
+	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_skip_bundle');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_skip_gifs');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpegtran_copy');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_optipng_level');
@@ -2073,7 +2077,7 @@ function ewww_image_optimizer_options () {
 				echo 'gifsicle: ';
 				exec(EWWW_IMAGE_OPTIMIZER_GIFSICLE . ' --version', $gifsicle_version);
 				if (isset($gifsicle_version[0])) {
-					if (preg_match('/LCDF/', $gifsicle_version[0])) { 
+					if (preg_match('/LCDF Gifsicle/', $gifsicle_version[0])) { 
 						echo '<span style="color: green; font-weight: bolder">OK</span>&emsp;&emsp;version: ' . $gifsicle_version[0] . '<br />'; 
 					} else {
 						echo '<span style="color: red; font-weight: bolder">MISSING</span>&emsp;&emsp;<b>Copy</b> binary from ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' to ' . EWWW_IMAGE_OPTIMIZER_TOOL_PATH . ' or <a href="http://www.lcdf.org/gifsicle/gifsicle-1.68.tar.gz"><b>Download</b> gifsicle source</a><br />'; 
@@ -2150,7 +2154,7 @@ Detected your architecture to be: <?php //echo php_uname('m'); ?> <br />
 			<h3>General Settings</h3>
 			<p>The plugin performs a check to make sure your system has the programs we use for optimization: jpegtran, optipng, pngout, and gifsicle. In some rare cases, these checks may erroneously report that you are missing the required utilities even though you have them installed.</p>
 			<table class="form-table" style="display: inline">
-				<tr><td><label for="ewww_image_optimizer_skip_bundle">Use system paths</label></td><td>><input type="checkbox" id="ewww_image_optimizer_skip_bundle" name="ewww_image_optimizer_skip_bundle" value="true" <?php if (get_option('ewww_image_optimizer_skip_bundle') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
+				<tr><td><label for="ewww_image_optimizer_skip_bundle">Use system paths</label></td><td><input type="checkbox" id="ewww_image_optimizer_skip_bundle" name="ewww_image_optimizer_skip_bundle" value="true" <?php if (get_option('ewww_image_optimizer_skip_bundle') == TRUE) { ?>checked="true"<?php } ?> /> If you have already installed the utilities in a system location, such as /usr/local/bin or /usr/bin, use this to force the plugin to use those versions and skip the auto-installers.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_skip_check">Skip utils check</label></th><td><input type="checkbox" id="ewww_image_optimizer_skip_check" name="ewww_image_optimizer_skip_check" value="true" <?php if (get_option('ewww_image_optimizer_skip_check') == TRUE) { ?>checked="true"<?php } ?> /> <i>*DEPRECATED - please uncheck this and report any errors in the support forum.</i></td></tr>
 				<tr><th><label for="ewww_image_optimizer_disable_jpegtran">disable jpegtran</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_jpegtran" name="ewww_image_optimizer_disable_jpegtran" <?php if (get_option('ewww_image_optimizer_disable_jpegtran') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
 				<tr><th><label for="ewww_image_optimizer_disable_optipng">disable optipng</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_optipng" name="ewww_image_optimizer_disable_optipng" <?php if (get_option('ewww_image_optimizer_disable_optipng') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
