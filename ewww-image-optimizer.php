@@ -431,44 +431,33 @@ function ewww_image_optimizer_notice_utils() {
 	$missing = array();
 	// go through each of the required tools
 	foreach($required as $key => $req){
-		// check the paths with the unix 'which' command
-		//$result = trim(exec('which ' . $req));
 		// if the tool wasn't found, add it to the $missing array if we are supposed to check the tool in question
-		//if($req === false){
-			switch($key) {
-				case 'JPEGTRAN':
-					if (!$skip_jpegtran_check && $req === false) {
-						$missing[] = 'jpegtran';
-					}
-					// also set the appropriate constant to false
-					define('EWWW_IMAGE_OPTIMIZER_' . $key, $jpegtran_path);
-					break; 
-				case 'OPTIPNG':
-					if (!$skip_optipng_check && $req === false) {
-						$missing[] = 'optipng';
-					}
-					// also set the appropriate constant to false
-					define('EWWW_IMAGE_OPTIMIZER_' . $key, $optipng_path);
-					break;
-				case 'GIFSICLE':
-					if (!$skip_gifsicle_check && $req === false) {
-						$missing[] = 'gifsicle';
-					}
-					// also set the appropriate constant to false
-					define('EWWW_IMAGE_OPTIMIZER_' . $key, $gifsicle_path);
-					break;
-				case 'PNGOUT':
-					if (!$skip_pngout_check && $req === false) {
-						$missing[] = 'pngout';
-					}
-					// also set the appropriate constant to false
-					define('EWWW_IMAGE_OPTIMIZER_' . $key, $pngout_path);
-					break;
-			}
-		//} else {
-			// otherwise we set the constant to true
-		//	define('EWWW_IMAGE_OPTIMIZER_' . $key, true);
-		//}
+		switch($key) {
+			case 'JPEGTRAN':
+				if (!$skip_jpegtran_check && $req === false) {
+					$missing[] = 'jpegtran';
+				}
+				define('EWWW_IMAGE_OPTIMIZER_' . $key, $jpegtran_path);
+				break; 
+			case 'OPTIPNG':
+				if (!$skip_optipng_check && $req === false) {
+					$missing[] = 'optipng';
+				}
+				define('EWWW_IMAGE_OPTIMIZER_' . $key, $optipng_path);
+				break;
+			case 'GIFSICLE':
+				if (!$skip_gifsicle_check && $req === false) {
+					$missing[] = 'gifsicle';
+				}
+				define('EWWW_IMAGE_OPTIMIZER_' . $key, $gifsicle_path);
+				break;
+			case 'PNGOUT':
+				if (!$skip_pngout_check && $req === false) {
+					$missing[] = 'pngout';
+				}
+				define('EWWW_IMAGE_OPTIMIZER_' . $key, $pngout_path);
+				break;
+		}
 	}
 	// expand the missing utilities list for use in the error message
 	$msg = implode(', ', $missing);
@@ -2035,22 +2024,19 @@ function ewww_image_optimizer_options () {
 		<p><a href="http://wordpress.org/extend/plugins/ewww-image-optimizer/">Plugin Home Page</a> |
 		<a href="http://wordpress.org/extend/plugins/ewww-image-optimizer/installation/">Installation Instructions</a> | 
 		<a href="http://wordpress.org/support/plugin/ewww-image-optimizer">Plugin Support</a></p>
-		<!--<div id="right_panel" style="float: right">
-		<div id="poll" style="margin: 8px"><script type="text/javascript" charset="utf-8" src="http://static.polldaddy.com/p/6602406.js"></script>
-			<noscript><a href="http://polldaddy.com/poll/6602406/">EWWW IO Feedback</a></noscript></div>
-		</div>-->
-		<div id="debug" style="border: 1px solid #ccc; padding: 0 8px; border-radius: 12px;">
+		<div id="status" style="border: 1px solid #ccc; padding: 0 8px; border-radius: 12px;">
 			<h3>Plugin Status</h3>
-			<!--<div style="border-top: 1px solid #e8e8e8; padding: 10px 0">-->
-			<p><?php
-			if (get_option('ewww_image_optimizer_skip_bundle')) {
-				echo 'If updated versions are available below you may either download the newer versions and install them yourself, or uncheck "Use system paths" and install them automatically.';
-			} else {
-				echo 'If updated versions are available below, you may need to enable write permission on the <i>wp-content/ewww</i> folder to use the automatic installs.';
-			}
-			echo '<br />*<i>Updates are optional, but may contain increased optimization or security patches</i></p>';
+			<?php
+			if (get_option('ewww_image_optimizer_skip_bundle')) { ?>
+				<p>If updated versions are available below you may either download the newer versions and install them yourself, or uncheck "Use system paths" and install them automatically.<br />
+			<?php } else { ?>
+				<p>If updated versions are available below, you may need to enable write permission on the <i>wp-content/ewww</i> folder to use the automatic installs.<br />
+			<?php } ?>
+			<i>*Updates are optional, but may contain increased optimization or security patches</i></p>
+			<?php
 			if (!get_option('ewww_image_optimizer_disable_jpegtran')) {
 				echo '<!--computed jpegtran path: ' . EWWW_IMAGE_OPTIMIZER_JPEGTRAN . '<br />-->';
+				echo "\n";
 				echo '<b>jpegtran: </b>';
 				exec(EWWW_IMAGE_OPTIMIZER_JPEGTRAN . ' -v ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'sample.jpg 2>&1', $jpegtran_version); 
 				foreach ($jpegtran_version as $jout) { 
@@ -2066,8 +2052,10 @@ function ewww_image_optimizer_options () {
 					echo '<span style="color: red; font-weight: bolder">MISSING</span>&emsp;<b>Install</b> <a href="admin.php?action=ewww_image_optimizer_install_jpegtran">automatically</a> | <a href="http://jpegclub.org/droppatch.v09.tar.gz">manually</a><br />';
 				}
 			}
+			echo "\n";
 			if (!get_option('ewww_image_optimizer_disable_optipng')) {
 				echo '<!--computed optipng path: ' . EWWW_IMAGE_OPTIMIZER_OPTIPNG . '<br />-->';
+				echo "\n";
 				echo '<b>optipng:</b> '; 
 				exec(EWWW_IMAGE_OPTIMIZER_OPTIPNG . ' -v', $optipng_version);
 				if (!empty($optipng_version) && preg_match('/0.7.4/', $optipng_version[0])) { 
@@ -2078,8 +2066,10 @@ function ewww_image_optimizer_options () {
 					echo '<span style="color: red; font-weight: bolder">MISSING</span>&emsp;<b>Copy</b> binary from ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' to ' . EWWW_IMAGE_OPTIMIZER_TOOL_PATH . ' or <a href="http://prdownloads.sourceforge.net/optipng/optipng-0.7.4.tar.gz?download"><b>Download</b> optipng source</a><br />'; 
 				}
 			}
+			echo "\n";
 			if (!get_option('ewww_image_optimizer_disable_gifsicle')) {
 				echo '<!--computed gifsicle path: ' . EWWW_IMAGE_OPTIMIZER_GIFSICLE . '<br />-->';
+				echo "\n";
 				echo '<b>gifsicle:</b> ';
 				exec(EWWW_IMAGE_OPTIMIZER_GIFSICLE . ' --version', $gifsicle_version);
 				if (!empty($gifsicle_version) && preg_match('/1.68/', $gifsicle_version[0])) { 
@@ -2090,7 +2080,10 @@ function ewww_image_optimizer_options () {
 					echo '<span style="color: red; font-weight: bolder">MISSING</span>&emsp;<b>Copy</b> binary from ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' to ' . EWWW_IMAGE_OPTIMIZER_TOOL_PATH . ' or <a href="http://www.lcdf.org/gifsicle/gifsicle-1.68.tar.gz"><b>Download</b> gifsicle source</a><br />'; 
 				}
 			}
+			echo "\n";
 			if (!get_option('ewww_image_optimizer_disable_pngout')) {
+				echo '<!--computed gifsicle path: ' . EWWW_IMAGE_OPTIMIZER_GIFSICLE . '<br />-->';
+				echo "\n";
 				echo '<b>pngout:</b> '; 
 				exec(EWWW_IMAGE_OPTIMIZER_PNGOUT . " 2>&1", $pngout_version);
 				if (!empty($pngout_version) && preg_match('/May 30 2012/', $pngout_version[0])) { 
@@ -2101,6 +2094,7 @@ function ewww_image_optimizer_options () {
 					echo '<span style="color: red; font-weight: bolder">MISSING</span>&emsp;<b>Install <a href="admin.php?action=ewww_image_optimizer_install_pngout">automatically</a> | <a href="http://www.jonof.id.au/kenutils">manually</a></b> - Pngout is free closed-source software that can produce drastically reduced filesizes for PNGs, but can be very time consuming to process images<br />'; 
 				}
 			}
+			echo "\n";
 			if (ewww_image_optimizer_gd_support()) {
 				echo 'GD: <span style="color: green; font-weight: bolder">OK';
 			} else {
@@ -2108,8 +2102,9 @@ function ewww_image_optimizer_options () {
 			} ?></span>&emsp;&emsp;
 			Imagemagick 'convert': <?php
 			exec('convert -version', $convert_version);
-			if (strpos($convert_version[0], 'ImageMagick')) { echo '<span style="color: green; font-weight: bolder">OK</span>'; } else { echo '<span style="color: red; font-weight: bolder">MISSING</span>'; } ?><br />
-			<?php if( ini_get('safe_mode') ){
+			if (strpos($convert_version[0], 'ImageMagick')) { echo '<span style="color: green; font-weight: bolder">OK</span>'; } else { echo '<span style="color: red; font-weight: bolder">MISSING</span>'; } 
+			echo "<br />\n";
+			if( ini_get('safe_mode') ){
 				echo 'safe mode: <span style="color: red; font-weight: bolder">On</span>&emsp;&emsp;';
 			} else {
 				echo 'safe mode: <span style="color: green; font-weight: bolder">Off</span>&emsp;&emsp;';
@@ -2142,15 +2137,8 @@ function ewww_image_optimizer_options () {
 				echo 'mime_content_type(): <span style="color: red; font-weight: bolder">MISSING</span><br>';
 			}
 			echo 'Operating System: ' . PHP_OS;
-			?></p><!--</div>-->
+			?></p>
 		</div>
-		<!--<h3>Installation</h3>
-		<p><b>Install jpegtran</b> - <a href="admin.php?action=ewww_image_optimizer_install_jpegtran">automatically</a> | <a href="http://jpegclub.org/droppatch.v09.tar.gz">manually</a><br />
-		<a href="http://www.lcdf.org/gifsicle/gifsicle-1.68.tar.gz"><b>Download gifsicle source</b></a><br />
-		<a href="http://prdownloads.sourceforge.net/optipng/optipng-0.7.4.tar.gz?download"><b>Download optipng source</b></a><br>
-		<b>Install pngout</b> - <a href="admin.php?action=ewww_image_optimizer_install_pngout">automatically</a> | <a href="http://www.jonof.id.au/kenutils">manually</a> - Click the link below that corresponds to the architecture of your server to automatically install pngout. If in doubt, try the i386 or ask your webhost. Pngout is free closed-source software that can produce drastically reduced filesizes for PNGs, but can be very time consuming to process images<br />
-Detected your architecture to be: <?php //echo php_uname('m'); ?> <br />
-<a href="admin.php?action=ewww_image_optimizer_install_pngout">automatically</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=athlon">athlon</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=pentium4">pentium4</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=i686">i686</a> - <a href="admin.php?action=ewww_image_optimizer_install_pngout&arch=x64">64-bit</a>--></p>
 		<form method="post" action="options.php">
 			<?php settings_fields('ewww_image_optimizer_options'); ?>
 			<h3>General Settings</h3>
