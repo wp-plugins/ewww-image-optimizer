@@ -3,7 +3,7 @@ Contributors: nosilver4u
 Tags: images, image, attachments, attachment
 Requires at least: 2.9
 Tested up to: 3.5
-Stable tag: 1.3.1
+Stable tag: 1.3.4
 License: GPLv3
 
 Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
@@ -123,7 +123,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * fixed optipng check for older versions (0.6.x)
 * look in system paths for pngout and pngout-static
 * added option for ignoring bundled binaries and using binaries located in system paths instead
-* added warnings on options page for out-of-date binaries
+* added notices on options page for out-of-date binaries
 
 = 1.3.3 =
 * use finfo functions in PHP 5.3+ instead of deprecated mime_content_type
