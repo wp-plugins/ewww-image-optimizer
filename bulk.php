@@ -31,7 +31,13 @@ else:
 		// verify that an authorized user has started the optimizer
 		if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
 			wp_die( __( 'Cheatin&#8217; eh?' ) );
-		}
+		} ?>
+			<form method="post" action="">If the bulk optimize is interrupted, press
+				<?php wp_nonce_field( 'ewww-image-optimizer-bulk', '_wpnonce'); ?>
+				<input type="hidden" name="resume" value="1">
+				<button type="submit" class="button-secondary action">resume</button>. If the page is still loading, the bulk action is still running.
+			</form>
+		<?php
 		// initialize $current
 		$current = 0;
 		// retrieve the time when the bulk optimizer starts
