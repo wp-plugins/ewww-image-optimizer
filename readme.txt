@@ -3,7 +3,7 @@ Contributors: nosilver4u
 Tags: images, image, attachments, attachment
 Requires at least: 2.9
 Tested up to: 3.5
-Stable tag: 1.3.4
+Stable tag: 1.3.5
 License: GPLv3
 
 Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
@@ -118,6 +118,10 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 3. Bulk optimization page. You can optimize all your images at once and resume a previous bulk optimization. This is very useful for existing blogs that have lots of images.
 
 == Changelog ==
+
+= 1.3.5 =
+* fixed: resuming a bulk optimize on FlAGallery was broken
+* added resume button when running the bulk optimize operation to make it easier to resume a bulk optimize
 
 = 1.3.4 =
 * fixed optipng check for older versions (0.6.x)

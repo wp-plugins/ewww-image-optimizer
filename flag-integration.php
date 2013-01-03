@@ -126,7 +126,7 @@ function ewww_post_processor () {
 			//$_REQUEST['_wpnonce'] = wp_create_nonce('ewww-flag-bulk');
 		} elseif (isset($_REQUEST['resume'])) {
 			$progress_contents = file($progress_file);
-			$last_attachment = $progress_contents[0];
+			$last_attachment = trim($progress_contents[0]);
 			$images = unserialize($progress_contents[1]);
 			$skip_attachments = true;
 		} else {
@@ -154,9 +154,9 @@ function ewww_post_processor () {
 ?>
 				<p>It appears that a previous bulk optimization was interrupted. Would you like to continue where we left off?</p>
                                         <form method="post" action="">
-                                        <?php wp_nonce_field( 'ewww-flag-bulk', '_wpnonce'); ?>
-                                        <input type="hidden" name="resume" value="1">
-                                        <button type="submit" class="button-secondary action">Resume previous operation.</button>
+                                        	<?php wp_nonce_field( 'ewww-flag-bulk', '_wpnonce'); ?>
+                                        	<input type="hidden" name="resume" value="1">
+                                        	<button type="submit" class="button-secondary action">Resume previous operation.</button>
                                         </form>
 
 <?php
@@ -164,7 +164,13 @@ function ewww_post_processor () {
 			else: // run the script
 				if ((!wp_verify_nonce($_REQUEST['_wpnonce'], 'ewww-flag-bulk') || !current_user_can('edit_others_posts')) && !$auto_start) {
 				wp_die( __( 'Cheatin&#8217; eh?' ) );
-				}
+				} ?>
+				<form method="post" action="">If the bulk optimize is interrupted, press
+					<?php wp_nonce_field( 'ewww-flag-bulk', '_wpnonce'); ?>
+					<input type="hidden" name="resume" value="1">
+					<button type="submit" class="button-secondary action">resume</button>. If the page is still loading, the bulk action is still running.
+				</form>
+				<?php
 				$current = 0;
 				$started = time();
 				$total = sizeof($images);
@@ -180,10 +186,10 @@ function ewww_post_processor () {
 						echo "<p>Skipping $current/$total <br>";
 					} else {
 					echo "<p>Processing $current/$total: ";
-					$meta = new flagMeta( $id );
+					$meta = new flagMeta($id);
 					printf( "<strong>%s</strong>&hellip;<br>", esc_html($meta->image->filename) );
 					$file_path = $meta->image->imagePath;
-					file_put_contents($progress_file, "$id");
+					file_put_contents($progress_file, "$id\n");
 					file_put_contents($progress_file, $attach_ser, FILE_APPEND);
 					$fres = ewww_image_optimizer($file_path, 3, false, false);
 					flagdb::update_image_meta($id, array('ewww_image_optimizer' => $fres[1]));

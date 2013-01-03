@@ -122,7 +122,13 @@ class ewwwngg {
 				// verify some random person isn't running the bulk optimization
 				if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-ngg-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
 				wp_die( __( 'Cheatin&#8217; eh?' ) );
-				}
+				} ?>
+				<form method="post" action="">If the bulk optimize is interrupted, press
+					<?php wp_nonce_field( 'ewww-ngg-bulk', '_wpnonce'); ?>
+					<input type="hidden" name="resume" value="1">
+					<button type="submit" class="button-secondary action">resume</button>. If the page is still loading, the bulk action is still running.
+				</form>
+				<?php
 				// initialize $current, and $started time
 				$current = 0;
 				$started = time();
