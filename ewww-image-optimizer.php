@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate image optimizers into WordPress.
- * @version 1.3.5
+ * @version 1.3.6
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -9,7 +9,7 @@ Plugin Name: EWWW Image Optimizer
 Plugin URI: http://www.shanebishop.net/ewww-image-optimizer/
 Description: Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
 Author: Shane Bishop
-Version: 1.3.5
+Version: 1.3.6
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
@@ -44,7 +44,6 @@ add_action('admin_menu', 'ewww_image_optimizer_admin_menu' );
 add_action('admin_head-upload.php', 'ewww_image_optimizer_add_bulk_actions_via_javascript' ); 
 add_action('admin_action_bulk_optimize', 'ewww_image_optimizer_bulk_action_handler' ); 
 add_action('admin_action_-1', 'ewww_image_optimizer_bulk_action_handler' ); 
-//add_action('admin_print_scripts-media_page_ewww-image-optimizer-bulk', 'ewww_image_optimizer_scripts' );
 add_action('admin_action_ewww_image_optimizer_install_jpegtran', 'ewww_image_optimizer_install_jpegtran');
 add_action('admin_action_ewww_image_optimizer_install_pngout', 'ewww_image_optimizer_install_pngout');
 add_action('admin_action_ewww_image_optimizer_install_optipng', 'ewww_image_optimizer_install_optipng');
@@ -86,32 +85,6 @@ function ewww_image_optimizer_notice_tool_install() {
 
 // If the utitilites are in the content folder, we use that. Otherwise, we retrieve user specified paths or set defaults if all else fails. We also do a basic check to make sure we weren't given a malicious path.
 function ewww_image_optimizer_path_check() {
-//	$start_time = microtime(true);
-/*	if( ini_get('safe_mode') ){
-		$exec_dir = ini_get('safe_mode_exec_dir');
-		$jpt = $exec_dir . 'jpegtran';
-		exec($jpt . ' -v ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'sample.jpg 2>&1', $jpegtran_version); 
-		foreach ($jpegtran_version as $jout) { 
-			if (preg_match('/Independent JPEG Group/', $jout)) { 
-				$jpegtran = $jpt;
-			} 
-		}
-		$opt = $exec_dir . 'optipng';
-		exec($opt . ' -v', $optipng_version); 
-		if (strpos($optipng_version[0], 'OptiPNG version') === 0) {
-			$optipng = $opt;
-		}
-		$ppt = $exec_dir . 'pngout-static';
-		exec("$ppt 2>&1", $pngout_version);
-		if (strpos($pngout_version[0], 'PNGOUT') === 0) {
-			$pngout = $ppt;
-		}
-		$gpt = $exec_dir . 'gifsicle';
-		exec($gpt . ' --version', $gifsicle_version);
-		if (strpos($gifsicle_version[0], 'LCDF Gifsicle') === 0) {
-			$gifsicle = $gpt;
-		}
-	} */
 	// first check for the jpegtran binary in the ewww tool folder
 	$use_system = get_option('ewww_image_optimizer_skip_bundle');
 	$jpegtran = false;
@@ -128,7 +101,6 @@ function ewww_image_optimizer_path_check() {
 			}
 		}
 			
-//	} elseif (!preg_match('/^\/[\w\.-\d\/_]+\/jpegtran$/', $jpegtran)) {
 	}
 	// if the standard jpegtran binary didn't work, see if the user custom compiled one and check that
 	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran-custom') && !$jpegtran && !$use_system) {
@@ -153,7 +125,6 @@ function ewww_image_optimizer_path_check() {
 			}
 		}
 	}
-	//$optipng = get_option('ewww_image_optimizer_optipng_path');
 	$optipng = false;
 	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng') && !$use_system) {
 		$opt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng';
@@ -165,7 +136,6 @@ function ewww_image_optimizer_path_check() {
 			}
 		}
 	}
-	//} elseif (!preg_match('/^\/[\w\.-\d\/_]+\/optipng$/', $optipng)) {
 	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng-custom') && !$optipng && !$use_system) {
 		$opt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng-custom';
 		exec("file $opt", $opt_filetype);
@@ -183,7 +153,6 @@ function ewww_image_optimizer_path_check() {
 			$optipng = $opt;
 		}
 	}
-	//$gifsicle = get_option('ewww_image_optimizer_gifsicle_path');
 	$gifsicle = false;
 	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle') && !$use_system) {
 		$gpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle';
@@ -195,7 +164,6 @@ function ewww_image_optimizer_path_check() {
 			}
 		}
 	}
-	// } elseif (!preg_match('/^\/[\w\.-\d\/_]+\/gifsicle$/', $gifsicle)) {
 	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle-custom') && !$gifsicle && !$use_system) {
 		$gpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle-custom';
 		exec("file $gpt", $gpt_filetype);
@@ -248,8 +216,6 @@ function ewww_image_optimizer_path_check() {
 			$pngout = $ppt;
 		}
 	}
-//	$elapsed_time = microtime(true) - $start_time;
-//	echo "<br> running path check took: $elapsed_time <br>";
 	return array($jpegtran, $optipng, $gifsicle, $pngout);
 }
 
@@ -467,8 +433,8 @@ function ewww_image_optimizer_notice_utils() {
 	}
 
 	// Check if exec is disabled
-	$disabled = explode(', ', ini_get('disable_functions'));
-	if(in_array('exec', $disabled)){
+	$disabled = ini_get('disable_functions');
+	if(preg_match('/[\s,]exec[\s,]/', $disabled)){
 		//display a warning if exec() is disabled, can't run much of anything without it
 		echo "<div id='ewww-image-optimizer-warning-opt-png' class='error'><p><strong>EWWW Image Optimizer requires exec().</strong> Your system administrator has disabled this function.</p></div>";
 	}
@@ -505,12 +471,6 @@ function ewww_image_optimizer_admin_init() {
 	add_option('ewww_image_optimizer_optipng_level', 2);
 	add_option('ewww_image_optimizer_pngout_level', 2);
 }
-
-// load javascript for EWWW IO
-//function ewww_image_optimizer_scripts () {
-	// creates a timer on the bulk optimize page
-	//wp_enqueue_script ('ewwwloadscript', plugins_url('/pageload.js', __FILE__));
-//}	
 
 // adds the bulk optimize and settings page to the admin menu
 function ewww_image_optimizer_admin_menu() {
@@ -746,8 +706,6 @@ function ewww_image_optimizer_delete ($id) {
 		// retrieve any posts that link the original image
 		$table_name = $wpdb->prefix . "posts";
 		$esql = "SELECT ID, post_content FROM $table_name WHERE post_content LIKE '%$filename%'";
-		//$table_name = $wpdb->prefix . "postmeta";
-		//$esql = "SELECT meta_id, meta_value FROM $table_name WHERE meta_value LIKE '%$filename%' AND post_id <> '$id'";
 		$es = mysql_query($esql);
 		$rows = mysql_fetch_assoc($es);
 		// if the original file still exists and no posts contain links to the image
@@ -756,7 +714,6 @@ function ewww_image_optimizer_delete ($id) {
 	}
 	// resized versions, so we can continue
 	if (isset($meta['sizes']) ) {
-		// meta sizes don't contain a path, so we derive one
 		// if the full-size didn't have an original image, so $file_path isn't set
 		if(empty($file_path)) {
 			// get the filepath from the metadata
@@ -826,6 +783,7 @@ function ewww_image_optimizer_update_saved_file ($meta, $ID) {
  * @returns array
  */
 function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
+// TODO: cleanup tool detection a bit, use constants, and check even on conversion
 	// initialize the original filename 
 	$original = $file;
 	// check to see if 'nice' exists
@@ -953,8 +911,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				// otherwise, set it to OFF
 				$convert = false;
 			}
-			// use 'which' to make sure jpegtran is available
-//			$jpegtran_exists = $jpegtran_path;
 			// if jpegtran optimization is disabled
 			if (get_option('ewww_image_optimizer_disable_jpegtran')) {
 				// store an appropriate message in $result
@@ -984,7 +940,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 						if (ewww_image_optimizer_gd_support()) {
 							imagepng(imagecreatefromjpeg($file), $pngfile);
 						} elseif (strpos($convert_version[0], 'ImageMagick')) {
-//						} elseif (trim(exec('which convert'))) {
 							exec("convert $file -strip $pngfile");
 						}
 				// if pngout isn't disabled
@@ -1036,8 +991,8 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					$copy_opt = 'all';
 				}
 				// Check if shell_exec() is disabled
-				$disabled = explode(', ', ini_get('disable_functions'));
-				if(in_array('shell_exec', $disabled)){
+				$disabled = ini_get('disable_functions');
+				if(preg_match('/[\s,]shell_exec[\s,]/', $disabled)){
 					// run jpegtran - non-progressive
 					exec("$nice $jpegtran_path -copy $copy_opt -optimize $file > $tempfile");
 					// run jpegtran - progressive
@@ -1131,10 +1086,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				// turn the conversion process OFF
 				$convert = false;
 			}
-			// use which to see if optipng is installed
-//			$optipng_exists = $optipng_path;
-			// use pngout to see if pngout is installed
-//			$pngout_exists = $pngout_path;
 			// if pngout and optipng are disabled
 			if (get_option('ewww_image_optimizer_disable_optipng') && get_option('ewww_image_optimizer_disable_pngout')) {
 				// tell the user all PNG tools are disabled
@@ -1161,8 +1112,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 			$orig_size = filesize($file);
 			// if conversion is on and the PNG doesn't have transparency or the user set a background color to replace transparency, or this is a resize and the full-size image was converted
 			if (($convert && (!ewww_image_optimizer_png_alpha($file) || ewww_image_optimizer_jpg_background())) || $converted) {
-				// generate the name of the JPG
-				//$jpgfile = substr_replace($file, 'jpg', -3);
 				// if the user set a fill background for transparency
 				if ($background = ewww_image_optimizer_jpg_background()) {
 					// set background color for GD
@@ -1209,7 +1158,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 						imagejpeg($output, $jpgfile, 92);
 					}
 				} elseif (strpos($convert_version[0], 'ImageMagick')) {
-				//} elseif (exec('which convert')) {
 					exec ("convert $background -flatten $cquality $file $jpgfile");
 				} 
 				// retrieve the filesize of the new JPG
@@ -1227,10 +1175,22 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 						// copy all the metadata
 						$copy_opt = 'all';
 					}
-					// run jpegtran - non-progressive
-					exec("$nice $jpegtran_path -copy $copy_opt -optimize $jpgfile > $tempfile");
-					// run jpegtran - progressive
-					exec("$nice $jpegtran_path -copy $copy_opt -optimize -progressive $jpgfile > $progfile");
+					// TODO: make sure we are optimizing properly, hmmm....
+					// Check if shell_exec() is disabled
+					$disabled = ini_get('disable_functions');
+					if(preg_match('/[\s,]shell_exec[\s,]/', $disabled)){
+						// run jpegtran - non-progressive
+						exec("$nice $jpegtran_path -copy $copy_opt -optimize $file > $tempfile");
+						// run jpegtran - progressive
+						exec("$nice $jpegtran_path -copy $copy_opt -optimize -progressive $file > $progfile");
+					} else {
+						// run jpegtran - non-progressive
+						$tempdata = shell_exec("$nice $jpegtran_path -copy $copy_opt -optimize $file");
+						file_put_contents($tempfile, $tempdata);
+						// run jpegtran - progressive
+						$progdata = shell_exec("$nice $jpegtran_path -copy $copy_opt -optimize -progressive $file");
+						file_put_contents($progfile, $progdata);
+					}
 					// check the filesize of the non-progressive JPG
 					$non_size = filesize($tempfile);
 					// check the filesize of the progressive JPG
@@ -1351,9 +1311,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				// turn conversion OFF
 				$convert = false;
 			}
-			// use which to see if gifsicle is installed
-			//$gifsicle_exists = trim(exec('which ' . $gifsicle_path));
-//			$gifsicle_exists = $gifsicle_path;
 			// if gifsicle is disabled
 			if (get_option('ewww_image_optimizer_disable_gifsicle')) {
 				// return an appropriate message
@@ -2110,13 +2067,13 @@ function ewww_image_optimizer_options () {
 				echo 'safe mode: <span style="color: green; font-weight: bolder">Off</span>&emsp;&emsp;';
 			}
 			//echo ini_get('safe_mode_exec_dir') . '<br>';
-			$disabled = explode(', ', ini_get('disable_functions'));
-			if(in_array('exec', $disabled)){
+			$disabled = ini_get('disable_functions');
+			if(preg_match('/[\s,]exec[\s,]/', $disabled)){
 				echo 'exec(): <span style="color: red; font-weight: bolder">DISABLED</span>&emsp;&emsp;';
 			} else {
 				echo 'exec(): <span style="color: green; font-weight: bolder">OK</span>&emsp;&emsp;';
 			}
-			if(in_array('shell_exec', $disabled)){
+			if(preg_match('/[\s,]shell_exec[\s,]/', $disabled)){
 				echo 'shell_exec(): <span style="color: red; font-weight: bolder">DISABLED</span>&emsp;&emsp;';
 			} else {
 				echo 'shell_exec(): <span style="color: green; font-weight: bolder">OK</span>&emsp;&emsp;';

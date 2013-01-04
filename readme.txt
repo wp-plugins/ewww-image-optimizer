@@ -119,6 +119,12 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 == Changelog ==
 
+= 1.3.6 =
+* fixed: servers with gzip still failed on bulk operations, forgot to delete a line I was testing for alternatives
+* fixed: some servers with shell_exec() disabled were not detected due to whitespace issues
+* fixed: shell_exec() was not used in PNGtoJPG conversion
+* small code cleanup
+
 = 1.3.5 =
 * fixed: resuming a bulk optimize on FlAGallery was broken
 * added resume button when running the bulk optimize operation to make it easier to resume a bulk optimize

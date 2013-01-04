@@ -44,14 +44,6 @@ else:
 		$started = time();
 		// find out how many attachments we are going to optimize
 		$total = sizeof($attachments);
-		// start a live javascript timer
-		?>
-		<!--<script type="text/javascript">
-			document.write('Bulk Optimization has taken <span id="endTime">0.0</span> seconds.');
-			var loopTime=setInterval("currentTime()",100);
-		</script>-->
-		<?php
-		@apache_setenv('deflatebuffersize','100');
 		// tells php to flush the buffers after every output call
 		ob_implicit_flush(true);
 		// flush the output buffer and turn off buffering
