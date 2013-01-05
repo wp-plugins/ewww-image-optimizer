@@ -3,7 +3,7 @@ Contributors: nosilver4u
 Tags: images, image, attachments, attachment
 Requires at least: 2.9
 Tested up to: 3.5
-Stable tag: 1.3.5
+Stable tag: 1.3.6
 License: GPLv3
 
 Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
@@ -123,7 +123,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * fixed: servers with gzip still failed on bulk operations, forgot to delete a line I was testing for alternatives
 * fixed: some servers with shell_exec() disabled were not detected due to whitespace issues
 * fixed: shell_exec() was not used in PNGtoJPG conversion
-* small code cleanup
+* fixed: JPGs not optimized during PNGtoJPG conversion
+* allow debug info to be shown via javascript link on settings page
+* code cleanup
 
 = 1.3.5 =
 * fixed: resuming a bulk optimize on FlAGallery was broken

@@ -64,7 +64,6 @@ if('Linux' != PHP_OS && 'Darwin' != PHP_OS) {
 	//Otherwise, we run the function to check for optimization utilities
 	add_action('admin_notices', 'ewww_image_optimizer_notice_utils');
 } 
-
 // need to include the plugin library for the is_plugin_active function (even though it isn't supposed to be necessary in the admin)
 require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 // include the file that loads the nextgen gallery optimization functions
@@ -1175,20 +1174,19 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 						// copy all the metadata
 						$copy_opt = 'all';
 					}
-					// TODO: make sure we are optimizing properly, hmmm....
 					// Check if shell_exec() is disabled
 					$disabled = ini_get('disable_functions');
 					if(preg_match('/[\s,]shell_exec[\s,]/', $disabled)){
 						// run jpegtran - non-progressive
-						exec("$nice $jpegtran_path -copy $copy_opt -optimize $file > $tempfile");
+						exec("$nice $jpegtran_path -copy $copy_opt -optimize $jpgfile > $tempfile");
 						// run jpegtran - progressive
-						exec("$nice $jpegtran_path -copy $copy_opt -optimize -progressive $file > $progfile");
+						exec("$nice $jpegtran_path -copy $copy_opt -optimize -progressive $jpgfile > $progfile");
 					} else {
 						// run jpegtran - non-progressive
-						$tempdata = shell_exec("$nice $jpegtran_path -copy $copy_opt -optimize $file");
+						$tempdata = shell_exec("$nice $jpegtran_path -copy $copy_opt -optimize $jpgfile");
 						file_put_contents($tempfile, $tempdata);
 						// run jpegtran - progressive
-						$progdata = shell_exec("$nice $jpegtran_path -copy $copy_opt -optimize -progressive $file");
+						$progdata = shell_exec("$nice $jpegtran_path -copy $copy_opt -optimize -progressive $jpgfile");
 						file_put_contents($progfile, $progdata);
 					}
 					// check the filesize of the non-progressive JPG
@@ -1688,9 +1686,6 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 				}
 				wp_update_attachment_metadata($id, $meta);
 			}
-		//	echo "<!-- \n";
-		//	print_r($meta);
-		//	echo "\n -->";
 			$msg = '<br>Metadata is missing file path.';
 			print __('Unsupported file type', EWWW_IMAGE_OPTIMIZER_DOMAIN) . $msg;
 			return;
@@ -1707,7 +1702,6 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 			// find the absolute path
 			$file_path = $upload_path . $file_path;
 		}
-		// initialize $msg
 		$msg = '';
 		// use finfo functions when available (only in PHP 5.3)
 		if (function_exists('finfo_file')) {
@@ -1929,7 +1923,6 @@ function ewww_image_optimizer_install_pngout () {
 		rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-darwin/pngout', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static');
 	}
 	chmod(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static', 0755);
-//	list ($jpegtran_path, $optipng_path, $gifsicle_path, $pngout_path) = ewww_image_optimizer_path_check();
 	exec(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static 2>&1', $pngout_version);
 	if (preg_match('/PNGOUT/', $pngout_version[0])) {
 		$sendback = wp_get_referer();
@@ -1980,7 +1973,8 @@ function ewww_image_optimizer_options () {
 		<h2>EWWW Image Optimizer Settings</h2>
 		<p><a href="http://wordpress.org/extend/plugins/ewww-image-optimizer/">Plugin Home Page</a> |
 		<a href="http://wordpress.org/extend/plugins/ewww-image-optimizer/installation/">Installation Instructions</a> | 
-		<a href="http://wordpress.org/support/plugin/ewww-image-optimizer">Plugin Support</a></p>
+		<a href="http://wordpress.org/support/plugin/ewww-image-optimizer">Plugin Support</a> | 
+		<a id="debug" href="#">Debug (see below)</a></p>
 		<div id="status" style="border: 1px solid #ccc; padding: 0 8px; border-radius: 12px;">
 			<h3>Plugin Status</h3>
 			<?php
@@ -1992,7 +1986,6 @@ function ewww_image_optimizer_options () {
 			<i>*Updates are optional, but may contain increased optimization or security patches</i></p>
 			<?php
 			if (!get_option('ewww_image_optimizer_disable_jpegtran')) {
-				echo '<!--computed jpegtran path: ' . EWWW_IMAGE_OPTIMIZER_JPEGTRAN . '<br />-->';
 				echo "\n";
 				echo '<b>jpegtran: </b>';
 				exec(EWWW_IMAGE_OPTIMIZER_JPEGTRAN . ' -v ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'sample.jpg 2>&1', $jpegtran_version); 
@@ -2011,7 +2004,6 @@ function ewww_image_optimizer_options () {
 			}
 			echo "\n";
 			if (!get_option('ewww_image_optimizer_disable_optipng')) {
-				echo '<!--computed optipng path: ' . EWWW_IMAGE_OPTIMIZER_OPTIPNG . '<br />-->';
 				echo "\n";
 				echo '<b>optipng:</b> '; 
 				exec(EWWW_IMAGE_OPTIMIZER_OPTIPNG . ' -v', $optipng_version);
@@ -2025,7 +2017,6 @@ function ewww_image_optimizer_options () {
 			}
 			echo "\n";
 			if (!get_option('ewww_image_optimizer_disable_gifsicle')) {
-				echo '<!--computed gifsicle path: ' . EWWW_IMAGE_OPTIMIZER_GIFSICLE . '<br />-->';
 				echo "\n";
 				echo '<b>gifsicle:</b> ';
 				exec(EWWW_IMAGE_OPTIMIZER_GIFSICLE . ' --version', $gifsicle_version);
@@ -2039,7 +2030,6 @@ function ewww_image_optimizer_options () {
 			}
 			echo "\n";
 			if (!get_option('ewww_image_optimizer_disable_pngout')) {
-				echo '<!--computed gifsicle path: ' . EWWW_IMAGE_OPTIMIZER_GIFSICLE . '<br />-->';
 				echo "\n";
 				echo '<b>pngout:</b> '; 
 				exec(EWWW_IMAGE_OPTIMIZER_PNGOUT . " 2>&1", $pngout_version);
@@ -2074,7 +2064,7 @@ function ewww_image_optimizer_options () {
 				echo 'exec(): <span style="color: green; font-weight: bolder">OK</span>&emsp;&emsp;';
 			}
 			if(preg_match('/[\s,]shell_exec[\s,]/', $disabled)){
-				echo 'shell_exec(): <span style="color: red; font-weight: bolder">DISABLED</span>&emsp;&emsp;';
+				echo 'shell_exec(): <span style="color: orange; font-weight: bolder">DISABLED</span> (optional)&emsp;&emsp;';
 			} else {
 				echo 'shell_exec(): <span style="color: green; font-weight: bolder">OK</span>&emsp;&emsp;';
 			}
@@ -2095,6 +2085,25 @@ function ewww_image_optimizer_options () {
 			}
 			echo 'Operating System: ' . PHP_OS;
 			?></p>
+			<div id="debuginfo" style="display:none; word-wrap: break-word;"><h3>Debug Info</h3><p><?php
+				echo '<b>jpegtran path:</b> ' . EWWW_IMAGE_OPTIMIZER_JPEGTRAN . '<br />';
+				echo '<b>optipng path:</b> ' . EWWW_IMAGE_OPTIMIZER_OPTIPNG . '<br />';
+				echo '<b>gifsicle path:</b> ' . EWWW_IMAGE_OPTIMIZER_GIFSICLE . '<br />';
+				echo '<b>pngout path:</b> ' . EWWW_IMAGE_OPTIMIZER_PNGOUT . '<br />';
+				echo '<b>disabled functions:</b> ' . $disabled . '<br />';
+				$gifsicle_perms = substr(sprintf('%o', fileperms(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle')), -4);
+				$optipng_perms = substr(sprintf('%o', fileperms(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng')), -4);
+				$ewww_perms = substr(sprintf('%o', fileperms(EWWW_IMAGE_OPTIMIZER_TOOL_PATH)), -4);
+				echo '<b>gifsicle permissions:</b> ' . $gifsicle_perms . '<br />';
+				echo '<b>optipng permissions:</b> ' . $optipng_perms . '<br />';
+				echo '<b>wp-content/ewww permissions:</b> ' . $ewww_perms . '<br />';
+				echo '<b>user:</b> ' . exec('whoami') . '<br />';
+			?></p></div>
+<script>
+jQuery("#debug").click(function () {
+  jQuery("#debuginfo").toggle();
+});
+</script>
 		</div>
 		<form method="post" action="options.php">
 			<?php settings_fields('ewww_image_optimizer_options'); ?>
@@ -2129,15 +2138,6 @@ function ewww_image_optimizer_options () {
 				<option value="3"<?php if (get_option('ewww_image_optimizer_pngout_level') == 3) { echo ' selected="selected"'; } ?>>Level 3: Huffman Only (Faster)</option>
 			</select> (default=2) - <i>If you have CPU cycles to spare, go with level 0</i></td></tr>
 			</table>
-			<!--<h3>Path Settings</h3>
-			<p><b>*Deprecated</b>: put the binaries (executables) in this folder instead:<br />
-			<i><?php //echo EWWW_IMAGE_OPTIMIZER_TOOL_PATH; ?></i><br />
-			If you are on shared hosting or do not have root access, you can provide the paths below.</p>
-			<table class="form-table" >
-				<tr><th><label for="ewww_image_optimizer_jpegtran_path">jpegtran path</label></th><td><input type="text" style="width: 400px" id="ewww_image_optimizer_jpegtran_path" name="ewww_image_optimizer_jpegtran_path" value="<?php //echo get_option('ewww_image_optimizer_jpegtran_path'); ?>" /></td></tr>
-				<tr><th><label for="ewww_image_optimizer_optipng_path">optipng path</label></th><td><input type="text" style="width: 400px" id="ewww_image_optimizer_optipng_path" name="ewww_image_optimizer_optipng_path" value="<?php //echo get_option('ewww_image_optimizer_optipng_path'); ?>" /></td></tr>
-				<tr><th><label for="ewww_image_optimizer_gifsicle_path">gifsicle path</label></th><td><input type="text" style="width: 400px" id="ewww_image_optimizer_gifsicle_path" name="ewww_image_optimizer_gifsicle_path" value="<?php //echo get_option('ewww_image_optimizer_gifsicle_path'); ?>" /></td></tr>
-			</table>-->
 			<h3>Conversion Settings</h3>
 			<p><i>Conversion settings do not apply to NextGEN or GRAND FlAGallery.</i><br />
 				<b>NOTE:</b> Converting images does not update any posts that contain those images. You will need to manually update your image urls after you convert any images.</p>
