@@ -119,6 +119,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 == Changelog ==
 
+= 1.3.7 =
+* re-compiled bundled optipng and gifsicle on CentOS 5 for wider compatibility
+
 = 1.3.6 =
 * fixed: servers with gzip still failed on bulk operations, forgot to delete a line I was testing for alternatives
 * fixed: some servers with shell_exec() disabled were not detected due to whitespace issues
