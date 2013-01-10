@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate image optimizers into WordPress.
- * @version 1.3.6
+ * @version 1.3.7
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -9,7 +9,7 @@ Plugin Name: EWWW Image Optimizer
 Plugin URI: http://www.shanebishop.net/ewww-image-optimizer/
 Description: Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
 Author: Shane Bishop
-Version: 1.3.6
+Version: 1.3.7
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
@@ -128,7 +128,7 @@ function ewww_image_optimizer_path_check() {
 	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng') && !$use_system) {
 		$opt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng';
 		exec("file $opt", $opt_filetype);
-		if ((md5_file($opt) == '5a0f4e8159bbb9b57948529ed5618795' || md5_file($opt) == '899e3c569080a55bcc5de06a01c8e23a') && ((strpos($opt_filetype[0], 'ELF') && strpos($opt_filetype[0], 'executable')) || strpos($opt_filetype[0], 'Mach-O universal binary'))) {
+		if ((md5_file($opt) == '4eb91937291ce5038d0c68f5f2edbcfd' || md5_file($opt) == '899e3c569080a55bcc5de06a01c8e23a') && ((strpos($opt_filetype[0], 'ELF') && strpos($opt_filetype[0], 'executable')) || strpos($opt_filetype[0], 'Mach-O universal binary'))) {
 			exec($opt . ' -v', $optipng_version); 
 			if (strpos($optipng_version[0], 'OptiPNG') === 0) {
 				$optipng = $opt;
@@ -156,7 +156,7 @@ function ewww_image_optimizer_path_check() {
 	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle') && !$use_system) {
 		$gpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle';
 		exec("file $gpt", $gpt_filetype);
-		if ((md5_file($gpt) == '28e1b4770f7d4e760400409ab306ced6' || md5_file($gpt) == '24fc5f33b33c0d11fb2e88f5a93949d0') && ((strpos($gpt_filetype[0], 'ELF') && strpos($gpt_filetype[0], 'executable')) || strpos($gpt_filetype[0], 'Mach-O universal binary'))) {
+		if ((md5_file($gpt) == '2384f770d307c42b9c1e53cdc8dd662d' || md5_file($gpt) == '24fc5f33b33c0d11fb2e88f5a93949d0') && ((strpos($gpt_filetype[0], 'ELF') && strpos($gpt_filetype[0], 'executable')) || strpos($gpt_filetype[0], 'Mach-O universal binary'))) {
 			exec($gpt . ' --version', $gifsicle_version);
 			if (strpos($gifsicle_version[0], 'LCDF Gifsicle') === 0) {
 				$gifsicle = $gpt;
