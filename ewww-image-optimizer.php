@@ -931,6 +931,8 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 			$orig_size = filesize($file);
 			// initialize $new_size with the original size
 			$new_size = $orig_size;
+			echo "filename: $file<br>";
+			echo "original size: $orig_size <br>";
 			// if the conversion process is turned ON, or if this is a resize and the full-size was converted
 			if ($convert || $converted) {
 						// retrieve version info for ImageMagick
@@ -996,18 +998,27 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					exec("$nice $jpegtran_path -copy $copy_opt -optimize $file > $tempfile");
 					// run jpegtran - progressive
 					exec("$nice $jpegtran_path -copy $copy_opt -optimize -progressive $file > $progfile");
+					// check the filesize of the non-progressive JPG
+					$non_size = filesize($tempfile);
+					// check the filesize of the progressive JPG
+					$prog_size = filesize($progfile);
 				} else {
 					// run jpegtran - non-progressive
 					$tempdata = shell_exec("$nice $jpegtran_path -copy $copy_opt -optimize $file");
-					file_put_contents($tempfile, $tempdata);
+					$non_size = file_put_contents($tempfile, $tempdata);
 					// run jpegtran - progressive
 					$progdata = shell_exec("$nice $jpegtran_path -copy $copy_opt -optimize -progressive $file");
-					file_put_contents($progfile, $progdata);
+					$prog_size = file_put_contents($progfile, $progdata);
 				}
-				// check the filesize of the non-progressive JPG
-				$non_size = filesize($tempfile);
-				// check the filesize of the progressive JPG
-				$prog_size = filesize($progfile);
+			echo "temp filename: $tempfile<br>";
+			echo "temp size: $non_size <br>";
+			echo "progressive filename: $progfile<br>";
+			echo "prog size: $prog_size <br>";
+				if ($non_size === false || $prog_size === false) {
+					$result = 'Unable to write file';
+				} elseif (!$non_size || !$prog_size) {
+					$result = 'Optimization failed';
+				}
 				// if the progressive file is bigger
 				if ($prog_size > $non_size) {
 					// store the size of the non-progessive JPG
@@ -1055,6 +1066,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				// remove the converted PNG
 				unlink($pngfile);
 			}
+			echo "$result <br>";
 			break;
 		case 'image/png':
 			// png2jpg conversion is turned on, and the image is in the wordpress media library
@@ -2083,7 +2095,7 @@ function ewww_image_optimizer_options () {
 			} else {
 				echo 'mime_content_type(): <span style="color: red; font-weight: bolder">MISSING</span><br>';
 			}
-			echo 'Operating System: ' . PHP_OS;
+			//echo 'Operating System: ' . PHP_OS;
 			?></p>
 			<div id="debuginfo" style="display:none; word-wrap: break-word;"><h3>Debug Info</h3><p><?php
 				echo '<b>jpegtran path:</b> ' . EWWW_IMAGE_OPTIMIZER_JPEGTRAN . '<br />';
@@ -2098,6 +2110,7 @@ function ewww_image_optimizer_options () {
 				echo '<b>optipng permissions:</b> ' . $optipng_perms . '<br />';
 				echo '<b>wp-content/ewww permissions:</b> ' . $ewww_perms . '<br />';
 				echo '<b>user:</b> ' . exec('whoami') . '<br />';
+				echo '<b>Operating environment:</b> ' . php_uname('s') . ' ' . php_uname('r') . ' ' . php_uname('v') . ' ' . php_uname('m');
 			?></p></div>
 <script>
 jQuery("#debug").click(function () {
