@@ -433,7 +433,7 @@ function ewww_image_optimizer_notice_utils() {
 
 	// Check if exec is disabled
 	$disabled = ini_get('disable_functions');
-	if(preg_match('/[\s,]exec[\s,]/', $disabled)){
+	if(preg_match('/[^_]exec/', $disabled)){
 		//display a warning if exec() is disabled, can't run much of anything without it
 		echo "<div id='ewww-image-optimizer-warning-opt-png' class='error'><p><strong>EWWW Image Optimizer requires exec().</strong> Your system administrator has disabled this function.</p></div>";
 	}
@@ -822,7 +822,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 		return array($file, $msg, $converted, $original);
 	}
 	// use finfo functions when available (only in PHP 5.3)
-	if (function_exists('finfo_file')) {
+	if (function_exists('finfo_file') && defined('FILEINFO_MIME_TYPE')) {
 		// create a finfo resource
 		$finfo = finfo_open(FILEINFO_MIME_TYPE);
 		// retrieve the mimetype
@@ -931,8 +931,8 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 			$orig_size = filesize($file);
 			// initialize $new_size with the original size
 			$new_size = $orig_size;
-			echo "filename: $file<br>";
-			echo "original size: $orig_size <br>";
+			//echo "filename: $file<br>";
+			//echo "original size: $orig_size <br>";
 			// if the conversion process is turned ON, or if this is a resize and the full-size was converted
 			if ($convert || $converted) {
 						// retrieve version info for ImageMagick
@@ -993,7 +993,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				}
 				// Check if shell_exec() is disabled
 				$disabled = ini_get('disable_functions');
-				if(preg_match('/[\s,]shell_exec[\s,]/', $disabled)){
+				if(strpos($disabled, 'shell_exec') !== FALSE){
 					// run jpegtran - non-progressive
 					exec("$nice $jpegtran_path -copy $copy_opt -optimize $file > $tempfile");
 					// run jpegtran - progressive
@@ -1010,10 +1010,10 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					$progdata = shell_exec("$nice $jpegtran_path -copy $copy_opt -optimize -progressive $file");
 					$prog_size = file_put_contents($progfile, $progdata);
 				}
-			echo "temp filename: $tempfile<br>";
-			echo "temp size: $non_size <br>";
-			echo "progressive filename: $progfile<br>";
-			echo "prog size: $prog_size <br>";
+			//echo "temp filename: $tempfile<br>";
+			//echo "temp size: $non_size <br>";
+			//echo "progressive filename: $progfile<br>";
+			//echo "prog size: $prog_size <br>";
 				if ($non_size === false || $prog_size === false) {
 					$result = 'Unable to write file';
 				} elseif (!$non_size || !$prog_size) {
@@ -1066,7 +1066,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				// remove the converted PNG
 				unlink($pngfile);
 			}
-			echo "$result <br>";
+			//echo "$result <br>";
 			break;
 		case 'image/png':
 			// png2jpg conversion is turned on, and the image is in the wordpress media library
@@ -1188,7 +1188,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					}
 					// Check if shell_exec() is disabled
 					$disabled = ini_get('disable_functions');
-					if(preg_match('/[\s,]shell_exec[\s,]/', $disabled)){
+					if(strpos($disabled, 'shell_exec') !== FALSE){
 						// run jpegtran - non-progressive
 						exec("$nice $jpegtran_path -copy $copy_opt -optimize $jpgfile > $tempfile");
 						// run jpegtran - progressive
@@ -1716,7 +1716,7 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 		}
 		$msg = '';
 		// use finfo functions when available (only in PHP 5.3)
-		if (function_exists('finfo_file')) {
+		if (function_exists('finfo_file') && defined('FILEINFO_MIME_TYPE')) {
 			// create a finfo resource
 			$finfo = finfo_open(FILEINFO_MIME_TYPE);
 			// retrieve the mimetype
@@ -2054,6 +2054,7 @@ function ewww_image_optimizer_options () {
 				}
 			}
 			echo "\n";
+			echo "<b>Graphics libraries</b> (only used for conversion, not optimization): ";
 			if (ewww_image_optimizer_gd_support()) {
 				echo 'GD: <span style="color: green; font-weight: bolder">OK';
 			} else {
@@ -2063,34 +2064,40 @@ function ewww_image_optimizer_options () {
 			exec('convert -version', $convert_version);
 			if (strpos($convert_version[0], 'ImageMagick')) { echo '<span style="color: green; font-weight: bolder">OK</span>'; } else { echo '<span style="color: red; font-weight: bolder">MISSING</span>'; } 
 			echo "<br />\n";
-			if( ini_get('safe_mode') ){
+			if (ini_get('safe_mode')) {
 				echo 'safe mode: <span style="color: red; font-weight: bolder">On</span>&emsp;&emsp;';
 			} else {
 				echo 'safe mode: <span style="color: green; font-weight: bolder">Off</span>&emsp;&emsp;';
 			}
 			//echo ini_get('safe_mode_exec_dir') . '<br>';
 			$disabled = ini_get('disable_functions');
-			if(preg_match('/[\s,]exec[\s,]/', $disabled)){
+			if (preg_match('/[^_]exec/', $disabled)) {
 				echo 'exec(): <span style="color: red; font-weight: bolder">DISABLED</span>&emsp;&emsp;';
 			} else {
 				echo 'exec(): <span style="color: green; font-weight: bolder">OK</span>&emsp;&emsp;';
 			}
-			if(preg_match('/[\s,]shell_exec[\s,]/', $disabled)){
-				echo 'shell_exec(): <span style="color: orange; font-weight: bolder">DISABLED</span> (optional)&emsp;&emsp;';
+			if(strpos($disabled, 'shell_exec') !== FALSE){
+			//if (preg_match('/[\s,]shell_exec[\s,]/', $disabled)) {
+				echo 'shell_exec(): <span style="color: orange; font-weight: bolder">DISABLED</span> will attempt to use exec() instead&emsp;&emsp;';
 			} else {
 				echo 'shell_exec(): <span style="color: green; font-weight: bolder">OK</span>&emsp;&emsp;';
 			}
-			if(function_exists('finfo_file')){
+			$file_command_version = exec('file -v 2>&1');
+			if (strpos($file_command_version, 'command not found') === FALSE) {
+				echo '<span style="color: red; font-weight: bolder">file command not found on your system</span>';
+			}
+			echo "<br />\n<b>Only need one of these: </b>";
+			if (function_exists('finfo_file') && defined('FILEINFO_MIME_TYPE')) {
 				echo 'finfo: <span style="color: green; font-weight: bolder">OK</span>&emsp;&emsp;';
 			} else {
 				echo 'finfo: <span style="color: red; font-weight: bolder">MISSING</span>&emsp;&emsp;';
 			}
-			if(function_exists('getimagesize')){
+			if (function_exists('getimagesize')) {
 				echo 'getimagesize(): <span style="color: green; font-weight: bolder">OK</span>&emsp;&emsp;';
 			} else {
 				echo 'getimagesize(): <span style="color: red; font-weight: bolder">MISSING</span>&emsp;&emsp;';
 			}
-			if(function_exists('mime_content_type')){
+			if (function_exists('mime_content_type')) {
 				echo 'mime_content_type(): <span style="color: green; font-weight: bolder">OK</span><br>';
 			} else {
 				echo 'mime_content_type(): <span style="color: red; font-weight: bolder">MISSING</span><br>';
