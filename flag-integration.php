@@ -165,11 +165,7 @@ function ewww_post_processor () {
 				if ((!wp_verify_nonce($_REQUEST['_wpnonce'], 'ewww-flag-bulk') || !current_user_can('edit_others_posts')) && !$auto_start) {
 				wp_die( __( 'Cheatin&#8217; eh?' ) );
 				} ?>
-				<form method="post" action="">If the bulk optimize is interrupted, press
-					<?php wp_nonce_field( 'ewww-flag-bulk', '_wpnonce'); ?>
-					<input type="hidden" name="resume" value="1">
-					<button type="submit" class="button-secondary action">resume</button>. If the page is still loading, the bulk action is still running.
-				</form>
+				If the bulk optimize is interrupted, go to the bulk optimize page and press the appropriate button to resume.
 				<?php
 				$current = 0;
 				$started = time();
@@ -222,16 +218,24 @@ function ewww_post_processor () {
 			$status = $meta->get_META( 'ewww_image_optimizer' );
 			$msg = '';
 			$file_path = $meta->image->imagePath;
-			if(function_exists('getimagesize')){
+		        // use finfo functions when available
+			if (function_exists('finfo_file') && defined('FILEINFO_MIME')) {
+				// create a finfo resource
+				$finfo = finfo_open(FILEINFO_MIME);
+				// retrieve the mimetype
+				$type = explode(';', finfo_file($finfo, $file_path));
+				$type = $type[0];
+				finfo_close($finfo);
+			} elseif (function_exists('getimagesize')) {
 				$type = getimagesize($file_path);
 				if(false !== $type){
 					$type = $type['mime'];
 				}
-			} elseif(function_exists('mime_content_type')) {
+			} elseif (function_exists('mime_content_type')) {
 				$type = mime_content_type($file_path);
 			} else {
 				$type = false;
-				$msg = '<br>getimagesize() and mime_content_type() PHP functions are missing';
+				$msg = '<br>missing finfo_file(), getimagesize(), and mime_content_type() PHP functions';
 			}
 			$file_size = ewww_image_optimizer_format_bytes(filesize($file_path));
 

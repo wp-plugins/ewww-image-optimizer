@@ -211,19 +211,27 @@ class ewwwngg {
 			$msg = '';
 			// get the file path of the image
 			$file_path = $meta->image->imagePath;
+		        // use finfo functions when available
+			if (function_exists('finfo_file') && defined('FILEINFO_MIME')) {
+				// create a finfo resource
+				$finfo = finfo_open(FILEINFO_MIME);
+				// retrieve the mimetype
+				$type = explode(';', finfo_file($finfo, $file_path));
+				$type = $type[0];
+				finfo_close($finfo);
 			// use getimagesize to find the mimetype
-			if(function_exists('getimagesize')){
+			} elseif (function_exists('getimagesize')) {
 				$type = getimagesize($file_path);
 				if(false !== $type){
 					$type = $type['mime'];
 				}
 			// try mime_content_type to find the mimetype otherwise
-			} elseif(function_exists('mime_content_type')) {
+			} elseif (function_exists('mime_content_type')) {
 				$type = mime_content_type($file_path);
 			// otherwise tell the user we just can't work under these conditions
 			} else {
 				$type = false;
-				$msg = '<br>getimagesize() and mime_content_type() PHP functions are missing';
+				$msg = '<br>missing finfo_file(), getimagesize() and mime_content_type() PHP functions';
 			}
 			// retrieve the human-readable filesize of the image
 			$file_size = ewww_image_optimizer_format_bytes(filesize($file_path));

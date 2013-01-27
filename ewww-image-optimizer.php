@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate image optimizers into WordPress.
- * @version 1.3.7
+ * @version 1.3.8
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -9,7 +9,7 @@ Plugin Name: EWWW Image Optimizer
 Plugin URI: http://www.shanebishop.net/ewww-image-optimizer/
 Description: Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
 Author: Shane Bishop
-Version: 1.3.7
+Version: 1.3.8
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
@@ -520,7 +520,7 @@ function ewww_image_optimizer_bulk_preview() {
 	// set the location of our temporary status file
 	$progress_file = $upload_dir['basedir'] . "/ewww.tmp";
 	// check if the bulk operation was given any attachment IDs to work with
-	if (!empty($_REQUEST['ids'])) {
+	if (!empty($_REQUEST['ids']) && empty($_REQUEST['resume'])) {
 		// retrieve post information correlating to the IDs selected
 		$attachments = get_posts( array(
 			'numberposts' => -1,
@@ -821,12 +821,14 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 		// send back the above message
 		return array($file, $msg, $converted, $original);
 	}
-	// use finfo functions when available (only in PHP 5.3)
-	if (function_exists('finfo_file') && defined('FILEINFO_MIME_TYPE')) {
+	// use finfo functions when available
+	if (function_exists('finfo_file') && defined('FILEINFO_MIME')) {
 		// create a finfo resource
-		$finfo = finfo_open(FILEINFO_MIME_TYPE);
+		$finfo = finfo_open(FILEINFO_MIME);
 		// retrieve the mimetype
-		$type = finfo_file($finfo, $file);
+		$type = explode(';', finfo_file($finfo, $file));
+		$type = $type[0];
+		finfo_close($finfo);
 	// see if we can use the getimagesize function
 	} elseif (function_exists('getimagesize')) {
 		// run getimagesize on the file
@@ -1715,12 +1717,14 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 			$file_path = $upload_path . $file_path;
 		}
 		$msg = '';
-		// use finfo functions when available (only in PHP 5.3)
-		if (function_exists('finfo_file') && defined('FILEINFO_MIME_TYPE')) {
+		// use finfo functions when available
+		if (function_exists('finfo_file')) {
 			// create a finfo resource
-			$finfo = finfo_open(FILEINFO_MIME_TYPE);
+			$finfo = finfo_open(FILEINFO_MIME);
 			// retrieve the mimetype
-			$type = finfo_file($finfo, $file_path);
+			$type = explode(';', finfo_file($finfo, $file_path));
+			$type = $type[0];
+			finfo_close($finfo);
 		} elseif(function_exists('getimagesize')){
 			// run getimagesize on the file
 			$type = getimagesize($file_path);
@@ -2082,12 +2086,12 @@ function ewww_image_optimizer_options () {
 			} else {
 				echo 'shell_exec(): <span style="color: green; font-weight: bolder">OK</span>&emsp;&emsp;';
 			}
-			$file_command_version = exec('file -v 2>&1');
-			if (strpos($file_command_version, 'command not found') === FALSE) {
+			exec('file -v 2>&1', $file_command_version);
+			if (strpos($file_command_version[0], 'file-') !== 0) {
 				echo '<span style="color: red; font-weight: bolder">file command not found on your system</span>';
 			}
 			echo "<br />\n<b>Only need one of these: </b>";
-			if (function_exists('finfo_file') && defined('FILEINFO_MIME_TYPE')) {
+			if (function_exists('finfo_file')) {
 				echo 'finfo: <span style="color: green; font-weight: bolder">OK</span>&emsp;&emsp;';
 			} else {
 				echo 'finfo: <span style="color: red; font-weight: bolder">MISSING</span>&emsp;&emsp;';

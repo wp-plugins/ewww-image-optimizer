@@ -2,8 +2,8 @@
 Contributors: nosilver4u
 Tags: images, image, attachments, attachment
 Requires at least: 2.9
-Tested up to: 3.5
-Stable tag: 1.3.7
+Tested up to: 3.5.1
+Stable tag: 1.3.8
 License: GPLv3
 
 Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
@@ -83,6 +83,10 @@ Pngout is new in version 1.1.0 and is not enabled by default because it is resou
 
 == Frequently Asked Questions ==
 
+= Does the plugin replace existing images? =
+
+Yes, but only if the optimized version is smaller. The plugin should NEVER create a larger image.
+
 = The bulk optimizer doesn't seem to be working, what can I do? =
 
 First, upgrade to the latest version. Since version 1.0.8, each image is given 50 seconds to complete (which actually doesn't include time used by the optimization utilities). You can also increase the setting max_execution_time in your php.ini file. That said, there are other timeouts with Apache, and possibly other limitations of your webhost. If you've tried everything else, the last thing to look for is large PNG files. In my tests on a shared hosting setup, "large" is anything over 300 KB. You can first try decreasing the PNG optimization level in the settings. If that doesn't work, perhaps you ought to convert that PNG to JPG. Screenshots are often done as PNG files, but that is a poor choice for anything with photographic elements.
@@ -118,6 +122,13 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 3. Bulk optimization page. You can optimize all your images at once and resume a previous bulk optimization. This is very useful for existing blogs that have lots of images.
 
 == Changelog ==
+
+= 1.3.8 =
+* fixed: finfo library doesn't work on PHP versions below 5.3.0 due to missing constant
+* fixed: resume button doesn't resume when the running the bulk action on groups of images
+* shell_exec() and exec() detection is more robust
+* added architecture information and warning if 'file' command is missing on settings page
+* added finfo functionality to nextgen and flagallery
 
 = 1.3.7 =
 * re-compiled bundled optipng and gifsicle on CentOS 5 for wider compatibility
