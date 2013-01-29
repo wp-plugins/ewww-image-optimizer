@@ -50,9 +50,9 @@ add_action('admin_action_ewww_image_optimizer_install_optipng', 'ewww_image_opti
 add_action('admin_action_ewww_image_optimizer_install_gifsicle', 'ewww_image_optimizer_install_gifsicle');
 
 /**
- * Check if this is an unsupported OS (not Linux or Mac OSX)
+ * Check if this is an unsupported OS (not Linux or Mac OSX or FreeBSD)
  */
-if('Linux' != PHP_OS && 'Darwin' != PHP_OS) {
+if('Linux' != PHP_OS && 'Darwin' != PHP_OS && 'FreeBSD' != PHP_OS) {
 	// call the function to display a notice
 	add_action('admin_notices', 'ewww_image_optimizer_notice_os');
 	// turn off all the tools
