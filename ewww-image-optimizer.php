@@ -50,9 +50,9 @@ add_action('admin_action_ewww_image_optimizer_install_optipng', 'ewww_image_opti
 add_action('admin_action_ewww_image_optimizer_install_gifsicle', 'ewww_image_optimizer_install_gifsicle');
 
 /**
- * Check if this is an unsupported OS (not Linux or Mac OSX or FreeBSD)
+ * Check if this is an unsupported OS (not Linux or Mac OSX or FreeBSD or Windows)
  */
-if('Linux' != PHP_OS && 'Darwin' != PHP_OS && 'FreeBSD' != PHP_OS) {
+if('Linux' != PHP_OS && 'Darwin' != PHP_OS && 'FreeBSD' != PHP_OS && 'WINNT' != PHP_OS) {
 	// call the function to display a notice
 	add_action('admin_notices', 'ewww_image_optimizer_notice_os');
 	// turn off all the tools
@@ -75,7 +75,7 @@ require( dirname(__FILE__) . '/flag-integration.php' );
 
 // tells the user they are on an unsupported operating system
 function ewww_image_optimizer_notice_os() {
-	echo "<div id='ewww-image-optimizer-warning-os' class='error'><p><strong>EWWW Image Optimizer isn't supported on your server.</strong> Unfortunately, the EWWW Image Optimizer plugin doesn't work with " . htmlentities(PHP_OS) . ".</p></div>";
+	echo "<div id='ewww-image-optimizer-warning-os' class='error'><p><strong>EWWW Image Optimizer is supported on Linux, FreeBSD, Mac OSX, and Windows.</strong> Unfortunately, the EWWW Image Optimizer plugin doesn't work with " . htmlentities(PHP_OS) . ". Feel free to file a support request if you would like support for your operating system of choice.</p></div>";
 }   
 
 function ewww_image_optimizer_notice_tool_install() {
@@ -84,9 +84,46 @@ function ewww_image_optimizer_notice_tool_install() {
 
 // If the utitilites are in the content folder, we use that. Otherwise, we retrieve user specified paths or set defaults if all else fails. We also do a basic check to make sure we weren't given a malicious path.
 function ewww_image_optimizer_path_check() {
+	$jpegtran = false;
+	$optipng = false;
+	$gifsicle = false;
+	$pngout = false;
+	// for Windows, everything must be in the wp-content/ewww folder, so that is all we check (unless some bright spark figures out how to put them in their system path on Windows...
+	if ('WINNT' == PHP_OS) {
+		if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran.exe')) {
+			$jpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran.exe';
+			exec($jpt . ' -v ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'sample.jpg 2>&1', $jpegtran_version);
+			foreach ($jpegtran_version as $jout) { 
+				if (preg_match('/Independent JPEG Group/', $jout)) { 
+					$jpegtran = $jpt;
+				} 
+			}
+		}
+		if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng.exe')) {
+			$opt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng.exe';
+			exec($opt . ' -v', $optipng_version);
+			if (strpos($optipng_version[0], 'OptiPNG') === 0) {
+				$optipng = $opt;
+			}
+		}
+		if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle.exe')) {
+			$gpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle.exe';
+			exec($gpt . ' --version', $gifsicle_version);
+			if (strpos($gifsicle_version[0], 'LCDF Gifsicle') === 0) {
+				$gifsicle = $gpt;
+			}
+		}
+		if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout.exe')) {
+			$ppt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout.exe';
+			exec("$ppt 2>&1", $pngout_version);
+			if (strpos($pngout_version[0], 'PNGOUT') === 0) {
+				$pngout = $ppt;
+			}
+		}
+
+	} else {
 	// first check for the jpegtran binary in the ewww tool folder
 	$use_system = get_option('ewww_image_optimizer_skip_bundle');
-	$jpegtran = false;
 	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran') && !$use_system) {
 		$jpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran';
 		exec("file $jpt", $jpt_filetype);
@@ -124,7 +161,6 @@ function ewww_image_optimizer_path_check() {
 			}
 		}
 	}
-	$optipng = false;
 	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng') && !$use_system) {
 		$opt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng';
 		exec("file $opt", $opt_filetype);
@@ -152,7 +188,6 @@ function ewww_image_optimizer_path_check() {
 			$optipng = $opt;
 		}
 	}
-	$gifsicle = false;
 	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle') && !$use_system) {
 		$gpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle';
 		exec("file $gpt", $gpt_filetype);
@@ -181,7 +216,6 @@ function ewww_image_optimizer_path_check() {
 		}
 	}
 	// pngout is special and has a dynamic and static binary to check
-	$pngout = false;
 	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static') && !$use_system) {
 		$ppt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static';
 		exec("file $ppt", $ppt_filetype);
@@ -214,6 +248,7 @@ function ewww_image_optimizer_path_check() {
 		if (strpos($pngout_version[0], 'PNGOUT') === 0) {
 			$pngout = $ppt;
 		}
+	}
 	}
 	return array($jpegtran, $optipng, $gifsicle, $pngout);
 }
@@ -353,7 +388,7 @@ function ewww_image_optimizer_notice_utils() {
 		echo "<div id='ewww-image-optimizer-warning-opt-png' class='error'><p><strong>PHP's Safe Mode is turned on. This plugin cannot operate in safe mode.</strong></p></div>";
 	}
 	// make sure the bundled tools are installed
-	if(!get_option('ewww_image_optimizer_skip_bundle')) {
+	if(!get_option('ewww_image_optimizer_skip_bundle') && 'WINNT' != PHP_OS) {
 		ewww_image_optimizer_install_tools ();
 	}
 	// attempt to retrieve values for utility paths, and store them in the appropriate variables
@@ -786,7 +821,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 	// initialize the original filename 
 	$original = $file;
 	// check to see if 'nice' exists
-	if (exec('nice') === NULL) {
+	if (!exec('nice')) {
 		$nice = NULL;
 	} else {
 		$nice = 'nice';
@@ -994,24 +1029,24 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					$copy_opt = 'all';
 				}
 				// Check if shell_exec() is disabled
-				$disabled = ini_get('disable_functions');
-				if(strpos($disabled, 'shell_exec') !== FALSE){
+				//$disabled = ini_get('disable_functions');
+				//if(strpos($disabled, 'shell_exec') !== FALSE){
 					// run jpegtran - non-progressive
-					exec("$nice $jpegtran_path -copy $copy_opt -optimize $file > $tempfile");
+					exec("$nice $jpegtran_path -copy $copy_opt -optimize -outfile $tempfile $file");
 					// run jpegtran - progressive
-					exec("$nice $jpegtran_path -copy $copy_opt -optimize -progressive $file > $progfile");
+					exec("$nice $jpegtran_path -copy $copy_opt -optimize -progressive -outfile $progfile $file");
 					// check the filesize of the non-progressive JPG
 					$non_size = filesize($tempfile);
 					// check the filesize of the progressive JPG
 					$prog_size = filesize($progfile);
-				} else {
+				/*} else {
 					// run jpegtran - non-progressive
 					$tempdata = shell_exec("$nice $jpegtran_path -copy $copy_opt -optimize $file");
 					$non_size = file_put_contents($tempfile, $tempdata);
 					// run jpegtran - progressive
 					$progdata = shell_exec("$nice $jpegtran_path -copy $copy_opt -optimize -progressive $file");
 					$prog_size = file_put_contents($progfile, $progdata);
-				}
+				}*/
 			//echo "temp filename: $tempfile<br>";
 			//echo "temp size: $non_size <br>";
 			//echo "progressive filename: $progfile<br>";
@@ -1189,20 +1224,20 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 						$copy_opt = 'all';
 					}
 					// Check if shell_exec() is disabled
-					$disabled = ini_get('disable_functions');
-					if(strpos($disabled, 'shell_exec') !== FALSE){
+					//$disabled = ini_get('disable_functions');
+					//if(strpos($disabled, 'shell_exec') !== FALSE){
 						// run jpegtran - non-progressive
-						exec("$nice $jpegtran_path -copy $copy_opt -optimize $jpgfile > $tempfile");
+						exec("$nice $jpegtran_path -copy $copy_opt -optimize -outfile $tempfile $jpgfile");
 						// run jpegtran - progressive
-						exec("$nice $jpegtran_path -copy $copy_opt -optimize -progressive $jpgfile > $progfile");
-					} else {
+						exec("$nice $jpegtran_path -copy $copy_opt -optimize -progressive -outfile $progfile $jpgfile");
+					/*} else {
 						// run jpegtran - non-progressive
 						$tempdata = shell_exec("$nice $jpegtran_path -copy $copy_opt -optimize $jpgfile");
 						file_put_contents($tempfile, $tempdata);
 						// run jpegtran - progressive
 						$progdata = shell_exec("$nice $jpegtran_path -copy $copy_opt -optimize -progressive $jpgfile");
 						file_put_contents($progfile, $progdata);
-					}
+					}*/
 					// check the filesize of the non-progressive JPG
 					$non_size = filesize($tempfile);
 					// check the filesize of the progressive JPG
@@ -2036,7 +2071,7 @@ function ewww_image_optimizer_options () {
 				echo "\n";
 				echo '<b>gifsicle:</b> ';
 				exec(EWWW_IMAGE_OPTIMIZER_GIFSICLE . ' --version', $gifsicle_version);
-				if (!empty($gifsicle_version) && preg_match('/1.68/', $gifsicle_version[0])) { 
+				if (!empty($gifsicle_version) && preg_match('/1.68/', $gifsicle_version[0]) || preg_match('/1.69/', $gifsicle_version[0])) { 
 					echo '<span style="color: green; font-weight: bolder">OK</span>&emsp;version: ' . $gifsicle_version[0] . '<br />'; 
 				} elseif (!empty($gifsicle_version) && preg_match('/LCDF Gifsicle/', $gifsicle_version[0])) {
 					echo '<span style="color: orange; font-weight: bolder">UPDATE AVAILABLE</span>*&emsp;<b>Copy</b> binary from ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' to ' . EWWW_IMAGE_OPTIMIZER_TOOL_PATH . ' or a system path (like /usr/local/bin), OR <a href="http://www.lcdf.org/gifsicle/gifsicle-1.68.tar.gz"><b>Download</b> gifsicle source</a>&emsp;<b>version:</b> ' . $gifsicle_version[0] . '<br />'; 
@@ -2080,14 +2115,14 @@ function ewww_image_optimizer_options () {
 			} else {
 				echo 'exec(): <span style="color: green; font-weight: bolder">OK</span>&emsp;&emsp;';
 			}
-			if(strpos($disabled, 'shell_exec') !== FALSE){
+			/*if(strpos($disabled, 'shell_exec') !== FALSE){
 			//if (preg_match('/[\s,]shell_exec[\s,]/', $disabled)) {
 				echo 'shell_exec(): <span style="color: orange; font-weight: bolder">DISABLED</span> will attempt to use exec() instead&emsp;&emsp;';
 			} else {
 				echo 'shell_exec(): <span style="color: green; font-weight: bolder">OK</span>&emsp;&emsp;';
-			}
+			}*/
 			exec('file -v 2>&1', $file_command_version);
-			if (strpos($file_command_version[0], 'file-') !== 0) {
+			if (strpos($file_command_version[0], 'file-') !== 0 && 'WINNT' != PHP_OS) {
 				echo '<span style="color: red; font-weight: bolder">file command not found on your system</span>';
 			}
 			echo "<br />\n<b>Only need one of these: </b>";
