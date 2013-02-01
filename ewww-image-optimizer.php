@@ -257,9 +257,10 @@ function ewww_image_optimizer_install_tools () {
 	$toolfail = false;
 	if (!is_dir(EWWW_IMAGE_OPTIMIZER_TOOL_PATH)) {
 		if (!mkdir(EWWW_IMAGE_OPTIMIZER_TOOL_PATH)) {
-			$toolfail = true;
+			echo "<div id='ewww-image-optimizer-warning-tool-install' class='error'><p><strong>EWWW Image Optimizer couldn't create the tool folder: " . htmlentities(EWWW_IMAGE_OPTIMIZER_TOOL_PATH) . ".</strong> Please adjust permissions or create the folder.</p></div>";
 		}
 	}
+	if (PHP_OS == 'Darwin' || PHP_OS == 'Linux') {
 	if (PHP_OS == 'Darwin') {
 		$gifsicle = 'gifsicle-mac';
 		$optipng = 'optipng-mac';
@@ -313,6 +314,7 @@ function ewww_image_optimizer_install_tools () {
 		if (!chmod(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng', 0755)) {
 			$toolfail = true;
 		}
+	}
 	}
 	if ($toolfail) {
 		echo "<div id='ewww-image-optimizer-warning-tool-install' class='error'><p><strong>EWWW Image Optimizer couldn't install optipng and gifsicle in " . htmlentities(EWWW_IMAGE_OPTIMIZER_TOOL_PATH) . ".</strong> Please adjust permissions or create the folder. If you have installed the tools elsewhere on your system, check the option to 'Use system paths'.</p></div>";
@@ -388,7 +390,7 @@ function ewww_image_optimizer_notice_utils() {
 		echo "<div id='ewww-image-optimizer-warning-opt-png' class='error'><p><strong>PHP's Safe Mode is turned on. This plugin cannot operate in safe mode.</strong></p></div>";
 	}
 	// make sure the bundled tools are installed
-	if(!get_option('ewww_image_optimizer_skip_bundle') && 'WINNT' != PHP_OS) {
+	if(!get_option('ewww_image_optimizer_skip_bundle')) {
 		ewww_image_optimizer_install_tools ();
 	}
 	// attempt to retrieve values for utility paths, and store them in the appropriate variables
@@ -974,10 +976,10 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 			if ($convert || $converted) {
 						// retrieve version info for ImageMagick
 						exec('convert -version', $convert_version);
-						// convert the JPG to  PNG (try with GD if possible, 'convert' if not)
+						// convert the JPG to PNG (try with GD if possible, 'convert' if not)
 						if (ewww_image_optimizer_gd_support()) {
 							imagepng(imagecreatefromjpeg($file), $pngfile);
-						} elseif (strpos($convert_version[0], 'ImageMagick')) {
+						} elseif (!empty($convert_version) && strpos($convert_version[0], 'ImageMagick')) {
 							exec("convert $file -strip $pngfile");
 						}
 				// if pngout isn't disabled
@@ -1205,7 +1207,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 						// otherwise, output the JPG at quality 92
 						imagejpeg($output, $jpgfile, 92);
 					}
-				} elseif (strpos($convert_version[0], 'ImageMagick')) {
+				} elseif (!empty($convert_version) && strpos($convert_version[0], 'ImageMagick')) {
 					exec ("convert $background -flatten $cquality $file $jpgfile");
 				} 
 				// retrieve the filesize of the new JPG
@@ -1908,13 +1910,18 @@ function ewww_image_optimizer_download_file ($url, $path) {
 	}
 }
 
-// retrieves the jpegtran linux package with wget, unpacks it with tar, and sends the user back where they came from
+// retrieves the jpegtran binary, installs it in wp-content/ewww, and sends the user back where they came from
 function ewww_image_optimizer_install_jpegtran () {
-	if ( FALSE === current_user_can('install_plugins') ) {
+	if (FALSE === current_user_can('install_plugins')) {
 		wp_die(__('You don\'t have permission to install image optimizer utilities.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 	}
-	ewww_image_optimizer_download_file('http://jpegclub.org/droppatch.v09.tar.gz', EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'jpegtran.tar.gz');
-	exec ('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'jpegtran.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_TOOL_PATH . ' jpegtran');
+	if (PHP_OS == 'WINNT') {
+		copy(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'jpegtran.exe', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran.exe');
+	}
+	if (PHP_OS == 'Linux') {
+		ewww_image_optimizer_download_file('http://jpegclub.org/droppatch.v09.tar.gz', EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'jpegtran.tar.gz');
+		exec ('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'jpegtran.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_TOOL_PATH . ' jpegtran');
+	}
 	list ($jpegtran_path) = ewww_image_optimizer_path_check();
 	exec($jpegtran_path . ' -v ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'sample.jpg 2>&1', $jpegtran_version);
 	foreach ($jpegtran_version as $jout) { 
@@ -1931,6 +1938,44 @@ function ewww_image_optimizer_install_jpegtran () {
 	exit(0);
 }
 
+// copies the optipng executable to the wp-content\ewww folder for Windows, and sends the user back where they came from
+function ewww_image_optimizer_install_optipng () {
+	if (FALSE === current_user_can('install_plugins')) {
+		wp_die(__('You don\'t have permission to install image optimizer utilities.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+	}
+	copy(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'optipng.exe', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng.exe');
+	exec(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng.exe -v', $optipng_version);
+	if (strpos($optipng_version[0], 'OptiPNG') === 0) {
+		$sendback = wp_get_referer();
+		$sendback = preg_replace('/\&optipng\=\w+/', '', $sendback) . "&optipng=success";
+	}
+	if (!isset($sendback)) {
+		$sendback = wp_get_referer();
+		$sendback = preg_replace('/\&optipng\=\w+/', '', $sendback) . "&optipng=failed";
+	}
+	wp_redirect($sendback);
+	exit(0);
+}
+
+// copies the gifsicle executable to the wp-content\ewww folder for Windows, and sends the user back where they came from
+function ewww_image_optimizer_install_gifsicle () {
+	if (FALSE === current_user_can('install_plugins')) {
+		wp_die(__('You don\'t have permission to install image optimizer utilities.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+	}
+	copy(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'gifsicle.exe', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle.exe');
+	exec(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle.exe --version', $gifsicle_version);
+	if (strpos($gifsicle_version[0], 'LCDF Gifsicle') === 0) {
+		$sendback = wp_get_referer();
+		$sendback = preg_replace('/\&gifsicle\=\w+/', '', $sendback) . "&gifsicle=success";
+	}
+	if (!isset($sendback)) {
+		$sendback = wp_get_referer();
+		$sendback = preg_replace('/\&gifsicle\=\w+/', '', $sendback) . "&gifsicle=failed";
+	}
+	wp_redirect($sendback);
+	exit(0);
+}
+
 // retrieves the pngout linux package with wget, unpacks it with tar, 
 // copies the appropriate version to the plugin folder, and sends the user back where they came from
 function ewww_image_optimizer_install_pngout () {
@@ -1938,32 +1983,34 @@ function ewww_image_optimizer_install_pngout () {
 		wp_die(__('You don\'t have permission to install image optimizer utilities.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 	}
 	if (PHP_OS == 'Linux') {
-	if (!file_exists(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz')) {
-		ewww_image_optimizer_download_file('http://static.jonof.id.au/dl/kenutils/pngout-20120530-linux-static.tar.gz', EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz');
-	}
-	$arch_type = php_uname('m');//$_REQUEST['arch'];
-	switch ($arch_type) {
-		case 'i386':
-			exec('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-20120530-linux-static/i386/pngout-static');
-			rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static/i386/pngout-static', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static');
-			break;
-		case 'i686':
-			exec('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-20120530-linux-static/i686/pngout-static');
-			rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static/i686/pngout-static', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static');
-			break;
-		case 'athlon':
-			exec('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-20120530-linux-static/athlon/pngout-static');
-			rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static/athlon/pngout-static', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static');
-			break;
-		case 'pentium4':
-			exec('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-20120530-linux-static/pentium4/pngout-static');
-			rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static/pentium4/pngout-static', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static');
-			break;
-		case 'x86_64':
-			exec('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-20120530-linux-static/x86_64/pngout-static');
-			rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static/x86_64/pngout-static', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static');
-			break;
-	}
+		if (!file_exists(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz')) {
+			ewww_image_optimizer_download_file('http://static.jonof.id.au/dl/kenutils/pngout-20120530-linux-static.tar.gz', EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz');
+		}
+		$arch_type = php_uname('m');//$_REQUEST['arch'];
+		switch ($arch_type) {
+			case 'i386':
+				exec('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-20120530-linux-static/i386/pngout-static');
+				rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static/i386/pngout-static', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static');
+				break;
+			case 'i686':
+				exec('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-20120530-linux-static/i686/pngout-static');
+				rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static/i686/pngout-static', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static');
+				break;
+			case 'athlon':
+				exec('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-20120530-linux-static/athlon/pngout-static');
+				rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static/athlon/pngout-static', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static');
+				break;
+			case 'pentium4':
+				exec('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-20120530-linux-static/pentium4/pngout-static');
+				rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static/pentium4/pngout-static', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static');
+				break;
+			case 'x86_64':
+				exec('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-20120530-linux-static/x86_64/pngout-static');
+				rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-linux-static/x86_64/pngout-static', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static');
+				break;
+		}
+		chmod(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static', 0755);
+		exec(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static 2>&1', $pngout_version);
 	}
 	if (PHP_OS == 'Darwin') {
 	// from http://static.jonof.id.au/dl/kenutils/pngout-20120530-darwin.tar.gz
@@ -1972,9 +2019,13 @@ function ewww_image_optimizer_install_pngout () {
 		}
 		exec('tar xzf ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-darwin.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-20120530-darwin/pngout');
 		rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-darwin/pngout', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static');
+		chmod(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static', 0755);
+		exec(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static 2>&1', $pngout_version);
 	}
-	chmod(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static', 0755);
-	exec(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static 2>&1', $pngout_version);
+	if (PHP_OS == 'WINNT') {
+		ewww_image_optimizer_download_file('http://advsys.net/ken/util/pngout.exe', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout.exe');
+		exec(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout.exe 2>&1', $pngout_version);
+	}
 	if (preg_match('/PNGOUT/', $pngout_version[0])) {
 		$sendback = wp_get_referer();
 		$sendback = preg_replace('/\&pngout\=\w+/', '', $sendback) . "&pngout=success";
@@ -1998,6 +2049,36 @@ function ewww_image_optimizer_options () {
 		if ($_REQUEST['jpegtran'] == 'failed') { ?>
 			<div id='ewww-image-optimizer-jpegtran-failure' class='error'>
 				<p>jpegtran was not installed, check permissions on the wp-content/ewww folder.</p>
+			</div>
+<?php		} ?>
+		<script type='text/javascript'>
+			jQuery(document).ready(function($) {$('.fade').fadeTo(5000,1).fadeOut(3000);});
+		</script>
+<?php	}
+	if (isset($_REQUEST['optipng'])) {
+		if ($_REQUEST['optipng'] == 'success') { ?>
+			<div id='ewww-image-optimizer-optipng-success' class='updated fade'>
+				<p>optipng was successfully installed, check the Plugin Status area for version information.</p>
+			</div>
+<?php		}
+		if ($_REQUEST['optipng'] == 'failed') { ?>
+			<div id='ewww-image-optimizer-optipng-failure' class='error'>
+				<p>optipng was not installed, check permissions on the wp-content/ewww folder.</p>
+			</div>
+<?php		} ?>
+		<script type='text/javascript'>
+			jQuery(document).ready(function($) {$('.fade').fadeTo(5000,1).fadeOut(3000);});
+		</script>
+<?php	}
+	if (isset($_REQUEST['gifsicle'])) {
+		if ($_REQUEST['gifsicle'] == 'success') { ?>
+			<div id='ewww-image-optimizer-gifsicle-success' class='updated fade'>
+				<p>gifsicle was successfully installed, check the Plugin Status area for version information.</p>
+			</div>
+<?php		}
+		if ($_REQUEST['gifsicle'] == 'failed') { ?>
+			<div id='ewww-image-optimizer-gifsicle-failure' class='error'>
+				<p>gifsicle was not installed, check permissions on the wp-content/ewww folder.</p>
 			</div>
 <?php		} ?>
 		<script type='text/javascript'>
@@ -2047,10 +2128,18 @@ function ewww_image_optimizer_options () {
 				} 
 				if (!empty($jpegtran_installed) && preg_match('/version 9/', $jpegtran_installed)) {
 					echo '<span style="color: green; font-weight: bolder">OK</span>&emsp;version: ' . $jpegtran_installed . '<br />'; 
-				} elseif (!empty($jpegtran_installed)) { 
-					echo '<span style="color: orange; font-weight: bolder">UPDATE AVAILABLE</span>*&emsp;<b>Install</b> <a href="admin.php?action=ewww_image_optimizer_install_jpegtran">automatically</a> | <a href="http://jpegclub.org/droppatch.v09.tar.gz">manually</a>&emsp;<b>version:</b> ' . $jpegtran_installed . '<br />'; 
+				} elseif (!empty($jpegtran_installed)) {
+					echo '<span style="color: orange; font-weight: bolder">UPDATE AVAILABLE</span>*&emsp;<b>Install</b> <a href="admin.php?action=ewww_image_optimizer_install_jpegtran">automatically</a>'; 
+					if (PHP_OS != 'WINNT') {
+						echo ' | <a href="http://jpegclub.org/droppatch.v9.tar.gz">manually</a>';
+					}
+					echo '&emsp;<b>version:</b> ' . $jpegtran_installed . '<br />';
 				} else { 
-					echo '<span style="color: red; font-weight: bolder">MISSING</span>&emsp;<b>Install</b> <a href="admin.php?action=ewww_image_optimizer_install_jpegtran">automatically</a> | <a href="http://jpegclub.org/droppatch.v09.tar.gz">manually</a><br />';
+					echo '<span style="color: red; font-weight: bolder">MISSING</span>&emsp;<b>Install</b> <a href="admin.php?action=ewww_image_optimizer_install_jpegtran">automatically</a>';
+					if (PHP_OS != 'WINNT') {
+						echo ' | <a href="http://jpegclub.org/droppatch.v9.tar.gz">manually</a>';
+					}
+					echo '<br />';
 				}
 			}
 			echo "\n";
@@ -2061,9 +2150,17 @@ function ewww_image_optimizer_options () {
 				if (!empty($optipng_version) && preg_match('/0.7.4/', $optipng_version[0])) { 
 					echo '<span style="color: green; font-weight: bolder">OK</span>&emsp;version: ' . $optipng_version[0] . '<br />'; 
 				} elseif (!empty($optipng_version) && preg_match('/OptiPNG/', $optipng_version[0])) {
-					echo '<span style="color: orange; font-weight: bolder">UPDATE AVAILABLE</span>*&emsp;<b>Copy</b> binary from ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' to ' . EWWW_IMAGE_OPTIMIZER_TOOL_PATH . ' or a system path (like /usr/local/bin), OR <a href="http://prdownloads.sourceforge.net/optipng/optipng-0.7.4.tar.gz?download"><b>Download</b> optipng source</a>&emsp;<b>version:</b> ' . $optipng_version[0] . '<br />'; 
+					if (PHP_OS == 'WINNT') {
+						echo '<span style="color: orange; font-weight: bolder">UPDATE AVAILABLE</span>*&emsp;<b>Install</b> <a href="admin.php?action=ewww_image_optimizer_install_optipng">automatically</a>&emsp;<b>version:</b> ' . $optipng_version[0] . '<br />';
+					} else {
+						echo '<span style="color: orange; font-weight: bolder">UPDATE AVAILABLE</span>*&emsp;<b>Copy</b> binary from ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' to ' . EWWW_IMAGE_OPTIMIZER_TOOL_PATH . ' or a system path (like /usr/local/bin), OR <a href="http://prdownloads.sourceforge.net/optipng/optipng-0.7.4.tar.gz?download"><b>Download</b> optipng source</a>&emsp;<b>version:</b> ' . $optipng_version[0] . '<br />';
+					}
 				} else {
-					echo '<span style="color: red; font-weight: bolder">MISSING</span>&emsp;<b>Copy</b> binary from ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' to ' . EWWW_IMAGE_OPTIMIZER_TOOL_PATH . ' or <a href="http://prdownloads.sourceforge.net/optipng/optipng-0.7.4.tar.gz?download"><b>Download</b> optipng source</a><br />'; 
+					if (PHP_OS == 'WINNT') {
+						echo '<span style="color: red; font-weight: bolder">MISSING</span>&emsp;<b>Install</b> <a href="admin.php?action=ewww_image_optimizer_install_optipng">automatically</a><br />';
+					} else {
+						echo '<span style="color: red; font-weight: bolder">MISSING</span>&emsp;<b>Copy</b> binary from ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' to ' . EWWW_IMAGE_OPTIMIZER_TOOL_PATH . ' or <a href="http://prdownloads.sourceforge.net/optipng/optipng-0.7.4.tar.gz?download"><b>Download</b> optipng source</a><br />';
+					}
 				}
 			}
 			echo "\n";
@@ -2071,12 +2168,20 @@ function ewww_image_optimizer_options () {
 				echo "\n";
 				echo '<b>gifsicle:</b> ';
 				exec(EWWW_IMAGE_OPTIMIZER_GIFSICLE . ' --version', $gifsicle_version);
-				if (!empty($gifsicle_version) && preg_match('/1.68/', $gifsicle_version[0]) || preg_match('/1.69/', $gifsicle_version[0])) { 
+				if (!empty($gifsicle_version) && (preg_match('/1.68/', $gifsicle_version[0]) || preg_match('/1.69/', $gifsicle_version[0]))) { 
 					echo '<span style="color: green; font-weight: bolder">OK</span>&emsp;version: ' . $gifsicle_version[0] . '<br />'; 
 				} elseif (!empty($gifsicle_version) && preg_match('/LCDF Gifsicle/', $gifsicle_version[0])) {
-					echo '<span style="color: orange; font-weight: bolder">UPDATE AVAILABLE</span>*&emsp;<b>Copy</b> binary from ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' to ' . EWWW_IMAGE_OPTIMIZER_TOOL_PATH . ' or a system path (like /usr/local/bin), OR <a href="http://www.lcdf.org/gifsicle/gifsicle-1.68.tar.gz"><b>Download</b> gifsicle source</a>&emsp;<b>version:</b> ' . $gifsicle_version[0] . '<br />'; 
+					if (PHP_OS == 'WINNT') {
+						echo '<span style="color: orange; font-weight: bolder">UPDATE AVAILABLE</span>*&emsp;<b>Install</b> <a href="admin.php?action=ewww_image_optimizer_install_gifsicle">automatically</a>&emsp;<b>version:</b> ' . $gifsicle_version[0] . '<br />';
+					} else {
+						echo '<span style="color: orange; font-weight: bolder">UPDATE AVAILABLE</span>*&emsp;<b>Copy</b> binary from ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' to ' . EWWW_IMAGE_OPTIMIZER_TOOL_PATH . ' or a system path (like /usr/local/bin), OR <a href="http://www.lcdf.org/gifsicle/gifsicle-1.68.tar.gz"><b>Download</b> gifsicle source</a>&emsp;<b>version:</b> ' . $gifsicle_version[0] . '<br />';
+					}
 				} else {
-					echo '<span style="color: red; font-weight: bolder">MISSING</span>&emsp;<b>Copy</b> binary from ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' to ' . EWWW_IMAGE_OPTIMIZER_TOOL_PATH . ' or <a href="http://www.lcdf.org/gifsicle/gifsicle-1.68.tar.gz"><b>Download</b> gifsicle source</a><br />'; 
+					if (PHP_OS == 'WINNT') {
+						echo '<span style="color: red; font-weight: bolder">MISSING</span>&emsp;<b>Install</b> <a href="admin.php?action=ewww_image_optimizer_install_gifsicle">automatically</a><br />';
+					} else {
+						echo '<span style="color: red; font-weight: bolder">MISSING</span>&emsp;<b>Copy</b> binary from ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' to ' . EWWW_IMAGE_OPTIMIZER_TOOL_PATH . ' or <a href="http://www.lcdf.org/gifsicle/gifsicle-1.68.tar.gz"><b>Download</b> gifsicle source</a><br />';
+					}
 				}
 			}
 			echo "\n";
@@ -2084,12 +2189,12 @@ function ewww_image_optimizer_options () {
 				echo "\n";
 				echo '<b>pngout:</b> '; 
 				exec(EWWW_IMAGE_OPTIMIZER_PNGOUT . " 2>&1", $pngout_version);
-				if (!empty($pngout_version) && preg_match('/May 30 2012/', $pngout_version[0])) { 
+				if (!empty($pngout_version) && (preg_match('/May 30 2012/', $pngout_version[0]) || preg_match('/Jul  2 2011/', $pngout_version[0]))) { 
 					echo '<span style="color: green; font-weight: bolder">OK</span>&emsp;version: ' . preg_replace('/PNGOUT \[.*\)\s*?/', '', $pngout_version[0]) . '<br />'; 
 				} elseif (!empty($pngout_version) && preg_match('/PNGOUT/', $pngout_version[0])) {
-					echo '<span style="color: orange; font-weight: bolder">UPDATE AVAILABLE</span>*&emsp;<b>Install</b> <a href="admin.php?action=ewww_image_optimizer_install_pngout">automatically</a> | <a href="http://www.jonof.id.au/kenutils">manually</a>&emsp;<b>version:</b> ' . preg_replace('/PNGOUT \[.*\)\s*?/', '', $pngout_version[0]) . '<br />'; 
+					echo '<span style="color: orange; font-weight: bolder">UPDATE AVAILABLE</span>*&emsp;<b>Install</b> <a href="admin.php?action=ewww_image_optimizer_install_pngout">automatically</a> | <a href="http://advsys.net/ken/utils.htm">manually</a>&emsp;<b>version:</b> ' . preg_replace('/PNGOUT \[.*\)\s*?/', '', $pngout_version[0]) . '<br />'; 
 				} else {
-					echo '<span style="color: red; font-weight: bolder">MISSING</span>&emsp;<b>Install <a href="admin.php?action=ewww_image_optimizer_install_pngout">automatically</a> | <a href="http://www.jonof.id.au/kenutils">manually</a></b> - Pngout is free closed-source software that can produce drastically reduced filesizes for PNGs, but can be very time consuming to process images<br />'; 
+					echo '<span style="color: red; font-weight: bolder">MISSING</span>&emsp;<b>Install <a href="admin.php?action=ewww_image_optimizer_install_pngout">automatically</a> | <a href="http://advsys.net/ken/utils.htm">manually</a></b> - Pngout is free closed-source software that can produce drastically reduced filesizes for PNGs, but can be very time consuming to process images<br />'; 
 				}
 			}
 			echo "\n";
@@ -2101,7 +2206,7 @@ function ewww_image_optimizer_options () {
 			} ?></span>&emsp;&emsp;
 			Imagemagick 'convert': <?php
 			exec('convert -version', $convert_version);
-			if (strpos($convert_version[0], 'ImageMagick')) { echo '<span style="color: green; font-weight: bolder">OK</span>'; } else { echo '<span style="color: red; font-weight: bolder">MISSING</span>'; } 
+			if (!empty($convert_version) && strpos($convert_version[0], 'ImageMagick')) { echo '<span style="color: green; font-weight: bolder">OK</span>'; } else { echo '<span style="color: red; font-weight: bolder">MISSING</span>'; }
 			echo "<br />\n";
 			if (ini_get('safe_mode')) {
 				echo 'safe mode: <span style="color: red; font-weight: bolder">On</span>&emsp;&emsp;';
@@ -2121,9 +2226,11 @@ function ewww_image_optimizer_options () {
 			} else {
 				echo 'shell_exec(): <span style="color: green; font-weight: bolder">OK</span>&emsp;&emsp;';
 			}*/
-			exec('file -v 2>&1', $file_command_version);
-			if (strpos($file_command_version[0], 'file-') !== 0 && 'WINNT' != PHP_OS) {
-				echo '<span style="color: red; font-weight: bolder">file command not found on your system</span>';
+			if (PHP_OS != 'WINNT') {
+				exec('file -v 2>&1', $file_command_version);
+				if (strpos($file_command_version[0], 'file-') !== 0) {
+					echo '<span style="color: red; font-weight: bolder">file command not found on your system</span>';
+				}
 			}
 			echo "<br />\n<b>Only need one of these: </b>";
 			if (function_exists('finfo_file')) {
@@ -2149,12 +2256,14 @@ function ewww_image_optimizer_options () {
 				echo '<b>gifsicle path:</b> ' . EWWW_IMAGE_OPTIMIZER_GIFSICLE . '<br />';
 				echo '<b>pngout path:</b> ' . EWWW_IMAGE_OPTIMIZER_PNGOUT . '<br />';
 				echo '<b>disabled functions:</b> ' . $disabled . '<br />';
-				$gifsicle_perms = substr(sprintf('%o', fileperms(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle')), -4);
-				$optipng_perms = substr(sprintf('%o', fileperms(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng')), -4);
-				$ewww_perms = substr(sprintf('%o', fileperms(EWWW_IMAGE_OPTIMIZER_TOOL_PATH)), -4);
-				echo '<b>gifsicle permissions:</b> ' . $gifsicle_perms . '<br />';
-				echo '<b>optipng permissions:</b> ' . $optipng_perms . '<br />';
-				echo '<b>wp-content/ewww permissions:</b> ' . $ewww_perms . '<br />';
+				if (PHP_OS != 'WINNT') {
+					$gifsicle_perms = substr(sprintf('%o', fileperms(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle')), -4);
+					$optipng_perms = substr(sprintf('%o', fileperms(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng')), -4);
+					$ewww_perms = substr(sprintf('%o', fileperms(EWWW_IMAGE_OPTIMIZER_TOOL_PATH)), -4);
+					echo '<b>gifsicle permissions:</b> ' . $gifsicle_perms . '<br />';
+					echo '<b>optipng permissions:</b> ' . $optipng_perms . '<br />';
+					echo '<b>wp-content/ewww permissions:</b> ' . $ewww_perms . '<br />';
+				}
 				echo '<b>user:</b> ' . exec('whoami') . '<br />';
 				echo '<b>Operating environment:</b> ' . php_uname('s') . ' ' . php_uname('r') . ' ' . php_uname('v') . ' ' . php_uname('m');
 			?></p></div>

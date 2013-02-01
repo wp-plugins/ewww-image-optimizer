@@ -125,10 +125,18 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 = 1.4.0 =
 * fixed bug with missing 'nice' not detected properly
-* added: Windows support, includes gifsicle.exe, others have one-click installs
+* added: Windows support, includes gifsicle, optipng, and jpegtran executables
 * added: FreeBSD support, no binaries included
 * rewrote calls to jpegtran to avoid shell-redirection and work in Windows
 * removed use of shell_exec()
+* fixed warning on ImageMagick version check
+
+= 1.3.8 =
+* fixed: finfo library doesn't work on PHP versions below 5.3.0 due to missing constant 
+* fixed: resume button doesn't resume when the running the bulk action on groups of images 
+* shell_exec() and exec() detection is more robust 
+* added architecture information and warning if 'file' command is missing on settings page 
+* added finfo functionality to nextgen and flagallery
 
 = 1.3.7 =
 * re-compiled bundled optipng and gifsicle on CentOS 5 for wider compatibility
