@@ -260,61 +260,80 @@ function ewww_image_optimizer_install_tools () {
 			echo "<div id='ewww-image-optimizer-warning-tool-install' class='error'><p><strong>EWWW Image Optimizer couldn't create the tool folder: " . htmlentities(EWWW_IMAGE_OPTIMIZER_TOOL_PATH) . ".</strong> Please adjust permissions or create the folder.</p></div>";
 		}
 	}
-	if (PHP_OS == 'Darwin' || PHP_OS == 'Linux') {
+	if (PHP_OS == 'WINNT') {
+		$gifsicle_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'gifsicle.exe';
+		$optipng_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'optipng.exe';
+		$jpegtran_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'jpegtran.exe';
+		$gifsicle_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle.exe';
+		$optipng_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng.exe';
+		$jpegtran_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran.exe';
+	}
 	if (PHP_OS == 'Darwin') {
-		$gifsicle = 'gifsicle-mac';
-		$optipng = 'optipng-mac';
-		$jpegtran = 'jpegtran-mac';
-		if (!file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran')) {
-			if (!copy(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . $jpegtran, EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran')) {
+		$gifsicle_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'gifsicle-mac';
+		$optipng_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'optipng-mac';
+		$jpegtran_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'jpegtran-mac';
+		$gifsicle_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle';
+		$optipng_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng';
+		$jpegtran_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran';
+	}
+	if (PHP_OS == 'Darwin' || PHP_OS == 'WINNT') {
+		if (!file_exists($jpegtran_dst)) {
+			if (!copy($jpegtran_src, $jpegtran_dst)) {
 				$toolfail = true;
 			}
-		} else if (filesize(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran') != filesize(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . $jpegtran)) {
-			if (!copy(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . $jpegtran, EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran')) {
+		} else if (filesize($jpegtran_dst) != filesize($jpegtran_src)) {
+			if (!copy($jpegtran_src, $jpegtran_dst)) {
 				$toolfail = true;
 			}
 		}
-		$jpegtran_perms = substr(sprintf('%o', fileperms(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran')), -4);
+	}
+	if (PHP_OS == 'Darwin') {
+		$jpegtran_perms = substr(sprintf('%o', fileperms($jpegtran_dst)), -4);
 		if ($jpegtran_perms != '0755') {
-			if (!chmod(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran', 0755)) {
+			if (!chmod($jpegtran_dst, 0755)) {
 				$toolfail = true;
 			}
 		}
 	}
 	if (PHP_OS == 'Linux') {
-		$gifsicle = 'gifsicle';
-		$optipng = 'optipng';
+		$gifsicle_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'gifsicle';
+		$optipng_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'optipng';
+		$gifsicle_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle';
+		$optipng_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng';
 	}
-	if (!file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle')) {
-		if (!copy(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . $gifsicle, EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle')) {
+	if (PHP_OS != 'FreeBSD') {
+	if (!file_exists($gifsicle_dst)) {
+		if (!copy($gifsicle_src, $gifsicle_dst)) {
 			$toolfail = true;
 		}
-	} else if (filesize(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle') != filesize(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . $gifsicle)) {
-		if (!copy(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . $gifsicle, EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle')) {
-			$toolfail = true;
-		}
-	}
-	$gifsicle_perms = substr(sprintf('%o', fileperms(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle')), -4);
-	if ($gifsicle_perms != '0755') {
-		if (!chmod(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle', 0755)) {
+	} else if (filesize($gifsicle_dst) != filesize($gifsicle_src)) {
+		if (!copy($gifsicle_src, $gifsicle_dst)) {
 			$toolfail = true;
 		}
 	}
-	if (!file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng')) {
-		if (!copy(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . $optipng, EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng')) {
+	if (!file_exists($optipng_dst)) {
+		if (!copy($optipng_src, $optipng_dst)) {
 			$toolfail = true;
 		}
-	} else if (filesize(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng') != filesize(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . $optipng)) {
-		if (!copy(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . $optipng, EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng')) {
-			$toolfail = true;
-		}
-	}
-	$optipng_perms = substr(sprintf('%o', fileperms(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng')), -4);
-	if ($optipng_perms != '0755') {
-		if (!chmod(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng', 0755)) {
+	} else if (filesize($optipng_dst) != filesize($optipng_src)) {
+		if (!copy($optipng_src, $optipng_dst)) {
 			$toolfail = true;
 		}
 	}
+	}
+	if (PHP_OS != 'WINNT' || PHP_OS != 'FreeBSD') {
+		$gifsicle_perms = substr(sprintf('%o', fileperms($gifsicle_dst)), -4);
+		if ($gifsicle_perms != '0755') {
+			if (!chmod($gifsicle_dst, 0755)) {
+				$toolfail = true;
+			}
+		}
+		$optipng_perms = substr(sprintf('%o', fileperms($optipng_dst)), -4);
+		if ($optipng_perms != '0755') {
+			if (!chmod($optipng_dst, 0755)) {
+				$toolfail = true;
+			}
+		}
 	}
 	if ($toolfail) {
 		echo "<div id='ewww-image-optimizer-warning-tool-install' class='error'><p><strong>EWWW Image Optimizer couldn't install optipng and gifsicle in " . htmlentities(EWWW_IMAGE_OPTIMIZER_TOOL_PATH) . ".</strong> Please adjust permissions or create the folder. If you have installed the tools elsewhere on your system, check the option to 'Use system paths'.</p></div>";
@@ -2198,7 +2217,7 @@ function ewww_image_optimizer_options () {
 				}
 			}
 			echo "\n";
-			echo "<b>Graphics libraries</b> (only used for conversion, not optimization): ";
+			echo "<b>Graphics libraries</b> - only need one, used for conversion, not optimization: ";
 			if (ewww_image_optimizer_gd_support()) {
 				echo 'GD: <span style="color: green; font-weight: bolder">OK';
 			} else {
