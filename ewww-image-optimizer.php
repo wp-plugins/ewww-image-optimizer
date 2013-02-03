@@ -82,58 +82,85 @@ function ewww_image_optimizer_notice_tool_install() {
 	echo "<div id='ewww-image-optimizer-warning-tool-install' class='error'><p><strong>EWWW Image Optimizer couldn't install the tools in " . htmlentities(EWWW_IMAGE_OPTIMIZER_TOOL_PATH) . ".</strong> Please adjust permissions or create the folder. If you have installed the tools elsewhere on your system, check the option to 'Use system paths'.</p></div>";
 }
 
+// test the given path ($path) to see if it returns a valid version string
+// returns: version string if found, FALSE if not
+function ewww_image_optimizer_tool_found($path, $tool) {
+	switch($tool) {
+		case 'j':
+			exec($path . ' -v ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'sample.jpg 2>&1', $jpegtran_version); 
+			foreach ($jpegtran_version as $jout) { 
+				if (preg_match('/Independent JPEG Group/', $jout)) {
+					return $jout;
+				}
+			}
+		case 'o':
+			exec($opt . ' -v', $optipng_version);
+			if (!empty($optipng_version) && strpos($optipng_version[0], 'OptiPNG') === 0) {
+				return $optipng_version[0];
+			}
+		case 'g':
+			exec($gpt . ' --version', $gifsicle_version);
+			if (!empty($gifsicle_version) && strpos($gifsicle_version[0], 'LCDF Gifsicle') === 0) {
+				return $gifsicle_version[0];
+			}
+		case 'p':
+			exec("$ppt 2>&1", $pngout_version);
+			if (!empty($pngout_version) && strpos($pngout_version[0], 'PNGOUT') === 0) {
+				return $pngout_version[0];
+			}
+	}
+	return FALSE;
+}
+
 // If the utitilites are in the content folder, we use that. Otherwise, we retrieve user specified paths or set defaults if all else fails. We also do a basic check to make sure we weren't given a malicious path.
 function ewww_image_optimizer_path_check() {
+// TODO: find a way to discover the file command if the web user has no path
+// places to look: /usr/local/bin /usr/bin /bin /usr/sbin /usr/local/sbin
+	if (file_exists('/usr/bin/file')) {
+		$file = '/usr/bin/file';
+	} else {
+		$file = 'file';
+	}
 	$jpegtran = false;
 	$optipng = false;
 	$gifsicle = false;
 	$pngout = false;
-	// for Windows, everything must be in the wp-content/ewww folder, so that is all we check (unless some bright spark figures out how to put them in their system path on Windows...
+	// for Windows, everything must be in the wp-content/ewww folder, so that is all we check (unless some bright spark figures out how to put them in their system path on Windows...)
 	if ('WINNT' == PHP_OS) {
 		if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran.exe')) {
 			$jpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran.exe';
-			exec($jpt . ' -v ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'sample.jpg 2>&1', $jpegtran_version);
-			foreach ($jpegtran_version as $jout) { 
-				if (preg_match('/Independent JPEG Group/', $jout)) { 
-					$jpegtran = $jpt;
-				} 
+			if (ewww_image_optimizer_tool_found($jpt, 'j')) {
+				$jpegtran = $jpt;
 			}
 		}
 		if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng.exe')) {
 			$opt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng.exe';
-			exec($opt . ' -v', $optipng_version);
-			if (strpos($optipng_version[0], 'OptiPNG') === 0) {
+			if (ewww_image_optimizer_tool_found($opt, 'o')) {
 				$optipng = $opt;
 			}
 		}
 		if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle.exe')) {
 			$gpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle.exe';
-			exec($gpt . ' --version', $gifsicle_version);
-			if (strpos($gifsicle_version[0], 'LCDF Gifsicle') === 0) {
+			if (ewww_image_optimizer_tool_found($gpt, 'g')) {
 				$gifsicle = $gpt;
 			}
 		}
 		if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout.exe')) {
 			$ppt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout.exe';
-			exec("$ppt 2>&1", $pngout_version);
-			if (strpos($pngout_version[0], 'PNGOUT') === 0) {
+			if (ewww_image_optimizer_tool_found($ppt, 'p')) {
 				$pngout = $ppt;
 			}
 		}
-
 	} else {
 	// first check for the jpegtran binary in the ewww tool folder
 	$use_system = get_option('ewww_image_optimizer_skip_bundle');
 	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran') && !$use_system) {
 		$jpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran';
-		exec("file $jpt", $jpt_filetype);
+		exec("$file $jpt", $jpt_filetype);
 		// linux md5 first, then mac md5
 		if ((md5_file($jpt) == 'e2ba2985107600ebb43f85487258f6a3' || md5_file($jpt) == '67c1dbeab941255a4b2b5a99db3c6ef5') && ((strpos($jpt_filetype[0], 'ELF') && strpos($jpt_filetype[0], 'executable')) || strpos($jpt_filetype[0], 'Mach-O universal binary'))) {
-			exec($jpt . ' -v ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'sample.jpg 2>&1', $jpegtran_version); 
-			foreach ($jpegtran_version as $jout) { 
-				if (preg_match('/Independent JPEG Group/', $jout)) { 
-					$jpegtran = $jpt;
-				} 
+			if (ewww_image_optimizer_tool_found($jpt, 'j')) {
+				$jpegtran = $jpt;
 			}
 		}
 			
@@ -141,32 +168,37 @@ function ewww_image_optimizer_path_check() {
 	// if the standard jpegtran binary didn't work, see if the user custom compiled one and check that
 	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran-custom') && !$jpegtran && !$use_system) {
 		$jpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran-custom';
-		exec("file $jpt", $jpt_filetype);
+		exec("$file $jpt", $jpt_filetype);
 		if (filesize($jpt) > 15000 && ((strpos($jpt_filetype[0], 'ELF') && strpos($jpt_filetype[0], 'executable')) || strpos($jpt_filetype[0], 'Mach-O universal binary'))) {
-			exec($jpt . ' -v ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'sample.jpg 2>&1', $jpegtran_version); 
-			foreach ($jpegtran_version as $jout) { 
-				if (preg_match('/Independent JPEG Group/', $jout)) {
-					$jpegtran = $jpt;
-				}
+			if (ewww_image_optimizer_tool_found($jpt, 'j')) {
+				$jpegtran = $jpt;
 			}
 		}
 	}
 	// if we still haven't found a usable binary, try a system-installed version
 	if (!$jpegtran) {
 		$jpt = 'jpegtran';
-		exec($jpt . ' -v ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'sample.jpg 2>&1', $jpegtran_version); 
-		foreach ($jpegtran_version as $jout) { 
-			if (preg_match('/Independent JPEG Group/', $jout)) {
-				$jpegtran = $jpt;
-			}
+		if (ewww_image_optimizer_tool_found($jpt, 'j')) {
+			$jpegtran = $jpt;
 		}
 	}
+	// some web users don't have paths, so we attempt to find the jpegtran binary
+	if (!$jpegtran) {
+		if (file_exists('/usr/bin/jpegtran')) {
+			$jpt = '/usr/bin/jpegtran';
+		} elseif (file_exists('/usr/local/bin/jpegtran')) {
+			$jpt = '/usr/local/bin/jpegtran';
+		}
+		if (ewww_image_optimizer_tool_found($jpt, 'j')) {
+			$jpegtran = $jpt;
+		}
+	}
+		
 	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng') && !$use_system) {
 		$opt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng';
 		exec("file $opt", $opt_filetype);
 		if ((md5_file($opt) == '4eb91937291ce5038d0c68f5f2edbcfd' || md5_file($opt) == '899e3c569080a55bcc5de06a01c8e23a') && ((strpos($opt_filetype[0], 'ELF') && strpos($opt_filetype[0], 'executable')) || strpos($opt_filetype[0], 'Mach-O universal binary'))) {
-			exec($opt . ' -v', $optipng_version); 
-			if (strpos($optipng_version[0], 'OptiPNG') === 0) {
+			if (ewww_image_optimizer_tool_found($opt, 'o')) {
 				$optipng = $opt;
 			}
 		}
@@ -175,16 +207,14 @@ function ewww_image_optimizer_path_check() {
 		$opt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng-custom';
 		exec("file $opt", $opt_filetype);
 		if (filesize($opt) > 15000 && ((strpos($opt_filetype[0], 'ELF') && strpos($opt_filetype[0], 'executable')) || strpos($opt_filetype[0], 'Mach-O universal binary'))) {
-			exec($opt . ' -v', $optipng_version); 
-			if (strpos($optipng_version[0], 'OptiPNG') === 0) {
+			if (ewww_image_optimizer_tool_found($opt, 'o')) {
 				$optipng = $opt;
 			}
 		}
 	}
 	if (!$optipng) {
 		$opt = 'optipng';
-		exec($opt . ' -v', $optipng_version); 
-		if (!empty($optipng_version) && strpos($optipng_version[0], 'OptiPNG') === 0) {
+		if (ewww_image_optimizer_tool_found($opt, 'o')) {
 			$optipng = $opt;
 		}
 	}
@@ -254,6 +284,7 @@ function ewww_image_optimizer_path_check() {
 }
 
 function ewww_image_optimizer_install_tools () {
+	// bundle jpegtran for linux too
 	$toolfail = false;
 	if (!is_dir(EWWW_IMAGE_OPTIMIZER_TOOL_PATH)) {
 		if (!mkdir(EWWW_IMAGE_OPTIMIZER_TOOL_PATH)) {
