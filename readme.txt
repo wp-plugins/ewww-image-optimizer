@@ -91,9 +91,9 @@ Yes, but only if the optimized version is smaller. The plugin should NEVER creat
 
 First, upgrade to the latest version. Since version 1.0.8, each image is given 50 seconds to complete (which actually doesn't include time used by the optimization utilities). You can also increase the setting max_execution_time in your php.ini file. That said, there are other timeouts with Apache, and possibly other limitations of your webhost. If you've tried everything else, the last thing to look for is large PNG files. In my tests on a shared hosting setup, "large" is anything over 300 KB. You can first try decreasing the PNG optimization level in the settings. If that doesn't work, perhaps you ought to convert that PNG to JPG. Screenshots are often done as PNG files, but that is a poor choice for anything with photographic elements.
 
-= Can I use EWWW Image Optimizer with a Windows server? =
+= What are the supported operating systems? =
 
-Not right now, but maybe if I run out of features to implement for Linux. All of the utilities have windows builds, but it would require a significant rewrite to make it platform agnostic.
+I've tested it on Windows (with Apache), Linux, Mac OSX, and FreeBSD.
 
 = How are JPGs optimized? =
 
@@ -130,6 +130,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * rewrote calls to jpegtran to avoid shell-redirection and work in Windows
 * removed use of shell_exec()
 * fixed warning on ImageMagick version check
+* revamped binary checking, should work on more hosts
 
 = 1.3.8 =
 * fixed: finfo library doesn't work on PHP versions below 5.3.0 due to missing constant 
