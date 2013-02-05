@@ -136,12 +136,12 @@ function ewww_image_optimizer_tool_found($path, $tool) {
 				return $pngout_version[0];
 			}
 		case 'f': // file
-			exec('file -v 2>&1', $file_version);
-			if (!preg_match('/magic/', $file_version[1])) {
+			exec("$path -v 2>&1", $file_version);
+			if (!empty($file_version[1]) && preg_match('/magic/', $file_version[1])) {
 				return $file_version[0];
 			}
 		case 'n': // nice
-			exec('nice', $nice_output);
+			exec("$path 2>&1", $nice_output);
 			if (preg_match('/usage/', $nice_output[0])) {
 				return TRUE;
 			} elseif (preg_match('/^\d+$/', $nice_output[0])) {
