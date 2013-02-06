@@ -389,7 +389,7 @@ function ewww_image_optimizer_install_tools () {
 			$toolfail = true;
 		}
 	}
-	}
+	//}
 	if (PHP_OS != 'WINNT' /*&& PHP_OS != 'FreeBSD'*/) {
 		$gifsicle_perms = substr(sprintf('%o', fileperms($gifsicle_dst)), -4);
 		if ($gifsicle_perms != '0755') {
