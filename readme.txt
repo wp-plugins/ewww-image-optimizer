@@ -126,8 +126,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 = 1.4.0 =
 * fixed bug with missing 'nice' not detected properly
 * added: Windows support, includes gifsicle, optipng, and jpegtran executables
-* added: FreeBSD support, no binaries included
+* added: FreeBSD support, includes gifsicle, optipng, and jpegtran executables
 * rewrote calls to jpegtran to avoid shell-redirection and work in Windows
+* plugin attempts to fix permissions on jpegtran when using one-click installer
 * removed use of shell_exec()
 * fixed warning on ImageMagick version check
 * revamped binary checking, should work on more hosts
