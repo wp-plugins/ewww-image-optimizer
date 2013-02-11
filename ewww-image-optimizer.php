@@ -120,6 +120,9 @@ function ewww_image_optimizer_tool_found($path, $tool) {
 			//exec("$nice $jpegtran_path -copy $copy_opt -optimize -outfile $tempfile $file");
 			//blahoutfile should be something that doesn't exist
 			exec($path . ' -v blahoutfile', $jpegtran_version); 
+			if (empty($jpegtran)) {
+				exec($path . ' -v ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'sample.jpg 2>&1', $jpegtran_version);
+			}
 			foreach ($jpegtran_version as $jout) { 
 				if (preg_match('/Independent JPEG Group/', $jout)) {
 					return $jout;
