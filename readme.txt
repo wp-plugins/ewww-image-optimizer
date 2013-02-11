@@ -41,8 +41,9 @@ Features optimization on upload capability, re-optimization, and bulk optimizing
 1. Upload the 'ewww-image-optimizer' plugin to your '/wp-content/plugins/' directory.
 1. Activate the plugin through the 'Plugins' menu in WordPress.
 1. Ensure jpegtran, optipng, pngout and gifsicle are installed on your Linux server (basic installation instructions are below if they are not). You will receive a warning when you activate the plugin if they are not present. This message will go away once you have them installed.
-1. You MAY need to make the wp-content folder writable so the plugin can install gifsicle and optipng.
-1. *Optional* Visit the settings page to configure paths, enable/disable specific tools and turn on advanced optimization features.
+1. The plugin will attempt to install jpegtran, optipng, and gifsicle automatically for you. This requires that the wp-content folder is writable by the user running the web server.
+1. If the automatic install did not work, find the appropriate binaries for your system in the ewww-image-optimizer plugin folder, copy them to wp-content/ewww/ and remove the OS 'tag' (like -linux or -fbsd). No renaming is necessary on Windows, just copy the .exe files to the wp-content/ewww folder. IMPORTANT: Do not symlink or modify the binaries in any way, or they will not pass the security checks.
+1. *Optional* Visit the settings page to enable/disable specific tools and turn on advanced optimization features.
 1. Done!
 
 = Installing pngout =
@@ -53,7 +54,6 @@ Pngout is new in version 1.1.0 and is not enabled by default because it is resou
 1. Uncheck the option to disable pngout and Save your settings.
 1. Click the link in the Plugin Status area to install pngout for your server, and the plugin will download the pngout archive, unpack it, and install the appropriate version for your server.
 1. Adjust the pngout level according to your needs. Level 0 gives the best results, but can take up to a minute or more on a single image.
-1. If the one-click install isn't working for you, download the latest version from http://www.jonof.id.au/kenutils and extract the appropriate pngout-static to the ewww tool folder (wordpress/wp-content/ewww/).
 
 = Installing optipng =
 

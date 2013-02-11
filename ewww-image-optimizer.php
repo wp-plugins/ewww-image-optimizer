@@ -78,10 +78,6 @@ function ewww_image_optimizer_notice_os() {
 	echo "<div id='ewww-image-optimizer-warning-os' class='error'><p><strong>EWWW Image Optimizer is supported on Linux, FreeBSD, Mac OSX, and Windows.</strong> Unfortunately, the EWWW Image Optimizer plugin doesn't work with " . htmlentities(PHP_OS) . ". Feel free to file a support request if you would like support for your operating system of choice.</p></div>";
 }   
 
-function ewww_image_optimizer_notice_tool_install() {
-	echo "<div id='ewww-image-optimizer-warning-tool-install' class='error'><p><strong>EWWW Image Optimizer couldn't install the tools in " . htmlentities(EWWW_IMAGE_OPTIMIZER_TOOL_PATH) . ".</strong> Please adjust permissions or create the folder. If you have installed the tools elsewhere on your system, check the option to 'Use system paths'.</p></div>";
-}
-
 // checks the binary at $path against a list of valid md5sums
 function ewww_image_optimizer_md5check($path) {
 	$valid_md5sums = array(
@@ -89,6 +85,8 @@ function ewww_image_optimizer_md5check($path) {
 		'e2ba2985107600ebb43f85487258f6a3',
 		'67c1dbeab941255a4b2b5a99db3c6ef5',
 		'4a78fdeac123a16d2b9e93b6960e80b1',
+		'a3f65d156a4901226cb91790771ca73f',
+		'98cca712e6c162f399e85aec740bf560',
 		//optipng
 		'4eb91937291ce5038d0c68f5f2edbcfd',
 		'899e3c569080a55bcc5de06a01c8e23a',
@@ -119,7 +117,9 @@ function ewww_image_optimizer_tool_found($path, $tool) {
 	//if (empty($path)) { return FALSE; }
 	switch($tool) {
 		case 'j': // jpegtran
-			exec($path . ' -v ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'sample.jpg 2>&1', $jpegtran_version); 
+			//exec("$nice $jpegtran_path -copy $copy_opt -optimize -outfile $tempfile $file");
+			//blahoutfile should be something that doesn't exist
+			exec($path . ' -v blahoutfile', $jpegtran_version); 
 			foreach ($jpegtran_version as $jout) { 
 				if (preg_match('/Independent JPEG Group/', $jout)) {
 					return $jout;
@@ -465,7 +465,7 @@ function ewww_image_optimizer_install_tools () {
 		}
 	}
 	if ($toolfail) {
-		echo "<div id='ewww-image-optimizer-warning-tool-install' class='error'><p><strong>EWWW Image Optimizer couldn't install optipng and gifsicle in " . htmlentities(EWWW_IMAGE_OPTIMIZER_TOOL_PATH) . ".</strong> Please adjust permissions or create the folder. If you have installed the tools elsewhere on your system, check the option to 'Use system paths'.</p></div>";
+		echo "<div id='ewww-image-optimizer-warning-tool-install' class='error'><p><strong>EWWW Image Optimizer couldn't install tools in " . htmlentities(EWWW_IMAGE_OPTIMIZER_TOOL_PATH) . ".</strong> Please adjust permissions or create the folder. If you have installed the tools elsewhere on your system, check the option to 'Use system paths'. For more details, visit the <a href='options-general.php?page=ewww-image-optimizer/ewww-image-optimizer.php'>Settings Page</a> or the <a href='http://wordpress.org/extend/plugins/ewww-image-optimizer/installation/'>Installation Instructions</a>.</p></div>";
 	}
 	$migrate_fail = false;
 	if ($jpegtran_path = get_option('ewww_image_optimizer_jpegtran_path')) {
@@ -500,38 +500,9 @@ function ewww_image_optimizer_install_tools () {
 	}
 }
 		
-// Retrieves jpg background fill setting, or returns null for png2jpg conversions
-function ewww_image_optimizer_jpg_background () {
-	// retrieve the user-supplied value for jpg background color
-	$background = get_option('ewww_image_optimizer_jpg_background');
-	//verify that the supplied value is in hex notation
-	if (preg_match('/^\#*([0-9a-fA-F]){6}$/',$background)) {
-		// we remove a leading # symbol, since we take care of it later
-		preg_replace('/#/','',$background);
-		// send back the verified, cleaned-up background color
-		return $background;
-	} else {
-		// send back a blank value
-		return NULL;
-	}
-}
-
-// Retrieves the jpg quality setting for png2jpg conversion or returns null
-function ewww_image_optimizer_jpg_quality () {
-	// retrieve the user-supplied value for jpg quality
-	$quality = get_option('ewww_image_optimizer_jpg_quality');
-	// verify that the quality level is an integer, 1-100
-	if (preg_match('/^(100|[1-9][0-9]?)$/',$quality)) {
-		// send back the valid quality level
-		return $quality;
-	} else {
-		// send back nothing
-		return NULL;
-	}
-}
-
 // we check for safe mode and exec, then also direct the user where to go if they don't have the tools installed
 function ewww_image_optimizer_notice_utils() {
+	//echo "checking tools<br>";
 	// query the php settings for safe mode
 	if( ini_get('safe_mode') ){
 		// display a warning to the user
@@ -691,6 +662,36 @@ function ewww_image_optimizer_gd_support() {
 		}
 	} else {
 		return FALSE;
+	}
+}
+
+// Retrieves jpg background fill setting, or returns null for png2jpg conversions
+function ewww_image_optimizer_jpg_background () {
+	// retrieve the user-supplied value for jpg background color
+	$background = get_option('ewww_image_optimizer_jpg_background');
+	//verify that the supplied value is in hex notation
+	if (preg_match('/^\#*([0-9a-fA-F]){6}$/',$background)) {
+		// we remove a leading # symbol, since we take care of it later
+		preg_replace('/#/','',$background);
+		// send back the verified, cleaned-up background color
+		return $background;
+	} else {
+		// send back a blank value
+		return NULL;
+	}
+}
+
+// Retrieves the jpg quality setting for png2jpg conversion or returns null
+function ewww_image_optimizer_jpg_quality () {
+	// retrieve the user-supplied value for jpg quality
+	$quality = get_option('ewww_image_optimizer_jpg_quality');
+	// verify that the quality level is an integer, 1-100
+	if (preg_match('/^(100|[1-9][0-9]?)$/',$quality)) {
+		// send back the valid quality level
+		return $quality;
+	} else {
+		// send back nothing
+		return NULL;
 	}
 }
 
@@ -1033,11 +1034,11 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 		$type = 'Missing finfo_file(), getimagesize() and mime_content_type() PHP functions';
 	}
 	// get the utility paths
-	//list ($jpegtran_path, $optipng_path, $gifsicle_path, $pngout_path) = ewww_image_optimizer_path_check();
-	$jpegtran_path = EWWW_IMAGE_OPTIMIZER_JPEGTRAN;
-	$optipng_path = EWWW_IMAGE_OPTIMIZER_OPTIPNG;
-	$gifsicle_path = EWWW_IMAGE_OPTIMIZER_GIFSICLE;
-	$pngout_path = EWWW_IMAGE_OPTIMIZER_PNGOUT;
+	list ($jpegtran_path, $optipng_path, $gifsicle_path, $pngout_path) = ewww_image_optimizer_path_check();
+	//$jpegtran_path = EWWW_IMAGE_OPTIMIZER_JPEGTRAN;
+	//$optipng_path = EWWW_IMAGE_OPTIMIZER_OPTIPNG;
+	//$gifsicle_path = EWWW_IMAGE_OPTIMIZER_GIFSICLE;
+	//$pngout_path = EWWW_IMAGE_OPTIMIZER_PNGOUT;
 	// if the user has disabled the utility checks
 	if(get_option('ewww_image_optimizer_skip_check') == TRUE){
 		$skip_jpegtran_check = true;
@@ -1129,11 +1130,12 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 			if ($convert || $converted) {
 				// retrieve version info for ImageMagick
 				//exec('convert -version', $convert_version);
-				// TODO: look for convert in other system paths, see where freebsd puts it
 				if (ewww_image_optimizer_tool_found('convert', 'i')) {
 					$convert_path = 'convert';
 				} elseif (ewww_image_optimizer_tool_found('/usr/bin/convert', 'i')) {
 					$convert_path = '/usr/bin/convert';
+				} elseif (ewww_image_optimizer_tool_found('/usr/local/bin/convert', 'i')) {
+					$convert_path = '/usr/local/bin/convert';
 				}
 				// convert the JPG to PNG (try with GD if possible, 'convert' if not)
 				if (ewww_image_optimizer_gd_support()) {
@@ -1346,6 +1348,8 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					$convert_path = 'convert';
 				} elseif (ewww_image_optimizer_tool_found('/usr/bin/convert', 'i')) {
 					$convert_path = '/usr/bin/convert';
+				} elseif (ewww_image_optimizer_tool_found('/usr/local/bin/convert', 'i')) {
+					$convert_path = '/usr/local/bin/convert';
 				}
 				// convert the PNG to a JPG with all the proper options (try GD first, then 'convert')
 				if (ewww_image_optimizer_gd_support()) {
@@ -2385,7 +2389,11 @@ function ewww_image_optimizer_options () {
 			} ?></span>&emsp;&emsp;
 			Imagemagick 'convert': <?php
 			//exec('convert -version', $convert_version);
-			if (ewww_image_optimizer_tool_found('convert', 'i') || ewww_image_optimizer_tool_found('/usr/bin/convert', 'i')) { echo '<span style="color: green; font-weight: bolder">OK</span>'; } else { echo '<span style="color: red; font-weight: bolder">MISSING</span>'; }
+			if (ewww_image_optimizer_tool_found('convert', 'i') || ewww_image_optimizer_tool_found('/usr/bin/convert', 'i') || ewww_image_optimizer_tool_found('/usr/local/bin/convert', 'i')) { 
+				echo '<span style="color: green; font-weight: bolder">OK</span>'; 
+			} else { 
+				echo '<span style="color: red; font-weight: bolder">MISSING</span>'; 
+			}
 			echo "<br />\n";
 			if (ini_get('safe_mode')) {
 				echo 'safe mode: <span style="color: red; font-weight: bolder">On</span>&emsp;&emsp;';
