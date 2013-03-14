@@ -87,6 +87,10 @@ function ewww_image_optimizer_md5check($path) {
 		'4a78fdeac123a16d2b9e93b6960e80b1',
 		'a3f65d156a4901226cb91790771ca73f',
 		'98cca712e6c162f399e85aec740bf560',
+		'2dab67e5f223b70c43b2fef355b39d3f',
+		'4da4092708650ceb79df19d528e7956b',
+		'9d482b93d4129f7e87ce36c5e650de0c',
+		'1c251658834162b01913702db0013c08',
 		//optipng
 		'4eb91937291ce5038d0c68f5f2edbcfd',
 		'899e3c569080a55bcc5de06a01c8e23a',
@@ -118,11 +122,12 @@ function ewww_image_optimizer_tool_found($path, $tool) {
 	switch($tool) {
 		case 'j': // jpegtran
 			//exec("$nice $jpegtran_path -copy $copy_opt -optimize -outfile $tempfile $file");
-			//blahoutfile should be something that doesn't exist
-			exec($path . ' -v blahoutfile', $jpegtran_version); 
-			if (empty($jpegtran)) {
+			//-switch should be something that doesn't exist
+			//exec($path . ' -blah', $jpegtran_version); 
+			//if (empty($jpegtran_version)) {
+			//echo 'ahhahahahahahah<br>';
 				exec($path . ' -v ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'sample.jpg 2>&1', $jpegtran_version);
-			}
+			//}
 			foreach ($jpegtran_version as $jout) { 
 				if (preg_match('/Independent JPEG Group/', $jout)) {
 					return $jout;
@@ -338,6 +343,7 @@ function ewww_image_optimizer_path_check() {
 
 // generates the source and destination paths for the executables that we bundle with the plugin based on the operating system
 function ewww_image_optimizer_install_paths () {
+	// TODO: check for 64-bit on fbsd and linux
 	if (PHP_OS == 'WINNT') {
 		$gifsicle_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'gifsicle.exe';
 		$optipng_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'optipng.exe';
@@ -624,6 +630,8 @@ function ewww_image_optimizer_admin_init() {
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_gif_to_png');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpg_background');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpg_quality');
+	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_resume');
+	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_attachments');
 	// set a few defaults
 	add_option('ewww_image_optimizer_disable_pngout', TRUE);
 	add_option('ewww_image_optimizer_optipng_level', 2);
@@ -698,52 +706,8 @@ function ewww_image_optimizer_jpg_quality () {
 	}
 }
 
-// presents the bulk optimize function with the number of images, and runs it once they submit the button (most of the html is in bulk.php)
-function ewww_image_optimizer_bulk_preview() {
-	// initialize a few variables for the bulk operation
-	$attachments = null;
-	$auto_start = false;
-	$skip_attachments = false;
-	// get the value of the wordpress upload directory
-	$upload_dir = wp_upload_dir();
-	// set the location of our temporary status file
-	$progress_file = $upload_dir['basedir'] . "/ewww.tmp";
-	// check if the bulk operation was given any attachment IDs to work with
-	if (!empty($_REQUEST['ids']) && empty($_REQUEST['resume'])) {
-		// retrieve post information correlating to the IDs selected
-		$attachments = get_posts( array(
-			'numberposts' => -1,
-			'include' => explode(',', $_REQUEST['ids']),
-			'post_type' => 'attachment',
-			'post_mime_type' => 'image',
-		));
-		// tell the bulk optimizer to proceed without confirmation
-		$auto_start = true;
-	// check if the user asked us to resume a previous bulk operation
-	} else if (isset($_REQUEST['resume'])) {
-		// get the contents of the temp file
-		$progress_contents = file($progress_file);
-		// find out the last attachment that was optimized from the temp file
-		$last_attachment = $progress_contents[0];
-		// load the post info from the temp file into $attachments
-		$attachments = unserialize($progress_contents[1]);
-		// tell the bulk optimizer to proceed without confirmation
-		$auto_start = true;
-		// tell the optimizer to skip each attachment (until we tell it otherwise)
-		$skip_attachments = true;
-	} else {
-		// load up all the attachments we can find
-		$attachments = get_posts( array(
-			'numberposts' => -1,
-			'post_type' => 'attachment',
-			'post_mime_type' => 'image'
-		));
-	}
-	// prep $attachments for storing in a file
-	$attach_ser = serialize($attachments);
-	// require the file that does most of the work and the html
-	require( dirname(__FILE__) . '/bulk.php' );
-}
+// require the file that does the bulk processing
+require( dirname(__FILE__) . '/bulk.php' );
 
 /**
  * Manually process an image from the Media Library
@@ -2154,6 +2118,7 @@ function ewww_image_optimizer_install_gifsicle () {
 // retrieves the pngout linux package with wget, unpacks it with tar, 
 // copies the appropriate version to the plugin folder, and sends the user back where they came from
 function ewww_image_optimizer_install_pngout () {
+	// TODO: see if we can finetune our error messages a bit
 	if ( FALSE === current_user_can('install_plugins') ) {
 		wp_die(__('You don\'t have permission to install image optimizer utilities.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 	}
