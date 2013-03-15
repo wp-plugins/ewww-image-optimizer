@@ -132,6 +132,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * removed use of shell_exec()
 * fixed warning on ImageMagick version check
 * revamped binary checking, should work on more hosts
+* check permissions on jpegtran
+* rewrote bulk optimizer to use ajax for better progress indication and error handling
+* added: 64-bit jpegtran binary for linux servers missing compatibility libraries
 
 = 1.3.8 =
 * fixed: finfo library doesn't work on PHP versions below 5.3.0 due to missing constant 

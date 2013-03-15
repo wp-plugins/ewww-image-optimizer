@@ -1,8 +1,8 @@
 <?php
-// TODO: need a way to make sure all this stuff only loads on the bulk page(s) 
 // presents the bulk optimize function with the number of images, and runs it once they submit the button (most of the html is in bulk.php)
 function ewww_image_optimizer_bulk_preview() {
 	$attachments = get_option('ewww_image_optimizer_bulk_attachments');
+// make sure there are some attachments to optimize
 	if (count($attachments) < 1) {
 		echo '<p>You don’t appear to have uploaded any images yet.</p>';
 	return;
@@ -11,13 +11,10 @@ function ewww_image_optimizer_bulk_preview() {
 <div class="wrap"> 
 <div id="icon-upload" class="icon32"><br /></div><h2>Bulk EWWW Image Optimize </h2>
 <?php 
-//$styles = $GLOBALS['wp_styles']->registered;
-//print_r($styles);
-// make sure there are some attachments to optimize
         // get the value of the wordpress upload directory
-        $upload_dir = wp_upload_dir();
+//        $upload_dir = wp_upload_dir();
         // set the location of our temporary status file
-        $progress_file = $upload_dir['basedir'] . "/ewww.tmp";
+//        $progress_file = $upload_dir['basedir'] . "/ewww.tmp";
 	// we have attachments to work with, but need to ask for confirmation first
 	$resume = get_option('ewww_image_optimizer_bulk_resume');
 	if (empty($resume)) {
@@ -56,7 +53,9 @@ function ewww_image_optimizer_bulk_preview() {
 }
 
 // prepares the bulk operation and the pulls in the javascript 
-function ewww_image_optimizer_bulk_script() {
+function ewww_image_optimizer_bulk_script($hook) {
+	if ('media_page_ewww-image-optimizer-bulk' != $hook)
+		return;
         // initialize a few variables for the bulk operation
         $attachments = null;
       //  $auto_start = false;
@@ -104,15 +103,18 @@ function ewww_image_optimizer_bulk_script() {
 			'fields' => 'ids'
                 ));
         }
-	echo count($attachments);
-	// TODO: if WP < 3.1, we will use the 'hacky' way below
-/*	$i = 0;
-	foreach( $attachments as $attachment ) {
-		$new_attachments[$i]['ID'] = $attachment->ID;
-		$new_attachments[$i]['post_name'] = $attachment->post_name;
-		$i++;
+	// if WP < 3.1, we will use the 'hacky' way below
+	global $wp_version;
+	$my_version = $wp_version;
+	substr($my_version, 0, 3);
+	if ( $my_version < 3.1 ) {
+		$i = 0;
+		foreach( $attachments as $attachment ) {
+			$new_attachments[$i] = $attachment->ID;
+			$i++;
+		}
+		$attachments = $new_attachments;
 	}
-	$attachments = $new_attachments;*/
 	update_option('ewww_image_optimizer_bulk_attachments', $attachments);
         // prep $attachments for storing in a file
 	wp_enqueue_script('ewwwbulkscript', plugins_url('/pageload.js', __FILE__), array('jquery', 'jquery-ui-core', 'jquery-ui-widget', 'jquery-ui-progressbar'));
@@ -132,10 +134,9 @@ add_action('admin_enqueue_scripts', 'ewww_image_optimizer_bulk_script');
 // called by javascript to start some stuff (may not actually need this)
 function ewww_image_optimizer_bulk_initialize() {
 		// verify that an authorized user has started the optimizer
-//		if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
-//			wp_die( __( 'Cheatin&#8217; eh?' ) );
-//		} // TODO: just link back to the bulk optimize, instead of the resume button... or something
-// also implement js counter/status
+		if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
+			wp_die( __( 'Cheatin&#8217; eh?' ) );
+		} 
  ?>
 <!--			<form method="post" action="">If the bulk optimize is interrupted, press
 				<?php //wp_nonce_field( 'ewww-image-optimizer-bulk', '_wpnonce'); ?>
@@ -178,8 +179,11 @@ function ewww_image_optimizer_bulk_initialize() {
 
 // called by javascript to process each image in the loop
 function ewww_image_optimizer_bulk_loop() {
+		if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
+			wp_die( __( 'Cheatin&#8217; eh?' ) );
+		} 
 		// retrieve the time when the bulk optimizer starts
-		$started = time();
+		$started = microtime(true);
         // get the value of the wordpress upload directory
         $upload_dir = wp_upload_dir();
         // set the location of our temporary status file
@@ -230,9 +234,9 @@ function ewww_image_optimizer_bulk_loop() {
 					}
 				}
 				// calculate how much time has elapsed since we started
-				$elapsed = time() - $started;
+				$elapsed = microtime(true) - $started;
 				// output how much time has elapsed since we started
-				echo "Elapsed: $elapsed seconds</p>";
+				echo "Elapsed: " . round($elapsed, 3) . " seconds</p>";
 				// update the metadata for the current attachment
 				wp_update_attachment_metadata( $attachment, $meta );
 		array_shift($attachments);
@@ -247,6 +251,9 @@ function ewww_image_optimizer_bulk_loop() {
 
 // called by javascript to cleanup after ourselves
 function ewww_image_optimizer_bulk_cleanup() {
+		if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
+			wp_die( __( 'Cheatin&#8217; eh?' ) );
+		} 
 		update_option('ewww_image_optimizer_bulk_resume', '');
 		update_option('ewww_image_optimizer_bulk_attachments', '');
 		// we've finished all the attachments, so delete the temp file

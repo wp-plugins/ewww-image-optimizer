@@ -13,7 +13,6 @@ function currentTime(){
 window.onload=function(){
   clearTimeout(loopTime);
 }*/
-// TODO: implement error handling if something gets interrupted
 jQuery(document).ready(function($) {
 	$('#bulk-start').submit(function() {
 		document.getElementById('bulk-forms').style.display='none';
@@ -36,7 +35,7 @@ jQuery(document).ready(function($) {
 		        };
 			$('#bulk-progressbar').progressbar("option", "value", i );
 			$('#bulk-counter').html('Optimized ' + i + '/' + ewww_vars.attachments.length);
-		        $.post(ajaxurl, loop_data, function(response) {
+		        var jqxhr = $.post(ajaxurl, loop_data, function(response) {
 				i++;
 		                $('#bulk-status').append(response);
 				if (i < ewww_vars.attachments.length) {
@@ -52,7 +51,10 @@ jQuery(document).ready(function($) {
 				        });
 				}
 				
-		        });
+		        })
+			.fail(function() { 
+				$('#bulk-loading').html('<p style="color: red"><b>Operation Interrupted</b></p>');
+			});
 		}
 		return false;
 	});
