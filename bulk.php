@@ -18,7 +18,7 @@ function ewww_image_optimizer_bulk_preview() {
 	// we have attachments to work with, but need to ask for confirmation first
 	$resume = get_option('ewww_image_optimizer_bulk_resume');
 	if (empty($resume)) {
-		$button_text = 'Run all my images through image optimizers right now';
+		$button_text = 'Start optimizing';
 	} else {
 		$button_text = 'Resume previous bulk operation';
 	}
@@ -27,8 +27,8 @@ function ewww_image_optimizer_bulk_preview() {
 		<div id="bulk-progressbar"></div>
 		<div id="bulk-counter"></div>
 		<div id="bulk-status"></div>
-		<div id="bulk-forms"><p>This tool will run all of the images in your media library through the Linux image optimization programs.</p>
-<!--		<p>We found <?php //echo sizeof($attachments); ?> images in your media library.</p>-->
+		<div id="bulk-forms"><p>This tool can optimize large batches (or all) of images from your media library.</p>
+		<p>We have <?php echo count($attachments); ?> images to optimize.</p>
 		<form id="bulk-start" method="post" action="">
 			<?php //wp_nonce_field( 'ewww-image-optimizer-bulk', '_wpnonce'); ?>
 			<input type="submit" class="button-secondary action" value="<?php echo $button_text; ?>" />
@@ -37,7 +37,6 @@ function ewww_image_optimizer_bulk_preview() {
 		// check for an abandoned temp file and offer an option to resume
 		if (!empty($resume)): 
 ?>
-			<!--<p>It appears that a previous bulk optimization was interrupted. Would you like to continue where we left off?</p>-->
 			<p>If you would like to start over again, press the <b>Reset Status</b> button to reset the bulk operation status.</p>
 			<form method="post" action="">
 				<?php wp_nonce_field( 'ewww-image-optimizer-bulk', '_wpnonce'); ?>

@@ -24,6 +24,7 @@ jQuery(document).ready(function($) {
 	        $.post(ajaxurl, init_data, function(response) {
 	                $('#bulk-loading').html(response);
 			$('#bulk-progressbar').progressbar({ max: ewww_vars.attachments.length });
+			$('#bulk-counter').html('Optimized 0/' + ewww_vars.attachments.length);
 			processImage();
 	        });
 		function processImage () {
@@ -33,10 +34,10 @@ jQuery(document).ready(function($) {
 				_wpnonce: ewww_vars._wpnonce,
 				attachment: attachment_id,
 		        };
-			$('#bulk-progressbar').progressbar("option", "value", i );
-			$('#bulk-counter').html('Optimized ' + i + '/' + ewww_vars.attachments.length);
 		        var jqxhr = $.post(ajaxurl, loop_data, function(response) {
 				i++;
+				$('#bulk-progressbar').progressbar("option", "value", i );
+				$('#bulk-counter').html('Optimized ' + i + '/' + ewww_vars.attachments.length);
 		                $('#bulk-status').append(response);
 				if (i < ewww_vars.attachments.length) {
 					processImage();
