@@ -397,52 +397,15 @@ function ewww_image_optimizer_install_tools () {
 		}
 	}
 	list ($jpegtran_src, $optipng_src, $gifsicle_src, $jpegtran_dst, $optipng_dst, $gifsicle_dst) = ewww_image_optimizer_install_paths();
-	/*if (PHP_OS == 'WINNT') {
-		$gifsicle_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'gifsicle.exe';
-		$optipng_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'optipng.exe';
-		$jpegtran_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'jpegtran.exe';
-		$gifsicle_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle.exe';
-		$optipng_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng.exe';
-		$jpegtran_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran.exe';
-	}
-	if (PHP_OS == 'Darwin') {
-		$gifsicle_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'gifsicle-mac';
-		$optipng_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'optipng-mac';
-		$jpegtran_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'jpegtran-mac';
-		$gifsicle_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle';
-		$optipng_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng';
-		$jpegtran_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran';
-	}
-	if (PHP_OS == 'FreeBSD') {
-		$gifsicle_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'gifsicle-fbsd';
-		$optipng_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'optipng-fbsd';
-		$jpegtran_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'jpegtran-fbsd';
-		$gifsicle_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle';
-		$optipng_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng';
-		$jpegtran_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran';
-	}
-	if (PHP_OS == 'Linux') {
-		$gifsicle_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'gifsicle-linux';
-		$optipng_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'optipng-linux';
-		$jpegtran_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'jpegtran-linux';
-		$gifsicle_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle';
-		$optipng_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng';
-		$jpegtran_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran';
-	}*/
-//	if (PHP_OS == 'Darwin' || PHP_OS == 'WINNT' || PHP_OS == 'FreeBSD') {
-		if (!file_exists($jpegtran_dst)) {
-			if (!copy($jpegtran_src, $jpegtran_dst)) {
-				$toolfail = true;
-			}
-		} else if (filesize($jpegtran_dst) != filesize($jpegtran_src)) {
-			if (!copy($jpegtran_src, $jpegtran_dst)) {
-				$toolfail = true;
-			}
+	if (!file_exists($jpegtran_dst)) {
+		if (!copy($jpegtran_src, $jpegtran_dst)) {
+			$toolfail = true;
 		}
-//	}
-//	if (PHP_OS != 'WINNT') {
-//	}
-	//if (PHP_OS != 'FreeBSD') {
+	} else if (filesize($jpegtran_dst) != filesize($jpegtran_src)) {
+		if (!copy($jpegtran_src, $jpegtran_dst)) {
+			$toolfail = true;
+		}
+	}
 	if (!file_exists($gifsicle_dst)) {
 		if (!copy($gifsicle_src, $gifsicle_dst)) {
 			$toolfail = true;
@@ -461,7 +424,6 @@ function ewww_image_optimizer_install_tools () {
 			$toolfail = true;
 		}
 	}
-	//}
 	if (PHP_OS != 'WINNT') {
 		$jpegtran_perms = substr(sprintf('%o', fileperms($jpegtran_dst)), -4);
 		if ($jpegtran_perms != '0755') {

@@ -59,15 +59,4 @@ jQuery(document).ready(function($) {
 		}
 		return false;
 	});
-/*function processImage (response) {
-	$('#bulk-status').html(response);
-	var attachment_id = ewww_vars.attachments.unshift();
-        var loop_data = {
-                action: 'bulk_loop',
-		_wpnonce: ewww_vars._wpnonce,
-		attachment: attachment_id
-        };
-	$('#bulk-id').html(attachment_id);
-        $.post(ajaxurl, loop_data, processImage(response) );
-}*/
 });
