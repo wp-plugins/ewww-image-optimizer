@@ -13,6 +13,7 @@ function currentTime(){
 window.onload=function(){
   clearTimeout(loopTime);
 }*/
+// TODO: add 'currently optimizing call'
 jQuery(document).ready(function($) {
 	$('#bulk-start').submit(function() {
 		document.getElementById('bulk-forms').style.display='none';
@@ -29,6 +30,14 @@ jQuery(document).ready(function($) {
 	        });
 		function processImage () {
 			attachment_id = ewww_vars.attachments[i];
+		        var filename_data = {
+		                action: 'bulk_filename',
+				_wpnonce: ewww_vars._wpnonce,
+				attachment: attachment_id,
+		        };
+			$.post(ajaxurl, filename_data, function(response) {
+			        $('#bulk-loading').html(response);
+			});
 		        var loop_data = {
 		                action: 'bulk_loop',
 				_wpnonce: ewww_vars._wpnonce,

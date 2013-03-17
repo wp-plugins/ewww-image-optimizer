@@ -128,6 +128,22 @@ function ewww_image_optimizer_bulk_initialize() {
 	die();
 }
 
+// called by javascript to output filename of attachment in progress
+function ewww_image_optimizer_bulk_filename() {
+	// verify that an authorized user has started the optimizer
+	if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
+		wp_die( __( 'Cheatin&#8217; eh?' ) );
+	}
+	// get the attachment ID of the current attachment
+	$attachment_ID = $_POST['attachment'];
+	$meta = wp_get_attachment_metadata( $attachment_ID );
+	// generate the WP spinner image for display
+	$loading_image = includes_url('images/wpspin.gif');
+	// let the user know that we are beginning
+	echo "<p>Optimizing <b>" . $meta['file'] . "</b>&nbsp;<img src='$loading_image' alt='loading'/></p>";
+	die();
+}
+ 
 // called by javascript to process each image in the loop
 function ewww_image_optimizer_bulk_loop() {
 	// verify that an authorized user has started the optimizer
@@ -183,6 +199,7 @@ function ewww_image_optimizer_bulk_cleanup() {
 	die();
 }
 add_action('wp_ajax_bulk_init', 'ewww_image_optimizer_bulk_initialize');
+add_action('wp_ajax_bulk_filename', 'ewww_image_optimizer_bulk_filename');
 add_action('wp_ajax_bulk_loop', 'ewww_image_optimizer_bulk_loop');
 add_action('wp_ajax_bulk_cleanup', 'ewww_image_optimizer_bulk_cleanup');
 ?>
