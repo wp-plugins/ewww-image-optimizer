@@ -91,21 +91,37 @@ function ewww_image_optimizer_md5check($path) {
 		'4da4092708650ceb79df19d528e7956b',
 		'9d482b93d4129f7e87ce36c5e650de0c',
 		'1c251658834162b01913702db0013c08',
+		'dabf8173725e15d866f192f77d9e3883',
 		//optipng
 		'4eb91937291ce5038d0c68f5f2edbcfd',
 		'899e3c569080a55bcc5de06a01c8e23a',
 		'0467bd0c73473221d21afbc5275503e4',
+		'293e26924a274c6185a06226619d8e02',
 		//gifsicle
 		'2384f770d307c42b9c1e53cdc8dd662d',
 		'24fc5f33b33c0d11fb2e88f5a93949d0',
 		'e4a14bce92755261fe21798c295d06db',
+		'9ddef564fed446700a3a7303c39610a3',
 		//pngout
 		'2b62778559e31bc750dc2dcfd249be32', 
 		'ea8655d1a1ef98833b294fb74f349c3e',
 		'a30517e045076cab1bb5b5f3a57e999e',
 		'6e60aafca40ecc0e648c442f83fa9688',
 		'1882ae8efb503c4abdd0d18d974d5fa3',
-		'aad1f8107955876efb0b0d686450e611');
+		'aad1f8107955876efb0b0d686450e611',
+		'991f9e7d2c39cb1f658684971d583468',
+		'5de47b8cc0943eeceaf1683cb544b4a0',
+		'c30de32f31259b79ffb13ca0d9d7a77d',
+		'670a0924e9d042be2c60cd4f3ce1d975',
+		'c77c5c870755e9732075036a548d8e61',
+		'37cdbfcdedc9079f23847f0349efa11c',
+		'8bfc5e0e6f0f964c7571988b0e9e2017',
+		'b8ead81e0ed860d6461f67d60224ab7b',
+		'f712daee5048d5d70197c5f339ac0b02',
+		'e006b880f9532af2af0811515218bbd4',
+		'b175b4439b054a61e8a41eca9a6e3505',
+		'eabcbabde6c7c568e95afd73b7ed096e'
+		);
 	foreach ($valid_md5sums as $md5_sum) {
 		if ($md5_sum == md5_file($path)) {
 			return TRUE;
@@ -197,7 +213,7 @@ function ewww_image_optimizer_path_check() {
 	$pngout = false;
 	// for Windows, everything must be in the wp-content/ewww folder, so that is all we check (unless some bright spark figures out how to put them in their system path on Windows...)
 	if ('WINNT' == PHP_OS) {
-		//add md5 checks
+		//TODO: add md5 checks
 		if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran.exe')) {
 			$jpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran.exe';
 			if (ewww_image_optimizer_tool_found($jpt, 'j')) {
@@ -2036,16 +2052,17 @@ function ewww_image_optimizer_install_pngout () {
 	if (PHP_OS == 'FreeBSD') {
 		$os_string = 'bsd';
 	}
+	$latest = '20130221';
 	if (PHP_OS == 'Linux' || PHP_OS == 'FreeBSD') {
-		if (!file_exists(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-' . $os_string . '-static.tar.gz')) {
-			ewww_image_optimizer_download_file('http://static.jonof.id.au/dl/kenutils/pngout-20120530-' . $os_string . '-static.tar.gz', EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-' . $os_string . '-static.tar.gz');
+		if (!file_exists(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-' . $os_string . '-static.tar.gz')) {
+			ewww_image_optimizer_download_file('http://static.jonof.id.au/dl/kenutils/pngout-' . $latest . '-' . $os_string . '-static.tar.gz', EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-' . $os_string . '-static.tar.gz');
 		}
 		$arch_type = php_uname('m');//$_REQUEST['arch'];
 		/*if (PHP_OS == 'FreeBSD' && $arch_type == 'x86_64') {
 			$arch_type = 'amd64';
 		}*/
-		exec("$tar xzf " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-' . $os_string . '-static.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-20120530-' . $os_string . '-static/' . $arch_type . '/pngout-static');
-		rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-' . $os_string . '-static/' . $arch_type . '/pngout-static', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static');
+		exec("$tar xzf " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-' . $os_string . '-static.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-' . $latest . '-' . $os_string . '-static/' . $arch_type . '/pngout-static');
+		rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-' . $os_string . '-static/' . $arch_type . '/pngout-static', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static');
 		/*switch ($arch_type) {
 			case 'i386':
 				exec("$tar xzf " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-' . $os_string . '-static.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-20120530-' . $os_string . '-static/i386/pngout-static');
@@ -2078,11 +2095,11 @@ function ewww_image_optimizer_install_pngout () {
 	}
 	if (PHP_OS == 'Darwin') {
 	// from http://static.jonof.id.au/dl/kenutils/pngout-20120530-darwin.tar.gz
-		if (!file_exists(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-darwin.tar.gz')) {
-			ewww_image_optimizer_download_file('http://static.jonof.id.au/dl/kenutils/pngout-20120530-darwin.tar.gz', EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-darwin.tar.gz');
+		if (!file_exists(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-darwin.tar.gz')) {
+			ewww_image_optimizer_download_file('http://static.jonof.id.au/dl/kenutils/pngout-' . $latest . '-darwin.tar.gz', EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-darwin.tar.gz');
 		}
-		exec("$tar xzf " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-darwin.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-20120530-darwin/pngout');
-		rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-20120530-darwin/pngout', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static');
+		exec("$tar xzf " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-darwin.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-' . $latest . '-darwin/pngout');
+		rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-darwin/pngout', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static');
 		chmod(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static', 0755);
 		$pngout_version = ewww_image_optimizer_tool_found(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static', 'p');
 		//exec(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static 2>&1', $pngout_version);
@@ -2182,7 +2199,7 @@ function ewww_image_optimizer_options () {
 				echo "\n";
 				echo '<b>pngout:</b> '; 
 				$pngout_version = ewww_image_optimizer_tool_found(EWWW_IMAGE_OPTIMIZER_PNGOUT, 'p');
-				if (!empty($pngout_version) && (preg_match('/May 30 2012/', $pngout_version) || preg_match('/Jul  2 2011/', $pngout_version))) { 
+				if (!empty($pngout_version) && (preg_match('/Feb 21 2013/', $pngout_version))) { 
 					echo '<span style="color: green; font-weight: bolder">OK</span>&emsp;version: ' . preg_replace('/PNGOUT \[.*\)\s*?/', '', $pngout_version) . '<br />'; 
 				} elseif (!empty($pngout_version) && preg_match('/PNGOUT/', $pngout_version)) {
 					echo '<span style="color: orange; font-weight: bolder">UPDATE AVAILABLE</span>*&emsp;<b>Install</b> <a href="admin.php?action=ewww_image_optimizer_install_pngout">automatically</a> | <a href="http://advsys.net/ken/utils.htm">manually</a>&emsp;<b>version:</b> ' . preg_replace('/PNGOUT \[.*\)\s*?/', '', $pngout_version) . '<br />'; 
