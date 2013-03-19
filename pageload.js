@@ -13,7 +13,6 @@ function currentTime(){
 window.onload=function(){
   clearTimeout(loopTime);
 }*/
-// TODO: add 'currently optimizing call'
 jQuery(document).ready(function($) {
 	$('#bulk-start').submit(function() {
 		document.getElementById('bulk-forms').style.display='none';

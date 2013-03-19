@@ -13,7 +13,7 @@ Version: 1.3.9
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
-
+// TODO: update gifsicle to 1.70
 /**
  * Constants
  */

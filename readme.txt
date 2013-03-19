@@ -3,7 +3,7 @@ Contributors: nosilver4u
 Tags: images, image, attachments, attachment
 Requires at least: 2.9
 Tested up to: 3.5.1
-Stable tag: 1.3.8
+Stable tag: 1.3.9
 License: GPLv3
 
 Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
@@ -64,22 +64,27 @@ Pngout is new in version 1.1.0 and is not enabled by default because it is resou
 1. Uncompress optipng: *tar xvzf optipng-0.7.4.tar.gz && cd optipng-0.7.4*
 1. Configure and compile optipng: *./configure && make*
 1. If you have root access, install it with *make install*
-1. If not, copy the binary from */optipng-0.7.4/src/optipng/optipng* to the ewww tool folder (wordpress/wp-content/ewww/).
+1. If not, copy the binary from */optipng-0.7.4/src/optipng/optipng* to the ewww tool folder (wordpress/wp-content/ewww/optipng-custom).
 
 = Installing jpegtran =
 
-1. Click the link in the Plugin Status area, or download it manually and place it in the plugin folder (wordpress/wp-content/ewww/).
-1. If you own your own server, or have root access, it is part of the libjpeg-turbo-progs on Debian/Ubuntu, and likely something similar on rpm distros (Fedora, CentOS, RHEL, SuSE).
+1. Jpegtran is now bundled with the plugin. If it isn't working for some reason, keep going...
+1. If you have root access to your server, jpegtran is part of the libjpeg-turbo-progs on Debian/Ubuntu, and likely something similar on rpm distros (Fedora, CentOS, RHEL, SuSE). If you are on shared hosting, read on... These steps can/should generally all be done via the command line
+1. Download the latest stable version of [jpegtran](http://www.ijg.org/) to your home directory
+1. Uncompress jpegtran: *tar xvzf jpegsrc.v9.tar.gz && cd jpeg-9*
+1. Configure and compile jpegtran: *./configure --disable-shared && make*
+1. If you have root access, install it with *make install*
+1. If not, copy the binary from */jpeg-9/jpegtran* to the ewww tool folder (wordpress/wp-content/ewww/jpegtran-custom).
 
 = Installing gifsicle =
 
 1. Gifsicle is now bundled with the plugin. If it isn't working for you, keep going...
 1. If you have root access to your server, you can install gifsicle from the standard repositories (yum/rpm or apt/deb). If you are on shared hosting, read on... These steps can/should generally all be done via the command line
 1. Download the latest version of [gifsicle](http://www.lcdf.org/gifsicle/) to your home directory
-1. Uncompress gifsicle: *tar xvzf gifsicle-1.67.tar.gz && cd gifsicle-1.67*
+1. Uncompress gifsicle: *tar xvzf gifsicle-1.70.tar.gz && cd gifsicle-1.70*
 1. Configure and compile gifsicle (we disable gifview and gifdiff as they are not needed): *./configure --disable-gifdiff --disable-gifview && make*
 1. If you have root access, install it with *make install*
-1. If not, copy the binary from */gifsicle-1.67/src/gifsicle* to the ewww tool folder (wordpress/wp-content/ewww/).
+1. If not, copy the binary from */gifsicle-1.70/src/gifsicle* to the ewww tool folder (wordpress/wp-content/ewww/gifsicle-custom).
 
 == Frequently Asked Questions ==
 
@@ -97,7 +102,7 @@ I've tested it on Windows (with Apache), Linux, Mac OSX, and FreeBSD.
 
 = How are JPGs optimized? =
 
-Using the command *jpegtran -copy all -optimize -progressive original-file > optimized-file*. Optionally, the -copy switch gets the 'none' parameter if you choose to strip metadata from your JPGs on the options page.
+Using the command *jpegtran -copy all -optimize -progressive -outfile optimized-file original-file*. Optionally, the -copy switch gets the 'none' parameter if you choose to strip metadata from your JPGs on the options page.
 
 = How are PNGs optimized? =
 
@@ -128,7 +133,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * added: Windows support, includes gifsicle, optipng, and jpegtran executables
 * added: FreeBSD support, includes gifsicle, optipng, and jpegtran executables
 * rewrote calls to jpegtran to avoid shell-redirection and work in Windows
-* jpegtran is now bundled for all platforms
+* jpegtran is now bundled for all platformsi
+* updated gifsicle to 1.70
+* pngout installer and version updated to February 20-21 2013
 * removed use of shell_exec()
 * fixed warning on ImageMagick version check
 * revamped binary checking, should work on more hosts
