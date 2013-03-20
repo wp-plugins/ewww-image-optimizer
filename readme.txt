@@ -3,7 +3,7 @@ Contributors: nosilver4u
 Tags: images, image, attachments, attachment
 Requires at least: 2.9
 Tested up to: 3.5.1
-Stable tag: 1.3.9
+Stable tag: 1.4.0
 License: GPLv3
 
 Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
@@ -294,6 +294,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * First release (forked from CW Image Optimizer)
 
 == Upgrade Notice ==
+
+= 1.4.0 =
+sorry about the accidental release of 1.3.9, use this one instead
 
 = 1.3.7 =
 If you are using 1.3.6 without problems, you can safely ignore 1.3.7. It is a compatibility fix only.
