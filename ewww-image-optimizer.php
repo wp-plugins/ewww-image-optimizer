@@ -13,7 +13,6 @@ Version: 1.3.9
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
-// TODO: update gifsicle to 1.70
 /**
  * Constants
  */
@@ -105,6 +104,7 @@ function ewww_image_optimizer_md5check($path) {
 		'aad47bafdb2bc8a9f0755f57f94d6eaf',
 		'46360c01622ccb514e9e7ef1ac5398f0',
 		'44273fad7b3fd1145bfcf35189648f66',
+		'4568ef450ec9cd73bab55d661fb167ec',
 		//pngout
 		'2b62778559e31bc750dc2dcfd249be32', 
 		'ea8655d1a1ef98833b294fb74f349c3e',
@@ -2125,7 +2125,6 @@ function ewww_image_optimizer_install_pngout () {
 
 // displays the EWWW IO options and provides one-click install for the optimizer utilities
 function ewww_image_optimizer_options () {
-// TODO: add md5sums to the debug
 	if (isset($_REQUEST['pngout'])) {
 		if ($_REQUEST['pngout'] == 'success') { ?>
 			<div id='ewww-image-optimizer-pngout-success' class='updated fade'>
