@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate image optimizers into WordPress.
- * @version 1.3.9
+ * @version 1.4.0
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -9,11 +9,10 @@ Plugin Name: EWWW Image Optimizer
 Plugin URI: http://www.shanebishop.net/ewww-image-optimizer/
 Description: Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
 Author: Shane Bishop
-Version: 1.3.9
+Version: 1.4.0
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
-
 /**
  * Constants
  */
@@ -102,6 +101,10 @@ function ewww_image_optimizer_md5check($path) {
 		'24fc5f33b33c0d11fb2e88f5a93949d0',
 		'e4a14bce92755261fe21798c295d06db',
 		'9ddef564fed446700a3a7303c39610a3',
+		'aad47bafdb2bc8a9f0755f57f94d6eaf',
+		'46360c01622ccb514e9e7ef1ac5398f0',
+		'44273fad7b3fd1145bfcf35189648f66',
+		'4568ef450ec9cd73bab55d661fb167ec',
 		//pngout
 		'2b62778559e31bc750dc2dcfd249be32', 
 		'ea8655d1a1ef98833b294fb74f349c3e',
@@ -213,28 +216,27 @@ function ewww_image_optimizer_path_check() {
 	$pngout = false;
 	// for Windows, everything must be in the wp-content/ewww folder, so that is all we check (unless some bright spark figures out how to put them in their system path on Windows...)
 	if ('WINNT' == PHP_OS) {
-		//TODO: add md5 checks
 		if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran.exe')) {
 			$jpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran.exe';
-			if (ewww_image_optimizer_tool_found($jpt, 'j')) {
+			if (ewww_image_optimizer_tool_found($jpt, 'j') && ewww_image_optimizer_md5check($jpt)) {
 				$jpegtran = $jpt;
 			}
 		}
 		if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng.exe')) {
 			$opt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng.exe';
-			if (ewww_image_optimizer_tool_found($opt, 'o')) {
+			if (ewww_image_optimizer_tool_found($opt, 'o') && ewww_image_optimizer_md5check($opt)) {
 				$optipng = $opt;
 			}
 		}
 		if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle.exe')) {
 			$gpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle.exe';
-			if (ewww_image_optimizer_tool_found($gpt, 'g')) {
+			if (ewww_image_optimizer_tool_found($gpt, 'g') && ewww_image_optimizer_md5check($gpt)) {
 				$gifsicle = $gpt;
 			}
 		}
 		if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout.exe')) {
 			$ppt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout.exe';
-			if (ewww_image_optimizer_tool_found($ppt, 'p')) {
+			if (ewww_image_optimizer_tool_found($ppt, 'p') && ewww_image_optimizer_md5check($ppt)) {
 				$pngout = $ppt;
 			}
 		}
@@ -2178,7 +2180,7 @@ function ewww_image_optimizer_options () {
 				} elseif (!empty($optipng_version)) {
 						echo '<span style="color: orange; font-weight: bolder">UPDATE AVAILABLE</span>*&emsp;<b>Copy</b> binary from ' . $optipng_src . ' to ' . $optipng_dst . ' or to a system path (like /usr/local/bin), OR <a href="http://prdownloads.sourceforge.net/optipng/optipng-0.7.4.tar.gz?download"><b>Download</b> optipng source</a>&emsp;<b>version:</b> ' . $optipng_version . '<br />';
 				} else {
-						echo '<span style="color: red; font-weight: bolder">MISSING</span>&emsp;<b>Copy</b> binary from ' . $optipng_src . ' to ' . $optipng_dst . ' or to a system path (like /usr/local/bin), OR <<a href="http://prdownloads.sourceforge.net/optipng/optipng-0.7.4.tar.gz?download"><b>Download</b> optipng source</a><br />';
+						echo '<span style="color: red; font-weight: bolder">MISSING</span>&emsp;<b>Copy</b> binary from ' . $optipng_src . ' to ' . $optipng_dst . ' or to a system path (like /usr/local/bin), OR <a href="http://prdownloads.sourceforge.net/optipng/optipng-0.7.4.tar.gz?download"><b>Download</b> optipng source</a><br />';
 				}
 			}
 			echo "\n";
@@ -2186,12 +2188,12 @@ function ewww_image_optimizer_options () {
 				echo "\n";
 				echo '<b>gifsicle:</b> ';
 				$gifsicle_version = ewww_image_optimizer_tool_found(EWWW_IMAGE_OPTIMIZER_GIFSICLE, 'g');
-				if (!empty($gifsicle_version) && (preg_match('/1.68/', $gifsicle_version) || preg_match('/1.69/', $gifsicle_version))) { 
+				if (!empty($gifsicle_version) && preg_match('/1.70/', $gifsicle_version)) { 
 					echo '<span style="color: green; font-weight: bolder">OK</span>&emsp;version: ' . $gifsicle_version . '<br />'; 
 				} elseif (!empty($gifsicle_version) && preg_match('/LCDF Gifsicle/', $gifsicle_version)) {
-						echo '<span style="color: orange; font-weight: bolder">UPDATE AVAILABLE</span>*&emsp;<b>Copy</b> binary from ' . $gifsicle_src . ' to ' . $gifsicle_dst . ' or to a system path (like /usr/local/bin), OR <a href="http://www.lcdf.org/gifsicle/gifsicle-1.69.tar.gz"><b>Download</b> gifsicle source</a>&emsp;<b>version:</b> ' . $gifsicle_version . '<br />';
+						echo '<span style="color: orange; font-weight: bolder">UPDATE AVAILABLE</span>*&emsp;<b>Copy</b> binary from ' . $gifsicle_src . ' to ' . $gifsicle_dst . ' or to a system path (like /usr/local/bin), OR <a href="http://www.lcdf.org/gifsicle/gifsicle-1.70.tar.gz"><b>Download</b> gifsicle source</a>&emsp;<b>version:</b> ' . $gifsicle_version . '<br />';
 				} else {
-						echo '<span style="color: red; font-weight: bolder">MISSING</span>&emsp;<b>Copy</b> binary from ' . $gifsicle_src . ' to ' . $gifsicle_dst . ' or to a system path (like /usr/local/bin), OR <<a href="http://www.lcdf.org/gifsicle/gifsicle-1.68.tar.gz"><b>Download</b> gifsicle source</a><br />';
+						echo '<span style="color: red; font-weight: bolder">MISSING</span>&emsp;<b>Copy</b> binary from ' . $gifsicle_src . ' to ' . $gifsicle_dst . ' or to a system path (like /usr/local/bin), OR <a href="http://www.lcdf.org/gifsicle/gifsicle-1.70.tar.gz"><b>Download</b> gifsicle source</a><br />';
 				}
 			}
 			echo "\n";
@@ -2199,7 +2201,7 @@ function ewww_image_optimizer_options () {
 				echo "\n";
 				echo '<b>pngout:</b> '; 
 				$pngout_version = ewww_image_optimizer_tool_found(EWWW_IMAGE_OPTIMIZER_PNGOUT, 'p');
-				if (!empty($pngout_version) && (preg_match('/Feb 21 2013/', $pngout_version))) { 
+				if (!empty($pngout_version) && (preg_match('/Feb 2(0|1) 2013/', $pngout_version))) { 
 					echo '<span style="color: green; font-weight: bolder">OK</span>&emsp;version: ' . preg_replace('/PNGOUT \[.*\)\s*?/', '', $pngout_version) . '<br />'; 
 				} elseif (!empty($pngout_version) && preg_match('/PNGOUT/', $pngout_version)) {
 					echo '<span style="color: orange; font-weight: bolder">UPDATE AVAILABLE</span>*&emsp;<b>Install</b> <a href="admin.php?action=ewww_image_optimizer_install_pngout">automatically</a> | <a href="http://advsys.net/ken/utils.htm">manually</a>&emsp;<b>version:</b> ' . preg_replace('/PNGOUT \[.*\)\s*?/', '', $pngout_version) . '<br />'; 
@@ -2272,11 +2274,15 @@ function ewww_image_optimizer_options () {
 					$gifsicle_perms = substr(sprintf('%o', fileperms(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle')), -4);
 					$optipng_perms = substr(sprintf('%o', fileperms(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng')), -4);
 					$ewww_perms = substr(sprintf('%o', fileperms(EWWW_IMAGE_OPTIMIZER_TOOL_PATH)), -4);
-					echo '<b>jpegtran permissions:</b> ' . $jpegtran_perms . '<br />';
-					echo '<b>gifsicle permissions:</b> ' . $gifsicle_perms . '<br />';
-					echo '<b>optipng permissions:</b> ' . $optipng_perms . '<br />';
+					echo '<b>bundled jpegtran permissions:</b> ' . $jpegtran_perms . '<br />';
+					echo '<b>bundled gifsicle permissions:</b> ' . $gifsicle_perms . '<br />';
+					echo '<b>bundled optipng permissions:</b> ' . $optipng_perms . '<br />';
 					echo '<b>wp-content/ewww permissions:</b> ' . $ewww_perms . '<br />';
 				}
+				echo '<b>jpegtran checksum:</b> ' . md5_file(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran') . '<br />';
+				echo '<b>gifsicle checksum:</b> ' . md5_file(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle') . '<br />';
+				echo '<b>optipng checksum:</b> ' . md5_file(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng') . '<br />';
+				echo '<b>pngout checksum:</b> ' . md5_file(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static') . '<br />';
 				echo '<b>user:</b> ' . exec('/usr/bin/whoami') . '<br />';
 				echo '<b>Operating environment:</b> ' . php_uname('s') . ' ' . php_uname('r') . ' ' . php_uname('v') . ' ' . php_uname('m');
 			?></p></div>
