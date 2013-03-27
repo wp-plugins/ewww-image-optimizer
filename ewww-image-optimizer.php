@@ -205,6 +205,7 @@ function ewww_image_optimizer_tool_found($path, $tool) {
 
 // If the utitilites are in the content folder, we use that. Otherwise, we retrieve user specified paths or set defaults if all else fails. We also do a basic check to make sure we weren't given a malicious path.
 function ewww_image_optimizer_path_check() {
+	// TODO: separate the file checks into a separate function, and add php mime-type checking if feasible
 	if (ewww_image_optimizer_tool_found('/usr/bin/file', 'f')) {
 		$file = '/usr/bin/file';
 	} elseif (ewww_image_optimizer_tool_found('file', 'f')) {
@@ -752,6 +753,7 @@ function ewww_image_optimizer_restore() {
 	$file_path = $meta['file'];
 	// store absolute paths for older wordpress versions
 	$store_absolute_path = true;
+	// TODO: do a file_exists check instead, which should tell us that we have a full path, instead of this hackiness...
 	// WordPress >= 2.6.2: determine the absolute $file_path (http://core.trac.wordpress.org/changeset/8796)
 	// if the wp content folder is not contained in the file path
 	if (FALSE === strpos($file_path, WP_CONTENT_DIR)) {
@@ -863,6 +865,7 @@ function ewww_image_optimizer_delete ($id) {
 			$upload_dir = wp_upload_dir();
 			// retrieve the path of the upload folder
 			$upload_path = trailingslashit( $upload_dir['basedir'] );
+	// TODO: do a file_exists check instead, which should tell us that we have a full path, instead of this hackiness...
 			// WordPress >= 2.6.2: determine the absolute $file_path (http://core.trac.wordpress.org/changeset/8796)
 			// if the wp content folder is not contained in the file path
 			if ( FALSE === strpos($file_path, WP_CONTENT_DIR) ) {
@@ -957,6 +960,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 	$path_in_upload = stripos(realpath($file), realpath($upload_path));
 	// see if the file path matches the location where wordpress is installed (for NextGEN and Grand FlAGallery)
 	$path_in_wp = stripos(realpath($file), realpath(ABSPATH));
+	// TODO: may end up just removing this check, since it doesn't really do anything useful for us...
 	// check that the file is within the WP uploads folder or the wordpress folder
 	if (0 !== $path_in_upload && 0 !== $path_in_wp) {
 		// tell the user they can only process images in the upload directory or the wordpress folder
@@ -1639,6 +1643,7 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 	$upload_dir = wp_upload_dir();
 	// retrieve the path of the upload folder
 	$upload_path = trailingslashit( $upload_dir['basedir'] );
+	// TODO: do a file_exists check instead, which should tell us that we have a full path, instead of this hackiness...
 	// WordPress >= 2.6.2: determine the absolute $file_path (http://core.trac.wordpress.org/changeset/8796)
 	// if the wp content folder is not contained in the file path
 	if ( FALSE === strpos($file_path, WP_CONTENT_DIR) ) {
@@ -1873,6 +1878,7 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 		$upload_dir = wp_upload_dir();
 		// retrieve the wordpress upload folder path
 		$upload_path = trailingslashit( $upload_dir['basedir'] );
+	// TODO: do a file_exists check instead, which should tell us that we have a full path, instead of this hackiness...
 		// WordPress >= 2.6.2: determine the absolute $file_path (http://core.trac.wordpress.org/changeset/8796)
 		// if $file_path isn't an absolute path
 		if ( FALSE === strpos($file_path, WP_CONTENT_DIR) ) {
@@ -2122,7 +2128,7 @@ function ewww_image_optimizer_install_pngout () {
 	wp_redirect($sendback);
 	exit(0);
 }
-
+// TODO: add jpegtran permissions to debug
 // displays the EWWW IO options and provides one-click install for the optimizer utilities
 function ewww_image_optimizer_options () {
 	if (isset($_REQUEST['pngout'])) {
