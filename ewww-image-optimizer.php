@@ -755,8 +755,9 @@ function ewww_image_optimizer_restore() {
 	$store_absolute_path = true;
 	// TODO: do a file_exists check instead, which should tell us that we have a full path, instead of this hackiness...
 	// WordPress >= 2.6.2: determine the absolute $file_path (http://core.trac.wordpress.org/changeset/8796)
-	// if the wp content folder is not contained in the file path
-	if (FALSE === strpos($file_path, WP_CONTENT_DIR)) {
+	// if the path given is not the absolute path
+	if (FALSE === file_exists($file_path)) {
+	//if (FALSE === strpos($file_path, WP_CONTENT_DIR)) {
 		// don't store absolute paths
 		$store_absolute_path = false;
 		// retrieve the location of the wordpress upload folder
@@ -865,10 +866,10 @@ function ewww_image_optimizer_delete ($id) {
 			$upload_dir = wp_upload_dir();
 			// retrieve the path of the upload folder
 			$upload_path = trailingslashit( $upload_dir['basedir'] );
-	// TODO: do a file_exists check instead, which should tell us that we have a full path, instead of this hackiness...
 			// WordPress >= 2.6.2: determine the absolute $file_path (http://core.trac.wordpress.org/changeset/8796)
-			// if the wp content folder is not contained in the file path
-			if ( FALSE === strpos($file_path, WP_CONTENT_DIR) ) {
+			// if the path given is not the absolute path
+			if (FALSE === file_exists($file_path)) {
+			//if ( FALSE === strpos($file_path, WP_CONTENT_DIR) ) {
 				// don't store absolute paths
 				$store_absolute_path = false;
 				// generate the absolute path
@@ -953,21 +954,20 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 		return array($file, $msg, $converted, $original);
 	}
 	// retrieve the wordpress upload directory location
-	$upload_dir = wp_upload_dir();
+	/*$upload_dir = wp_upload_dir();
 	// do some cleanup on the upload location we retrieved
 	$upload_path = trailingslashit( $upload_dir['basedir'] );
 	// see if the file path matches the upload directory
 	$path_in_upload = stripos(realpath($file), realpath($upload_path));
 	// see if the file path matches the location where wordpress is installed (for NextGEN and Grand FlAGallery)
 	$path_in_wp = stripos(realpath($file), realpath(ABSPATH));
-	// TODO: may end up just removing this check, since it doesn't really do anything useful for us...
 	// check that the file is within the WP uploads folder or the wordpress folder
 	if (0 !== $path_in_upload && 0 !== $path_in_wp) {
 		// tell the user they can only process images in the upload directory or the wordpress folder
 		$msg = sprintf(__("<span class='code'>%s</span> must be within the wordpress or upload directory (<span class='code'>%s or %s</span>)", EWWW_IMAGE_OPTIMIZER_DOMAIN), htmlentities($file), $upload_path, ABSPATH);
 		// send back the above message
 		return array($file, $msg, $converted, $original);
-	}
+	}*/
 	// use finfo functions when available
 	if (function_exists('finfo_file') && defined('FILEINFO_MIME')) {
 		// create a finfo resource
@@ -1645,8 +1645,8 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 	$upload_path = trailingslashit( $upload_dir['basedir'] );
 	// TODO: do a file_exists check instead, which should tell us that we have a full path, instead of this hackiness...
 	// WordPress >= 2.6.2: determine the absolute $file_path (http://core.trac.wordpress.org/changeset/8796)
-	// if the wp content folder is not contained in the file path
-	if ( FALSE === strpos($file_path, WP_CONTENT_DIR) ) {
+	// if the path given is not the absolute path
+	if (FALSE === file_exists($file_path)) {
 		// don't store absolute paths
 		$store_absolute_path = false;
 		// generate the absolute path
@@ -1880,8 +1880,9 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 		$upload_path = trailingslashit( $upload_dir['basedir'] );
 	// TODO: do a file_exists check instead, which should tell us that we have a full path, instead of this hackiness...
 		// WordPress >= 2.6.2: determine the absolute $file_path (http://core.trac.wordpress.org/changeset/8796)
-		// if $file_path isn't an absolute path
-		if ( FALSE === strpos($file_path, WP_CONTENT_DIR) ) {
+		// if the path given is not the absolute path
+		if (FALSE === file_exists($file_path)) {
+		//if ( FALSE === strpos($file_path, WP_CONTENT_DIR) ) {
 			// find the absolute path
 			$file_path = $upload_path . $file_path;
 		}
