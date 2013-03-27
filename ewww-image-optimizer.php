@@ -2208,10 +2208,17 @@ function ewww_image_optimizer_options () {
 	<div class="wrap">
 		<div id="icon-options-general" class="icon32"><br /></div>
 		<h2>EWWW Image Optimizer Settings</h2>
-		<p><a href="http://wordpress.org/extend/plugins/ewww-image-optimizer/">Plugin Home Page</a> |
+		<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+		<a href="http://wordpress.org/extend/plugins/ewww-image-optimizer/">Plugin Home Page</a> |
 		<a href="http://wordpress.org/extend/plugins/ewww-image-optimizer/installation/">Installation Instructions</a> | 
 		<a href="http://wordpress.org/support/plugin/ewww-image-optimizer">Plugin Support</a> | 
-		<a id="debug" href="#">Debug (see below)</a></p>
+		<a id="debug" href="#">Debug (see below)</a> | 
+			<input type="hidden" name="cmd" value="_s-xclick">
+			<input type="hidden" name="hosted_button_id" value="QFXCW38HE24NY">
+			<input style="margin: 0px; padding: 0px" type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit" alt="Donate via Paypal">
+			<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+		</form>
+</p>
 		<div id="status" style="border: 1px solid #ccc; padding: 0 8px; border-radius: 12px;">
 			<h3>Plugin Status</h3>
 			<?php
