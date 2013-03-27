@@ -133,6 +133,53 @@ function ewww_image_optimizer_md5check($path) {
 	return FALSE;
 }
 
+// check the mimetype of the given file ($path) with various methods
+// valid values for $type are 'b' for binary or 'i' for image
+function ewww_image_optimizer_mimetype($path, $case) {
+	if (function_exists('finfo_file') && defined('FILEINFO_MIME')) {
+		// create a finfo resource
+		$finfo = finfo_open(FILEINFO_MIME);
+		// retrieve the mimetype
+		$type = explode(';', finfo_file($finfo, $path));
+		$type = $type[0];
+		finfo_close($finfo);
+	//	echo "finfo: $type <br>";
+	// see if we can use mime_content_type
+	} elseif (function_exists('mime_content_type')) {
+		// retrieve and store the mime-type
+		$type = mime_content_type($path);
+	//	echo "mime_content_type: $type <br>";
+	// see if we can use the getimagesize function
+	} elseif (function_exists('getimagesize') && $case === 'i') {
+		// run getimagesize on the file
+		$type = getimagesize($path);
+		// make sure we have results
+		if(false !== $type){
+			// store the mime-type
+			$type = $type['mime'];
+		}
+	//	echo "getimagesize: $type <br>";
+	} elseif ($case == 'b') {
+		if (ewww_image_optimizer_tool_found('/usr/bin/file', 'f')) {
+			$file = '/usr/bin/file';
+		} elseif (ewww_image_optimizer_tool_found('file', 'f')) {
+			$file = 'file';
+		}
+		exec("$file $path", $filetype);
+		if ((strpos($filetype[0], 'ELF') && strpos($filetype[0], 'executable')) || strpos($filetype[0], 'Mach-O universal binary')) {
+			$type = 'application/x-executable';
+	//		echo "file: $type <br>";
+		}
+	}
+	if ($case == 'b' && $type == 'application/x-executable') {
+		return true;
+	} elseif ($case == 'i') {
+		return $type;
+	} else {
+		return false;
+	}
+}
+
 // test the given path ($path) to see if it returns a valid version string
 // returns: version string if found, FALSE if not
 function ewww_image_optimizer_tool_found($path, $tool) {
@@ -206,11 +253,11 @@ function ewww_image_optimizer_tool_found($path, $tool) {
 // If the utitilites are in the content folder, we use that. Otherwise, we retrieve user specified paths or set defaults if all else fails. We also do a basic check to make sure we weren't given a malicious path.
 function ewww_image_optimizer_path_check() {
 	// TODO: separate the file checks into a separate function, and add php mime-type checking if feasible
-	if (ewww_image_optimizer_tool_found('/usr/bin/file', 'f')) {
+	/*if (ewww_image_optimizer_tool_found('/usr/bin/file', 'f')) {
 		$file = '/usr/bin/file';
 	} elseif (ewww_image_optimizer_tool_found('file', 'f')) {
 		$file = 'file';
-	}
+	}*/
 	$jpegtran = false;
 	$optipng = false;
 	$gifsicle = false;
@@ -242,15 +289,18 @@ function ewww_image_optimizer_path_check() {
 			}
 		}
 	} else {
-	// first check for the jpegtran binary in the ewww tool folder
+	// check to see if the user has disabled using bundled binaries
 	$use_system = get_option('ewww_image_optimizer_skip_bundle');
-	if (empty($file)) {
-		$use_system = TRUE;
-	}
+	// TODO: may need to modify this if we are using php mimetype functions
+	//if (empty($file)) {
+	//	$use_system = TRUE;
+	//}
+	// first check for the jpegtran binary in the ewww tool folder
 	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran') && !$use_system) {
 		$jpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran';
-		exec("$file $jpt", $jpt_filetype);
-		if (ewww_image_optimizer_md5check($jpt) && ((strpos($jpt_filetype[0], 'ELF') && strpos($jpt_filetype[0], 'executable')) || strpos($jpt_filetype[0], 'Mach-O universal binary'))) {
+//		ewww_image_optimizer_mimetype($jpt, 'b');
+//		exec("$file $jpt", $jpt_filetype);
+		if (ewww_image_optimizer_md5check($jpt) && ewww_image_optimizer_mimetype($jpt, 'b')) {
 			if (ewww_image_optimizer_tool_found($jpt, 'j')) {
 				$jpegtran = $jpt;
 			}
@@ -260,8 +310,9 @@ function ewww_image_optimizer_path_check() {
 	// if the standard jpegtran binary didn't work, see if the user custom compiled one and check that
 	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran-custom') && !$jpegtran && !$use_system) {
 		$jpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran-custom';
-		exec("$file $jpt", $jpt_filetype);
-		if (filesize($jpt) > 15000 && ((strpos($jpt_filetype[0], 'ELF') && strpos($jpt_filetype[0], 'executable')) || strpos($jpt_filetype[0], 'Mach-O universal binary'))) {
+//		ewww_image_optimizer_mimetype($jpt, 'b');
+//		exec("$file $jpt", $jpt_filetype);
+		if (filesize($jpt) > 15000 && ewww_image_optimizer_mimetype($jpt, 'b')) {
 			if (ewww_image_optimizer_tool_found($jpt, 'j')) {
 				$jpegtran = $jpt;
 			}
@@ -279,8 +330,9 @@ function ewww_image_optimizer_path_check() {
 	}
 	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng') && !$use_system) {
 		$opt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng';
-		exec("$file $opt", $opt_filetype);
-		if (ewww_image_optimizer_md5check($opt) && ((strpos($opt_filetype[0], 'ELF') && strpos($opt_filetype[0], 'executable')) || strpos($opt_filetype[0], 'Mach-O universal binary'))) {
+//		ewww_image_optimizer_mimetype($opt, 'b');
+//		exec("$file $opt", $opt_filetype);
+		if (ewww_image_optimizer_md5check($opt) && ewww_image_optimizer_mimetype($opt, 'b')) {
 			if (ewww_image_optimizer_tool_found($opt, 'o')) {
 				$optipng = $opt;
 			}
@@ -288,8 +340,9 @@ function ewww_image_optimizer_path_check() {
 	}
 	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng-custom') && !$optipng && !$use_system) {
 		$opt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng-custom';
-		exec("$file $opt", $opt_filetype);
-		if (filesize($opt) > 15000 && ((strpos($opt_filetype[0], 'ELF') && strpos($opt_filetype[0], 'executable')) || strpos($opt_filetype[0], 'Mach-O universal binary'))) {
+//		ewww_image_optimizer_mimetype($opt, 'b');
+//		exec("$file $opt", $opt_filetype);
+		if (filesize($opt) > 15000 && ewww_image_optimizer_mimetype($opt, 'b')) {
 			if (ewww_image_optimizer_tool_found($opt, 'o')) {
 				$optipng = $opt;
 			}
@@ -306,8 +359,9 @@ function ewww_image_optimizer_path_check() {
 	}
 	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle') && !$use_system) {
 		$gpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle';
-		exec("$file $gpt", $gpt_filetype);
-		if (ewww_image_optimizer_md5check($gpt) && ((strpos($gpt_filetype[0], 'ELF') && strpos($gpt_filetype[0], 'executable')) || strpos($gpt_filetype[0], 'Mach-O universal binary'))) {
+//		ewww_image_optimizer_mimetype($gpt, 'b');
+//		exec("$file $gpt", $gpt_filetype);
+		if (ewww_image_optimizer_md5check($gpt) && ewww_image_optimizer_mimetype($gpt, 'b')) {
 			if (ewww_image_optimizer_tool_found($gpt, 'g')) {
 				$gifsicle = $gpt;
 			}
@@ -315,8 +369,9 @@ function ewww_image_optimizer_path_check() {
 	}
 	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle-custom') && !$gifsicle && !$use_system) {
 		$gpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle-custom';
-		exec("$file $gpt", $gpt_filetype);
-		if (filesize($gpt) > 15000 && ((strpos($gpt_filetype[0], 'ELF') && strpos($gpt_filetype[0], 'executable')) || strpos($gpt_filetype[0], 'Mach-O universal binary'))) {
+//		ewww_image_optimizer_mimetype($gpt, 'b');
+//		exec("$file $gpt", $gpt_filetype);
+		if (filesize($gpt) > 15000 && ewww_image_optimizer_mimetype($gpt, 'b')) {
 			if (ewww_image_optimizer_tool_found($gpt, 'g')) {
 				$gifsicle = $gpt;
 			}
@@ -335,7 +390,7 @@ function ewww_image_optimizer_path_check() {
 	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static') && !$use_system) {
 		$ppt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static';
 		exec("$file $ppt", $ppt_filetype);
-		if (ewww_image_optimizer_md5check($ppt) && ((strpos($ppt_filetype[0], 'ELF') && strpos($ppt_filetype[0], 'executable')) || strpos($ppt_filetype[0], 'Mach-O universal binary'))) {
+		if (ewww_image_optimizer_md5check($ppt) && ewww_image_optimizer_mimetype($ppt, 'b')) {
 			if (ewww_image_optimizer_tool_found($ppt, 'p')) {
 				$pngout = $ppt;
 			}
@@ -968,8 +1023,9 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 		// send back the above message
 		return array($file, $msg, $converted, $original);
 	}*/
+	$type = ewww_image_optimizer_mimetype($file, 'i');
 	// use finfo functions when available
-	if (function_exists('finfo_file') && defined('FILEINFO_MIME')) {
+/*	if (function_exists('finfo_file') && defined('FILEINFO_MIME')) {
 		// create a finfo resource
 		$finfo = finfo_open(FILEINFO_MIME);
 		// retrieve the mimetype
@@ -989,7 +1045,8 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 	} elseif (function_exists('mime_content_type')) {
 		// retrieve and store the mime-type
 		$type = mime_content_type($file);
-	} else {
+	}*/ 
+	if (!$type) {
 		//otherwise we store an error message since we couldn't get the mime-type
 		$type = 'Missing finfo_file(), getimagesize() and mime_content_type() PHP functions';
 	}
@@ -1887,8 +1944,9 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 			$file_path = $upload_path . $file_path;
 		}
 		$msg = '';
+		$type = ewww_image_optimizer_mimetype($file_path, 'i');
 		// use finfo functions when available
-		if (function_exists('finfo_file')) {
+/*		if (function_exists('finfo_file')) {
 			// create a finfo resource
 			$finfo = finfo_open(FILEINFO_MIME);
 			// retrieve the mimetype
@@ -1909,7 +1967,7 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 		} else {
 			$type = false;
 			$msg = '<br>finfo_file(), getimagesize() and mime_content_type() PHP functions are missing';
-		}
+		}*/
 		// get a human readable filesize
 		$file_size = ewww_image_optimizer_format_bytes(filesize($file_path));
 		// initialize $valid

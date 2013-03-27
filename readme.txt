@@ -128,6 +128,10 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 == Changelog ==
 
+= 1.4.1 =
+* removed path restrictions, and fixed path detection for old blogs where upload path was modified
+* use built-in php mimetype functions to check binaries, saving 'file' command for fallback
+
 = 1.4.0 =
 * fixed bug with missing 'nice' not detected properly
 * added: Windows support, includes gifsicle, optipng, and jpegtran executables
