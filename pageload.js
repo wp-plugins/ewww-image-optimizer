@@ -21,14 +21,17 @@ jQuery(document).ready(function($) {
 			_wpnonce: ewww_vars._wpnonce,
 	        };
 		var i = 0;
+		  //              $('#bulk-status').append(ewww_vars.attachments + '<br>');
+		var attachments = $.parseJSON(ewww_vars.attachments);
+		//                $('#bulk-status').append(attachments + '<br>');
 	        $.post(ajaxurl, init_data, function(response) {
 	                $('#bulk-loading').html(response);
-			$('#bulk-progressbar').progressbar({ max: ewww_vars.attachments.length });
-			$('#bulk-counter').html('Optimized 0/' + ewww_vars.attachments.length);
+			$('#bulk-progressbar').progressbar({ max: attachments.length });
+			$('#bulk-counter').html('Optimized 0/' + attachments.length);
 			processImage();
 	        });
 		function processImage () {
-			attachment_id = ewww_vars.attachments[i];
+			attachment_id = attachments[i];
 		        var filename_data = {
 		                action: 'bulk_filename',
 				_wpnonce: ewww_vars._wpnonce,
@@ -45,9 +48,10 @@ jQuery(document).ready(function($) {
 		        var jqxhr = $.post(ajaxurl, loop_data, function(response) {
 				i++;
 				$('#bulk-progressbar').progressbar("option", "value", i );
-				$('#bulk-counter').html('Optimized ' + i + '/' + ewww_vars.attachments.length);
+				$('#bulk-counter').html('Optimized ' + i + '/' + attachments.length);
 		                $('#bulk-status').append(response);
-				if (i < ewww_vars.attachments.length) {
+		    //            $('#bulk-status').append(attachment_id + '<br>');
+				if (i < attachments.length) {
 					processImage();
 				}
 				else {

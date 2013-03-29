@@ -100,9 +100,18 @@ function ewww_image_optimizer_bulk_script($hook) {
 	}
 	// store the attachment IDs we retrieved in the 'bulk_attachments' option so we can keep track of our progress in the database
 	update_option('ewww_image_optimizer_bulk_attachments', $attachments);
+	// TODO: load js dependencies with custom version of script for older versions of WP
         // load the bulk optimization javascript and dependencies
-	wp_enqueue_script('ewwwbulkscript', plugins_url('/pageload.js', __FILE__), array('jquery', 'jquery-ui-core', 'jquery-ui-widget', 'jquery-ui-progressbar'));
+	//if (!wp_enqueue_script('ewwwbulkscript', plugins_url('/pageload.js', __FILE__), array('jquery', 'jquery-ui-core', 'jquery-ui-widget', 'jquery-ui-progressbar'))) {
+	wp_deregister_script('jquery');
+	wp_register_script('jquery', plugins_url('/jquery-1.9.1.min.js', __FILE__), false, '1.9.1');
+	wp_enqueue_script('ewwwjuiscript', plugins_url('/jquery-ui-1.10.2.custom.min.js', __FILE__), false);
+	wp_enqueue_script('ewwwbulkscript', plugins_url('/pageload.js', __FILE__), array('jquery'));
+	//}
 	// submit a couple variables to the javascript to work with
+	$attachments = json_encode($attachments);
+	//$attachments = str_replace('"', '', $attachments);
+	//echo $attachments . '<br>';
 	wp_localize_script('ewwwbulkscript', 'ewww_vars', array(
 			'_wpnonce' => wp_create_nonce('ewww-image-optimizer-bulk'),
 			'attachments' => $attachments
@@ -122,7 +131,7 @@ function ewww_image_optimizer_bulk_initialize() {
 	// update the 'bulk resume' option to show that an operation is in progress
 	update_option('ewww_image_optimizer_bulk_resume', 'true');
 	// generate the WP spinner image for display
-	$loading_image = includes_url('images/wpspin.gif');
+	$loading_image = plugins_url('/wpspin.gif', __FILE__);
 	// let the user know that we are beginning
 	echo "<p>Optimizing&nbsp;<img src='$loading_image' alt='loading'/></p>";
 	die();
@@ -138,7 +147,7 @@ function ewww_image_optimizer_bulk_filename() {
 	$attachment_ID = $_POST['attachment'];
 	$meta = wp_get_attachment_metadata( $attachment_ID );
 	// generate the WP spinner image for display
-	$loading_image = includes_url('images/wpspin.gif');
+	$loading_image = plugins_url('/wpspin.gif', __FILE__);
 	// let the user know that we are beginning
 	echo "<p>Optimizing <b>" . $meta['file'] . "</b>&nbsp;<img src='$loading_image' alt='loading'/></p>";
 	die();

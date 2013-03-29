@@ -389,7 +389,7 @@ function ewww_image_optimizer_path_check() {
 	// pngout is special and has a dynamic and static binary to check
 	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static') && !$use_system) {
 		$ppt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static';
-		exec("$file $ppt", $ppt_filetype);
+		//exec("$file $ppt", $ppt_filetype);
 		if (ewww_image_optimizer_md5check($ppt) && ewww_image_optimizer_mimetype($ppt, 'b')) {
 			if (ewww_image_optimizer_tool_found($ppt, 'p')) {
 				$pngout = $ppt;
@@ -1917,6 +1917,7 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 		//	print_r($meta);
 		//	echo "\n -->";
 		// if the filepath isn't set in the metadata
+		echo $meta['file'] . "<br>";
 		if(empty($meta['file'])){
 			if (isset($meta['file'])) {
 				unset($meta['file']);

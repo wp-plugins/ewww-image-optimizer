@@ -2,7 +2,7 @@
 Contributors: nosilver4u
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=QFXCW38HE24NY
 Tags: images, image, attachments, attachment, optimize
-Requires at least: 2.9
+Requires at least: 3.0
 Tested up to: 3.5.1
 Stable tag: 1.4.0
 License: GPLv3
@@ -133,6 +133,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * removed path restrictions, and fixed path detection for old blogs where upload path was modified
 * use built-in php mimetype functions to check binaries, saving 'file' command for fallback
 * added donation link, since several folks have expressed interest in contributing financially
+* bundled jquery and jquery-ui for using bulk functions on older WP versions
 
 = 1.4.0 =
 * fixed bug with missing 'nice' not detected properly
