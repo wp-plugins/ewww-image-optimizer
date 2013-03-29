@@ -1917,7 +1917,7 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 		//	print_r($meta);
 		//	echo "\n -->";
 		// if the filepath isn't set in the metadata
-		echo $meta['file'] . "<br>";
+		//echo $meta['file'] . "<br>";
 		if(empty($meta['file'])){
 			if (isset($meta['file'])) {
 				unset($meta['file']);
