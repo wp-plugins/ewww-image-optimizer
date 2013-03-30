@@ -495,57 +495,80 @@ function ewww_image_optimizer_install_paths () {
 
 // installs the executables that are bundled with the plugin
 function ewww_image_optimizer_install_tools () {
+	global $ewww_debug;
+	$ewww_debug = "$ewww_debug Checking/Installing tools in " . EWWW_IMAGE_OPTIMIZER_TOOL_PATH . "<br>";
 	$toolfail = false;
 	if (!is_dir(EWWW_IMAGE_OPTIMIZER_TOOL_PATH)) {
+		$ewww_debug = "$ewww_debug Folder doesn't exist, creating...<br>";
 		if (!mkdir(EWWW_IMAGE_OPTIMIZER_TOOL_PATH)) {
 			echo "<div id='ewww-image-optimizer-warning-tool-install' class='error'><p><strong>EWWW Image Optimizer couldn't create the tool folder: " . htmlentities(EWWW_IMAGE_OPTIMIZER_TOOL_PATH) . ".</strong> Please adjust permissions or create the folder.</p></div>";
+			$ewww_debug = "$ewww_debug Couldn't create folder<br>";
 		}
 	}
 	list ($jpegtran_src, $optipng_src, $gifsicle_src, $jpegtran_dst, $optipng_dst, $gifsicle_dst) = ewww_image_optimizer_install_paths();
 	if (!file_exists($jpegtran_dst)) {
+		$ewww_debug = "$ewww_debug jpegtran not found, installing<br>";
 		if (!copy($jpegtran_src, $jpegtran_dst)) {
 			$toolfail = true;
+			$ewww_debug = "$ewww_debug Couldn't copy jpegtran<br>";
 		}
 	} else if (filesize($jpegtran_dst) != filesize($jpegtran_src)) {
+		$ewww_debug = "$ewww_debug jpegtran found, different size, attempting to replace<br>";
 		if (!copy($jpegtran_src, $jpegtran_dst)) {
 			$toolfail = true;
+			$ewww_debug = "$ewww_debug Couldn't copy jpegtran<br>";
 		}
 	}
 	if (!file_exists($gifsicle_dst)) {
+		$ewww_debug = "$ewww_debug gifsicle not found, installing<br>";
 		if (!copy($gifsicle_src, $gifsicle_dst)) {
 			$toolfail = true;
+			$ewww_debug = "$ewww_debug Couldn't copy gifsicle<br>";
 		}
 	} else if (filesize($gifsicle_dst) != filesize($gifsicle_src)) {
+		$ewww_debug = "$ewww_debug gifsicle found, different size, attempting to replace<br>";
 		if (!copy($gifsicle_src, $gifsicle_dst)) {
 			$toolfail = true;
+			$ewww_debug = "$ewww_debug Couldn't copy gifsicle<br>";
 		}
 	}
 	if (!file_exists($optipng_dst)) {
+		$ewww_debug = "$ewww_debug optipng not found, installing<br>";
 		if (!copy($optipng_src, $optipng_dst)) {
 			$toolfail = true;
+			$ewww_debug = "$ewww_debug Couldn't copy optipng<br>";
 		}
 	} else if (filesize($optipng_dst) != filesize($optipng_src)) {
+		$ewww_debug = "$ewww_debug optipng found, different size, attempting to replace<br>";
 		if (!copy($optipng_src, $optipng_dst)) {
 			$toolfail = true;
+			$ewww_debug = "$ewww_debug Couldn't copy optipng<br>";
 		}
 	}
 	if (PHP_OS != 'WINNT') {
+		$ewww_debug = "$ewww_debug Linux/UNIX style OS, checking permissions";
 		$jpegtran_perms = substr(sprintf('%o', fileperms($jpegtran_dst)), -4);
 		if ($jpegtran_perms != '0755') {
+			$ewww_debug = "$ewww_debug jpegtran permissions not correct: $jpegtran_perms<br>";
 			if (!chmod($jpegtran_dst, 0755)) {
 				$toolfail = true;
+				$ewww_debug = "$ewww_debug couldn't set jpegtran permissions<br>";
 			}
 		}
 		$gifsicle_perms = substr(sprintf('%o', fileperms($gifsicle_dst)), -4);
 		if ($gifsicle_perms != '0755') {
+			$ewww_debug = "$ewww_debug gifislce permissions not correct: $gifsicle_perms<br>";
 			if (!chmod($gifsicle_dst, 0755)) {
 				$toolfail = true;
+				$ewww_debug = "$ewww_debug couldn't set gifsicle permissions<br>";
 			}
 		}
 		$optipng_perms = substr(sprintf('%o', fileperms($optipng_dst)), -4);
 		if ($optipng_perms != '0755') {
+			$ewww_debug = "$ewww_debug optipng permissions not correct: $optipng_perms<br>";
 			if (!chmod($optipng_dst, 0755)) {
 				$toolfail = true;
+				$ewww_debug = "$ewww_debug couldn't set optipng permissions<br>";
 			}
 		}
 	}
@@ -554,29 +577,41 @@ function ewww_image_optimizer_install_tools () {
 	}
 	$migrate_fail = false;
 	if ($jpegtran_path = get_option('ewww_image_optimizer_jpegtran_path')) {
+		$ewww_debug = "$ewww_debug found path setting for jpegtran, migrating<br>";
 		if (file_exists($jpegtran_path)) {
+			$ewww_debug = "$ewww_debug found custom jpegtran binary<br>";
 			if (!copy($jpegtran_path, EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran-custom') || !chmod(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran-custom', 0755)) {
+				$ewww_debug = "$ewww_debug unable to copy custom jpegtran binary or set permissions<br>";
 				$migrate_fail = true;
 			} else {
 				delete_option('ewww_image_optimizer_jpegtran_path');
+				$ewww_debug = "$ewww_debug migration successful, deleting path setting<br>";
 			}
 		}
 	}
 	if ($optipng_path = get_option('ewww_image_optimizer_optipng_path')) {
+		$ewww_debug = "$ewww_debug found path setting for optipng, migrating<br>";
 		if (file_exists($optipng_path)) {
+			$ewww_debug = "$ewww_debug found custom optipng binary<br>";
 			if (!copy($optipng_path, EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng-custom') || !chmod(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng-custom', 0755)) {
+				$ewww_debug = "$ewww_debug unable to copy custom optipng binary or set permissions<br>";
 				$migrate_fail = true;
 			} else {
 				delete_option('ewww_image_optimizer_optipng_path');
+				$ewww_debug = "$ewww_debug migration successful, deleting path setting<br>";
 			}
 		}
 	}
 	if ($gifsicle_path = get_option('ewww_image_optimizer_gifsicle_path')) {
+		$ewww_debug = "$ewww_debug found path setting for gifsicle, migrating<br>";
 		if (file_exists($gifsicle_path)) {
+			$ewww_debug = "$ewww_debug found custom gifsicle binary<br>";
 			if (!copy($gifsicle_path, EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle-custom') || !chmod(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle-custom', 0755)) {
+				$ewww_debug = "$ewww_debug unable to copy custom gifislce binary or set permissions<br>";
 				$migrate_fail = true;
 			} else {
 				delete_option('ewww_image_optimizer_gifsicle_path');
+				$ewww_debug = "$ewww_debug migration successful, deleting path setting<br>";
 			}
 		}
 	}
@@ -747,8 +782,10 @@ function ewww_image_optimizer_settings_link($links) {
 
 // check for GD support of both PNG and JPG
 function ewww_image_optimizer_gd_support() {
+	global $ewww_debug;
 	if (function_exists('gd_info')) {
 		$gd_support = gd_info();
+		$ewww_debug = "$ewww_debug GD found, supports: " . print_r($gd_support) . "<br>";
 		if (($gd_support["JPEG Support"] || $gd_support["JPG Support"]) && $gd_support["PNG Support"]) {
 			return TRUE;
 		} else {
