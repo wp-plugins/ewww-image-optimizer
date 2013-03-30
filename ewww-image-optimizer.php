@@ -785,7 +785,10 @@ function ewww_image_optimizer_gd_support() {
 	global $ewww_debug;
 	if (function_exists('gd_info')) {
 		$gd_support = gd_info();
-		$ewww_debug = "$ewww_debug GD found, supports: " . print_r($gd_support) . "<br>";
+		$ewww_debug = "$ewww_debug GD found, supports: <br>"; 
+		foreach ($gd_support as $supports => $supported) {
+			 $ewww_debug = "$ewww_debug $supports: $supported<br>";
+		}
 		if (($gd_support["JPEG Support"] || $gd_support["JPG Support"]) && $gd_support["PNG Support"]) {
 			return TRUE;
 		} else {
