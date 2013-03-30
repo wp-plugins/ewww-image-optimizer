@@ -23,6 +23,8 @@ define('EWWW_IMAGE_OPTIMIZER_PLUGIN_DIR', dirname(plugin_basename(__FILE__)));
 define('EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH', plugin_dir_path(__FILE__) );
 // the folder where we install optimization tools
 define('EWWW_IMAGE_OPTIMIZER_TOOL_PATH', WP_CONTENT_DIR . '/ewww/');
+// turn on debugging constantif set
+$ewww_debug = '';
 
 /**
  * Hooks
@@ -32,7 +34,6 @@ add_filter('manage_media_columns', 'ewww_image_optimizer_columns');
 // variable for plugin settings link
 $plugin = plugin_basename ( __FILE__ );
 add_filter("plugin_action_links_$plugin", 'ewww_image_optimizer_settings_link');
-// TODO: eventually implement a new function in the wp_image_editor class to handle this (and maybe more)
 add_filter('wp_save_image_editor_file', 'ewww_image_optimizer_save_image_editor_file', 10, 5);
 add_action('manage_media_custom_column', 'ewww_image_optimizer_custom_column', 10, 2);
 add_action('admin_init', 'ewww_image_optimizer_admin_init');
@@ -79,6 +80,7 @@ function ewww_image_optimizer_notice_os() {
 
 // checks the binary at $path against a list of valid md5sums
 function ewww_image_optimizer_md5check($path) {
+	global $ewww_debug;
 	$valid_md5sums = array(
 		//jpegtran
 		'e2ba2985107600ebb43f85487258f6a3',
@@ -127,6 +129,7 @@ function ewww_image_optimizer_md5check($path) {
 		);
 	foreach ($valid_md5sums as $md5_sum) {
 		if ($md5_sum == md5_file($path)) {
+			$ewww_debug = $ewww_debug . "$path: $md5_sum <br>";
 			return TRUE;
 		}
 	}
@@ -136,6 +139,8 @@ function ewww_image_optimizer_md5check($path) {
 // check the mimetype of the given file ($path) with various methods
 // valid values for $type are 'b' for binary or 'i' for image
 function ewww_image_optimizer_mimetype($path, $case) {
+	global $ewww_debug;
+	$ewww_debug = "$ewww_debug testing mimetype: $path <br>";
 	if (function_exists('finfo_file') && defined('FILEINFO_MIME')) {
 		// create a finfo resource
 		$finfo = finfo_open(FILEINFO_MIME);
@@ -143,14 +148,14 @@ function ewww_image_optimizer_mimetype($path, $case) {
 		$type = explode(';', finfo_file($finfo, $path));
 		$type = $type[0];
 		finfo_close($finfo);
-	//	echo "finfo: $type <br>";
+		$ewww_debug = "$ewww_debug finfo_file: $type <br>";
 	// see if we can use mime_content_type
-	} elseif (function_exists('mime_content_type')) {
+	} elseif (empty($type) && function_exists('mime_content_type')) {
 		// retrieve and store the mime-type
 		$type = mime_content_type($path);
-	//	echo "mime_content_type: $type <br>";
+		$ewww_debug = "$ewww_debug mime_content_type: $type <br>";
 	// see if we can use the getimagesize function
-	} elseif (function_exists('getimagesize') && $case === 'i') {
+	} elseif (empty($type) && function_exists('getimagesize') && $case === 'i') {
 		// run getimagesize on the file
 		$type = getimagesize($path);
 		// make sure we have results
@@ -158,8 +163,8 @@ function ewww_image_optimizer_mimetype($path, $case) {
 			// store the mime-type
 			$type = $type['mime'];
 		}
-	//	echo "getimagesize: $type <br>";
-	} elseif ($case == 'b') {
+		$ewww_debug = "$ewww_debug getimagesize: $type <br>";
+	} elseif (empty($type) && $case == 'b') {
 		if (ewww_image_optimizer_tool_found('/usr/bin/file', 'f')) {
 			$file = '/usr/bin/file';
 		} elseif (ewww_image_optimizer_tool_found('file', 'f')) {
@@ -167,12 +172,12 @@ function ewww_image_optimizer_mimetype($path, $case) {
 		}
 		exec("$file $path", $filetype);
 		if ((strpos($filetype[0], 'ELF') && strpos($filetype[0], 'executable')) || strpos($filetype[0], 'Mach-O universal binary')) {
+			$ewww_debug = "$ewww_debug file command: $type <br>";
 			$type = 'application/x-executable';
-	//		echo "file: $type <br>";
 		}
 	}
-	if ($case == 'b' && $type == 'application/x-executable') {
-		return true;
+	if ($case == 'b' && preg_match('/executable/', $type)) {
+		return $type;
 	} elseif ($case == 'i') {
 		return $type;
 	} else {
@@ -658,7 +663,8 @@ function ewww_image_optimizer_admin_init() {
 	// register all the EWWW IO settings
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_skip_check');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_skip_bundle');
-	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_skip_gifs');
+	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_debug');
+//	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_skip_gifs');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpegtran_copy');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_optipng_level');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_pngout_level');
@@ -686,17 +692,23 @@ function ewww_image_optimizer_admin_init() {
 // adds the bulk optimize and settings page to the admin menu
 function ewww_image_optimizer_admin_menu() {
 	// adds bulk optimize to the media library menu
-	add_media_page( 'Bulk Optimize', 'Bulk Optimize', 'edit_others_posts', 'ewww-image-optimizer-bulk', 'ewww_image_optimizer_bulk_preview');
+	$ewww_bulk_page = add_media_page( 'Bulk Optimize', 'Bulk Optimize', 'edit_others_posts', 'ewww-image-optimizer-bulk', 'ewww_image_optimizer_bulk_preview');
+	add_action('admin_footer-' . $ewww_bulk_page, 'ewww_image_optimizer_debug');
 	// add options page to the settings menu
-	add_options_page(
+	$ewww_options_page = add_options_page(
 		'EWWW Image Optimizer',		//Title
 		'EWWW Image Optimizer',		//Sub-menu title
 		'manage_options',		//Security
 		__FILE__,			//File to open
 		'ewww_image_optimizer_options'	//Function to call
 	);
+	add_action('admin_footer-' . $ewww_options_page, 'ewww_image_optimizer_debug');
 }
 
+function ewww_image_optimizer_debug() {
+	global $ewww_debug;
+	if (get_option('ewww_image_optimizer_debug')) echo '<div style="background-color:#ffff99;position:relative;top:-60px;padding:5px 20px 10px;margin:0 0 15px 146px"><h3>Debug Log</h3>' . $ewww_debug . '</div>';
+}
 // adds a link on the Plugins page for the EWWW IO settings
 function ewww_image_optimizer_settings_link($links) {
 	// load the html for the settings link
@@ -2371,6 +2383,7 @@ jQuery("#debug").click(function () {
 			<p>The plugin performs a check to make sure your system has the programs we use for optimization: jpegtran, optipng, pngout, and gifsicle. In some rare cases, these checks may erroneously report that you are missing the required utilities even though you have them installed.</p>
 			<table class="form-table">
 				<tr><td><label for="ewww_image_optimizer_skip_bundle">Use system paths</label></td><td><input type="checkbox" id="ewww_image_optimizer_skip_bundle" name="ewww_image_optimizer_skip_bundle" value="true" <?php if (get_option('ewww_image_optimizer_skip_bundle') == TRUE) { ?>checked="true"<?php } ?> /> If you have already installed the utilities in a system location, such as /usr/local/bin or /usr/bin, use this to force the plugin to use those versions and skip the auto-installers.</td></tr>
+				<tr><td><label for="ewww_image_optimizer_debug">Debugging</label></td><td><input type="checkbox" id="ewww_image_optimizer_debug" name="ewww_image_optimizer_debug" value="true" <?php if (get_option('ewww_image_optimizer_debug') == TRUE) { ?>checked="true"<?php } ?> /> Only check this if instructed by plugin author, or if you feel comfortable digging around in the code to fix a problem you are experiencing.</td></tr>
 				<tr><td><label for="ewww_image_optimizer_skip_check">Skip utils check</label></td><td><input type="checkbox" id="ewww_image_optimizer_skip_check" name="ewww_image_optimizer_skip_check" value="true" <?php if (get_option('ewww_image_optimizer_skip_check') == TRUE) { ?>checked="true"<?php } ?> /> <i>*DEPRECATED - please uncheck this and report any errors in the support forum.</i></td></tr>
 				<tr><td><label for="ewww_image_optimizer_disable_jpegtran">disable jpegtran</label></td><td><input type="checkbox" id="ewww_image_optimizer_disable_jpegtran" name="ewww_image_optimizer_disable_jpegtran" <?php if (get_option('ewww_image_optimizer_disable_jpegtran') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
 				<tr><td><label for="ewww_image_optimizer_disable_optipng">disable optipng</label></td><td><input type="checkbox" id="ewww_image_optimizer_disable_optipng" name="ewww_image_optimizer_disable_optipng" <?php if (get_option('ewww_image_optimizer_disable_optipng') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
