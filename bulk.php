@@ -100,7 +100,6 @@ function ewww_image_optimizer_bulk_script($hook) {
 	}
 	// store the attachment IDs we retrieved in the 'bulk_attachments' option so we can keep track of our progress in the database
 	update_option('ewww_image_optimizer_bulk_attachments', $attachments);
-	// TODO: load js dependencies with custom version of script for older versions of WP
         // load the bulk optimization javascript and dependencies
 	//if (!wp_enqueue_script('ewwwbulkscript', plugins_url('/pageload.js', __FILE__), array('jquery', 'jquery-ui-core', 'jquery-ui-widget', 'jquery-ui-progressbar'))) {
 	wp_deregister_script('jquery');
@@ -155,6 +154,7 @@ function ewww_image_optimizer_bulk_filename() {
  
 // called by javascript to process each image in the loop
 function ewww_image_optimizer_bulk_loop() {
+	global $ewww_debug;
 	// verify that an authorized user has started the optimizer
 	if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
 		wp_die( __( 'Cheatin&#8217; eh?' ) );
@@ -191,6 +191,7 @@ function ewww_image_optimizer_bulk_loop() {
 	array_shift($attachments);
 	// store the updated list of attachment IDs back in the 'bulk_attachments' option
 	update_option('ewww_image_optimizer_bulk_attachments', $attachments);
+	if (get_option('ewww_image_optimizer_debug')) echo '<div style="background-color:#ffff99;">' . $ewww_debug . '</div>';
 	die();
 }
 

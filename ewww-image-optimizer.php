@@ -546,7 +546,7 @@ function ewww_image_optimizer_install_tools () {
 		}
 	}
 	if (PHP_OS != 'WINNT') {
-		$ewww_debug = "$ewww_debug Linux/UNIX style OS, checking permissions";
+		$ewww_debug = "$ewww_debug Linux/UNIX style OS, checking permissions<br>";
 		$jpegtran_perms = substr(sprintf('%o', fileperms($jpegtran_dst)), -4);
 		if ($jpegtran_perms != '0755') {
 			$ewww_debug = "$ewww_debug jpegtran permissions not correct: $jpegtran_perms<br>";
@@ -1061,6 +1061,7 @@ function ewww_image_optimizer_update_saved_file ($meta, $ID) {
  * @returns array
  */
 function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
+	global $ewww_debug;
 	// initialize the original filename 
 	$original = $file;
 	// check to see if 'nice' exists
@@ -1149,6 +1150,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 	}
 	// if the full-size image was converted
 	if ($converted) {
+		$ewww_debug = "$ewww_debug full-size image was converted, need to rebuild filename for meta<br>";
 		$filenum = $converted;
 		// grab the file extension
 		preg_match('/\.\w+$/', $file, $fileext);
@@ -1162,6 +1164,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 		$refile = $filename . '-' . $filenum . $fileresize[0] . $fileext[0];
 		// rename the file
 		rename($file, $refile);
+		$ewww_debug = "$ewww_debug moved $file to $refile<br>";
 		// and set $file to the new filename
 		$file = $refile;
 		$original = $file;
@@ -1223,6 +1226,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 			//echo "original size: $orig_size <br>";
 			// if the conversion process is turned ON, or if this is a resize and the full-size was converted
 			if ($convert || $converted) {
+				$ewww_debug = "$ewww_debug attempting to convert JPG to PNG: $pngfile <br>";
 				// retrieve version info for ImageMagick
 				//exec('convert -version', $convert_version);
 				if (ewww_image_optimizer_tool_found('convert', 'i')) {
@@ -1233,11 +1237,13 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					$convert_path = '/usr/local/bin/convert';
 				}
 				// convert the JPG to PNG (try with GD if possible, 'convert' if not)
-				if (ewww_image_optimizer_gd_support()) {
-					imagepng(imagecreatefromjpeg($file), $pngfile);
-				} elseif (!empty($convert_path)) {
+				if (!empty($convert_path)) {
 				//} elseif (!empty($convert_version) && strpos($convert_version[0], 'ImageMagick')) {
+					$ewww_debug = "$ewww_debug converting with ImageMagick<br>";
 					exec("$convert_path $file -strip $pngfile");
+				} elseif (ewww_image_optimizer_gd_support()) {
+					$ewww_debug = "$ewww_debug converting with GD<br>";
+					imagepng(imagecreatefromjpeg($file), $pngfile);
 				}
 				// if pngout isn't disabled
 				if (!get_option('ewww_image_optimizer_disable_pngout')) {
@@ -1245,6 +1251,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					$pngout_level = get_option('ewww_image_optimizer_pngout_level');
 					// if the PNG file was created
 					if (file_exists($pngfile)) {
+						$ewww_debug = "$ewww_debug optimizing converted PNG with pngout<br>";
 						// run pngout on the new PNG
 						exec("$nice $pngout_path -s$pngout_level -q $pngfile");
 					}
@@ -1255,12 +1262,14 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					$optipng_level = get_option('ewww_image_optimizer_optipng_level');
 					// if the PNG file was created
 					if (file_exists($pngfile)) {
+						$ewww_debug = "$ewww_debug optimizing converted PNG with optipng<br>";
 						// run optipng on the new PNG
 						exec("$nice $optipng_path -o$optipng_level -quiet $pngfile");
 					}
 				}
 				// find out the size of the new PNG file
 				$png_size = filesize($pngfile);
+				$ewww_debug = "$ewww_debug converted PNG size: $png_size<br>";
 				// if the PNG is smaller than the original JPG, and we didn't end up with an empty file
 				if ($orig_size > $png_size && $png_size != 0) {
 					// successful conversion (for now), and we store the increment
@@ -1276,6 +1285,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 			}
 			// if optimization is turned ON
 			if ($optimize) {
+				$ewww_debug = "$ewww_debug attempting to optimize JPG...<br>";
 				// generate temporary file-names:
 				$tempfile = $file . ".tmp"; //non-progressive jpeg
 				$progfile = $file . ".prog"; // progressive jpeg
@@ -1298,6 +1308,8 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					$non_size = filesize($tempfile);
 					// check the filesize of the progressive JPG
 					$prog_size = filesize($progfile);
+				$ewww_debug = "$ewww_debug optimized JPG (non-progresive) size: $non_size<br>";
+				$ewww_debug = "$ewww_debug optimized JPG (progresive) size: $prog_size<br>";
 				/*} else {
 					// run jpegtran - non-progressive
 					$tempdata = shell_exec("$nice $jpegtran_path -copy $copy_opt -optimize $file");
@@ -1362,7 +1374,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				// remove the converted PNG
 				unlink($pngfile);
 			}
-			//echo "$result <br>";
 			break;
 		case 'image/png':
 			// png2jpg conversion is turned on, and the image is in the wordpress media library
