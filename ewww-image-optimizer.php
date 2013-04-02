@@ -504,6 +504,9 @@ function ewww_image_optimizer_install_tools () {
 			echo "<div id='ewww-image-optimizer-warning-tool-install' class='error'><p><strong>EWWW Image Optimizer couldn't create the tool folder: " . htmlentities(EWWW_IMAGE_OPTIMIZER_TOOL_PATH) . ".</strong> Please adjust permissions or create the folder.</p></div>";
 			$ewww_debug = "$ewww_debug Couldn't create folder<br>";
 		}
+	} else {
+		$ewww_perms = substr(sprintf('%o', fileperms(EWWW_IMAGE_OPTIMIZER_TOOL_PATH)), -4);
+		$ewww_debug = "$ewww_debug wp-content/ewww permissions: $ewww_perms <br />";
 	}
 	list ($jpegtran_src, $optipng_src, $gifsicle_src, $jpegtran_dst, $optipng_dst, $gifsicle_dst) = ewww_image_optimizer_install_paths();
 	if (!file_exists($jpegtran_dst)) {
@@ -2299,6 +2302,7 @@ function ewww_image_optimizer_install_pngout() {
 // TODO: add jpegtran permissions to debug
 // displays the EWWW IO options and provides one-click install for the optimizer utilities
 function ewww_image_optimizer_options () {
+	global $ewww_debug;
 	if (isset($_REQUEST['pngout'])) {
 		if ($_REQUEST['pngout'] == 'success') { ?>
 			<div id='ewww-image-optimizer-pngout-success' class='updated fade'>
@@ -2317,17 +2321,11 @@ function ewww_image_optimizer_options () {
 	<div class="wrap">
 		<div id="icon-options-general" class="icon32"><br /></div>
 		<h2>EWWW Image Optimizer Settings</h2>
-		<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
-		<a href="http://wordpress.org/extend/plugins/ewww-image-optimizer/">Plugin Home Page</a> |
+		<p><a href="http://wordpress.org/extend/plugins/ewww-image-optimizer/">Plugin Home Page</a> |
 		<a href="http://wordpress.org/extend/plugins/ewww-image-optimizer/installation/">Installation Instructions</a> | 
 		<a href="http://wordpress.org/support/plugin/ewww-image-optimizer">Plugin Support</a> | 
-		<a id="debug" href="#">Debug (see below)</a> | 
-			<input type="hidden" name="cmd" value="_s-xclick">
-			<input type="hidden" name="hosted_button_id" value="QFXCW38HE24NY">
-			<input style="margin: 0px; padding: 0px" type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit" alt="Donate via Paypal">
-			<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
-		</form>
-</p>
+		Debug - see the new Debugging option below</p>
+		<p>I recommend hosting your Wordpress site with <a href=http://www.dreamhost.com/r.cgi?132143">Dreamhost.com</a> or <a href="http://www.bluehost.com/track/nosilver4u">Bluehost.com</a>. Using these referral links will allow you to support future development of this plugin: <a href=http://www.dreamhost.com/r.cgi?132143">Dreamhost</a> | <a href="http://www.bluehost.com/track/nosilver4u">Bluehost</a>. Alternatively, you can contribute directly by <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=QFXCW38HE24NY">donating with Paypal</a>.</p>
 		<div id="status" style="border: 1px solid #ccc; padding: 0 8px; border-radius: 12px;">
 			<h3>Plugin Status</h3>
 			<?php
@@ -2410,6 +2408,7 @@ function ewww_image_optimizer_options () {
 				echo 'safe mode: <span style="color: green; font-weight: bolder">Off</span>&emsp;&emsp;';
 			}
 			$disabled = ini_get('disable_functions');
+			$ewww_debug = "$ewww_debug disabled functions: $disabled<br />";
 			if (preg_match('/[^_]exec/', $disabled)) {
 				echo 'exec(): <span style="color: red; font-weight: bolder">DISABLED</span>&emsp;&emsp;';
 			} else {
@@ -2444,13 +2443,13 @@ function ewww_image_optimizer_options () {
 			}
 			//echo 'Operating System: ' . PHP_OS;
 			?></p>
-			<div id="debuginfo" style="display:none; word-wrap: break-word;"><h3>Debug Info</h3><p><?php
-				echo '<b>jpegtran path:</b> ' . EWWW_IMAGE_OPTIMIZER_JPEGTRAN . '<br />';
-				echo '<b>optipng path:</b> ' . EWWW_IMAGE_OPTIMIZER_OPTIPNG . '<br />';
-				echo '<b>gifsicle path:</b> ' . EWWW_IMAGE_OPTIMIZER_GIFSICLE . '<br />';
-				echo '<b>pngout path:</b> ' . EWWW_IMAGE_OPTIMIZER_PNGOUT . '<br />';
-				echo '<b>disabled functions:</b> ' . $disabled . '<br />';
-				if (PHP_OS != 'WINNT') {
+			<!--<div id="debuginfo" style="display:none; word-wrap: break-word;"><h3>Debug Info</h3><p>--><?php
+//				echo '<b>jpegtran path:</b> ' . EWWW_IMAGE_OPTIMIZER_JPEGTRAN . '<br />';
+//				echo '<b>optipng path:</b> ' . EWWW_IMAGE_OPTIMIZER_OPTIPNG . '<br />';
+//				echo '<b>gifsicle path:</b> ' . EWWW_IMAGE_OPTIMIZER_GIFSICLE . '<br />';
+//				echo '<b>pngout path:</b> ' . EWWW_IMAGE_OPTIMIZER_PNGOUT . '<br />';
+//				echo '<b>disabled functions:</b> ' . $disabled . '<br />';
+/*				if (PHP_OS != 'WINNT') {
 					$jpegtran_perms = substr(sprintf('%o', fileperms(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran')), -4);
 					$gifsicle_perms = substr(sprintf('%o', fileperms(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle')), -4);
 					$optipng_perms = substr(sprintf('%o', fileperms(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng')), -4);
@@ -2463,10 +2462,10 @@ function ewww_image_optimizer_options () {
 				echo '<b>jpegtran checksum:</b> ' . md5_file(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran') . '<br />';
 				echo '<b>gifsicle checksum:</b> ' . md5_file(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle') . '<br />';
 				echo '<b>optipng checksum:</b> ' . md5_file(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng') . '<br />';
-				echo '<b>pngout checksum:</b> ' . md5_file(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static') . '<br />';
-				echo '<b>user:</b> ' . exec('/usr/bin/whoami') . '<br />';
-				echo '<b>Operating environment:</b> ' . php_uname('s') . ' ' . php_uname('r') . ' ' . php_uname('v') . ' ' . php_uname('m');
-			?></p></div>
+				echo '<b>pngout checksum:</b> ' . md5_file(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static') . '<br />';*/
+				$ewww_debug = "$ewww_debug user: " . exec('/usr/bin/whoami') . "<br />";
+				$ewww_debug = $ewww_debug . 'operating environment: ' . php_uname('s') . ' ' . php_uname('r') . ' ' . php_uname('v') . ' ' . php_uname('m');
+			?><!--</p></div>-->
 <script>
 jQuery("#debug").click(function () {
   jQuery("#debuginfo").toggle();
