@@ -2002,7 +2002,7 @@ function ewww_image_optimizer_format_bytes($bytes, $precision = 2) {
  */
 function ewww_image_optimizer_custom_column($column_name, $id) {
 	// once we get to the EWWW IO custom column
-	if( $column_name == 'ewww-image-optimizer' ) {
+	if ($column_name == 'ewww-image-optimizer') {
 		// retrieve the metadata
 		$meta = wp_get_attachment_metadata($id);
 		//	echo "<!-- \n";
@@ -2018,8 +2018,8 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 				}
 				wp_update_attachment_metadata($id, $meta);
 			}
-			$msg = '<br>Metadata is missing file path.';
-			print __('Unsupported file type', EWWW_IMAGE_OPTIMIZER_DOMAIN) . $msg;
+			echo 'Metadata is missing file path.';
+			//print __('Unsupported file type', EWWW_IMAGE_OPTIMIZER_DOMAIN) . $msg;
 			return;
 		}
 		// retrieve the filepath from the metadata
