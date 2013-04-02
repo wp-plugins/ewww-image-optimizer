@@ -551,24 +551,24 @@ function ewww_image_optimizer_install_tools () {
 	if (PHP_OS != 'WINNT') {
 		$ewww_debug = "$ewww_debug Linux/UNIX style OS, checking permissions<br>";
 		$jpegtran_perms = substr(sprintf('%o', fileperms($jpegtran_dst)), -4);
+		$ewww_debug = "$ewww_debug jpegtran permissions: $jpegtran_perms<br>";
 		if ($jpegtran_perms != '0755') {
-			$ewww_debug = "$ewww_debug jpegtran permissions not correct: $jpegtran_perms<br>";
 			if (!chmod($jpegtran_dst, 0755)) {
 				$toolfail = true;
 				$ewww_debug = "$ewww_debug couldn't set jpegtran permissions<br>";
 			}
 		}
+		$ewww_debug = "$ewww_debug gifislce permissions: $gifsicle_perms<br>";
 		$gifsicle_perms = substr(sprintf('%o', fileperms($gifsicle_dst)), -4);
 		if ($gifsicle_perms != '0755') {
-			$ewww_debug = "$ewww_debug gifislce permissions not correct: $gifsicle_perms<br>";
 			if (!chmod($gifsicle_dst, 0755)) {
 				$toolfail = true;
 				$ewww_debug = "$ewww_debug couldn't set gifsicle permissions<br>";
 			}
 		}
 		$optipng_perms = substr(sprintf('%o', fileperms($optipng_dst)), -4);
+		$ewww_debug = "$ewww_debug optipng permissions: $optipng_perms<br>";
 		if ($optipng_perms != '0755') {
-			$ewww_debug = "$ewww_debug optipng permissions not correct: $optipng_perms<br>";
 			if (!chmod($optipng_dst, 0755)) {
 				$toolfail = true;
 				$ewww_debug = "$ewww_debug couldn't set optipng permissions<br>";
