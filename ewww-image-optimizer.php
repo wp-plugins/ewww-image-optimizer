@@ -522,6 +522,29 @@ function ewww_image_optimizer_install_tools () {
 			$ewww_debug = "$ewww_debug Couldn't copy jpegtran<br>";
 		}
 	}
+	// install 32-bit jpegtran at jpegtran-custom for some weird 64-bit hosts
+	$arch_type = php_uname('m');
+	if (PHP_OS == 'Linux' && $arch_type == 'x86_64') {
+		$ewww_debug = "$ewww_debug 64-bit linux detected while installing tools<br>";
+		$jpegtran32_src = substr($jpegtran_src, 0, -2);
+		$jpegtran32_dst = $jpegtran_dst . '-custom';
+		if (!file_exists($jpegtran32_dst) || (ewww_image_optimizer_md5check($jpegtran32_dst) && filesize($jpegtran32_dst) != filesize($jpegtran32_src))) {
+			$ewww_debug = "$ewww_debug jpegtran-custom doesn't exist, or matches a previous bundled version<br>";
+			if (!copy($jpegtran32_src, $jpegtran32_dst)) {
+				// this isn't a fatal error, besides we'll see it in the debug if needed
+				// $toolfail = true;
+				$ewww_debug = "$ewww_debug Couldn't copy 32-bit jpegtran to jpegtran-custom<br>";
+			}
+			$jpegtran32_perms = substr(sprintf('%o', fileperms($jpegtran32_dst)), -4);
+			$ewww_debug = "$ewww_debug jpegtran-custom (32-bit) permissions: $jpegtran32_perms<br>";
+			if ($jpegtran32_perms != '0755') {
+				if (!chmod($jpegtran32_dst, 0755)) {
+					//$toolfail = true;
+					$ewww_debug = "$ewww_debug couldn't set jpegtran-custom permissions<br>";
+				}
+			}
+		}
+	}
 	if (!file_exists($gifsicle_dst)) {
 		$ewww_debug = "$ewww_debug gifsicle not found, installing<br>";
 		if (!copy($gifsicle_src, $gifsicle_dst)) {
@@ -558,8 +581,8 @@ function ewww_image_optimizer_install_tools () {
 				$ewww_debug = "$ewww_debug couldn't set jpegtran permissions<br>";
 			}
 		}
-		$ewww_debug = "$ewww_debug gifislce permissions: $gifsicle_perms<br>";
 		$gifsicle_perms = substr(sprintf('%o', fileperms($gifsicle_dst)), -4);
+		$ewww_debug = "$ewww_debug gifislce permissions: $gifsicle_perms<br>";
 		if ($gifsicle_perms != '0755') {
 			if (!chmod($gifsicle_dst, 0755)) {
 				$toolfail = true;

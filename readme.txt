@@ -132,8 +132,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 = 1.4.1 =
 * removed path restrictions, and fixed path detection for old blogs where upload path was modified
 * use built-in php mimetype functions to check binaries, saving 'file' command for fallback
-* added donation link, since several folks have expressed interest in contributing financially
+* added donation links, since several folks have expressed interest in contributing financially
 * bundled jquery and jquery-ui for using bulk functions on older WP versions
+* use 32-bit jpegtran binary on 'odd' 64-bit linux servers
 
 = 1.4.0 =
 * fixed bug with missing 'nice' not detected properly
