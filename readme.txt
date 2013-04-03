@@ -135,6 +135,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * added donation links, since several folks have expressed interest in contributing financially
 * bundled jquery and jquery-ui for using bulk functions on older WP versions
 * use 32-bit jpegtran binary on 'odd' 64-bit linux servers
+* rewrote debugging functionality, also available on bulk operations now
 
 = 1.4.0 =
 * fixed bug with missing 'nice' not detected properly

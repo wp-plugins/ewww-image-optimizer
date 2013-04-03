@@ -529,7 +529,7 @@ function ewww_image_optimizer_install_tools () {
 		$jpegtran32_src = substr($jpegtran_src, 0, -2);
 		$jpegtran32_dst = $jpegtran_dst . '-custom';
 		if (!file_exists($jpegtran32_dst) || (ewww_image_optimizer_md5check($jpegtran32_dst) && filesize($jpegtran32_dst) != filesize($jpegtran32_src))) {
-			$ewww_debug = "$ewww_debug jpegtran-custom doesn't exist, or matches a previous bundled version<br>";
+			$ewww_debug = "$ewww_debug copying $jpegtran32_src to $jpegtran32_dst<br>";
 			if (!copy($jpegtran32_src, $jpegtran32_dst)) {
 				// this isn't a fatal error, besides we'll see it in the debug if needed
 				// $toolfail = true;
