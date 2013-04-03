@@ -14,6 +14,10 @@ class ewwwflag {
 		add_action('admin_action_ewww_flag_manual', array(&$this, 'ewww_flag_manual'));
 		add_action('admin_menu', array(&$this, 'ewww_flag_bulk_menu'));
 		add_action('admin_enqueue_scripts', array(&$this, 'ewww_flag_bulk_script'));
+		add_action('wp_ajax_bulk_flag_init', array(&$this, 'ewww_flag_bulk_init'));
+		add_action('wp_ajax_bulk_flag_filename', array(&$this, 'ewww_flag_bulk_filename'));
+		add_action('wp_ajax_bulk_flag_loop', array(&$this, 'ewww_flag_bulk_loop'));
+		add_action('wp_ajax_bulk_flag_cleanup', array(&$this, 'ewww_flag_bulk_cleanup'));
 		register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_flag_resume');
 		register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_flag_attachments');
 	}
@@ -34,19 +38,70 @@ class ewwwflag {
 	}
 
 	// Handles the bulk actions POST
-	function ewww_post_processor () {
+	function ewww_post_processor ($bulk = NULL) {
+		if (empty($bulk)) {
+			// if there is no requested bulk action, do nothing
+			if (empty($_REQUEST['bulkaction'])) {
+				return;
+			}
+			// if there is no media to optimize, do nothing
+			if (empty($_REQUEST['doaction']) || !is_array($_REQUEST['doaction'])) {
+				return;
+			}
+		}
+//		echo "--------------- $bulk ---------------";
+		$attachments = get_option('ewww_image_optimizer_bulk_flag_attachments');
+		if (count($attachments) < 1) {
+			echo '<p>You don’t appear to have uploaded any images yet.</p>';
+			return;
+		}
+		?>
+		<div class="wrap"><div id="icon-upload" class="icon32"><br /></div><h2>GRAND FlAGallery Bulk Optimize</h2>
+		<?php
+		// Retrieve the value of the 'bulk resume' option and set the button text for the form to use
+		$resume = get_option('ewww_image_optimizer_bulk_flag_resume');
+		if (empty($resume)) {
+			$button_text = 'Start optimizing';
+		} else {
+			$button_text = 'Resume previous bulk operation';
+		}
+		?>
+		<div id="bulk-loading"></div>
+		<div id="bulk-progressbar"></div>
+		<div id="bulk-counter"></div>
+		<div id="bulk-status"></div>
+		<div id="bulk-forms"><p>This tool can optimize large batches (or all) of images from your media library.</p>
+		<p>We have <?php echo count($attachments); ?> images to optimize.</p>
+		<form id="bulk-start" method="post" action="">
+			<input type="submit" class="button-secondary action" value="<?php echo $button_text; ?>" />
+		</form>
+		<?php
+		if (!empty($resume)):
+		?>
+			<p>If you would like to start over again, press the <b>Reset Status</b> button to reset the bulk operation status.</p>
+			<form method="post" action="">
+				<?php wp_nonce_field( 'ewww-image-optimizer-bulk', '_wpnonce'); ?>
+				<input type="hidden" name="reset" value="1">
+				<button id="bulk-reset" type="submit" class="button-secondary action">Reset Status</button>
+			</form>
+		<?php
+		endif;
+		echo '</div></div>';
 	}
 
 	// prepares the bulk operation and includes the javascript functions
 	function ewww_flag_bulk_script($hook) {
+		if ($hook != 'flagallery_page_flag-bulk-optimize' && $hook != 'flagallery_page_flag-manage-gallery')
+			return;
 		// if there is no requested bulk action, do nothing
-		if (empty($_REQUEST['bulkaction'])) {
+		if ($hook == 'flagallery_page_flag-manage-gallery' && empty($_REQUEST['bulkaction'])) {
+			return;
 		}
 		// if there is no media to optimize, do nothing
-		if (empty($_REQUEST['doaction']) || !is_array($_REQUEST['doaction'])) {
+		if ($hook == 'flagallery_page_flag-manage-gallery' && (empty($_REQUEST['doaction']) || !is_array($_REQUEST['doaction']))) {
+			return;
 		}
 	
-		global $ewwwflag;
 		echo "------------ $hook ----------------";
 		$ids = null;
 		if (!empty($_REQUEST['reset'])) {
@@ -57,6 +112,7 @@ class ewwwflag {
 			if ($_REQUEST['page'] == 'manage-images' && $_REQUEST['bulkaction'] == 'bulk_optimize_images') {
 				// check the referring page
 				check_admin_referer('flag_updategallery');
+				update_option('ewww_image_optimizer_bulk_flag_resume', '');
 				$ids = array_map( 'intval', $_REQUEST['doaction']);
 				//$ewwwflag->ewww_flag_bulk($ids);
 				//return;
@@ -65,6 +121,7 @@ class ewwwflag {
 			if ($_REQUEST['page'] == 'manage-galleries' && $_REQUEST['bulkaction'] == 'bulk_optimize_galleries') {
 				check_admin_referer('flag_bulkgallery');
 				global $flagdb;
+				update_option('ewww_image_optimizer_bulk_flag_resume', '');
 				$ids = array();
 				foreach ($_REQUEST['doaction'] as $gid) {
 					$gallery_list = $flagdb->get_gallery($gid);
@@ -77,7 +134,7 @@ class ewwwflag {
 			}
 		} elseif (!empty($resume)) {
 			$ids = get_option('ewww_image_optimizer_bulk_flag_attachments');
-		} else {
+		} elseif ($hook == 'flagallery_page_flag-bulk-optimize') {
 			global $wpdb;
 			$ids = $wpdb->get_col("SELECT pid FROM $wpdb->flagpictures ORDER BY sortorder ASC");
 		}
@@ -85,10 +142,16 @@ class ewwwflag {
 		wp_deregister_script('jquery');
 		wp_register_script('jquery', plugins_url('/jquery-1.9.1.min.js', __FILE__), false, '1.9.1');
 		wp_enqueue_script('ewwwjuiscript', plugins_url('/jquery-ui-1.10.2.custom.min.js', __FILE__), false);
-		wp_enqueue_script('ewwwbulkscript', plugins_url('/pageload.js', __FILE__), array('jquery'));
+		wp_enqueue_script('ewwwbulkscript', plugins_url('/flagbulk.js', __FILE__), array('jquery'));
+//		print_r ($ids);
+//		echo "<br><----- $ids ------>";
 		$ids = json_encode($ids);
+//		echo "<br><----------------->";
+//		print_r ($ids);
+		echo "<br><----- $ids ------>";
 		wp_localize_script('ewwwbulkscript', 'ewww_vars', array(
-				'_wpnonce' => wp_create_nonce('ewww-image-optimizer-bulk-flag'),
+				'_wpnonce' => wp_create_nonce('ewww-image-optimizer-bulk'),
+				'gallery' => 'flag',
 				'attachments' => $ids
 			)
 		);
@@ -128,9 +191,73 @@ class ewwwflag {
 		exit(0);
 	}
 
+	/* initialize bulk operation */
+	function ewww_flag_bulk_init() {
+		if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
+			wp_die( __( 'Cheatin&#8217; eh?' ) );
+		}
+		update_option('ewww_image_optimizer_bulk_flag_resume', 'true');
+		$loading_image = plugins_url('/wpspin.gif', __FILE__);
+		echo "<p>Optimizing&nbsp;<img src='$loading_image' alt='loading'/></p>";
+		die();
+	}
+
+	function ewww_flag_bulk_filename() {
+		if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
+			wp_die( __( 'Cheatin&#8217; eh?' ) );
+		}
+		require_once(WP_CONTENT_DIR . '/plugins/flash-album-gallery/lib/meta.php');
+		$id = $_POST['attachment'];
+		$meta = new flagMeta($id);
+		$loading_image = plugins_url('/wpspin.gif', __FILE__);
+		$file_name = esc_html($meta->image->filename);
+		echo "<p>Optimizing... <b>" . $file_name . "</b>&nbsp;<img src='$loading_image' alt='loading'/></p>";
+		die();
+	}
+		
+
+	function ewww_flag_bulk_loop() {
+		if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
+			wp_die( __( 'Cheatin&#8217; eh?' ) );
+		}
+		require_once(WP_CONTENT_DIR . '/plugins/flash-album-gallery/lib/meta.php');
+		//global $flag;
+		//global $flagdb;
+		$started = microtime(true);
+		$id = $_POST['attachment'];
+		$meta = new flagMeta($id);
+		$file_path = $meta->image->imagePath;
+		//file_put_contents($progress_file, "$id\n");
+		//file_put_contents($progress_file, $attach_ser, FILE_APPEND);
+		$fres = ewww_image_optimizer($file_path, 3, false, false);
+		flagdb::update_image_meta($id, array('ewww_image_optimizer' => $fres[1]));
+		printf( "<p>Optimized image: <strong>%s</strong><br>", esc_html($meta->image->filename) );
+		printf( "Full size – %s<br>", $fres[1] );
+		$thumb_path = $meta->image->thumbPath;
+		$tres = ewww_image_optimizer($thumb_path, 3, false, true);
+		printf( "Thumbnail – %s<br>", $tres[1] );
+		$elapsed = microtime(true) - $started;
+		echo "Elapsed: " .round($elapsed, 3) . " seconds</p>";
+		$attachments = get_option('ewww_image_optimizer_bulk_flag_attachments');
+		array_shift($attachments);
+		update_option('ewww_image_optimizer_bulk_flag_attachments', $attachments);
+		die();
+	}
+
+	function ewww_flag_bulk_cleanup() {
+		if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
+			wp_die( __( 'Cheatin&#8217; eh?' ) );
+		}
+		update_option('ewww_image_optimizer_bulk_flag_resume', '');
+		update_option('ewww_image_optimizer_bulk_flag_attachments', '');
+		echo '<p><b>Finished Optimization!</b></p>';
+		die();
+	}
 	/* function to bulk optimize images */
 	function ewww_flag_bulk($images = null) {
-		global $flag;
+		global $ewwwflag;
+		$ewwwflag->ewww_post_processor('1');
+		/*global $flag;
 		$auto_start = false;
 		$progress_file = ABSPATH . $flag->options['galleryPath'] . "ewww.tmp";
 		$skip_attachments = false;
@@ -216,7 +343,7 @@ class ewwwflag {
 				unlink($progress_file);	
 				echo '<p><b>Finished Optimization</b></p></div>';	
 			endif;
-		endif;
+		endif;*/
 	}
 
 	/* flag_manage_images_columns hook */

@@ -101,11 +101,11 @@ function ewww_image_optimizer_bulk_script($hook) {
 	// store the attachment IDs we retrieved in the 'bulk_attachments' option so we can keep track of our progress in the database
 	update_option('ewww_image_optimizer_bulk_attachments', $attachments);
         // load the bulk optimization javascript and dependencies
-	//if (!wp_enqueue_script('ewwwbulkscript', plugins_url('/pageload.js', __FILE__), array('jquery', 'jquery-ui-core', 'jquery-ui-widget', 'jquery-ui-progressbar'))) {
+	//if (!wp_enqueue_script('ewwwbulkscript', plugins_url('/eio.js', __FILE__), array('jquery', 'jquery-ui-core', 'jquery-ui-widget', 'jquery-ui-progressbar'))) {
 	wp_deregister_script('jquery');
 	wp_register_script('jquery', plugins_url('/jquery-1.9.1.min.js', __FILE__), false, '1.9.1');
 	wp_enqueue_script('ewwwjuiscript', plugins_url('/jquery-ui-1.10.2.custom.min.js', __FILE__), false);
-	wp_enqueue_script('ewwwbulkscript', plugins_url('/pageload.js', __FILE__), array('jquery'));
+	wp_enqueue_script('ewwwbulkscript', plugins_url('/eio.js', __FILE__), array('jquery'));
 	//}
 	// submit a couple variables to the javascript to work with
 	$attachments = json_encode($attachments);
