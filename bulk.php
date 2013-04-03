@@ -6,11 +6,11 @@ function ewww_image_optimizer_bulk_preview() {
 // make sure there are some attachments to optimize
 	if (count($attachments) < 1) {
 		echo '<p>You don’t appear to have uploaded any images yet.</p>';
-	return;
+		return;
 	}
 ?>
-<div class="wrap"> 
-<div id="icon-upload" class="icon32"><br /></div><h2>Bulk EWWW Image Optimize </h2>
+	<div class="wrap"> 
+	<div id="icon-upload" class="icon32"><br /></div><h2>Bulk EWWW Image Optimize </h2>
 <?php 
 	// Retrieve the value of the 'bulk resume' option and set the button text for the form to use
 	$resume = get_option('ewww_image_optimizer_bulk_resume');

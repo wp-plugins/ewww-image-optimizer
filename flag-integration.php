@@ -13,13 +13,9 @@ class ewwwflag {
 //		add_action('flag_added_new_image', array( &$this, 'ewww_added_new_image'));
 		add_action('admin_action_ewww_flag_manual', array(&$this, 'ewww_flag_manual'));
 		add_action('admin_menu', array(&$this, 'ewww_flag_bulk_menu'));
-//		add_action('admin_init', array(&$this, 'do_output_buffer'));
-	}
-
-	/* needed to ensure bulk action redirects fire before content is displayed */
-	// not anymore...
-	function do_output_buffer() {
-		ob_start();
+		add_action('admin_enqueue_scripts', array(&$this, 'ewww_flag_bulk_script'));
+		register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_flag_resume');
+		register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_flag_attachments');
 	}
 
 	/* adds the Bulk Optimize page to the menu */
@@ -36,50 +32,68 @@ class ewwwflag {
 	function ewww_manage_galleries_bulkaction () {
 		echo '<option value="bulk_optimize_galleries">Bulk Optimize</option>';
 	}
-// Handles the bulk actions POST
-function ewww_post_processor () {
-	global $ewwwflag;
-	// if there is no requested bulk action, do nothing
-	if (empty($_REQUEST['bulkaction'])) {
-		return;
-	}
-	// if there is no media to optimize, do nothing
-	if (empty($_REQUEST['doaction']) || !is_array($_REQUEST['doaction'])) {
-		return;
+
+	// Handles the bulk actions POST
+	function ewww_post_processor () {
 	}
 
-	if ($_REQUEST['page'] == 'manage-images' && $_REQUEST['bulkaction'] == 'bulk_optimize_images') {
-		// check the referring page
-		check_admin_referer('flag_updategallery');
-		// prep the attachment IDs for optimization
-		//$ids = implode( ',', array_map( 'intval', $_REQUEST['doaction'] ) );
-		$ids = array_map( 'intval', $_REQUEST['doaction']);
-		$ewwwflag->ewww_flag_bulk($ids);
-		// Can't use wp_nonce_url() as it escapes HTML entities, call the optimizer with the $ids selected
-		//wp_redirect( add_query_arg( '_wpnonce', wp_create_nonce( 'ewww-flag-bulk' ), admin_url( 'admin.php?page=flag-bulk-optimize&ids=' . $ids ) ) );
-		//exit();
-		return;
-	}
-
-	if ($_REQUEST['page'] == 'manage-galleries' && $_REQUEST['bulkaction'] == 'bulk_optimize_galleries') {
-		check_admin_referer('flag_bulkgallery');
-		global $flagdb;
-		$ids = array();
-//		$id_list = array();
-		foreach ($_REQUEST['doaction'] as $gid) {
-			$gallery_list = $flagdb->get_gallery($gid);
-			foreach ($gallery_list as $image) {
-				$ids[] = $image->pid;
-			}	
+	// prepares the bulk operation and includes the javascript functions
+	function ewww_flag_bulk_script($hook) {
+		// if there is no requested bulk action, do nothing
+		if (empty($_REQUEST['bulkaction'])) {
 		}
-		$ewwwflag->ewww_flag_bulk($ids);
-		//$ids = implode( ',', array_map( 'intval', $id_list ) );
-		// Can't use wp_nonce_url() as it escapes HTML entities, call the optimizer with the $ids selected
-//		wp_redirect( add_query_arg( '_wpnonce', wp_create_nonce( 'ewww-flag-bulk' ), admin_url( 'admin.php?page=flag-bulk-optimize&ids=' . $ids ) ) );
-//		exit();
-		return;
+		// if there is no media to optimize, do nothing
+		if (empty($_REQUEST['doaction']) || !is_array($_REQUEST['doaction'])) {
+		}
+	
+		global $ewwwflag;
+		echo "------------ $hook ----------------";
+		$ids = null;
+		if (!empty($_REQUEST['reset'])) {
+			update_option('ewww_image_optimizer_bulk_flag_resume', '');
+		}
+		$resume = get_option('ewww_image_optimizer_bulk_flag_resume');
+		if (!empty($_REQUEST['doaction'])) {
+			if ($_REQUEST['page'] == 'manage-images' && $_REQUEST['bulkaction'] == 'bulk_optimize_images') {
+				// check the referring page
+				check_admin_referer('flag_updategallery');
+				$ids = array_map( 'intval', $_REQUEST['doaction']);
+				//$ewwwflag->ewww_flag_bulk($ids);
+				//return;
+			}
+		
+			if ($_REQUEST['page'] == 'manage-galleries' && $_REQUEST['bulkaction'] == 'bulk_optimize_galleries') {
+				check_admin_referer('flag_bulkgallery');
+				global $flagdb;
+				$ids = array();
+				foreach ($_REQUEST['doaction'] as $gid) {
+					$gallery_list = $flagdb->get_gallery($gid);
+					foreach ($gallery_list as $image) {
+						$ids[] = $image->pid;
+					}	
+				}
+				//$ewwwflag->ewww_flag_bulk($ids);
+				//return;
+			}
+		} elseif (!empty($resume)) {
+			$ids = get_option('ewww_image_optimizer_bulk_flag_attachments');
+		} else {
+			global $wpdb;
+			$ids = $wpdb->get_col("SELECT pid FROM $wpdb->flagpictures ORDER BY sortorder ASC");
+		}
+		update_option('ewww_image_optimizer_bulk_flag_attachments', $ids);
+		wp_deregister_script('jquery');
+		wp_register_script('jquery', plugins_url('/jquery-1.9.1.min.js', __FILE__), false, '1.9.1');
+		wp_enqueue_script('ewwwjuiscript', plugins_url('/jquery-ui-1.10.2.custom.min.js', __FILE__), false);
+		wp_enqueue_script('ewwwbulkscript', plugins_url('/pageload.js', __FILE__), array('jquery'));
+		$ids = json_encode($ids);
+		wp_localize_script('ewwwbulkscript', 'ewww_vars', array(
+				'_wpnonce' => wp_create_nonce('ewww-image-optimizer-bulk-flag'),
+				'attachments' => $ids
+			)
+		);
+		wp_enqueue_style('jquery-ui-progressbar', plugins_url('jquery-ui-1.10.1.custom.css', __FILE__));
 	}
-}
 	/* flag_added_new_image hook */
 	function ewww_added_new_image ($image) {
 //		print_r ($image);
