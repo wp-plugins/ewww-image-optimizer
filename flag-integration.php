@@ -143,6 +143,7 @@ class ewwwflag {
 		wp_register_script('jquery', plugins_url('/jquery-1.9.1.min.js', __FILE__), false, '1.9.1');
 		wp_enqueue_script('ewwwjuiscript', plugins_url('/jquery-ui-1.10.2.custom.min.js', __FILE__), false);
 		wp_enqueue_script('ewwwbulkscript', plugins_url('/eio.js', __FILE__), array('jquery'));
+		wp_enqueue_style('jquery-ui-progressbar', plugins_url('jquery-ui-1.10.1.custom.css', __FILE__));
 //		print_r ($ids);
 //		echo "<br><----- $ids ------>";
 		$ids = json_encode($ids);
@@ -155,7 +156,6 @@ class ewwwflag {
 				'attachments' => $ids
 			)
 		);
-		wp_enqueue_style('jquery-ui-progressbar', plugins_url('jquery-ui-1.10.1.custom.css', __FILE__));
 	}
 	/* flag_added_new_image hook */
 	function ewww_added_new_image ($image) {

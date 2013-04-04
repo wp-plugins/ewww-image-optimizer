@@ -5,18 +5,27 @@ class ewwwngg {
 
 	/* initializes the nextgen integration functions */
 	function ewwwngg() {
-		add_filter( 'ngg_manage_images_columns', array( &$this, 'ewww_manage_images_columns' ) );
-		add_action( 'ngg_manage_image_custom_column', array( &$this, 'ewww_manage_image_custom_column' ), 10, 2 );
-		add_action( 'ngg_added_new_image', array( &$this, 'ewww_added_new_image' ) );
-		add_action('admin_action_ewww_ngg_manual', array( &$this, 'ewww_ngg_manual') );
-		add_action('admin_menu', array(&$this, 'ewww_ngg_bulk_menu') );
+		add_filter('ngg_manage_images_columns', array(&$this, 'ewww_manage_images_columns'));
+		add_action('ngg_manage_image_custom_column', array(&$this, 'ewww_manage_image_custom_column'), 10, 2);
+		add_action('ngg_added_new_image', array(&$this, 'ewww_added_new_image'));
+		add_action('admin_action_ewww_ngg_manual', array(&$this, 'ewww_ngg_manual'));
+		add_action('admin_menu', array(&$this, 'ewww_ngg_bulk_menu'));
+		add_action('admin_head-gallery_page_nggallery-manage-gallery', array(&$this, 'ewww_ngg_bulk_actions_script'));
+		add_action('admin_enqueue_scripts', array(&$this, 'ewww_ngg_bulk_script'));
+		add_action('wp_ajax_bulk_nextgen_preview', array(&$this, 'ewww_ngg_bulk_preview'));
+		add_action('wp_ajax_bulk_flag_init', array(&$this, 'ewww_ngg_bulk_init'));
+		add_action('wp_ajax_bulk_flag_filename', array(&$this, 'ewww_ngg_bulk_filename'));
+		add_action('wp_ajax_bulk_flag_loop', array(&$this, 'ewww_ngg_bulk_loop'));
+		add_action('wp_ajax_bulk_flag_cleanup', array(&$this, 'ewww_ngg_bulk_cleanup'));
+		register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_ngg_resume');
+		register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_ngg_attachments');
 	}
 
 	/* adds the Bulk Optimize page to the tools menu */
 	function ewww_ngg_bulk_menu () {
-			add_submenu_page(NGGFOLDER, 'NextGEN Bulk Optimize', 'Bulk Optimize', 'NextGEN Manage gallery', 'ewww-ngg-bulk', array (&$this, 'ewww_ngg_bulk'));
+			add_submenu_page(NGGFOLDER, 'NextGEN Bulk Optimize', 'Bulk Optimize', 'NextGEN Manage gallery', 'ewww-ngg-bulk', array (&$this, 'ewww_ngg_bulk_preview'));
 	}
-	//TODO: add a bulk optimize action to each gallery (when we have a hook)
+	//TODO: add a bulk optimize action to each gallery (using js now...)
 	/* ngg_added_new_image hook */
 	function ewww_added_new_image( $image ) {
 		// query the filesystem path of the gallery from the database
@@ -25,7 +34,7 @@ class ewwwngg {
 		$gallery_path = $wpdb->get_var($q);
 		// if we have a path to work with
 		if ( $gallery_path ) {
-			// TODO: optimize thumbs (when we have a hook)
+			// TODO: optimize thumbs (found one, I think)
 			// construct the absolute path of the current image
 			$file_path = trailingslashit($gallery_path) . $image['filename'];
 			// run the optimizer on the current image
@@ -283,6 +292,146 @@ class ewwwngg {
 				__('Optimize now!', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 			}
 		}
+	}
+	function ewww_ngg_bulk_preview() {
+		if (!empty($_POST['wrapped'])) {
+                        // if there is no requested bulk action, do nothing
+                        if (empty($_REQUEST['bulkaction'])) {
+                        //        return;
+                        }
+                        // if there is no media to optimize, do nothing
+                        if (empty($_REQUEST['doaction']) || !is_array($_REQUEST['doaction'])) {
+                        //      return;
+                        }
+			echo '<div class="wrap">';
+                }
+                $attachments = get_option('ewww_image_optimizer_bulk_ngg_attachments');
+                if (count($attachments) < 1) {
+                        echo '<p>You don’t appear to have uploaded any images yet.</p>';
+                        return;
+                }
+                ?>
+                <div id="icon-upload" class="icon32"><br /></div><h2>NextGEN Gallery Bulk Optimize</h2>
+                <?php
+                // Retrieve the value of the 'bulk resume' option and set the button text for the form to use
+                $resume = get_option('ewww_image_optimizer_bulk_ngg_resume');
+                if (empty($resume)) {
+                        $button_text = 'Start optimizing';
+                } else {
+                        $button_text = 'Resume previous bulk operation';
+                }
+                ?>
+                <div id="bulk-loading"></div>
+                <div id="bulk-progressbar"></div>
+                <div id="bulk-counter"></div>
+                <div id="bulk-status"></div>
+                <div id="bulk-forms"><p>This tool can optimize large batches (or all) of images from your media library.</p>
+                <p>We have <?php echo count($attachments); ?> images to optimize.</p>
+                <form id="bulk-start" method="post" action="">
+                        <input type="submit" class="button-secondary action" value="<?php echo $button_text; ?>" />
+                </form>
+                <?php
+                if (!empty($resume)):
+                ?>
+                        <p>If you would like to start over again, press the <b>Reset Status</b> button to reset the bulk operation status.</p>
+                        <form method="post" action="">
+                                <?php wp_nonce_field( 'ewww-image-optimizer-bulk', '_wpnonce'); ?>
+                                <input type="hidden" name="reset" value="1">
+                                <button id="bulk-reset" type="submit" class="button-secondary action">Reset Status</button>
+                        </form>
+                <?php
+                endif;
+		if (empty($_POST['wrapped'])) {
+	                echo '</div></div>';
+		} else {
+			echo '</div>';
+		}
+		die();
+	}
+	function ewww_ngg_bulk_script($hook) { 
+//	global $hook_suffix;
+//	print_r ($hook_suffix); 
+		print_r($_POST);
+		echo "<br>$hook<br>";
+		if ($hook != 'gallery_page_ewww-ngg-bulk' && $hook != 'gallery_page_nggallery-manage-gallery')
+				return;
+		if ($hook == 'gallery_page_nggallery-manage-gallery' && empty($_REQUEST['bulkaction']))
+				return;
+		if ($hook == 'gallery_page_nggallery-manage-gallery' && (empty($_REQUEST['doaction']) || !is_array($_REQUEST['doaction'])))
+				return;
+		$images = null;
+//		$images = get_option('ewww_image_optimizer_bulk_ngg_attachments');
+		if (!empty($_REQUEST['reset']))
+			update_option('ewww_image_optimizer_bulk_ngg_resume', '');
+		$resume = get_option('ewww_image_optimizer_bulk_ngg_resume');
+		if (!empty($_REQUEST['doaction'])) {
+			if ($_REQUEST['page'] == 'manage-images' && $_REQUEST['bulkaction'] == 'bulk_optimize') {
+				check_admin_referer('ngg_updategallery');
+				update_option('ewww_image_optimizer_bulk_ngg_resume', '');
+				$images = array_map( 'intval', $_REQUEST['doaction']);
+			}
+			if ($_REQUEST['page'] == 'manage-galleries' && $_REQUEST['bulkaction'] == 'bulk_optimize') {
+				check_admin_referer('ngg_bulkgallery');
+				global $nggdb;
+				update_option('ewww_image_optimizer_bulk_ngg_resume', '');
+				$ids = array();
+				foreach ($_REQUEST['doaction'] as $gid) {
+					$gallery_list = $nggdb->get_gallery($gid);
+					foreach ($gallery_list as $image) {
+						$images[] = $image->pid;
+					}
+				}
+			}
+		} elseif (!empty($resume)) {
+			$images = get_option('ewww_image_optimizer_bulk_ngg_attachments');
+		} elseif ($hook == 'gallery_page_ewww-ngg-bulk') {
+			global $wpdb;
+			$images = $wpdb->get_col("SELECT pid FROM $wpdb->nggpictures ORDER BY sortorder ASC");
+		}
+		update_option('ewww_image_optimizer_bulk_ngg_attachments', $images);
+		wp_deregister_script('jquery');
+		wp_register_script('jquery', plugins_url('/jquery-1.9.1.min.js', __FILE__), false, '1.9.1');
+		wp_enqueue_script('ewwwjuiscript', plugins_url('/jquery-ui-1.10.2.custom.min.js', __FILE__), false);
+		wp_enqueue_script('ewwwbulkscript', plugins_url('/eio.js', __FILE__), array('jquery'));
+		wp_enqueue_style('jquery-ui-progressbar', plugins_url('jquery-ui-1.10.1.custom.css', __FILE__));
+		$images = json_encode($images);
+		wp_localize_script('ewwwbulkscript', 'ewww_vars', array(
+				'_wpnonce' => wp_create_nonce('ewww-image-optimizer-bulk'),
+				'gallery' => 'nextgen',
+				'attachments' => $images
+			)
+		);
+	}
+
+	function ewww_ngg_bulk_init() {
+                if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
+                        wp_die( __( 'Cheatin&#8217; eh?' ) );
+                }
+                update_option('ewww_image_optimizer_bulk_ngg_resume', 'true');
+                $loading_image = plugins_url('/wpspin.gif', __FILE__);
+                echo "<p>Optimizing&nbsp;<img src='$loading_image' alt='loading'/></p>";
+                die();
+        }
+
+	function ewww_ngg_bulk_actions_script() {?>
+		<script type="text/javascript">
+			jQuery(document).ready(function($){
+				$('select[name^="bulkaction"] option:last-child').after('<option value="bulk_optimize">Bulk Optimize</option>');
+			});
+		</script>
+<?php		if (!empty($_POST) && $_POST['bulkaction'] == 'bulk_optimize' && !empty($_POST['doaction'])) { ?>
+			<script type="text/javascript">
+				jQuery(document).ready(function($){
+					var bulk_data = {
+						action: 'bulk_nextgen_preview',
+						wrapped: true
+					};
+					$.post(ajaxurl, bulk_data, function(response) {
+						$('.wrap').prepend(response);
+					});
+				});
+			</script>
+<?php		}
 	}
 }
 // initialize the plugin and the class
