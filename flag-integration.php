@@ -102,7 +102,7 @@ class ewwwflag {
 			return;
 		}
 	
-		echo "------------ $hook ----------------";
+		//echo "------------ $hook ----------------";
 		$ids = null;
 		if (!empty($_REQUEST['reset'])) {
 			update_option('ewww_image_optimizer_bulk_flag_resume', '');
@@ -142,13 +142,13 @@ class ewwwflag {
 		wp_deregister_script('jquery');
 		wp_register_script('jquery', plugins_url('/jquery-1.9.1.min.js', __FILE__), false, '1.9.1');
 		wp_enqueue_script('ewwwjuiscript', plugins_url('/jquery-ui-1.10.2.custom.min.js', __FILE__), false);
-		wp_enqueue_script('ewwwbulkscript', plugins_url('/flagbulk.js', __FILE__), array('jquery'));
+		wp_enqueue_script('ewwwbulkscript', plugins_url('/eio.js', __FILE__), array('jquery'));
 //		print_r ($ids);
 //		echo "<br><----- $ids ------>";
 		$ids = json_encode($ids);
 //		echo "<br><----------------->";
 //		print_r ($ids);
-		echo "<br><----- $ids ------>";
+		//echo "<br><----- $ids ------>";
 		wp_localize_script('ewwwbulkscript', 'ewww_vars', array(
 				'_wpnonce' => wp_create_nonce('ewww-image-optimizer-bulk'),
 				'gallery' => 'flag',
