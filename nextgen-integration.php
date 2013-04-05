@@ -12,11 +12,11 @@ class ewwwngg {
 		add_action('admin_menu', array(&$this, 'ewww_ngg_bulk_menu'));
 		add_action('admin_head-gallery_page_nggallery-manage-gallery', array(&$this, 'ewww_ngg_bulk_actions_script'));
 		add_action('admin_enqueue_scripts', array(&$this, 'ewww_ngg_bulk_script'));
-		add_action('wp_ajax_bulk_nextgen_preview', array(&$this, 'ewww_ngg_bulk_preview'));
-		add_action('wp_ajax_bulk_flag_init', array(&$this, 'ewww_ngg_bulk_init'));
-		add_action('wp_ajax_bulk_flag_filename', array(&$this, 'ewww_ngg_bulk_filename'));
-		add_action('wp_ajax_bulk_flag_loop', array(&$this, 'ewww_ngg_bulk_loop'));
-		add_action('wp_ajax_bulk_flag_cleanup', array(&$this, 'ewww_ngg_bulk_cleanup'));
+		add_action('wp_ajax_bulk_ngg_preview', array(&$this, 'ewww_ngg_bulk_preview'));
+		add_action('wp_ajax_bulk_ngg_init', array(&$this, 'ewww_ngg_bulk_init'));
+		add_action('wp_ajax_bulk_ngg_filename', array(&$this, 'ewww_ngg_bulk_filename'));
+		add_action('wp_ajax_bulk_ngg_loop', array(&$this, 'ewww_ngg_bulk_loop'));
+		add_action('wp_ajax_bulk_ngg_cleanup', array(&$this, 'ewww_ngg_bulk_cleanup'));
 		register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_ngg_resume');
 		register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_ngg_attachments');
 	}
@@ -348,6 +348,7 @@ class ewwwngg {
 		}
 		die();
 	}
+
 	function ewww_ngg_bulk_script($hook) { 
 //	global $hook_suffix;
 //	print_r ($hook_suffix); 
@@ -392,7 +393,9 @@ class ewwwngg {
 		wp_deregister_script('jquery');
 		wp_register_script('jquery', plugins_url('/jquery-1.9.1.min.js', __FILE__), false, '1.9.1');
 		wp_enqueue_script('ewwwjuiscript', plugins_url('/jquery-ui-1.10.2.custom.min.js', __FILE__), false);
-		wp_enqueue_script('ewwwbulkscript', plugins_url('/eio.js', __FILE__), array('jquery'));
+		wp_enqueue_script('ewwwbulkscript', plugins_url('/eio.js', __FILE__), array('jquery'), '1.4.1', true);
+		wp_register_style( 'ngg-jqueryui', plugins_url('jquery-ui-1.10.1.custom.css', __FILE__));
+//		wp_dequeue_style( 'ngg-jqueryui' ); 
 		wp_enqueue_style('jquery-ui-progressbar', plugins_url('jquery-ui-1.10.1.custom.css', __FILE__));
 		$images = json_encode($images);
 		wp_localize_script('ewwwbulkscript', 'ewww_vars', array(
@@ -413,6 +416,66 @@ class ewwwngg {
                 die();
         }
 
+	function ewww_ngg_bulk_filename() {
+                if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
+                        wp_die( __( 'Cheatin&#8217; eh?' ) );
+                }
+		require_once(WP_CONTENT_DIR . '/plugins/nextgen-gallery/lib/meta.php');
+		$id = $_POST['attachment'];
+		$meta = new nggMeta($id);
+		$loading_image = plugins_url('/wpspin.gif', __FILE__);
+		$file_name = esc_html($meta->image->filename);
+		echo "<p>Optimizing... <b>" . $file_name . "</b>&nbsp;<img src='$loading_image' alt='loading'/></p>";
+		die();
+	}
+
+	function ewww_ngg_bulk_loop() {
+                if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
+                        wp_die( __( 'Cheatin&#8217; eh?' ) );
+                }
+		require_once(WP_CONTENT_DIR . '/plugins/nextgen-gallery/lib/meta.php');
+		$started = microtime(true);
+		$id = $_POST['attachment'];
+		// get the metadata
+		$meta = new nggMeta($id);
+		// output the current image name
+		//printf( "<strong>%s</strong>&hellip;<br>", esc_html($meta->image->filename) );
+		// retrieve the filepath
+		$file_path = $meta->image->imagePath;
+		// update the temp file with our current status
+		//file_put_contents($progress_file, "$id");
+		// run the optimizer on the current image
+		$fres = ewww_image_optimizer($file_path, 2, false, false);
+		// update the metadata of the optimized image
+		nggdb::update_image_meta($id, array('ewww_image_optimizer' => $fres[1]));
+		// output the results of the optimization
+		printf("<p>Optimized image: <strong>%s</strong><br>", esc_html($file_path));
+		printf("Full size – %s<br>", $fres[1] );
+		// get the filepath of the thumbnail image
+		$thumb_path = $meta->image->thumbPath;
+		// run the optimization on the thumbnail
+		$tres = ewww_image_optimizer($thumb_path, 2, false, true);
+		// output the results of the thumb optimization
+		printf( "Thumbnail – %s<br>", $tres[1] );
+		// outupt how much time we've spent optimizing so far
+		$elapsed = microtime(true) - $started;
+		echo "Elapsed: " . round($elapsed, 3) . " seconds</p>";
+		$attachments = get_option('ewww_image_optimizer_bulk_ngg_attachments');
+		array_shift($attachments);
+		update_option('ewww_image_optimizer_bulk_flag_attachments', $attachments);
+		die();
+	}
+
+	function ewww_ngg_bulk_cleanup() {
+                if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
+                        wp_die( __( 'Cheatin&#8217; eh?' ) );
+                }
+		update_option('ewww_image_optimizer_bulk_flag_resume', '');
+		update_option('ewww_image_optimizer_bulk_flag_attachments', '');
+		echo '<p><b>Finished Optimization!</b></p>';
+		die();
+	}
+	
 	function ewww_ngg_bulk_actions_script() {?>
 		<script type="text/javascript">
 			jQuery(document).ready(function($){
@@ -423,7 +486,7 @@ class ewwwngg {
 			<script type="text/javascript">
 				jQuery(document).ready(function($){
 					var bulk_data = {
-						action: 'bulk_nextgen_preview',
+						action: 'bulk_ngg_preview',
 						wrapped: true
 					};
 					$.post(ajaxurl, bulk_data, function(response) {

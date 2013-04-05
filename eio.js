@@ -13,18 +13,19 @@ function currentTime(){
 window.onload=function(){
   clearTimeout(loopTime);
 }*/
-jQuery(document).ready(function($) {
-	$('#bulk-start').submit(function() {
+window.onload=function(jQuery) {
+//jQuery(document).ready(function($) {
+//	$('#bulk-start').submit(function() {
 		if (ewww_vars.gallery == 'flag') {
 			var init_action = 'bulk_flag_init';
 			var filename_action = 'bulk_flag_filename';
 			var loop_action = 'bulk_flag_loop';
 			var cleanup_action = 'bulk_flag_cleanup';
 		} else if (ewww_vars.gallery == 'nextgen') {
-			var init_action = 'bulk_nextgen_init';
-			var filename_action = 'bulk_nextgen_filename';
-			var loop_action = 'bulk_nextgen_loop';
-			var cleanup_action = 'bulk_nextgen_cleanup';
+			var init_action = 'bulk_ngg_init';
+			var filename_action = 'bulk_ngg_filename';
+			var loop_action = 'bulk_ngg_loop';
+			var cleanup_action = 'bulk_ngg_cleanup';
 		} else {
 			var init_action = 'bulk_init';
 			var filename_action = 'bulk_filename';
@@ -86,5 +87,5 @@ jQuery(document).ready(function($) {
 			});
 		}
 		return false;
-	});
-});
+//	});
+};

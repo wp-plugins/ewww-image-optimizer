@@ -237,7 +237,7 @@ class ewwwflag {
 		$tres = ewww_image_optimizer($thumb_path, 3, false, true);
 		printf( "Thumbnail – %s<br>", $tres[1] );
 		$elapsed = microtime(true) - $started;
-		echo "Elapsed: " .round($elapsed, 3) . " seconds</p>";
+		echo "Elapsed: " . round($elapsed, 3) . " seconds</p>";
 		$attachments = get_option('ewww_image_optimizer_bulk_flag_attachments');
 		array_shift($attachments);
 		update_option('ewww_image_optimizer_bulk_flag_attachments', $attachments);
