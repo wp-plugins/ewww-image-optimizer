@@ -352,8 +352,8 @@ class ewwwngg {
 	function ewww_ngg_bulk_script($hook) { 
 //	global $hook_suffix;
 //	print_r ($hook_suffix); 
-		print_r($_POST);
-		echo "<br>$hook<br>";
+//		print_r($_POST);
+//		echo "<br>$hook<br>";
 		if ($hook != 'gallery_page_ewww-ngg-bulk' && $hook != 'gallery_page_nggallery-manage-gallery')
 				return;
 		if ($hook == 'gallery_page_nggallery-manage-gallery' && empty($_REQUEST['bulkaction']))

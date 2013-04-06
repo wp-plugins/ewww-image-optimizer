@@ -164,7 +164,7 @@ function ewww_image_optimizer_mimetype($path, $case) {
 			$type = $type['mime'];
 		}
 		$ewww_debug = "$ewww_debug getimagesize: $type <br>";
-	} elseif (empty($type) && $case == 'b') {
+	} elseif ((empty($type) || $type != 'application/x-executable') && $case == 'b') {
 		if (ewww_image_optimizer_tool_found('/usr/bin/file', 'f')) {
 			$file = '/usr/bin/file';
 		} elseif (ewww_image_optimizer_tool_found('file', 'f')) {
