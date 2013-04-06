@@ -147,13 +147,20 @@ class ewwwflag {
 			global $wpdb;
 			$ids = $wpdb->get_col("SELECT pid FROM $wpdb->flagpictures ORDER BY sortorder ASC");
 		}
+		// store the IDs to optimize in the options table of the db
 		update_option('ewww_image_optimizer_bulk_flag_attachments', $ids);
+		// replace the built-in jquery script
 		wp_deregister_script('jquery');
 		wp_register_script('jquery', plugins_url('/jquery-1.9.1.min.js', __FILE__), false, '1.9.1');
+		// add a custom jquery-ui script that contains the progressbar widget
 		wp_enqueue_script('ewwwjuiscript', plugins_url('/jquery-ui-1.10.2.custom.min.js', __FILE__), false);
+		// add the EWWW IO javascript
 		wp_enqueue_script('ewwwbulkscript', plugins_url('/eio.js', __FILE__), array('jquery'));
+		// add the styling for the progressbar
 		wp_enqueue_style('jquery-ui-progressbar', plugins_url('jquery-ui-1.10.1.custom.css', __FILE__));
+		// encode the IDs for javascript use
 		$ids = json_encode($ids);
+		// prepare a few variables to be used by the javascript code
 		wp_localize_script('ewwwbulkscript', 'ewww_vars', array(
 				'_wpnonce' => wp_create_nonce('ewww-image-optimizer-bulk'),
 				'gallery' => 'flag',
@@ -163,33 +170,45 @@ class ewwwflag {
 	}
 	/* flag_added_new_image hook - optimize newly uploaded images */
 	function ewww_added_new_image ($image) {
-//		$meta = flagdb::find_image($image['id']);
+		// make sure the image path is set
 		if (isset($image->imagePath)) {
+			// optimize the full size
 			$res = ewww_image_optimizer($image->imagePath, 3, false, false);
+			// optimize the thumbnail
 			$tres = ewww_image_optimizer($image->thumbPath, 3, false, true);
+			// get the image ID
 			$pid = $image->pid;
+			// update the image metadata in the db
 			flagdb::update_image_meta($pid, array('ewww_image_optimizer' => $res[1]));
 		}
 	}
 
 	/* Manually process an image from the gallery */
 	function ewww_flag_manual() {
+		// make sure the current user has appropriate permissions
 		if ( FALSE === current_user_can('upload_files') ) {
 			wp_die(__('You don\'t have permission to work with uploaded files.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 		}
-
+		// make sure we have an attachment ID
 		if ( FALSE === isset($_GET['attachment_ID'])) {
 			wp_die(__('No attachment ID was provided.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 		}
 		$id = intval($_GET['attachment_ID']);
+		// retrieve the metadata for the image ID
 		$meta = new flagMeta( $id );
 		$file_path = $meta->image->imagePath;
+		// optimize the full size
 		$res = ewww_image_optimizer($file_path, 3, false, false);
+		// update the metadata for the full-size image
 		flagdb::update_image_meta($id, array('ewww_image_optimizer' => $res[1]));
 		$thumb_path = $meta->image->thumbPath;
+		// optimize the thumbnail
 		ewww_image_optimizer($thumb_path, 3, false, true);
+		// get the referring page
 		$sendback = wp_get_referer();
+		// and clean it up a bit
 		$sendback = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $sendback);
+		// send the user back where they came from
 		wp_redirect($sendback);
 		exit(0);
 	}
@@ -199,8 +218,10 @@ class ewwwflag {
 		if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
 			wp_die( __( 'Cheatin&#8217; eh?' ) );
 		}
+		// set the resume flag to indicate the bulk operation is in progress
 		update_option('ewww_image_optimizer_bulk_flag_resume', 'true');
 		$loading_image = plugins_url('/wpspin.gif', __FILE__);
+		// output the initial message letting the user know we are starting
 		echo "<p>Optimizing&nbsp;<img src='$loading_image' alt='loading'/></p>";
 		die();
 	}
@@ -210,11 +231,15 @@ class ewwwflag {
 		if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
 			wp_die( __( 'Cheatin&#8217; eh?' ) );
 		}
+		// need this file to work with flag meta
 		require_once(WP_CONTENT_DIR . '/plugins/flash-album-gallery/lib/meta.php');
 		$id = $_POST['attachment'];
+		// retrieve the meta for the current ID
 		$meta = new flagMeta($id);
 		$loading_image = plugins_url('/wpspin.gif', __FILE__);
+		// retrieve the filename for the current image ID
 		$file_name = esc_html($meta->image->filename);
+		// and let the user know which image we are working on currently
 		echo "<p>Optimizing... <b>" . $file_name . "</b>&nbsp;<img src='$loading_image' alt='loading'/></p>";
 		die();
 	}
@@ -224,22 +249,35 @@ class ewwwflag {
 		if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
 			wp_die( __( 'Cheatin&#8217; eh?' ) );
 		}
+		// need this file to work with flag meta
 		require_once(WP_CONTENT_DIR . '/plugins/flash-album-gallery/lib/meta.php');
+		// record the starting time for the current image (in microseconds)
 		$started = microtime(true);
 		$id = $_POST['attachment'];
+		// get the image meta for the current ID
 		$meta = new flagMeta($id);
 		$file_path = $meta->image->imagePath;
+		// optimize the full-size version
 		$fres = ewww_image_optimizer($file_path, 3, false, false);
+		// and store the results in the metadata
 		flagdb::update_image_meta($id, array('ewww_image_optimizer' => $fres[1]));
+		// let the user know what happened
 		printf( "<p>Optimized image: <strong>%s</strong><br>", esc_html($meta->image->filename) );
 		printf( "Full size – %s<br>", $fres[1] );
 		$thumb_path = $meta->image->thumbPath;
+		// optimize the thumbnail
 		$tres = ewww_image_optimizer($thumb_path, 3, false, true);
+		// and let the user know the results
 		printf( "Thumbnail – %s<br>", $tres[1] );
+		// determine how much time the image took to process
 		$elapsed = microtime(true) - $started;
+		// and output it to the user
 		echo "Elapsed: " . round($elapsed, 3) . " seconds</p>";
+		// retrieve the list of attachments left to work on
 		$attachments = get_option('ewww_image_optimizer_bulk_flag_attachments');
+		// take the first image off the list
 		array_shift($attachments);
+		// and send the list back to the db
 		update_option('ewww_image_optimizer_bulk_flag_attachments', $attachments);
 		die();
 	}
@@ -249,8 +287,10 @@ class ewwwflag {
 		if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
 			wp_die( __( 'Cheatin&#8217; eh?' ) );
 		}
+		// reset the bulk flags in the db
 		update_option('ewww_image_optimizer_bulk_flag_resume', '');
 		update_option('ewww_image_optimizer_bulk_flag_attachments', '');
+		// and let the user know we are done
 		echo '<p><b>Finished Optimization!</b></p>';
 		die();
 	}
@@ -263,33 +303,21 @@ class ewwwflag {
 
 	/* flag_manage_image_custom_column hook - output the EWWW IO information on the gallery display */
 	function ewww_manage_image_custom_column( $column_name, $id ) {
-		if( $column_name == 'ewww_image_optimizer' ) {    
+		// check to make sure we're outputing our custom column
+		if( $column_name == 'ewww_image_optimizer' ) {
+			// get the metadata
 			$meta = new flagMeta( $id );
-			$status = $meta->get_META( 'ewww_image_optimizer' );
+			// grab the image status from the meta
+			$status = $meta->get_META('ewww_image_optimizer');
 			$msg = '';
+			// get the image path from the meta
 			$file_path = $meta->image->imagePath;
-		        // use finfo functions when available
-			if (function_exists('finfo_file') && defined('FILEINFO_MIME')) {
-				// create a finfo resource
-				$finfo = finfo_open(FILEINFO_MIME);
-				// retrieve the mimetype
-				$type = explode(';', finfo_file($finfo, $file_path));
-				$type = $type[0];
-				finfo_close($finfo);
-			} elseif (function_exists('getimagesize')) {
-				$type = getimagesize($file_path);
-				if(false !== $type){
-					$type = $type['mime'];
-				}
-			} elseif (function_exists('mime_content_type')) {
-				$type = mime_content_type($file_path);
-			} else {
-				$type = false;
-				$msg = '<br>missing finfo_file(), getimagesize(), and mime_content_type() PHP functions';
-			}
+			// get the mimetype
+			$type = ewww_image_optimizer_mimetype($file_path, 'i');
+			// get the file size
 			$file_size = ewww_image_optimizer_format_bytes(filesize($file_path));
-
 			$valid = true;
+			// if we don't have a valid tool for the image type, output the appropriate message
 	                switch($type) {
         	                case 'image/jpeg':
                 	                if(EWWW_IMAGE_OPTIMIZER_JPEGTRAN == false) {
@@ -312,16 +340,19 @@ class ewwwflag {
 				default:
 					$valid = false;
 			}
+			// let user know if the file type is unsupported
 			if($valid == false) {
 				print __('Unsupported file type', EWWW_IMAGE_OPTIMIZER_DOMAIN) . $msg;
 				return;
 			}
-			if ( $status && !empty( $status ) ) {
+			// output the image status if we know it
+			if (!empty($status)) {
 				echo $status;
 				print "<br>Image Size: $file_size";
 				printf("<br><a href=\"admin.php?action=ewww_flag_manual&amp;attachment_ID=%d\">%s</a>",
 				$id,
 				__('Re-optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+			// otherwise, tell the user that they can optimize the image now
 			} else {
 				print __('Not processed', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 				print "<br>Image Size: $file_size";
