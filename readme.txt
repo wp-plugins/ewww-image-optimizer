@@ -31,7 +31,7 @@ EWWW Image Optimizer calls optimization utilities directly which is well suited 
 = NextGEN Integration =
 
 Features re-optimization capability, and bulk optimizing. The NextGEN Bulk Optimize function is located near the bottom of the NextGEN menu, and will optimize all images in all galleries.
-NOTE: Does not optimize thumbnails on initial upload, must re-optimize images to optimize thumbnails.
+NOTE: Does not optimize thumbnails on initial upload, 1.4.1+ will provide the option to optimize thumbnails after uploading images.
 
 = GRAND Flash Album Gallery Integration =
 
@@ -130,6 +130,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 == Changelog ==
 
 = 1.4.1 =
+* FlaGallery and NextGEN Bulk functions are now using ajax functions with nicer progress bars and such
+* NextGEN now has ability to optimize selected galleries, or selected images in bulk (FlaGallery already had it)
+* NextGEN users can now click a button to optimize thumbnails after uploading new images
 * removed path restrictions, and fixed path detection for old blogs where upload path was modified
 * use built-in php mimetype functions to check binaries, saving 'file' command for fallback
 * added donation links, since several folks have expressed interest in contributing financially

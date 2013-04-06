@@ -13,25 +13,35 @@ function currentTime(){
 window.onload=function(){
   clearTimeout(loopTime);
 }*/
-window.onload=function(jQuery) {
-//jQuery(document).ready(function($) {
-//	$('#bulk-start').submit(function() {
+//window.onload=function(jQuery) {
+jQuery(document).ready(function($) {
+		var attachments = $.parseJSON(ewww_vars.attachments);
 		if (ewww_vars.gallery == 'flag') {
 			var init_action = 'bulk_flag_init';
 			var filename_action = 'bulk_flag_filename';
 			var loop_action = 'bulk_flag_loop';
 			var cleanup_action = 'bulk_flag_cleanup';
 		} else if (ewww_vars.gallery == 'nextgen') {
+	/*		var bulk_data = {
+                        	action: 'bulk_ngg_preview',
+                                wrapped: true
+                        };
+                        $.post(ajaxurl, bulk_data, function(response) {
+                        });*/
 			var init_action = 'bulk_ngg_init';
 			var filename_action = 'bulk_ngg_filename';
 			var loop_action = 'bulk_ngg_loop';
 			var cleanup_action = 'bulk_ngg_cleanup';
+			if (!document.getElementById('bulk-loading')) {
+                        	$('.wrap').prepend('<h2>Bulk Optimize</h2><div id="bulk-loading"></div><div id="bulk-progressbar"></div><div id="bulk-counter"></div><div id="bulk-status"></div><div id="bulk-forms"><p>We have ' + attachments.length + ' images to optimize.</p><form id="bulk-start" method="post" action=""><input type="submit" class="button-secondary action" value="Start optimizing" /></form></div>');
+			}
 		} else {
 			var init_action = 'bulk_init';
 			var filename_action = 'bulk_filename';
 			var loop_action = 'bulk_loop';
 			var cleanup_action = 'bulk_cleanup';
 		}
+	$('#bulk-start').submit(function() {
 		document.getElementById('bulk-forms').style.display='none';
 	        var init_data = {
 	                action: init_action,
@@ -39,7 +49,6 @@ window.onload=function(jQuery) {
 	        };
 		var i = 0;
 		  //              $('#bulk-status').append(ewww_vars.attachments + '<br>');
-		var attachments = $.parseJSON(ewww_vars.attachments);
 		//                $('#bulk-status').append(attachments + '<br>');
 	        $.post(ajaxurl, init_data, function(response) {
 	                $('#bulk-loading').html(response);
@@ -87,5 +96,5 @@ window.onload=function(jQuery) {
 			});
 		}
 		return false;
-//	});
-};
+	});
+});

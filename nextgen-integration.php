@@ -17,6 +17,8 @@ class ewwwngg {
 		add_action('wp_ajax_bulk_ngg_filename', array(&$this, 'ewww_ngg_bulk_filename'));
 		add_action('wp_ajax_bulk_ngg_loop', array(&$this, 'ewww_ngg_bulk_loop'));
 		add_action('wp_ajax_bulk_ngg_cleanup', array(&$this, 'ewww_ngg_bulk_cleanup'));
+		add_action('wp_ajax_ewww_ngg_thumbs', array(&$this, 'ewww_ngg_thumbs_only'));
+		add_action('ngg_after_new_images_added', array(&$this, 'ewww_ngg_new_thumbs'), 10, 2);
 		register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_ngg_resume');
 		register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_ngg_attachments');
 	}
@@ -24,8 +26,9 @@ class ewwwngg {
 	/* adds the Bulk Optimize page to the tools menu */
 	function ewww_ngg_bulk_menu () {
 			add_submenu_page(NGGFOLDER, 'NextGEN Bulk Optimize', 'Bulk Optimize', 'NextGEN Manage gallery', 'ewww-ngg-bulk', array (&$this, 'ewww_ngg_bulk_preview'));
+			$hook = add_submenu_page(null, 'NextGEN Bulk Thumbnail Optimize', 'Bulk Thumbnail Optimize', 'NextGEN Manage gallery', 'ewww-ngg-thumb-bulk', array (&$this, 'ewww_ngg_thumb_bulk'));
 	}
-	//TODO: add a bulk optimize action to each gallery (using js now...)
+
 	/* ngg_added_new_image hook */
 	function ewww_added_new_image( $image ) {
 		// query the filesystem path of the gallery from the database
@@ -34,7 +37,7 @@ class ewwwngg {
 		$gallery_path = $wpdb->get_var($q);
 		// if we have a path to work with
 		if ( $gallery_path ) {
-			// TODO: optimize thumbs (found one, I think)
+			// TODO: optimize thumbs automatically 
 			// construct the absolute path of the current image
 			$file_path = trailingslashit($gallery_path) . $image['filename'];
 			// run the optimizer on the current image
@@ -42,6 +45,59 @@ class ewwwngg {
 			// update the metadata for the optimized image
 			nggdb::update_image_meta($image['id'], array('ewww_image_optimizer' => $res[1]));
 		}
+	}
+
+	function ewww_ngg_new_thumbs($gid, $images) {
+		$gallery = $gid;
+//		print_r ($gid);
+		$images = serialize($images);
+	//print_r ($images);
+		echo "<br>"; ?>
+                <div id="bulk-forms"><p>The thumbnails for your new images have not been optimized. If you would like this step to be automatic in the future, bug the NextGEN developers to add in a hook.</p>
+                <form id="thumb-optimize" method="post" action="http://bob/wordpress/wp-admin/admin.php?page=ewww-ngg-thumb-bulk">
+			<?php wp_nonce_field( 'ewww-image-optimizer-bulk', '_wpnonce'); ?>
+			<input type="hidden" name="attachments" value="<?php echo $images; ?>">
+                        <input type="submit" class="button-secondary action" value="Optimize Thumbs" />
+                </form> 
+<?php	}
+
+	function ewww_ngg_thumb_bulk() {
+		if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
+			wp_die( __( 'Cheatin&#8217; eh?' ) );
+		}?> 
+		<div class="wrap">
+                <div id="icon-upload" class="icon32"><br /></div><h2>Bulk Thumbnail Optimize</h2>
+<?php		$images = unserialize ($_POST['attachments']);
+		$started = time();
+		// initialize $current, and $started time
+		$current = 0;
+		// find out how many images we have
+		$total = sizeof($images);
+		ob_implicit_flush(true);
+		ob_end_flush();
+		foreach ($images as $id) {
+			// give each image 50 seconds (php only, doesn't include any commands issued by exec()
+			set_time_limit (50);
+			$current++;
+			echo "<p>Processing $current/$total: ";
+			// get the metadata
+			$meta = new nggMeta( $id );
+			// output the current image name
+			printf( "<strong>%s</strong>&hellip;<br>", esc_html($meta->image->filename) );
+			// get the filepath of the thumbnail image
+			$thumb_path = $meta->image->thumbPath;
+			// run the optimization on the thumbnail
+			$tres = ewww_image_optimizer($thumb_path, 2, false, true);
+			// output the results of the thumb optimization
+			printf( "Thumbnail – %s<br>", $tres[1] );
+			// outupt how much time we've spent optimizing so far
+			$elapsed = time() - $started;
+			echo "Elapsed: $elapsed seconds</p>";
+			// flush the HTML output buffers
+			@ob_flush();
+			flush();
+		}
+		echo '<p><b>Finished</b></p></div>';	
 	}
 
 	/* Manually process an image from the NextGEN Gallery */
@@ -130,7 +186,7 @@ class ewwwngg {
 			else: // run the optimization
 				// verify some random person isn't running the bulk optimization
 				if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-ngg-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
-				wp_die( __( 'Cheatin&#8217; eh?' ) );
+					wp_die( __( 'Cheatin&#8217; eh?' ) );
 				} ?>
 				<form method="post" action="">If the bulk optimize is interrupted, press
 					<?php wp_nonce_field( 'ewww-ngg-bulk', '_wpnonce'); ?>
@@ -303,7 +359,6 @@ class ewwwngg {
                         if (empty($_REQUEST['doaction']) || !is_array($_REQUEST['doaction'])) {
                         //      return;
                         }
-			echo '<div class="wrap">';
                 }
                 $attachments = get_option('ewww_image_optimizer_bulk_ngg_attachments');
                 if (count($attachments) < 1) {
@@ -311,6 +366,7 @@ class ewwwngg {
                         return;
                 }
                 ?>
+		<div class="wrap">
                 <div id="icon-upload" class="icon32"><br /></div><h2>NextGEN Gallery Bulk Optimize</h2>
                 <?php
                 // Retrieve the value of the 'bulk resume' option and set the button text for the form to use
@@ -341,12 +397,12 @@ class ewwwngg {
                         </form>
                 <?php
                 endif;
-		if (empty($_POST['wrapped'])) {
+		//if (empty($_POST['wrapped'])) {
 	                echo '</div></div>';
-		} else {
-			echo '</div>';
-		}
-		die();
+		//} else {
+		//	echo '</div>';
+		//}
+		//die();
 	}
 
 	function ewww_ngg_bulk_script($hook) { 
@@ -393,7 +449,7 @@ class ewwwngg {
 		wp_deregister_script('jquery');
 		wp_register_script('jquery', plugins_url('/jquery-1.9.1.min.js', __FILE__), false, '1.9.1');
 		wp_enqueue_script('ewwwjuiscript', plugins_url('/jquery-ui-1.10.2.custom.min.js', __FILE__), false);
-		wp_enqueue_script('ewwwbulkscript', plugins_url('/eio.js', __FILE__), array('jquery'), '1.4.1', true);
+		wp_enqueue_script('ewwwbulkscript', plugins_url('/eio.js', __FILE__), array('jquery'), '1.4.1');
 		wp_register_style( 'ngg-jqueryui', plugins_url('jquery-ui-1.10.1.custom.css', __FILE__));
 //		wp_dequeue_style( 'ngg-jqueryui' ); 
 		wp_enqueue_style('jquery-ui-progressbar', plugins_url('jquery-ui-1.10.1.custom.css', __FILE__));
@@ -449,14 +505,14 @@ class ewwwngg {
 		// update the metadata of the optimized image
 		nggdb::update_image_meta($id, array('ewww_image_optimizer' => $fres[1]));
 		// output the results of the optimization
-		printf("<p>Optimized image: <strong>%s</strong><br>", esc_html($file_path));
-		printf("Full size – %s<br>", $fres[1] );
+		printf("<p>Optimized image: <strong>%s</strong><br>", $meta->image->filename);
+		printf("Full size - %s<br>", $fres[1] );
 		// get the filepath of the thumbnail image
 		$thumb_path = $meta->image->thumbPath;
 		// run the optimization on the thumbnail
 		$tres = ewww_image_optimizer($thumb_path, 2, false, true);
 		// output the results of the thumb optimization
-		printf( "Thumbnail – %s<br>", $tres[1] );
+		printf( "Thumbnail - %s<br>", $tres[1] );
 		// outupt how much time we've spent optimizing so far
 		$elapsed = microtime(true) - $started;
 		echo "Elapsed: " . round($elapsed, 3) . " seconds</p>";
@@ -470,8 +526,8 @@ class ewwwngg {
                 if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
                         wp_die( __( 'Cheatin&#8217; eh?' ) );
                 }
-		update_option('ewww_image_optimizer_bulk_flag_resume', '');
-		update_option('ewww_image_optimizer_bulk_flag_attachments', '');
+		update_option('ewww_image_optimizer_bulk_ngg_resume', '');
+		update_option('ewww_image_optimizer_bulk_ngg_attachments', '');
 		echo '<p><b>Finished Optimization!</b></p>';
 		die();
 	}
@@ -482,20 +538,7 @@ class ewwwngg {
 				$('select[name^="bulkaction"] option:last-child').after('<option value="bulk_optimize">Bulk Optimize</option>');
 			});
 		</script>
-<?php		if (!empty($_POST) && $_POST['bulkaction'] == 'bulk_optimize' && !empty($_POST['doaction'])) { ?>
-			<script type="text/javascript">
-				jQuery(document).ready(function($){
-					var bulk_data = {
-						action: 'bulk_ngg_preview',
-						wrapped: true
-					};
-					$.post(ajaxurl, bulk_data, function(response) {
-						$('.wrap').prepend(response);
-					});
-				});
-			</script>
-<?php		}
-	}
+<?php	}
 }
 // initialize the plugin and the class
 add_action('init', 'ewwwngg');
