@@ -57,7 +57,7 @@ class ewwwflag {
 			return;
 		}
 		?>
-		<div class="wrap"><div id="icon-upload" class="icon32"><br /></div><h2>GRAND FlAGallery Bulk Optimize</h2>
+		<div class="wrap"><div id="icon-upload" class="icon32"></div><h2>GRAND FlAGallery Bulk Optimize</h2>
 		<?php
 		// Retrieve the value of the 'bulk resume' option and set the button text for the form to use
 		$resume = get_option('ewww_image_optimizer_bulk_flag_resume');

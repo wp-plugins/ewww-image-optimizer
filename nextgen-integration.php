@@ -23,14 +23,14 @@ class ewwwngg {
 		register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_ngg_attachments');
 	}
 
-	/* adds the Bulk Optimize page to the tools menu */
+	/* adds the Bulk Optimize page to the tools menu, and a hidden page for optimizing thumbnails */
 	function ewww_ngg_bulk_menu () {
 			add_submenu_page(NGGFOLDER, 'NextGEN Bulk Optimize', 'Bulk Optimize', 'NextGEN Manage gallery', 'ewww-ngg-bulk', array (&$this, 'ewww_ngg_bulk_preview'));
 			$hook = add_submenu_page(null, 'NextGEN Bulk Thumbnail Optimize', 'Bulk Thumbnail Optimize', 'NextGEN Manage gallery', 'ewww-ngg-thumb-bulk', array (&$this, 'ewww_ngg_thumb_bulk'));
 	}
 
 	/* ngg_added_new_image hook */
-	function ewww_added_new_image( $image ) {
+	function ewww_added_new_image ($image) {
 		// query the filesystem path of the gallery from the database
 		global $wpdb;
 		$q = $wpdb->prepare( "SELECT path FROM {$wpdb->prefix}ngg_gallery WHERE gid = %d LIMIT 1", $image['galleryID'] );
@@ -47,12 +47,12 @@ class ewwwngg {
 		}
 	}
 
+	/* output a small html form so that the user can optimize thumbs for the $images just added */
 	function ewww_ngg_new_thumbs($gid, $images) {
+		// store the gallery id, seems to help avoid errors
 		$gallery = $gid;
-//		print_r ($gid);
-		$images = serialize($images);
-	//print_r ($images);
-		echo "<br>"; ?>
+		// prepare the $images array for POSTing
+		$images = serialize($images); ?>
                 <div id="bulk-forms"><p>The thumbnails for your new images have not been optimized. If you would like this step to be automatic in the future, bug the NextGEN developers to add in a hook.</p>
                 <form id="thumb-optimize" method="post" action="http://bob/wordpress/wp-admin/admin.php?page=ewww-ngg-thumb-bulk">
 			<?php wp_nonce_field( 'ewww-image-optimizer-bulk', '_wpnonce'); ?>
@@ -61,20 +61,23 @@ class ewwwngg {
                 </form> 
 <?php	}
 
+	/* optimize the thumbs of the images POSTed from the previous page */
 	function ewww_ngg_thumb_bulk() {
 		if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
 			wp_die( __( 'Cheatin&#8217; eh?' ) );
 		}?> 
 		<div class="wrap">
-                <div id="icon-upload" class="icon32"><br /></div><h2>Bulk Thumbnail Optimize</h2>
+                <div id="icon-upload" class="icon32"></div><h2>Bulk Thumbnail Optimize</h2>
 <?php		$images = unserialize ($_POST['attachments']);
-		$started = time();
 		// initialize $current, and $started time
+		$started = time();
 		$current = 0;
 		// find out how many images we have
 		$total = sizeof($images);
+		// flush the output buffers
 		ob_implicit_flush(true);
 		ob_end_flush();
+		// process each image
 		foreach ($images as $id) {
 			// give each image 50 seconds (php only, doesn't include any commands issued by exec()
 			set_time_limit (50);
@@ -97,6 +100,7 @@ class ewwwngg {
 			@ob_flush();
 			flush();
 		}
+		// all done here
 		echo '<p><b>Finished</b></p></div>';	
 	}
 
@@ -131,134 +135,6 @@ class ewwwngg {
 		exit(0);
 	}
 
-	/* function to optimize all images in all NextGEN galleries. many lines are commented out from porting the 'resume' function in anticipation that we'll have a bulk action that lets us bulk optimize arbitrary images. */
-	function ewww_ngg_bulk() {
-		global $ngg;
-		// create a temp file to store our progress
-		$progress_file = ABSPATH . $ngg->options['gallerypath'] . "ewww.tmp";
-//		$auto_start = false;
-		// we aren't going to skip any images (for now)
-	        $skip_attachments = false;
-		// if we are resuming a previous bulk operation
-		if (isset($_REQUEST['resume'])) {
-			// retrieve the contents of the temp file
-			$progress_contents = file($progress_file);
-			// find out which attachment we need to start with
-			$last_attachment = $progress_contents[0];
-//			$images = unserialize($progress_contents[1]);
-//			$auto_start = true;
-			// tell the optimizer to skip attachments until we find the right one
-			$skip_attachments = true;
-		} //else {
-			// retrieve a list of all the images in NextGEN
-			global $wpdb;
-			$images = $wpdb->get_col("SELECT pid FROM $wpdb->nggpictures ORDER BY sortorder ASC");
-		//}
-//		$images_ser = serialize($images);
-		?>
-		<div class="wrap"><div id="icon-nextgen-gallery" class="icon32"><br /></div><h2>Bulk NextGEN Gallery Optimize</h2>
-		<?php
-		// if there aren't any images to optimize
-		if ( sizeof($images) < 1 ):
-			echo '<p>You don’t appear to have uploaded any images yet.</p>';
-		else:
-			// first time, lets give the user some info
-			if ( empty($_POST) ): // instructions page
-				?>
-				<p>This tool will run all of the images in your NextGEN Galleries through the Linux image optimization programs.</p>
-				<p>We found <?php echo sizeof($images); ?> images in your media library.</p>
-				<form method="post" action="">
-					<?php wp_nonce_field( 'ewww-ngg-bulk', '_wpnonce'); ?>
-					<button type="submit" class="button-secondary action">Run all my images through image optimizers</button>
-				</form>
-<?php
-				// see if a previous optimization was interrupted
-				if (file_exists($progress_file)):
-?>
-					<p>It appears that a previous bulk optimization was interrupted. Would you like to continue where we left off?</p>
-					<form method="post" action="">
-					<?php wp_nonce_field( 'ewww-ngg-bulk', '_wpnonce'); ?>
-					<input type="hidden" name="resume" value="1">
-					<button type="submit" class="button-secondary action">Resume previous operation.</button>
-					</form>
-<?php
-				endif;
-			else: // run the optimization
-				// verify some random person isn't running the bulk optimization
-				if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-ngg-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
-					wp_die( __( 'Cheatin&#8217; eh?' ) );
-				} ?>
-				<form method="post" action="">If the bulk optimize is interrupted, press
-					<?php wp_nonce_field( 'ewww-ngg-bulk', '_wpnonce'); ?>
-					<input type="hidden" name="resume" value="1">
-					<button type="submit" class="button-secondary action">resume</button>. If the page is still loading, the bulk action is still running.
-				</form>
-				<?php
-				// initialize $current, and $started time
-				$current = 0;
-				$started = time();
-				// find out how many images we have
-				$total = sizeof($images);
-				?>
-				<!--<script type="text/javascript">
-					document.write('Bulk Optimization has taken <span id="endTime">0.0</span> seconds.');
-					var loopTime=setInterval("currentTime()",100);
-				</script>-->
-				<?php
-				// functions to flush HTML output buffers
-				ob_implicit_flush(true);
-				ob_end_flush();
-				// process each image
-				foreach ($images as $id) {
-					// give each image 50 seconds (php only, doesn't include any commands issued by exec()
-					set_time_limit (50);
-					$current++;
-					// if this is a resume, see if this is the attachment to continue with
-					// if it is, stop skipping attachments
-					if (isset($last_attachment)) {
-						if ($last_attachment == $id) {$skip_attachments = false;}
-					}
-					// if we're skipping (during a resume)
-					if ($skip_attachments) {
-						echo "<p>Skipping $current/$total <br>";
-					// if we're doing normal processing
-					} else {
-						echo "<p>Processing $current/$total: ";
-						// get the metadata
-						$meta = new nggMeta( $id );
-						// output the current image name
-						printf( "<strong>%s</strong>&hellip;<br>", esc_html($meta->image->filename) );
-						// retrieve the filepath
-						$file_path = $meta->image->imagePath;
-						// update the temp file with our current status
-						file_put_contents($progress_file, "$id");
-						// run the optimizer on the current image
-						$fres = ewww_image_optimizer($file_path, 2, false, false);
-						// update the metadata of the optimized image
-						nggdb::update_image_meta($id, array('ewww_image_optimizer' => $fres[1]));
-						// output the results of the optimization
-						printf( "Full size – %s<br>", $fres[1] );
-						// get the filepath of the thumbnail image
-						$thumb_path = $meta->image->thumbPath;
-						// run the optimization on the thumbnail
-						$tres = ewww_image_optimizer($thumb_path, 2, false, true);
-						// output the results of the thumb optimization
-						printf( "Thumbnail – %s<br>", $tres[1] );
-						// outupt how much time we've spent optimizing so far
-						$elapsed = time() - $started;
-						echo "Elapsed: $elapsed seconds</p>";
-					}
-					// flush the HTML output buffers
-					@ob_flush();
-					flush();
-				}
-				// all done, delete the temp file
-				unlink ($progress_file);
-				echo '<p><b>Finished</b></p></div>';	
-			endif;
-		endif;
-	}
-
 	/* ngg_manage_images_columns hook */
 	function ewww_manage_images_columns( $columns ) {
 		$columns['ewww_image_optimizer'] = 'Image Optimizer';
@@ -276,32 +152,12 @@ class ewwwngg {
 			$msg = '';
 			// get the file path of the image
 			$file_path = $meta->image->imagePath;
-		        // use finfo functions when available
-			if (function_exists('finfo_file') && defined('FILEINFO_MIME')) {
-				// create a finfo resource
-				$finfo = finfo_open(FILEINFO_MIME);
-				// retrieve the mimetype
-				$type = explode(';', finfo_file($finfo, $file_path));
-				$type = $type[0];
-				finfo_close($finfo);
-			// use getimagesize to find the mimetype
-			} elseif (function_exists('getimagesize')) {
-				$type = getimagesize($file_path);
-				if(false !== $type){
-					$type = $type['mime'];
-				}
-			// try mime_content_type to find the mimetype otherwise
-			} elseif (function_exists('mime_content_type')) {
-				$type = mime_content_type($file_path);
-			// otherwise tell the user we just can't work under these conditions
-			} else {
-				$type = false;
-				$msg = '<br>missing finfo_file(), getimagesize() and mime_content_type() PHP functions';
-			}
+			// get the mimetype of the image
+			$type = ewww_image_optimizer_mimetype($file_path, 'i');
 			// retrieve the human-readable filesize of the image
 			$file_size = ewww_image_optimizer_format_bytes(filesize($file_path));
-			
 			$valid = true;
+			// check to see if we have a tool to handle the mimetype detected
 	                switch($type) {
         	                case 'image/jpeg':
 					// if jpegtran is missing, tell the user
@@ -349,25 +205,29 @@ class ewwwngg {
 			}
 		}
 	}
+
+	/* output the html for the bulk optimize page */
 	function ewww_ngg_bulk_preview() {
-		if (!empty($_POST['wrapped'])) {
+		if (!empty($_POST['doaction'])) {
                         // if there is no requested bulk action, do nothing
                         if (empty($_REQUEST['bulkaction'])) {
-                        //        return;
+                                return;
                         }
                         // if there is no media to optimize, do nothing
                         if (empty($_REQUEST['doaction']) || !is_array($_REQUEST['doaction'])) {
-                        //      return;
+                              return;
                         }
                 }
+		// retrieve the attachments array from the db
                 $attachments = get_option('ewww_image_optimizer_bulk_ngg_attachments');
+		// make sure there are some attachments to process
                 if (count($attachments) < 1) {
                         echo '<p>You don’t appear to have uploaded any images yet.</p>';
                         return;
                 }
                 ?>
 		<div class="wrap">
-                <div id="icon-upload" class="icon32"><br /></div><h2>NextGEN Gallery Bulk Optimize</h2>
+                <div id="icon-upload" class="icon32"></div><h2>NextGEN Gallery Bulk Optimize</h2>
                 <?php
                 // Retrieve the value of the 'bulk resume' option and set the button text for the form to use
                 $resume = get_option('ewww_image_optimizer_bulk_ngg_resume');
@@ -387,29 +247,22 @@ class ewwwngg {
                         <input type="submit" class="button-secondary action" value="<?php echo $button_text; ?>" />
                 </form>
                 <?php
-                if (!empty($resume)):
-                ?>
+		// if there is a previous bulk operation to resume, give the user the option to reset the resume flag
+                if (!empty($resume)) { ?>
                         <p>If you would like to start over again, press the <b>Reset Status</b> button to reset the bulk operation status.</p>
-                        <form method="post" action="">
-                                <?php wp_nonce_field( 'ewww-image-optimizer-bulk', '_wpnonce'); ?>
+                        <form id="bulk-reset" method="post" action="">
+                                <?php wp_nonce_field( 'ewww-image-optimizer-bulk-reset', '_wpnonce'); ?>
                                 <input type="hidden" name="reset" value="1">
-                                <button id="bulk-reset" type="submit" class="button-secondary action">Reset Status</button>
+                                <input type="submit" class="button-secondary action" value="Reset Status" />
                         </form>
-                <?php
-                endif;
-		//if (empty($_POST['wrapped'])) {
-	                echo '</div></div>';
-		//} else {
-		//	echo '</div>';
-		//}
-		//die();
+<?php           }
+	        echo '</div></div>';
+		return;
 	}
 
-	function ewww_ngg_bulk_script($hook) { 
-//	global $hook_suffix;
-//	print_r ($hook_suffix); 
-//		print_r($_POST);
-//		echo "<br>$hook<br>";
+	/* prepares the javascript for a bulk operation */
+	function ewww_ngg_bulk_script($hook) {
+		// make sure we are on a legitimate page and that we have the proper POST variables if necessary
 		if ($hook != 'gallery_page_ewww-ngg-bulk' && $hook != 'gallery_page_nggallery-manage-gallery')
 				return;
 		if ($hook == 'gallery_page_nggallery-manage-gallery' && empty($_REQUEST['bulkaction']))
@@ -417,43 +270,64 @@ class ewwwngg {
 		if ($hook == 'gallery_page_nggallery-manage-gallery' && (empty($_REQUEST['doaction']) || !is_array($_REQUEST['doaction'])))
 				return;
 		$images = null;
-//		$images = get_option('ewww_image_optimizer_bulk_ngg_attachments');
-		if (!empty($_REQUEST['reset']))
+		// see if the user wants to reset the previous bulk status
+		if (!empty($_REQUEST['reset']) && wp_verify_nonce($_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk-reset'))
 			update_option('ewww_image_optimizer_bulk_ngg_resume', '');
+		// see if there is a previous operation to resume
 		$resume = get_option('ewww_image_optimizer_bulk_ngg_resume');
+		// if we've been given a bulk action to perform
 		if (!empty($_REQUEST['doaction'])) {
+			// if we are optimizing a specific group of images
 			if ($_REQUEST['page'] == 'manage-images' && $_REQUEST['bulkaction'] == 'bulk_optimize') {
 				check_admin_referer('ngg_updategallery');
+				// reset the resume status, not allowed here
 				update_option('ewww_image_optimizer_bulk_ngg_resume', '');
+				// retrieve the image IDs from POST
 				$images = array_map( 'intval', $_REQUEST['doaction']);
 			}
+			// if we are optimizing a specific group of galleries
 			if ($_REQUEST['page'] == 'manage-galleries' && $_REQUEST['bulkaction'] == 'bulk_optimize') {
 				check_admin_referer('ngg_bulkgallery');
 				global $nggdb;
+				// reset the resume status, not allowed here
 				update_option('ewww_image_optimizer_bulk_ngg_resume', '');
 				$ids = array();
+				// for each gallery we are given
 				foreach ($_REQUEST['doaction'] as $gid) {
+					// get a list of IDs
 					$gallery_list = $nggdb->get_gallery($gid);
+					// for each ID
 					foreach ($gallery_list as $image) {
+						// add it to the array
 						$images[] = $image->pid;
 					}
 				}
 			}
+		// otherwise, if we have an operation to resume
 		} elseif (!empty($resume)) {
+			// get the list of attachment IDs from the db
 			$images = get_option('ewww_image_optimizer_bulk_ngg_attachments');
+		// otherwise, if we are on the standard bulk page, get all the images in the db
 		} elseif ($hook == 'gallery_page_ewww-ngg-bulk') {
 			global $wpdb;
 			$images = $wpdb->get_col("SELECT pid FROM $wpdb->nggpictures ORDER BY sortorder ASC");
 		}
+		// store the image IDs to process in the db
 		update_option('ewww_image_optimizer_bulk_ngg_attachments', $images);
+		// replace the default jquery script with our own (updated) script
 		wp_deregister_script('jquery');
 		wp_register_script('jquery', plugins_url('/jquery-1.9.1.min.js', __FILE__), false, '1.9.1');
+		// add a custom jquery-ui script with progressbar functions
 		wp_enqueue_script('ewwwjuiscript', plugins_url('/jquery-ui-1.10.2.custom.min.js', __FILE__), false);
-		wp_enqueue_script('ewwwbulkscript', plugins_url('/eio.js', __FILE__), array('jquery'), '1.4.1');
+		// add the EWWW IO script
+		wp_enqueue_script('ewwwbulkscript', plugins_url('/eio.js', __FILE__), array('jquery'));
+		// replacing the built-in nextgen styling rules for progressbar
 		wp_register_style( 'ngg-jqueryui', plugins_url('jquery-ui-1.10.1.custom.css', __FILE__));
-//		wp_dequeue_style( 'ngg-jqueryui' ); 
-		wp_enqueue_style('jquery-ui-progressbar', plugins_url('jquery-ui-1.10.1.custom.css', __FILE__));
+		// enqueue the progressbar styling
+		wp_enqueue_style('ngg-jqueryui'); //, plugins_url('jquery-ui-1.10.1.custom.css', __FILE__));
+		// prep the $images for use by javascript
 		$images = json_encode($images);
+		// include all the vars we need for javascript
 		wp_localize_script('ewwwbulkscript', 'ewww_vars', array(
 				'_wpnonce' => wp_create_nonce('ewww-image-optimizer-bulk'),
 				'gallery' => 'nextgen',
@@ -462,44 +336,50 @@ class ewwwngg {
 		);
 	}
 
+	/* start the bulk operation */
 	function ewww_ngg_bulk_init() {
                 if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
                         wp_die( __( 'Cheatin&#8217; eh?' ) );
                 }
+		// toggle the resume flag to indicate an operation is in progress
                 update_option('ewww_image_optimizer_bulk_ngg_resume', 'true');
+		// let the user know we are starting
                 $loading_image = plugins_url('/wpspin.gif', __FILE__);
                 echo "<p>Optimizing&nbsp;<img src='$loading_image' alt='loading'/></p>";
                 die();
         }
 
+	/* output the filename of the image being optimized */
 	function ewww_ngg_bulk_filename() {
                 if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
                         wp_die( __( 'Cheatin&#8217; eh?' ) );
                 }
+		// need this file to work with metadata
 		require_once(WP_CONTENT_DIR . '/plugins/nextgen-gallery/lib/meta.php');
 		$id = $_POST['attachment'];
+		// get the meta for the image
 		$meta = new nggMeta($id);
 		$loading_image = plugins_url('/wpspin.gif', __FILE__);
+		// get the filename for the image, and output our current status
 		$file_name = esc_html($meta->image->filename);
 		echo "<p>Optimizing... <b>" . $file_name . "</b>&nbsp;<img src='$loading_image' alt='loading'/></p>";
 		die();
 	}
 
+	/* process each image in the bulk loop */
 	function ewww_ngg_bulk_loop() {
                 if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
                         wp_die( __( 'Cheatin&#8217; eh?' ) );
                 }
+		// need this file to work with metadata
 		require_once(WP_CONTENT_DIR . '/plugins/nextgen-gallery/lib/meta.php');
+		// find out what time we started, in microseconds
 		$started = microtime(true);
 		$id = $_POST['attachment'];
 		// get the metadata
 		$meta = new nggMeta($id);
-		// output the current image name
-		//printf( "<strong>%s</strong>&hellip;<br>", esc_html($meta->image->filename) );
 		// retrieve the filepath
 		$file_path = $meta->image->imagePath;
-		// update the temp file with our current status
-		//file_put_contents($progress_file, "$id");
 		// run the optimizer on the current image
 		$fres = ewww_image_optimizer($file_path, 2, false, false);
 		// update the metadata of the optimized image
@@ -513,25 +393,32 @@ class ewwwngg {
 		$tres = ewww_image_optimizer($thumb_path, 2, false, true);
 		// output the results of the thumb optimization
 		printf( "Thumbnail - %s<br>", $tres[1] );
-		// outupt how much time we've spent optimizing so far
+		// outupt how much time we spent
 		$elapsed = microtime(true) - $started;
 		echo "Elapsed: " . round($elapsed, 3) . " seconds</p>";
+		// get the list of attachments remaining from the db
 		$attachments = get_option('ewww_image_optimizer_bulk_ngg_attachments');
+		// remove the first item
 		array_shift($attachments);
-		update_option('ewww_image_optimizer_bulk_flag_attachments', $attachments);
+		// and store the list back in the db
+		update_option('ewww_image_optimizer_bulk_ngg_attachments', $attachments);
 		die();
 	}
 
+	/* finish the bulk operation */
 	function ewww_ngg_bulk_cleanup() {
                 if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
                         wp_die( __( 'Cheatin&#8217; eh?' ) );
                 }
+		// reset all the bulk options in the db
 		update_option('ewww_image_optimizer_bulk_ngg_resume', '');
 		update_option('ewww_image_optimizer_bulk_ngg_attachments', '');
+		// and let the user know we are done
 		echo '<p><b>Finished Optimization!</b></p>';
 		die();
 	}
-	
+
+	// insert a bulk optimize option in the actions list for the gallery and image management pages (via javascript, since we have no hooks)
 	function ewww_ngg_bulk_actions_script() {?>
 		<script type="text/javascript">
 			jQuery(document).ready(function($){
