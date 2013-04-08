@@ -147,12 +147,14 @@ function ewww_image_optimizer_mimetype($path, $case) {
 		finfo_close($finfo);
 		$ewww_debug = "$ewww_debug finfo_file: $type <br>";
 	// see if we can use mime_content_type
-	} elseif (empty($type) && function_exists('mime_content_type')) {
+	}
+	if (empty($type) && function_exists('mime_content_type')) {
 		// retrieve and store the mime-type
 		$type = mime_content_type($path);
 		$ewww_debug = "$ewww_debug mime_content_type: $type <br>";
 	// see if we can use the getimagesize function
-	} elseif (empty($type) && function_exists('getimagesize') && $case === 'i') {
+	}
+	if (empty($type) && function_exists('getimagesize') && $case === 'i') {
 		// run getimagesize on the file
 		$type = getimagesize($path);
 		// make sure we have results
@@ -162,7 +164,8 @@ function ewww_image_optimizer_mimetype($path, $case) {
 		}
 		$ewww_debug = "$ewww_debug getimagesize: $type <br>";
 	// if nothing else has worked, try the 'file' command
-	} elseif ((empty($type) || $type != 'application/x-executable') && $case == 'b') {
+	}
+	if ((empty($type) || $type != 'application/x-executable') && $case == 'b') {
 		// find the 'file command'
 		if (ewww_image_optimizer_tool_found('/usr/bin/file', 'f')) {
 			$file = '/usr/bin/file';
@@ -171,9 +174,9 @@ function ewww_image_optimizer_mimetype($path, $case) {
 		}
 		// run 'file' on the file in question
 		exec("$file $path", $filetype);
+		$ewww_debug = "$ewww_debug file command: $filetype[0] <br>";
 		// if we've found a proper binary
 		if ((strpos($filetype[0], 'ELF') && strpos($filetype[0], 'executable')) || strpos($filetype[0], 'Mach-O universal binary')) {
-			$ewww_debug = "$ewww_debug file command: $type <br>";
 			$type = 'application/x-executable';
 		}
 	}
