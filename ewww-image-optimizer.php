@@ -23,7 +23,7 @@ define('EWWW_IMAGE_OPTIMIZER_PLUGIN_DIR', dirname(plugin_basename(__FILE__)));
 define('EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH', plugin_dir_path(__FILE__) );
 // the folder where we install optimization tools
 define('EWWW_IMAGE_OPTIMIZER_TOOL_PATH', WP_CONTENT_DIR . '/ewww/');
-// turn on debugging constantif set
+// initialize debug global
 $ewww_debug = '';
 
 /**
@@ -72,12 +72,15 @@ require( dirname(__FILE__) . '/flag-integration.php' );
 
 // tells the user they are on an unsupported operating system
 function ewww_image_optimizer_notice_os() {
+	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_notice_os()</b><br>";
 	echo "<div id='ewww-image-optimizer-warning-os' class='error'><p><strong>EWWW Image Optimizer is supported on Linux, FreeBSD, Mac OSX, and Windows.</strong> Unfortunately, the EWWW Image Optimizer plugin doesn't work with " . htmlentities(PHP_OS) . ". Feel free to file a support request if you would like support for your operating system of choice.</p></div>";
 }   
 
 // checks the binary at $path against a list of valid md5sums
 function ewww_image_optimizer_md5check($path) {
 	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_md5check()</b><br>";
 	$ewww_debug = "$ewww_debug $path: " . md5_file($path) . "<br>";
 	$valid_md5sums = array(
 		//jpegtran
@@ -137,6 +140,7 @@ function ewww_image_optimizer_md5check($path) {
 // valid values for $type are 'b' for binary or 'i' for image
 function ewww_image_optimizer_mimetype($path, $case) {
 	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_mimetype()</b><br>";
 	$ewww_debug = "$ewww_debug testing mimetype: $path <br>";
 	if (function_exists('finfo_file') && defined('FILEINFO_MIME')) {
 		// create a finfo resource
@@ -146,14 +150,8 @@ function ewww_image_optimizer_mimetype($path, $case) {
 		$type = $type[0];
 		finfo_close($finfo);
 		$ewww_debug = "$ewww_debug finfo_file: $type <br>";
-	// see if we can use mime_content_type
 	}
-	if (empty($type) && function_exists('mime_content_type')) {
-		// retrieve and store the mime-type
-		$type = mime_content_type($path);
-		$ewww_debug = "$ewww_debug mime_content_type: $type <br>";
 	// see if we can use the getimagesize function
-	}
 	if (empty($type) && function_exists('getimagesize') && $case === 'i') {
 		// run getimagesize on the file
 		$type = getimagesize($path);
@@ -163,8 +161,14 @@ function ewww_image_optimizer_mimetype($path, $case) {
 			$type = $type['mime'];
 		}
 		$ewww_debug = "$ewww_debug getimagesize: $type <br>";
-	// if nothing else has worked, try the 'file' command
 	}
+	// see if we can use mime_content_type
+	if (empty($type) && function_exists('mime_content_type')) {
+		// retrieve and store the mime-type
+		$type = mime_content_type($path);
+		$ewww_debug = "$ewww_debug mime_content_type: $type <br>";
+	}
+	// if nothing else has worked, try the 'file' command
 	if ((empty($type) || $type != 'application/x-executable') && $case == 'b') {
 		// find the 'file command'
 		if (ewww_image_optimizer_tool_found('/usr/bin/file', 'f')) {
@@ -196,6 +200,7 @@ function ewww_image_optimizer_mimetype($path, $case) {
 // returns: version string if found, FALSE if not
 function ewww_image_optimizer_tool_found($path, $tool) {
 	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_tool_found()</b><br>";
 	switch($tool) {
 		case 'j': // jpegtran
 			exec($path . ' -v ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'sample.jpg 2>&1', $jpegtran_version);
@@ -266,6 +271,7 @@ function ewww_image_optimizer_tool_found($path, $tool) {
 // If the utitilites are in the content folder, we use that. Otherwise, we retrieve user specified paths or set defaults if all else fails. We also do a basic check to make sure we weren't given a malicious path.
 function ewww_image_optimizer_path_check() {
 	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_path_check()</b><br>";
 	$jpegtran = false;
 	$optipng = false;
 	$gifsicle = false;
@@ -424,6 +430,7 @@ function ewww_image_optimizer_path_check() {
 // generates the source and destination paths for the executables that we bundle with the plugin based on the operating system
 function ewww_image_optimizer_install_paths () {
 	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_install_paths()</b><br>";
 	if (PHP_OS == 'WINNT') {
 		$gifsicle_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'gifsicle.exe';
 		$optipng_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'optipng.exe';
@@ -473,6 +480,7 @@ function ewww_image_optimizer_install_paths () {
 // installs the executables that are bundled with the plugin
 function ewww_image_optimizer_install_tools () {
 	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_install_tools()</b><br>";
 	$ewww_debug = "$ewww_debug Checking/Installing tools in " . EWWW_IMAGE_OPTIMIZER_TOOL_PATH . "<br>";
 	$toolfail = false;
 	if (!is_dir(EWWW_IMAGE_OPTIMIZER_TOOL_PATH)) {
@@ -624,6 +632,8 @@ function ewww_image_optimizer_install_tools () {
 		
 // we check for safe mode and exec, then also direct the user where to go if they don't have the tools installed
 function ewww_image_optimizer_notice_utils() {
+	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_notice_utils()</b><br>";
 	// query the php settings for safe mode
 	if( ini_get('safe_mode') ){
 		// display a warning to the user
@@ -785,6 +795,7 @@ function ewww_image_optimizer_settings_link($links) {
 // check for GD support of both PNG and JPG
 function ewww_image_optimizer_gd_support() {
 	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_gd_support()</b><br>";
 	if (function_exists('gd_info')) {
 		$gd_support = gd_info();
 		$ewww_debug = "$ewww_debug GD found, supports: <br>"; 
@@ -803,6 +814,8 @@ function ewww_image_optimizer_gd_support() {
 
 // Retrieves jpg background fill setting, or returns null for png2jpg conversions
 function ewww_image_optimizer_jpg_background () {
+	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_jpeg_background()</b><br>";
 	// retrieve the user-supplied value for jpg background color
 	$background = get_option('ewww_image_optimizer_jpg_background');
 	//verify that the supplied value is in hex notation
@@ -819,6 +832,8 @@ function ewww_image_optimizer_jpg_background () {
 
 // Retrieves the jpg quality setting for png2jpg conversion or returns null
 function ewww_image_optimizer_jpg_quality () {
+	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_jpg_quality()</b><br>";
 	// retrieve the user-supplied value for jpg quality
 	$quality = get_option('ewww_image_optimizer_jpg_quality');
 	// verify that the quality level is an integer, 1-100
@@ -838,6 +853,8 @@ require( dirname(__FILE__) . '/bulk.php' );
  * Manually process an image from the Media Library
  */
 function ewww_image_optimizer_manual() {
+	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_manual()</b><br>";
 	// check permissions of current user
 	if ( FALSE === current_user_can('upload_files') ) {
 		// display error message if insufficient permissions
@@ -870,6 +887,8 @@ function ewww_image_optimizer_manual() {
  * Manually restore a converted image
  */
 function ewww_image_optimizer_restore() {
+	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_restore()</b><br>";
 	// check permissions of current user
 	if ( FALSE === current_user_can('upload_files') ) {
 		// display error message if insufficient permissions
@@ -888,8 +907,6 @@ function ewww_image_optimizer_restore() {
 	$file_path = $meta['file'];
 	// store absolute paths for older wordpress versions
 	$store_absolute_path = true;
-	// TODO: do a file_exists check instead, which should tell us that we have a full path, instead of this hackiness...
-	// WordPress >= 2.6.2: determine the absolute $file_path (http://core.trac.wordpress.org/changeset/8796)
 	// if the path given is not the absolute path
 	if (FALSE === file_exists($file_path)) {
 	//if (FALSE === strpos($file_path, WP_CONTENT_DIR)) {
@@ -972,6 +989,8 @@ function ewww_image_optimizer_restore() {
 
 // deletes 'orig_file' when an attachment is being deleted
 function ewww_image_optimizer_delete ($id) {
+	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_delete()</b><br>";
 	global $wpdb;
 	// retrieve the image metadata
 	$meta = wp_get_attachment_metadata($id);
@@ -1037,6 +1056,8 @@ function ewww_image_optimizer_delete ($id) {
  * Re-optimize image after an edit. The metadata hasn't been updated yet, so we add a filter to be fired when it is.
  */
 function ewww_image_optimizer_save_image_editor_file ($nothing, $file, $image, $mime_type, $post_id) {
+	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_save_image_editor_file()</b><br>";
 	// if we don't already have this update attachment filter
 	if (FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_saved_file'))
 		// add the update saved file filter
@@ -1046,6 +1067,8 @@ function ewww_image_optimizer_save_image_editor_file ($nothing, $file, $image, $
 
 // This is added as a filter on the metadata, only when an image is saved via the image editor
 function ewww_image_optimizer_update_saved_file ($meta, $ID) {
+	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_update_saved_file()</b><br>";
 	$meta = ewww_image_optimizer_resize_from_meta_data($meta, $ID);
 	return $meta;
 }
@@ -1062,6 +1085,7 @@ function ewww_image_optimizer_update_saved_file ($meta, $ID) {
  */
 function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer()</b><br>";
 	// initialize the original filename 
 	$original = $file;
 	// check to see if 'nice' exists
@@ -1076,6 +1100,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 	if (FALSE === file_exists($file) || FALSE === is_file($file)) {
 		// tell the user we couldn't find the file
 		$msg = sprintf(__("Could not find <span class='code'>%s</span>", EWWW_IMAGE_OPTIMIZER_DOMAIN), $file);
+		$ewww_debug = "$ewww_debug couldn't find the file<br>";
 		// send back the above message
 		return array($file, $msg, $converted, $original);
 	}
@@ -1084,6 +1109,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 	if ( FALSE === is_writable($file) ) {
 		// tell the user we can't write to the file
 		$msg = sprintf(__("<span class='code'>%s</span> is not writable", EWWW_IMAGE_OPTIMIZER_DOMAIN), $file);
+		$ewww_debug = "$ewww_debug couldn't write to the file<br>";
 		// send back the above message
 		return array($file, $msg, $converted, $original);
 	}
@@ -1701,6 +1727,8 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
  * Called after `wp_generate_attachment_metadata` is completed.
  */
 function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
+	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_resize_from_meta_data()</b><br>";
 	// don't do anything else if the attachment has no metadata
 	if (!isset($meta['file'])) {
 		return $meta;
@@ -1800,6 +1828,8 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
  * Update the attachment's meta data after being converted 
  */
 function ewww_image_optimizer_update_attachment($meta, $ID) {
+	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_update_attachment()</b><br>";
 	// update the file location in the post metadata based on the new path stored in the attachment metadata
 	update_attached_file($ID, $meta['file']);
 	// retrieve the post information based on the $ID
@@ -1867,6 +1897,8 @@ function ewww_image_optimizer_update_attachment($meta, $ID) {
  * Check the submitted PNG to see if it has transparency
  */
 function ewww_image_optimizer_png_alpha ($filename){
+	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_png_alpha()</b><br>";
 	// determine what color type is stored in the file
 	$color_type = ord(@file_get_contents($filename, NULL, NULL, 25, 1));
 	// if it is set to RGB alpha or Grayscale alpha
@@ -1881,6 +1913,8 @@ function ewww_image_optimizer_png_alpha ($filename){
  * Check the submitted GIF to see if it is animated
  */
 function ewww_image_optimizer_is_animated($filename) {
+	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_is_animated()</b><br>";
 	// if we can't open the file in read-only buffered mode
 	if(!($fh = @fopen($filename, 'rb')))
 		return false;
@@ -1903,6 +1937,8 @@ function ewww_image_optimizer_is_animated($filename) {
  * the `manage_media_columns` hook.
  */
 function ewww_image_optimizer_columns($defaults) {
+	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_optimizer_columns()</b><br>";
 	$defaults['ewww-image-optimizer'] = 'Image Optimizer';
 	return $defaults;
 }
@@ -1912,6 +1948,8 @@ function ewww_image_optimizer_columns($defaults) {
  * Taken from http://www.php.net/manual/en/function.filesize.php#91477
  */
 function ewww_image_optimizer_format_bytes($bytes, $precision = 2) {
+	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_format_bytes()</b><br>";
 	$units = array('B', 'KB', 'MB', 'GB', 'TB');
 	$bytes = max($bytes, 0);
 	$pow = floor(($bytes ? log($bytes) : 0) / log(1024));
@@ -1925,6 +1963,8 @@ function ewww_image_optimizer_format_bytes($bytes, $precision = 2) {
  * the `manage_media_custom_column` hook.
  */
 function ewww_image_optimizer_custom_column($column_name, $id) {
+	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_custom_column()</b><br>";
 	// once we get to the EWWW IO custom column
 	if ($column_name == 'ewww-image-optimizer') {
 		// retrieve the metadata
@@ -2038,7 +2078,10 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 
 // Borrowed from http://www.viper007bond.com/wordpress-plugins/regenerate-thumbnails/
 // adds a bulk optimize action to the drop-down on the media library page
-function ewww_image_optimizer_add_bulk_actions_via_javascript() { ?> 
+function ewww_image_optimizer_add_bulk_actions_via_javascript() { 
+	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_add_bulk_actions_via_javascript()</b><br>";
+?> 
 	<script type="text/javascript"> 
 		jQuery(document).ready(function($){ 
 			$('select[name^="action"] option:last-child').before('<option value="bulk_optimize">Bulk Optimize</option>'); 
@@ -2049,6 +2092,8 @@ function ewww_image_optimizer_add_bulk_actions_via_javascript() { ?>
 // Handles the bulk actions POST 
 // Borrowed from http://www.viper007bond.com/wordpress-plugins/regenerate-thumbnails/ 
 function ewww_image_optimizer_bulk_action_handler() { 
+	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_bulk_action_handler()</b><br>";
 	// if the requested action is blank, or not a bulk_optimize, do nothing
 	if ( empty( $_REQUEST['action'] ) || ( 'bulk_optimize' != $_REQUEST['action'] && 'bulk_optimize' != $_REQUEST['action2'] ) ) {
 		return;
@@ -2071,6 +2116,7 @@ function ewww_image_optimizer_bulk_action_handler() {
 // from http://stackoverflow.com/questions/3938534/download-file-to-server-from-url
 function ewww_image_optimizer_download_file ($url, $path) {
 	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_download_file()</b><br>";
 	//$newfname = $path;
 	if (!$file = fopen($url, 'rb')) {
 		$ewww_debug = "$ewww_debug cannot open $url<br>";
@@ -2108,7 +2154,7 @@ function ewww_image_optimizer_download_file ($url, $path) {
 function ewww_image_optimizer_install_pngout() {
 	// TODO: ajaxify so we can nicely handle error messages here and in the download function
 	global $ewww_debug;
-	$ewww_debug = "$ewww_debug installing pngout, standby...<br>";
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_install_pngout()</b><br>";
 	// TODO: see if we can finetune our error messages a bit
 	if ( FALSE === current_user_can('install_plugins') ) {
 		wp_die(__('You don\'t have permission to install image optimizer utilities.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
@@ -2168,6 +2214,7 @@ function ewww_image_optimizer_install_pngout() {
 // displays the EWWW IO options and provides one-click install for the optimizer utilities
 function ewww_image_optimizer_options () {
 	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_options()</b><br>";
 	if (isset($_REQUEST['pngout'])) {
 		if ($_REQUEST['pngout'] == 'success') { ?>
 			<div id='ewww-image-optimizer-pngout-success' class='updated fade'>
