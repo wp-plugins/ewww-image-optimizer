@@ -1731,6 +1731,7 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_resize_from_meta_data()</b><br>";
 	// don't do anything else if the attachment has no metadata
 	if (!isset($meta['file'])) {
+	$ewww_debug = "$ewww_debug file has no meta<br>";
 		return $meta;
 	}
 	if (FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_saved_file')) {
@@ -1740,18 +1741,20 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 	}
 	// get the filepath from the metadata
 	$file_path = $meta['file'];
+	$ewww_debug = "$ewww_debug meta file path: $file_path<br>";
 	// store absolute paths for older wordpress versions
 	$store_absolute_path = true;
 	// retrieve the location of the wordpress upload folder
 	$upload_dir = wp_upload_dir();
 	// retrieve the path of the upload folder
-	$upload_path = trailingslashit( $upload_dir['basedir'] );
+	$upload_path = trailingslashit($upload_dir['basedir']);
 	// if the path given is not the absolute path
-	if (FALSE === file_exists($file_path)) {
+	if (FALSE == file_exists($file_path)) {
 		// don't store absolute paths
 		$store_absolute_path = false;
 		// generate the absolute path
 		$file_path =  $upload_path . $file_path;
+		$ewww_debug = "$ewww_debug generated absolute path: $file_path<br>";
 	}
 	// run the image optimizer on the file, and store the results
 	list($file, $msg, $conv, $original) = ewww_image_optimizer($file_path, $gallery_type, false, false);
@@ -1765,6 +1768,7 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 	}
 	// if the file was converted
 	if ($conv) {
+		$ewww_debug = "$ewww_debug image was converted<br>";
 		// if we don't already have the update attachment filter
 		if (FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment'))
 			// add the update attachment filter
@@ -1778,6 +1782,7 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 	}
 	// resized versions, so we can continue
 	if (isset($meta['sizes']) ) {
+		$ewww_debug = "$ewww_debug processing resizes<br>";
 		// meta sizes don't contain a path, so we calculate one
 		$base_dir = dirname($file_path) . '/';
 		// process each resized version
