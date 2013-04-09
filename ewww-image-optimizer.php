@@ -19,7 +19,7 @@ License: GPLv3
 define('EWWW_IMAGE_OPTIMIZER_DOMAIN', 'ewww_image_optimizer');
 // this is just the name of the plugin folder
 define('EWWW_IMAGE_OPTIMIZER_PLUGIN_DIR', dirname(plugin_basename(__FILE__)));
-if (function_exists(plugin_dir_path)) {
+if (function_exists('plugin_dir_path')) {
 	// this is the full system path to the plugin folder
 	define('EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH', plugin_dir_path(__FILE__) );
 } else {
