@@ -109,7 +109,7 @@ function ewww_image_optimizer_bulk_script($hook) {
 	//}
 	// submit a couple variables to the javascript to work with
 	$attachments = json_encode($attachments);
-	//$attachments = str_replace('"', '', $attachments);
+	//$attachments = str_replace('&quot;', '"', $attachments);
 	//echo $attachments . '<br>';
 	wp_localize_script('ewwwbulkscript', 'ewww_vars', array(
 			'_wpnonce' => wp_create_nonce('ewww-image-optimizer-bulk'),

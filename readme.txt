@@ -2,7 +2,7 @@
 Contributors: nosilver4u
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=QFXCW38HE24NY
 Tags: images, image, attachments, attachment, optimize
-Requires at least: 3.0
+Requires at least: 2.8
 Tested up to: 3.5.1
 Stable tag: 1.4.0
 License: GPLv3
@@ -139,6 +139,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * bundled jquery and jquery-ui for using bulk functions on older WP versions
 * use 32-bit jpegtran binary on 'odd' 64-bit linux servers
 * rewrote debugging functionality, also available on bulk operations now
+* increased compatibility back to 2.8 - nope no one is actually using that, but just in case...
 
 = 1.4.0 =
 * fixed bug with missing 'nice' not detected properly

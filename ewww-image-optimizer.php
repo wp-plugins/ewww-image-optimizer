@@ -19,8 +19,12 @@ License: GPLv3
 define('EWWW_IMAGE_OPTIMIZER_DOMAIN', 'ewww_image_optimizer');
 // this is just the name of the plugin folder
 define('EWWW_IMAGE_OPTIMIZER_PLUGIN_DIR', dirname(plugin_basename(__FILE__)));
-// this is the full system path to the plugin folder
-define('EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH', plugin_dir_path(__FILE__) );
+if (function_exists(plugin_dir_path)) {
+	// this is the full system path to the plugin folder
+	define('EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH', plugin_dir_path(__FILE__) );
+} else {
+	define('EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH', trailingslashit(dirname(__FILE__)));
+}
 // the folder where we install optimization tools
 define('EWWW_IMAGE_OPTIMIZER_TOOL_PATH', WP_CONTENT_DIR . '/ewww/');
 // initialize debug global
@@ -64,10 +68,10 @@ if('Linux' != PHP_OS && 'Darwin' != PHP_OS && 'FreeBSD' != PHP_OS && 'WINNT' != 
 // need to include the plugin library for the is_plugin_active function (even though it isn't supposed to be necessary in the admin)
 require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 // include the file that loads the nextgen gallery optimization functions
-if (is_plugin_active('nextgen-gallery/nggallery.php') || is_plugin_active_for_network('nextgen-gallery/nggallery.php'))
+if (is_plugin_active('nextgen-gallery/nggallery.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('nextgen-gallery/nggallery.php')))
 require( dirname(__FILE__) . '/nextgen-integration.php' );
 // include the file that loads the grand flagallery optimization functions
-if (is_plugin_active('flash-album-gallery/flag.php') || is_plugin_active_for_network('flash-album-gallery/flag.php'))
+if (is_plugin_active('flash-album-gallery/flag.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('flash-album-gallery/flag.php')))
 require( dirname(__FILE__) . '/flag-integration.php' );
 
 // tells the user they are on an unsupported operating system

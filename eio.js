@@ -15,7 +15,8 @@ window.onload=function(){
 }*/
 //window.onload=function(jQuery) {
 jQuery(document).ready(function($) {
-		var attachments = $.parseJSON(ewww_vars.attachments);
+		var attachpost = ewww_vars.attachments.replace(/&quot;/g, '"');
+		var attachments = $.parseJSON(attachpost);
 		if (ewww_vars.gallery == 'flag') {
 			var init_action = 'bulk_flag_init';
 			var filename_action = 'bulk_flag_filename';
