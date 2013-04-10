@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: images, image, attachments, attachment, optimize
 Requires at least: 2.8
 Tested up to: 3.5.1
-Stable tag: 1.4.0
+Stable tag: 1.4.1
 License: GPLv3
 
 Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
