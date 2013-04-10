@@ -1101,10 +1101,10 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 		$nice = '';
 	}
 	// check that the file exists
-	if (FALSE === file_exists($file) || FALSE === is_file($file)) {
+	if (FALSE === file_exists($file)) {
 		// tell the user we couldn't find the file
 		$msg = sprintf(__("Could not find <span class='code'>%s</span>", EWWW_IMAGE_OPTIMIZER_DOMAIN), $file);
-		$ewww_debug = "$ewww_debug couldn't find the file<br>";
+		$ewww_debug = "$ewww_debug file doesn't exist<br>";
 		// send back the above message
 		return array($file, $msg, $converted, $original);
 	}
