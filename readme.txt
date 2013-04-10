@@ -129,17 +129,22 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 == Changelog ==
 
+= future =
+* these are possible future bugfixes and/or feature requests, if you see a feature you like here, go vote for it in the support forum
+* BuddyPress integration
+* global configuration for multi-site
+* removed path restrictions, and fixed path detection for old blogs where upload path was modified
+
 = 1.4.1 =
 * FlaGallery and NextGEN Bulk functions are now using ajax functions with nicer progress bars and such
 * NextGEN now has ability to optimize selected galleries, or selected images in bulk (FlaGallery already had it)
 * NextGEN users can now click a button to optimize thumbnails after uploading new images
-* removed path restrictions, and fixed path detection for old blogs where upload path was modified
 * use built-in php mimetype functions to check binaries, saving 'file' command for fallback
 * added donation links, since several folks have expressed interest in contributing financially
 * bundled jquery and jquery-ui for using bulk functions on older WP versions
 * use 32-bit jpegtran binary on 'odd' 64-bit linux servers
-* rewrote debugging functionality, also available on bulk operations now
-* increased compatibility back to 2.8 - nope no one is actually using that, but just in case...
+* rewrote debugging functionality, available on bulk operations and settings page
+* increased compatibility back to 2.8 - hope no one is actually using that, but just in case...
 
 = 1.4.0 =
 * fixed bug with missing 'nice' not detected properly
