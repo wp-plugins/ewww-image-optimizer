@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate image optimizers into WordPress.
- * @version 1.4.1
+ * @version 1.4.2
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -9,7 +9,7 @@ Plugin Name: EWWW Image Optimizer
 Plugin URI: http://www.shanebishop.net/ewww-image-optimizer/
 Description: Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
 Author: Shane Bishop
-Version: 1.4.1
+Version: 1.4.2
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
@@ -1100,11 +1100,18 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 	} else {
 		$nice = '';
 	}
-	$file_perms = substr(sprintf('%o', fileperms($file)), -4);
-	$file_owner = posix_getpwuid(fileowner($file));
-	$file_group = posix_getgrgid(filegroup($file));
-	$file_owner = $file_owner['name'];
-	$file_group = $file_group['name'];
+	if (function_exists('fileperms'))
+		$file_perms = substr(sprintf('%o', fileperms($file)), -4);
+	$file_owner = 'unknown';
+	$file_group = 'unknown';
+	if (function_exists('posix_getpwuid')) {
+		$file_owner = posix_getpwuid(fileowner($file));
+		$file_owner = $file_owner['name'];
+	}
+	if (function_exists('posix_getgrgid')) {
+		$file_group = posix_getgrgid(filegroup($file));
+		$file_group = $file_group['name'];
+	}
 	$ewww_debug = "$ewww_debug permissions: $file_perms, owner: $file_owner, group: $file_group <br>";
 	// check that the file exists
 	if (FALSE === file_exists($file)) {
