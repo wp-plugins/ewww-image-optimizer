@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: images, image, attachments, attachment, optimize
 Requires at least: 2.8
 Tested up to: 3.5.1
-Stable tag: 1.4.1
+Stable tag: 1.4.2
 License: GPLv3
 
 Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
@@ -133,6 +133,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * these are possible future bugfixes and/or feature requests, if you see a feature you like here, go vote for it in the support forum
 * BuddyPress integration
 * global configuration for multi-site
+
+= 1.4.2 =
+* fixed fatal errors when posix_getpwuid() is missing from server
 * removed path restrictions, and fixed path detection for old blogs where upload path was modified
 
 = 1.4.1 =
