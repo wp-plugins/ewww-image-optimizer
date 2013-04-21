@@ -13,6 +13,12 @@ Version: 1.4.2
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
+// TODO: internationalize plugin
+// TODO: make sure js/css are only on the right pages
+// TODO: check multisite activation -- http://www.slideshare.net/arcware/wcatl-201310thingseveryplugindevelopershouldknow
+// TODO: add network settings page
+// TODO: make all get_options() calls check for network option first
+// TODO: make sure all options are properly sanitized
 /**
  * Constants
  */
