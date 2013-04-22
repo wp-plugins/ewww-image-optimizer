@@ -50,10 +50,11 @@ add_action('admin_init', 'ewww_image_optimizer_admin_init');
 add_action('admin_action_ewww_image_optimizer_manual', 'ewww_image_optimizer_manual');
 add_action('admin_action_ewww_image_optimizer_restore', 'ewww_image_optimizer_restore');
 add_action('delete_attachment', 'ewww_image_optimizer_delete');
-add_action('admin_menu', 'ewww_image_optimizer_admin_menu' );
-add_action('admin_head-upload.php', 'ewww_image_optimizer_add_bulk_actions_via_javascript' ); 
-add_action('admin_action_bulk_optimize', 'ewww_image_optimizer_bulk_action_handler' ); 
-add_action('admin_action_-1', 'ewww_image_optimizer_bulk_action_handler' ); 
+add_action('admin_menu', 'ewww_image_optimizer_admin_menu');
+add_action('network_admin_menu', 'ewww_image_optimizer_network_admin_menu');
+add_action('admin_head-upload.php', 'ewww_image_optimizer_add_bulk_actions_via_javascript'); 
+add_action('admin_action_bulk_optimize', 'ewww_image_optimizer_bulk_action_handler'); 
+add_action('admin_action_-1', 'ewww_image_optimizer_bulk_action_handler'); 
 add_action('admin_action_ewww_image_optimizer_install_pngout', 'ewww_image_optimizer_install_pngout');
 
 /**
@@ -770,11 +771,28 @@ function ewww_image_optimizer_admin_init() {
 	add_option('ewww_image_optimizer_pngout_level', 2);
 }
 
+function ewww_image_optimizer_network_admin_menu() {
+	if (function_exists('is_plugin_active_for_network') && !is_plugin_active_for_network(__FILE__) {
+		// add options page to the settings menu
+		$ewww_network_options_page = add_submenu_page(
+			'settings.php',				//slug of parent
+			'EWWW Image Optimizer',			//Title
+			'EWWW Image Optimizer',			//Sub-menu title
+			'manage_network_options',		//Security
+			__FILE__,				//File to open
+			'ewww_image_optimizer_network_options'	//Function to call
+		);
+	} 
+	add_action('admin_footer-' . $ewww_network_options_page, 'ewww_image_optimizer_debug');
+}
+	
+
 // adds the bulk optimize and settings page to the admin menu
 function ewww_image_optimizer_admin_menu() {
 	// adds bulk optimize to the media library menu
 	$ewww_bulk_page = add_media_page( 'Bulk Optimize', 'Bulk Optimize', 'edit_others_posts', 'ewww-image-optimizer-bulk', 'ewww_image_optimizer_bulk_preview');
 	add_action('admin_footer-' . $ewww_bulk_page, 'ewww_image_optimizer_debug');
+	if (function_exists('is_plugin_active_for_network') && !is_plugin_active_for_network(__FILE__) { 
 	// add options page to the settings menu
 	$ewww_options_page = add_options_page(
 		'EWWW Image Optimizer',		//Title
@@ -783,6 +801,7 @@ function ewww_image_optimizer_admin_menu() {
 		__FILE__,			//File to open
 		'ewww_image_optimizer_options'	//Function to call
 	);
+	}
 	add_action('admin_footer-' . $ewww_options_page, 'ewww_image_optimizer_debug');
 }
 
@@ -2239,6 +2258,13 @@ function ewww_image_optimizer_install_pngout() {
 	wp_redirect($sendback);
 	exit(0);
 }
+
+// displays the EWWW IO options at the network level and provides one-click install for the optimizer utilities
+function ewww_image_optimizer_network_options () {
+	global $ewww_debug;
+	echo "<h2>EWWW Image Optimizer Network Settings</h2>";
+}
+
 // displays the EWWW IO options and provides one-click install for the optimizer utilities
 function ewww_image_optimizer_options () {
 	global $ewww_debug;
