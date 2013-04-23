@@ -743,6 +743,12 @@ function ewww_image_optimizer_notice_utils() {
 function ewww_image_optimizer_admin_init() {
 	load_plugin_textdomain(EWWW_IMAGE_OPTIMIZER_DOMAIN);
 	wp_enqueue_script('common');
+	if (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('ewww-image-optimizer/ewww-image-optimizer.php')) {
+// TODO: create a site option 'installed' to track whether the defaults have been loaded, set it to the plugin version number, so that we can add stuff later
+//		add_site_option(); // apparently, pre 3.3 overwrites existing options
+//		get_site_option(); // gets network setting if it exists, otherwise grabs first blog setting
+//		update_site_option();	
+	}
 	// register all the EWWW IO settings
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_skip_check');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_skip_bundle');
@@ -772,7 +778,7 @@ function ewww_image_optimizer_admin_init() {
 }
 
 function ewww_image_optimizer_network_admin_menu() {
-	if (function_exists('is_plugin_active_for_network') && !is_plugin_active_for_network(__FILE__) {
+	if (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('ewww-image-optimizer/ewww-image-optimizer.php')) {
 		// add options page to the settings menu
 		$ewww_network_options_page = add_submenu_page(
 			'settings.php',				//slug of parent
@@ -792,15 +798,15 @@ function ewww_image_optimizer_admin_menu() {
 	// adds bulk optimize to the media library menu
 	$ewww_bulk_page = add_media_page( 'Bulk Optimize', 'Bulk Optimize', 'edit_others_posts', 'ewww-image-optimizer-bulk', 'ewww_image_optimizer_bulk_preview');
 	add_action('admin_footer-' . $ewww_bulk_page, 'ewww_image_optimizer_debug');
-	if (function_exists('is_plugin_active_for_network') && !is_plugin_active_for_network(__FILE__) { 
-	// add options page to the settings menu
-	$ewww_options_page = add_options_page(
-		'EWWW Image Optimizer',		//Title
-		'EWWW Image Optimizer',		//Sub-menu title
-		'manage_options',		//Security
-		__FILE__,			//File to open
-		'ewww_image_optimizer_options'	//Function to call
-	);
+	if (function_exists('is_plugin_active_for_network') && !is_plugin_active_for_network('ewww-image-optimizer/ewww-image-optimizer.php')) { 
+		// add options page to the settings menu
+		$ewww_options_page = add_options_page(
+			'EWWW Image Optimizer',		//Title
+			'EWWW Image Optimizer',		//Sub-menu title
+			'manage_options',		//Security
+			__FILE__,			//File to open
+			'ewww_image_optimizer_site_options'	//Function to call
+		);
 	}
 	add_action('admin_footer-' . $ewww_options_page, 'ewww_image_optimizer_debug');
 }
@@ -2259,10 +2265,14 @@ function ewww_image_optimizer_install_pngout() {
 	exit(0);
 }
 
-// displays the EWWW IO options at the network level and provides one-click install for the optimizer utilities
+// displays the EWWW IO options at the network level
 function ewww_image_optimizer_network_options () {
-	global $ewww_debug;
-	echo "<h2>EWWW Image Optimizer Network Settings</h2>";
+	ewww_image_optimizer_options();
+}
+
+// displays the EWWW IO options at the site level
+function ewww_image_optimizer_site_options () {
+	ewww_image_optimizer_options();
 }
 
 // displays the EWWW IO options and provides one-click install for the optimizer utilities
