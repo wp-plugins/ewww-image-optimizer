@@ -2,7 +2,6 @@
 class ewwwngg {
 	// pretty sure we don't need this anymore
 	//static $plugins_ok = true; 
-// TODO: only load jquery for pre 3.0
 	/* initializes the nextgen integration functions */
 	function ewwwngg() {
 		add_filter('ngg_manage_images_columns', array(&$this, 'ewww_manage_images_columns'));
@@ -314,9 +313,9 @@ class ewwwngg {
 		}
 		// store the image IDs to process in the db
 		update_option('ewww_image_optimizer_bulk_ngg_attachments', $images);
-		// replace the default jquery script with our own (updated) script
-		wp_deregister_script('jquery');
-		wp_register_script('jquery', plugins_url('/jquery-1.9.1.min.js', __FILE__), false, '1.9.1');
+		// replace the default jquery script with our own (updated) script - shouldn't need this, since nextgen requires 3.5
+		//wp_deregister_script('jquery');
+		//wp_register_script('jquery', plugins_url('/jquery-1.9.1.min.js', __FILE__), false, '1.9.1');
 		// add a custom jquery-ui script with progressbar functions
 		wp_enqueue_script('ewwwjuiscript', plugins_url('/jquery-ui-1.10.2.custom.min.js', __FILE__), false);
 		// add the EWWW IO script
