@@ -1,5 +1,6 @@
 <?php 
 class ewwwflag {
+// TODO: only load jquery for pre 3.0
 	/* initializes the flagallery integration functions */
 	function ewwwflag() {
 		add_filter('flag_manage_images_columns', array(&$this, 'ewww_manage_images_columns'));

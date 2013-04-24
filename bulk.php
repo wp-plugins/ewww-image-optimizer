@@ -102,8 +102,10 @@ function ewww_image_optimizer_bulk_script($hook) {
 	update_option('ewww_image_optimizer_bulk_attachments', $attachments);
         // load the bulk optimization javascript and dependencies
 	//if (!wp_enqueue_script('ewwwbulkscript', plugins_url('/eio.js', __FILE__), array('jquery', 'jquery-ui-core', 'jquery-ui-widget', 'jquery-ui-progressbar'))) {
-	wp_deregister_script('jquery');
-	wp_register_script('jquery', plugins_url('/jquery-1.9.1.min.js', __FILE__), false, '1.9.1');
+	if ($my_version < 3) {
+		wp_deregister_script('jquery');
+		wp_register_script('jquery', plugins_url('/jquery-1.9.1.min.js', __FILE__), false, '1.9.1');
+	}
 	wp_enqueue_script('ewwwjuiscript', plugins_url('/jquery-ui-1.10.2.custom.min.js', __FILE__), false);
 	wp_enqueue_script('ewwwbulkscript', plugins_url('/eio.js', __FILE__), array('jquery'));
 	//}

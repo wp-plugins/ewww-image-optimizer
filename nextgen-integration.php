@@ -2,7 +2,7 @@
 class ewwwngg {
 	// pretty sure we don't need this anymore
 	//static $plugins_ok = true; 
-
+// TODO: only load jquery for pre 3.0
 	/* initializes the nextgen integration functions */
 	function ewwwngg() {
 		add_filter('ngg_manage_images_columns', array(&$this, 'ewww_manage_images_columns'));

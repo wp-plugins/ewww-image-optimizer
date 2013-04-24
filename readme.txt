@@ -132,7 +132,10 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 = future =
 * these are possible future bugfixes and/or feature requests, if you see a feature you like here, go vote for it in the support forum
 * BuddyPress integration
+
+= 1.4.3 =
 * global configuration for multi-site
+* prevent loading of bundled jquery on WP versions that don't need it to avoid conflicts with other plugins not doing the 'right thing'
 
 = 1.4.2 =
 * fixed fatal errors when posix_getpwuid() is missing from server
