@@ -190,7 +190,7 @@ function ewww_image_optimizer_bulk_loop() {
 	array_shift($attachments);
 	// store the updated list of attachment IDs back in the 'bulk_attachments' option
 	update_option('ewww_image_optimizer_bulk_attachments', $attachments);
-	if (get_option('ewww_image_optimizer_debug')) echo '<div style="background-color:#ffff99;">' . $ewww_debug . '</div>';
+	if (get_site_option('ewww_image_optimizer_debug')) echo '<div style="background-color:#ffff99;">' . $ewww_debug . '</div>';
 	die();
 }
 
