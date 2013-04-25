@@ -53,7 +53,7 @@ class ewwwngg {
 		// prepare the $images array for POSTing
 		$images = serialize($images); ?>
                 <div id="bulk-forms"><p>The thumbnails for your new images have not been optimized. If you would like this step to be automatic in the future, bug the NextGEN developers to add in a hook.</p>
-                <form id="thumb-optimize" method="post" action="http://bob/wordpress/wp-admin/admin.php?page=ewww-ngg-thumb-bulk">
+                <form id="thumb-optimize" method="post" action="admin.php?page=ewww-ngg-thumb-bulk">
 			<?php wp_nonce_field( 'ewww-image-optimizer-bulk', '_wpnonce'); ?>
 			<input type="hidden" name="attachments" value="<?php echo $images; ?>">
                         <input type="submit" class="button-secondary action" value="Optimize Thumbs" />

@@ -136,6 +136,8 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 = 1.4.3 =
 * global configuration for multi-site
 * prevent loading of bundled jquery on WP versions that don't need it to avoid conflicts with other plugins not doing the 'right thing'
+* removed enqueueing of common.js to make thins run quicker
+* fixed hardcoded link for optimizing nextgen thumbs after upload
 
 = 1.4.2 =
 * fixed fatal errors when posix_getpwuid() is missing from server
