@@ -13,12 +13,7 @@ Version: 1.4.2
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
-// TODO: internationalize plugin
-// TODO: make sure js/css are only on the right pages
-// TODO: check multisite activation -- http://www.slideshare.net/arcware/wcatl-201310thingseveryplugindevelopershouldknow
-// TODO: add network settings page
-// TODO: make all get_options() calls check for network option first
-// TODO: make sure all options are properly sanitized
+// TODO: internationalize plugin - if we get enough interest
 /**
  * Constants
  */
@@ -56,6 +51,7 @@ add_action('admin_head-upload.php', 'ewww_image_optimizer_add_bulk_actions_via_j
 add_action('admin_action_bulk_optimize', 'ewww_image_optimizer_bulk_action_handler'); 
 add_action('admin_action_-1', 'ewww_image_optimizer_bulk_action_handler'); 
 add_action('admin_action_ewww_image_optimizer_install_pngout', 'ewww_image_optimizer_install_pngout');
+register_deactivation_hook(__FILE__, 'ewww_image_optimizer_network_deactivate');
 
 /**
  * Check if this is an unsupported OS (not Linux or Mac OSX or FreeBSD or Windows)
@@ -88,6 +84,13 @@ function ewww_image_optimizer_notice_os() {
 	global $ewww_debug;
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_notice_os()</b><br>";
 	echo "<div id='ewww-image-optimizer-warning-os' class='error'><p><strong>EWWW Image Optimizer is supported on Linux, FreeBSD, Mac OSX, and Windows.</strong> Unfortunately, the EWWW Image Optimizer plugin doesn't work with " . htmlentities(PHP_OS) . ". Feel free to file a support request if you would like support for your operating system of choice.</p></div>";
+}   
+
+// lets the user know their network settings have been saved
+function ewww_image_optimizer_network_settings_saved() {
+	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_network_settings_saved()</b><br>";
+	echo "<div id='ewww-image-optimizer-settings-saved' class='updated fade'><p><strong>Settings saved.</strong></p></div>";
 }   
 
 // checks the binary at $path against a list of valid md5sums
@@ -744,16 +747,14 @@ function ewww_image_optimizer_notice_utils() {
  */
 function ewww_image_optimizer_admin_init() {
 	load_plugin_textdomain(EWWW_IMAGE_OPTIMIZER_DOMAIN);
-	wp_enqueue_script('common');
+//	wp_enqueue_script('common');
 	if (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('ewww-image-optimizer/ewww-image-optimizer.php')) {
-		if (get_site_option('ewww_image_optimizer_network_version') !==  '1.0.1') {
-//		add_site_option(); // apparently, pre 3.3 overwrites existing options
-//		get_site_option(); // gets network setting if it exists, otherwise grabs first blog setting
-//		update_site_option();
+		// network version is simply incremented any time we need to make changes to this section for new defaults
+		if (get_site_option('ewww_image_optimizer_network_version') < 1) {
 			add_site_option('ewww_image_optimizer_disable_pngout', TRUE);
-			add_site_option('ewww_image_optimizer_optipng_level', 3);
+			add_site_option('ewww_image_optimizer_optipng_level', 2);
 			add_site_option('ewww_image_optimizer_pngout_level', 2);
-			update_site_option('ewww_image_optimizer_network_version', '1.0.1');
+			update_site_option('ewww_image_optimizer_network_version', '1');
 		}
 		if (!empty($_POST['ewww_image_optimizer_optipng_level'])) {
 			//print_r($_POST);
@@ -787,6 +788,7 @@ function ewww_image_optimizer_admin_init() {
 			update_site_option('ewww_image_optimizer_jpg_background', $_POST['ewww_image_optimizer_jpg_background']);
 			if (empty($_POST['ewww_image_optimizer_jpg_quality'])) $_POST['ewww_image_optimizer_jpg_quality'] = '';
 			update_site_option('ewww_image_optimizer_jpg_quality', $_POST['ewww_image_optimizer_jpg_quality']);
+			add_action('network_admin_notices', 'ewww_image_optimizer_network_settings_saved');
 		}
 	}
 	// register all the EWWW IO settings
@@ -817,6 +819,28 @@ function ewww_image_optimizer_admin_init() {
 	add_option('ewww_image_optimizer_pngout_level', 2);
 }
 
+function ewww_image_optimizer_network_deactivate($network_wide) {
+	if ($network_wide) {
+			delete_site_option('ewww_image_optimizer_skip_check');
+			delete_site_option('ewww_image_optimizer_skip_bundle');
+			delete_site_option('ewww_image_optimizer_debug');
+			delete_site_option('ewww_image_optimizer_jpegtran_copy');
+			delete_site_option('ewww_image_optimizer_optipng_level');
+			delete_site_option('ewww_image_optimizer_pngout_level');
+			delete_site_option('ewww_image_optimizer_disable_jpegtran');
+			delete_site_option('ewww_image_optimizer_disable_optipng');
+			delete_site_option('ewww_image_optimizer_disable_gifsicle');
+			delete_site_option('ewww_image_optimizer_disable_pngout');
+			delete_site_option('ewww_image_optimizer_delete_originals');
+			delete_site_option('ewww_image_optimizer_jpg_to_png');
+			delete_site_option('ewww_image_optimizer_png_to_jpg');
+			delete_site_option('ewww_image_optimizer_gif_to_png');
+			delete_site_option('ewww_image_optimizer_jpg_background');
+			delete_site_option('ewww_image_optimizer_jpg_quality');
+			delete_site_option('ewww_image_optimizer_network_version');
+	}
+}
+
 function ewww_image_optimizer_network_admin_menu() {
 	if (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('ewww-image-optimizer/ewww-image-optimizer.php')) {
 		// add options page to the settings menu
@@ -826,7 +850,7 @@ function ewww_image_optimizer_network_admin_menu() {
 			'EWWW Image Optimizer',			//Sub-menu title
 			'manage_network_options',		//Security
 			__FILE__,				//File to open
-			'ewww_image_optimizer_network_options'	//Function to call
+			'ewww_image_optimizer_options'	//Function to call
 		);
 		add_action('admin_footer-' . $ewww_network_options_page, 'ewww_image_optimizer_debug');
 	} 
@@ -845,7 +869,7 @@ function ewww_image_optimizer_admin_menu() {
 			'EWWW Image Optimizer',		//Sub-menu title
 			'manage_options',		//Security
 			__FILE__,			//File to open
-			'ewww_image_optimizer_site_options'	//Function to call
+			'ewww_image_optimizer_options'	//Function to call
 		);
 		add_action('admin_footer-' . $ewww_options_page, 'ewww_image_optimizer_debug');
 	}
@@ -2306,15 +2330,14 @@ function ewww_image_optimizer_install_pngout() {
 }
 
 // displays the EWWW IO options at the network level
-function ewww_image_optimizer_network_options () {
-	// TODO: can we post these earlier? the proper tools don't get detected if we change an option because the path checking is done prior to this function. perhaps a special admin_init function?
-	ewww_image_optimizer_options();
-}
+//function ewww_image_optimizer_network_options () {
+//	ewww_image_optimizer_options();
+//}
 
 // displays the EWWW IO options at the site level
-function ewww_image_optimizer_site_options () {
-	ewww_image_optimizer_options();
-}
+//function ewww_image_optimizer_site_options () {
+//	ewww_image_optimizer_options();
+//}
 
 // displays the EWWW IO options and provides one-click install for the optimizer utilities
 function ewww_image_optimizer_options () {
@@ -2330,11 +2353,11 @@ function ewww_image_optimizer_options () {
 			<div id='ewww-image-optimizer-pngout-failure' class='error'>
 				<p>pngout was not installed, check permissions on the wp-content/ewww folder.</p>
 			</div>
-<?php		} ?>
-		<script type='text/javascript'>
-			jQuery(document).ready(function($) {$('.fade').fadeTo(5000,1).fadeOut(3000);});
-		</script>
-<?php	} ?>
+<?php		}
+	} ?>
+	<script type='text/javascript'>
+		jQuery(document).ready(function($) {$('.fade').fadeTo(5000,1).fadeOut(3000);});
+	</script>
 	<div class="wrap">
 		<div id="icon-options-general" class="icon32"><br /></div>
 		<h2>EWWW Image Optimizer Settings</h2>
