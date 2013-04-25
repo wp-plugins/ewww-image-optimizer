@@ -51,6 +51,7 @@ add_action('admin_head-upload.php', 'ewww_image_optimizer_add_bulk_actions_via_j
 add_action('admin_action_bulk_optimize', 'ewww_image_optimizer_bulk_action_handler'); 
 add_action('admin_action_-1', 'ewww_image_optimizer_bulk_action_handler'); 
 add_action('admin_action_ewww_image_optimizer_install_pngout', 'ewww_image_optimizer_install_pngout');
+add_action('admin_enqueue_scripts', 'ewww_image_optimizer_media_scripts');
 register_deactivation_hook(__FILE__, 'ewww_image_optimizer_network_deactivate');
 
 /**
@@ -821,23 +822,23 @@ function ewww_image_optimizer_admin_init() {
 
 function ewww_image_optimizer_network_deactivate($network_wide) {
 	if ($network_wide) {
-			delete_site_option('ewww_image_optimizer_skip_check');
-			delete_site_option('ewww_image_optimizer_skip_bundle');
-			delete_site_option('ewww_image_optimizer_debug');
-			delete_site_option('ewww_image_optimizer_jpegtran_copy');
-			delete_site_option('ewww_image_optimizer_optipng_level');
-			delete_site_option('ewww_image_optimizer_pngout_level');
-			delete_site_option('ewww_image_optimizer_disable_jpegtran');
-			delete_site_option('ewww_image_optimizer_disable_optipng');
-			delete_site_option('ewww_image_optimizer_disable_gifsicle');
-			delete_site_option('ewww_image_optimizer_disable_pngout');
-			delete_site_option('ewww_image_optimizer_delete_originals');
-			delete_site_option('ewww_image_optimizer_jpg_to_png');
-			delete_site_option('ewww_image_optimizer_png_to_jpg');
-			delete_site_option('ewww_image_optimizer_gif_to_png');
-			delete_site_option('ewww_image_optimizer_jpg_background');
-			delete_site_option('ewww_image_optimizer_jpg_quality');
-			delete_site_option('ewww_image_optimizer_network_version');
+		delete_site_option('ewww_image_optimizer_skip_check');
+		delete_site_option('ewww_image_optimizer_skip_bundle');
+		delete_site_option('ewww_image_optimizer_debug');
+		delete_site_option('ewww_image_optimizer_jpegtran_copy');
+		delete_site_option('ewww_image_optimizer_optipng_level');
+		delete_site_option('ewww_image_optimizer_pngout_level');
+		delete_site_option('ewww_image_optimizer_disable_jpegtran');
+		delete_site_option('ewww_image_optimizer_disable_optipng');
+		delete_site_option('ewww_image_optimizer_disable_gifsicle');
+		delete_site_option('ewww_image_optimizer_disable_pngout');
+		delete_site_option('ewww_image_optimizer_delete_originals');
+		delete_site_option('ewww_image_optimizer_jpg_to_png');
+		delete_site_option('ewww_image_optimizer_png_to_jpg');
+		delete_site_option('ewww_image_optimizer_gif_to_png');
+		delete_site_option('ewww_image_optimizer_jpg_background');
+		delete_site_option('ewww_image_optimizer_jpg_quality');
+		delete_site_option('ewww_image_optimizer_network_version');
 	}
 }
 
@@ -873,6 +874,13 @@ function ewww_image_optimizer_admin_menu() {
 		);
 		add_action('admin_footer-' . $ewww_options_page, 'ewww_image_optimizer_debug');
 	}
+}
+
+function ewww_image_optimizer_media_scripts($hook) {
+	if ($hook == 'upload.php')
+	wp_enqueue_script('jquery-ui-tooltip');
+//	$registered = wp_script_is('jquery-ui-tooltip');
+//	echo "<br>$registered<br>";
 }
 
 // used to output any debug messages available
@@ -1270,7 +1278,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 	switch($type) {
 		case 'image/jpeg':
 			// if jpg2png conversion is enabled, and this image is in the wordpress media library
-			if (get_site_option('ewww_image_optimizer_jpg_to_png') && $gallery_type == 1) {
+			if ((get_site_option('ewww_image_optimizer_jpg_to_png') && $gallery_type == 1) || !empty($_GET['convert'])) {
 				// toggle the convert process to ON
 				$convert = true;
 				// generate the filename for a PNG
@@ -1455,7 +1463,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 			break;
 		case 'image/png':
 			// png2jpg conversion is turned on, and the image is in the wordpress media library
-			if (get_site_option('ewww_image_optimizer_png_to_jpg') && $gallery_type == 1) {
+			if ((get_site_option('ewww_image_optimizer_png_to_jpg') && $gallery_type == 1) || !empty($_GET['convert'])) {
 				// turn the conversion process ON
 				$convert = true;
 				// if this is a resize version
@@ -1675,7 +1683,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 			break;
 		case 'image/gif':
 			// if gif2png is turned on, and the image is in the wordpress media library
-			if (get_site_option('ewww_image_optimizer_gif_to_png') && $gallery_type == 1) {
+			if ((get_site_option('ewww_image_optimizer_gif_to_png') && $gallery_type == 1) || !empty($_GET['convert'])) {
 				// turn conversion ON
 				$convert = true;
 				// generate the filename for a PNG
@@ -2158,6 +2166,9 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 			printf("<br><a href=\"admin.php?action=ewww_image_optimizer_manual&amp;attachment_ID=%d\">%s</a>",
 				$id,
 				__('Re-optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+			printf(" | <a href=\"admin.php?action=ewww_image_optimizer_manual&amp;attachment_ID=%d&amp;convert=1\">%s</a>",
+				$id,
+				__('Convert', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 			$restorable = false;
 			if (!empty($meta['converted'])) {
 				if (!empty($meta['orig_file']) && file_exists($meta['orig_file'])) {
