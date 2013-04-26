@@ -879,6 +879,7 @@ function ewww_image_optimizer_admin_menu() {
 function ewww_image_optimizer_media_scripts($hook) {
 	if ($hook == 'upload.php')
 	wp_enqueue_script('jquery-ui-tooltip');
+	wp_enqueue_style('jquery-ui');
 //	$registered = wp_script_is('jquery-ui-tooltip');
 //	echo "<br>$registered<br>";
 }
@@ -2220,7 +2221,6 @@ function ewww_image_optimizer_add_bulk_actions_via_javascript() {
 	global $ewww_debug;
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_add_bulk_actions_via_javascript()</b><br>";
 ?>
-	<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css"> 
 	<script type="text/javascript"> 
 		jQuery(document).ready(function($){ 
 			$('select[name^="action"] option:last-child').before('<option value="bulk_optimize">Bulk Optimize</option>');
