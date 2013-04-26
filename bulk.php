@@ -89,7 +89,7 @@ function ewww_image_optimizer_bulk_script($hook) {
 	// the excess data from attachments, since we only want the attachment IDs
 	global $wp_version;
 	$my_version = $wp_version;
-	substr($my_version, 0, 3);
+	$my_version = substr($my_version, 0, 3);
 	if ( $my_version < 3.1 ) {
 		$i = 0;
 		foreach( $attachments as $attachment ) {

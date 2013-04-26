@@ -151,7 +151,7 @@ class ewwwflag {
 		update_option('ewww_image_optimizer_bulk_flag_attachments', $ids);
 		global $wp_version;
 		$my_version = $wp_version;
-		substr($my_version, 0, 3);
+		$my_version = substr($my_version, 0, 3);
 		if ($my_version < 3) {
 			// replace the built-in jquery script
 			wp_deregister_script('jquery');

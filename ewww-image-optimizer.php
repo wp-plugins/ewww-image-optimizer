@@ -748,7 +748,6 @@ function ewww_image_optimizer_notice_utils() {
  */
 function ewww_image_optimizer_admin_init() {
 	load_plugin_textdomain(EWWW_IMAGE_OPTIMIZER_DOMAIN);
-//	wp_enqueue_script('common');
 	if (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('ewww-image-optimizer/ewww-image-optimizer.php')) {
 		// network version is simply incremented any time we need to make changes to this section for new defaults
 		if (get_site_option('ewww_image_optimizer_network_version') < 1) {
@@ -789,6 +788,8 @@ function ewww_image_optimizer_admin_init() {
 			update_site_option('ewww_image_optimizer_jpg_background', $_POST['ewww_image_optimizer_jpg_background']);
 			if (empty($_POST['ewww_image_optimizer_jpg_quality'])) $_POST['ewww_image_optimizer_jpg_quality'] = '';
 			update_site_option('ewww_image_optimizer_jpg_quality', $_POST['ewww_image_optimizer_jpg_quality']);
+			if (empty($_POST['ewww_image_optimizer_disable_convert_links'])) $_POST['ewww_image_optimizer_disable_convert_links'] = '';
+			update_site_option('ewww_image_optimizer_disable_convert_links', $_POST['ewww_image_optimizer_disable_convert_links']);
 			add_action('network_admin_notices', 'ewww_image_optimizer_network_settings_saved');
 		}
 	}
@@ -812,6 +813,7 @@ function ewww_image_optimizer_admin_init() {
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_gif_to_png');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpg_background');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpg_quality');
+	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_disable_convert_links');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_resume');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_attachments');
 	// set a few defaults
@@ -877,11 +879,18 @@ function ewww_image_optimizer_admin_menu() {
 }
 
 function ewww_image_optimizer_media_scripts($hook) {
-	if ($hook == 'upload.php')
-	wp_enqueue_script('jquery-ui-tooltip');
-	wp_enqueue_style('jquery-ui');
-//	$registered = wp_script_is('jquery-ui-tooltip');
-//	echo "<br>$registered<br>";
+	if ($hook == 'upload.php') {
+		wp_enqueue_script('jquery-ui-tooltip');
+		global $wp_version;
+		$my_version = $wp_version;
+		$my_version = substr($my_version, 0, 3);
+		//echo "$my_version<br>";
+		if ($my_version < 3.6) {
+		//echo "$my_version<br>";
+		//echo plugins_url('jquery-ui-1.10.1.custom.css', __FILE__);
+			wp_enqueue_style('jquery-ui-tooltip', plugins_url('jquery-ui-1.10.1.custom.css', __FILE__));
+		}
+	}
 }
 
 // used to output any debug messages available
@@ -2179,7 +2188,8 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 			printf("<br><a href=\"admin.php?action=ewww_image_optimizer_manual&amp;attachment_ID=%d\">%s</a>",
 				$id,
 				__('Re-optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN));
-			echo " | <a class='ewww-convert-$class_type' title='$convert_desc' href='admin.php?action=ewww_image_optimizer_manual&amp;attachment_ID=$id&amp;convert=1'>$convert_link</a>";
+			if (!get_site_option('ewww_image_optimizer_disable_convert_links'))
+				echo " | <a class='ewww-convert' title='$convert_desc' href='admin.php?action=ewww_image_optimizer_manual&amp;attachment_ID=$id&amp;convert=1'>$convert_link</a>";
 			$restorable = false;
 			if (!empty($meta['converted'])) {
 				if (!empty($meta['orig_file']) && file_exists($meta['orig_file'])) {
@@ -2224,7 +2234,7 @@ function ewww_image_optimizer_add_bulk_actions_via_javascript() {
 	<script type="text/javascript"> 
 		jQuery(document).ready(function($){ 
 			$('select[name^="action"] option:last-child').before('<option value="bulk_optimize">Bulk Optimize</option>');
-			$(document).tooltip();
+			$('.ewww-convert').tooltip();
 		}); 
 	</script>
 <?php } 
@@ -2351,16 +2361,6 @@ function ewww_image_optimizer_install_pngout() {
 	wp_redirect($sendback);
 	exit(0);
 }
-
-// displays the EWWW IO options at the network level
-//function ewww_image_optimizer_network_options () {
-//	ewww_image_optimizer_options();
-//}
-
-// displays the EWWW IO options at the site level
-//function ewww_image_optimizer_site_options () {
-//	ewww_image_optimizer_options();
-//}
 
 // displays the EWWW IO options and provides one-click install for the optimizer utilities
 function ewww_image_optimizer_options () {
@@ -2549,6 +2549,7 @@ function ewww_image_optimizer_options () {
 			<p><i>Conversion settings do not apply to NextGEN or GRAND FlAGallery.</i><br />
 				<b>NOTE:</b> Converting images does not update any posts that contain those images. You will need to manually update your image urls after you convert any images.</p>
 			<table class="form-table">
+				<tr><td><label for="ewww_image_optimizer_disable_convert_links">Hide Conversion Links</label</td><td><input type="checkbox" id="ewww_image_optimizer_disable_convert_links" name="ewww_image_optimizer_disable_convert_links" <?php if (get_site_option('ewww_image_optimizer_disable_convert_links') == TRUE) { ?>checked="true"<?php } ?> /> Site or Network admins can use this to prevent other users from using the conversion links in the Media Library to bypass the settings below.</td></tr>
 				<tr><td><label for="ewww_image_optimizer_delete_originals">Delete originals</label></td><td><input type="checkbox" id="ewww_image_optimizer_delete_originals" name="ewww_image_optimizer_delete_originals" <?php if (get_site_option('ewww_image_optimizer_delete_originals') == TRUE) { ?>checked="true"<?php } ?> /> This will remove the original image from the server after a successful conversion.</td></tr>
 				<tr><td><label for="ewww_image_optimizer_jpg_to_png">enable <b>JPG</b> to <b>PNG</b> conversion</label></td><td><input type="checkbox" id="ewww_image_optimizer_jpg_to_png" name="ewww_image_optimizer_jpg_to_png" <?php if (get_site_option('ewww_image_optimizer_jpg_to_png') == TRUE) { ?>checked="true"<?php } ?> /> <b>WARNING:</b> Removes metadata! Requires GD support in PHP or 'convert' from ImageMagick and should be used sparingly. PNG is generally much better than JPG for logos and other images with a limited range of colors. Checking this option will slow down JPG processing significantly, and you may want to enable it only temporarily.</td></tr>
 				<tr><td><label for="ewww_image_optimizer_png_to_jpg">enable <b>PNG</b> to <b>JPG</b> conversion</label></td><td><input type="checkbox" id="ewww_image_optimizer_png_to_jpg" name="ewww_image_optimizer_png_to_jpg" <?php if (get_site_option('ewww_image_optimizer_png_to_jpg') == TRUE) { ?>checked="true"<?php } ?> /> <b>WARNING:</b> This is not a lossless conversion and requires GD support in PHP or the 'convert' utility provided by ImageMagick. JPG is generally much better than PNG for photographic use because it compresses the image and discards data. JPG does not support transparency, so we don't convert PNGs with transparency.</td></tr>
