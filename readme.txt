@@ -138,6 +138,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * prevent loading of bundled jquery on WP versions that don't need it to avoid conflicts with other plugins not doing the 'right thing'
 * removed enqueueing of common.js to make thins run quicker
 * fixed hardcoded link for optimizing nextgen thumbs after upload
+* added links in media library for one time conversion of images
 
 = 1.4.2 =
 * fixed fatal errors when posix_getpwuid() is missing from server

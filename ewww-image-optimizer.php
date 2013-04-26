@@ -2131,6 +2131,10 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 				if(EWWW_IMAGE_OPTIMIZER_JPEGTRAN == false) {
 					$valid = false;
 					$msg = '<br>' . __('<em>jpegtran</em> is missing');
+				} else {
+					$convert_link = 'JPG to PNG';
+					$class_type = 'jpg';
+					$convert_desc = "WARNING: Removes metadata. Requires GD or ImageMagick. PNG is generally much better than JPG for logos and other images with a limited range of colors.";
 				}
 				break; 
 			case 'image/png':
@@ -2138,6 +2142,10 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 				if(EWWW_IMAGE_OPTIMIZER_PNGOUT == false && EWWW_IMAGE_OPTIMIZER_OPTIPNG == false) {
 					$valid = false;
 					$msg = '<br>' . __('<em>optipng/pngout</em> is missing');
+				} else {
+					$convert_link = 'PNG to JPG';
+					$class_type = 'png';
+					$convert_desc = "WARNING: This is not a lossless conversion and requires GD or ImageMagick. JPG is much better than PNG for photographic use because it compresses the image and discards data. Transparent images will only be converted if a background color has been set.";
 				}
 				break;
 			case 'image/gif':
@@ -2145,6 +2153,10 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 				if(EWWW_IMAGE_OPTIMIZER_GIFSICLE == false) {
 					$valid = false;
 					$msg = '<br>' . __('<em>gifsicle</em> is missing');
+				} else {
+					$convert_link = 'GIF to PNG';
+					$class_type = 'gif';
+					$convert_desc = "PNG is generally better than GIF, but does not support animation. Animated images will not be converted.";
 				}
 				break;
 			default:
@@ -2166,9 +2178,7 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 			printf("<br><a href=\"admin.php?action=ewww_image_optimizer_manual&amp;attachment_ID=%d\">%s</a>",
 				$id,
 				__('Re-optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN));
-			printf(" | <a href=\"admin.php?action=ewww_image_optimizer_manual&amp;attachment_ID=%d&amp;convert=1\">%s</a>",
-				$id,
-				__('Convert', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+			echo " | <a class='ewww-convert-$class_type' title='$convert_desc' href='admin.php?action=ewww_image_optimizer_manual&amp;attachment_ID=$id&amp;convert=1'>$convert_link</a>";
 			$restorable = false;
 			if (!empty($meta['converted'])) {
 				if (!empty($meta['orig_file']) && file_exists($meta['orig_file'])) {
@@ -2209,10 +2219,12 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 function ewww_image_optimizer_add_bulk_actions_via_javascript() { 
 	global $ewww_debug;
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_add_bulk_actions_via_javascript()</b><br>";
-?> 
+?>
+	<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css"> 
 	<script type="text/javascript"> 
 		jQuery(document).ready(function($){ 
-			$('select[name^="action"] option:last-child').before('<option value="bulk_optimize">Bulk Optimize</option>'); 
+			$('select[name^="action"] option:last-child').before('<option value="bulk_optimize">Bulk Optimize</option>');
+			$(document).tooltip();
 		}); 
 	</script>
 <?php } 
