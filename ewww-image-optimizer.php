@@ -2221,6 +2221,8 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 			printf("<br><a href=\"admin.php?action=ewww_image_optimizer_manual&amp;attachment_ID=%d\">%s</a>",
 				$id,
 				__('Optimize now!', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+			if (!get_site_option('ewww_image_optimizer_disable_convert_links'))
+				echo " | <a class='ewww-convert' title='$convert_desc' href='admin.php?action=ewww_image_optimizer_manual&amp;attachment_ID=$id&amp;convert=1'>$convert_link</a>";
 		}
 	}
 }
@@ -2504,7 +2506,6 @@ function ewww_image_optimizer_options () {
 			} else {
 				echo 'mime_content_type(): <span style="color: red; font-weight: bolder">MISSING</span><br>';
 			}
-			//echo 'Operating System: ' . PHP_OS;
 			?></p>
 		</div>
 <?php		if (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('ewww-image-optimizer/ewww-image-optimizer.php')) { ?>
@@ -2516,19 +2517,20 @@ function ewww_image_optimizer_options () {
 			<h3>General Settings</h3>
 			<p>The plugin performs a check to make sure your system has the programs we use for optimization: jpegtran, optipng, pngout, and gifsicle. In some rare cases, these checks may erroneously report that you are missing the required utilities even though you have them installed.</p>
 			<table class="form-table">
-				<tr><td><label for="ewww_image_optimizer_skip_bundle">Use system paths</label></td><td><input type="checkbox" id="ewww_image_optimizer_skip_bundle" name="ewww_image_optimizer_skip_bundle" value="true" <?php if (get_site_option('ewww_image_optimizer_skip_bundle') == TRUE) { ?>checked="true"<?php } ?> /> If you have already installed the utilities in a system location, such as /usr/local/bin or /usr/bin, use this to force the plugin to use those versions and skip the auto-installers.</td></tr>
-				<tr><td><label for="ewww_image_optimizer_debug">Debugging</label></td><td><input type="checkbox" id="ewww_image_optimizer_debug" name="ewww_image_optimizer_debug" value="true" <?php if (get_site_option('ewww_image_optimizer_debug') == TRUE) { ?>checked="true"<?php } ?> /> Only check this if instructed by plugin author, or if you feel comfortable digging around in the code to fix a problem you are experiencing.</td></tr>
-				<tr><td><label for="ewww_image_optimizer_skip_check">Skip utils check</label></td><td><input type="checkbox" id="ewww_image_optimizer_skip_check" name="ewww_image_optimizer_skip_check" value="true" <?php if (get_site_option('ewww_image_optimizer_skip_check') == TRUE) { ?>checked="true"<?php } ?> /> <i>*DEPRECATED - please uncheck this and report any errors in the support forum.</i></td></tr>
-				<tr><td><label for="ewww_image_optimizer_disable_jpegtran">disable jpegtran</label></td><td><input type="checkbox" id="ewww_image_optimizer_disable_jpegtran" name="ewww_image_optimizer_disable_jpegtran" <?php if (get_site_option('ewww_image_optimizer_disable_jpegtran') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
-				<tr><td><label for="ewww_image_optimizer_disable_optipng">disable optipng</label></td><td><input type="checkbox" id="ewww_image_optimizer_disable_optipng" name="ewww_image_optimizer_disable_optipng" <?php if (get_site_option('ewww_image_optimizer_disable_optipng') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
-				<tr><td><label for="ewww_image_optimizer_disable_pngout">disable pngout</label></td><td><input type="checkbox" id="ewww_image_optimizer_disable_pngout" name="ewww_image_optimizer_disable_pngout" <?php if (get_site_option('ewww_image_optimizer_disable_pngout') == TRUE) { ?>checked="true"<?php } ?> /></td><tr>
-				<tr><td><label for="ewww_image_optimizer_disable_gifsicle">disable gifsicle</label></td><td><input type="checkbox" id="ewww_image_optimizer_disable_gifsicle" name="ewww_image_optimizer_disable_gifsicle" <?php if (get_site_option('ewww_image_optimizer_disable_gifsicle') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
+				<tr><th><label for="ewww_image_optimizer_skip_bundle">Use system paths</label></th><td><input type="checkbox" id="ewww_image_optimizer_skip_bundle" name="ewww_image_optimizer_skip_bundle" value="true" <?php if (get_site_option('ewww_image_optimizer_skip_bundle') == TRUE) { ?>checked="true"<?php } ?> /> If you have already installed the utilities in a system location, such as /usr/local/bin or /usr/bin, use this to force the plugin to use those versions and skip the auto-installers.</td></tr>
+				<tr><th><label for="ewww_image_optimizer_debug">Debugging</label></th><td><input type="checkbox" id="ewww_image_optimizer_debug" name="ewww_image_optimizer_debug" value="true" <?php if (get_site_option('ewww_image_optimizer_debug') == TRUE) { ?>checked="true"<?php } ?> /> Only check this if instructed by plugin author, or if you feel comfortable digging around in the code to fix a problem you are experiencing.</td></tr>
+				<tr><th><label for="ewww_image_optimizer_skip_check">Skip utils check</label></th><td><input type="checkbox" id="ewww_image_optimizer_skip_check" name="ewww_image_optimizer_skip_check" value="true" <?php if (get_site_option('ewww_image_optimizer_skip_check') == TRUE) { ?>checked="true"<?php } ?> /> <b>DEPRECATED</b> - please uncheck this and report any errors in the support forum.</td></tr>
+				<tr><th><label for="ewww_image_optimizer_disable_jpegtran">disable jpegtran</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_jpegtran" name="ewww_image_optimizer_disable_jpegtran" <?php if (get_site_option('ewww_image_optimizer_disable_jpegtran') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
+				<tr><th><label for="ewww_image_optimizer_disable_optipng">disable optipng</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_optipng" name="ewww_image_optimizer_disable_optipng" <?php if (get_site_option('ewww_image_optimizer_disable_optipng') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
+				<tr><th><label for="ewww_image_optimizer_disable_pngout">disable pngout</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_pngout" name="ewww_image_optimizer_disable_pngout" <?php if (get_site_option('ewww_image_optimizer_disable_pngout') == TRUE) { ?>checked="true"<?php } ?> /></td><tr>
+				<tr><th><label for="ewww_image_optimizer_disable_gifsicle">disable gifsicle</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_gifsicle" name="ewww_image_optimizer_disable_gifsicle" <?php if (get_site_option('ewww_image_optimizer_disable_gifsicle') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
 			</table>
 			<h3>Optimization settings</h3>
 			<table class="form-table">
-				<tr><td><label for="ewww_image_optimizer_jpegtran_copy">Remove JPG metadata</label></td><td><input type="checkbox" id="ewww_image_optimizer_jpegtran_copy" name="ewww_image_optimizer_jpegtran_copy" value="true" <?php if (get_site_option('ewww_image_optimizer_jpegtran_copy') == TRUE) { ?>checked="true"<?php } ?> /> This wil remove ALL metadata (EXIF and comments)</td></tr>
-				<tr><td><label for="ewww_image_optimizer_optipng_level">optipng optimization level</label></td>
-				<td><select id="ewww_image_optimizer_optipng_level" name="ewww_image_optimizer_optipng_level">
+				<tr><th><label for="ewww_image_optimizer_jpegtran_copy">Remove JPG metadata</label></th>
+				<td><input type="checkbox" id="ewww_image_optimizer_jpegtran_copy" name="ewww_image_optimizer_jpegtran_copy" value="true" <?php if (get_site_option('ewww_image_optimizer_jpegtran_copy') == TRUE) { ?>checked="true"<?php } ?> /> This wil remove ALL metadata (EXIF and comments)</td></tr>
+				<tr><th><label for="ewww_image_optimizer_optipng_level">optipng optimization level</label></th>
+				<td><span><select id="ewww_image_optimizer_optipng_level" name="ewww_image_optimizer_optipng_level">
 				<option value="1"<?php if (get_site_option('ewww_image_optimizer_optipng_level') == 1) { echo ' selected="selected"'; } ?>>Level 1: 1 trial</option>
 				<option value="2"<?php if (get_site_option('ewww_image_optimizer_optipng_level') == 2) { echo ' selected="selected"'; } ?>>Level 2: 8 trials</option>
 				<option value="3"<?php if (get_site_option('ewww_image_optimizer_optipng_level') == 3) { echo ' selected="selected"'; } ?>>Level 3: 16 trials</option>
@@ -2536,26 +2538,36 @@ function ewww_image_optimizer_options () {
 				<option value="5"<?php if (get_site_option('ewww_image_optimizer_optipng_level') == 5) { echo ' selected="selected"'; } ?>>Level 5: 48 trials</option>
 				<option value="6"<?php if (get_site_option('ewww_image_optimizer_optipng_level') == 6) { echo ' selected="selected"'; } ?>>Level 6: 120 trials</option>
 				<option value="7"<?php if (get_site_option('ewww_image_optimizer_optipng_level') == 7) { echo ' selected="selected"'; } ?>>Level 7: 240 trials</option>
-				</select> (default=2) - <i>According to the author of optipng, 10 trials should satisfy most people, 30 trials should satisfy everyone.</i></td></tr>
-				<tr><td><label for="ewww_image_optimizer_pngout_level">pngout optimization level</label></td>
-				<td><select id="ewww_image_optimizer_pngout_level" name="ewww_image_optimizer_pngout_level">
+				</select> (default=2)</span>
+				<p class="description">According to the author of optipng, 10 trials should satisfy most people, 30 trials should satisfy everyone.</p></td></tr>
+				<tr><th><label for="ewww_image_optimizer_pngout_level">pngout optimization level</label></th>
+				<td><span><select id="ewww_image_optimizer_pngout_level" name="ewww_image_optimizer_pngout_level">
 				<option value="0"<?php if (get_site_option('ewww_image_optimizer_pngout_level') == 0) { echo ' selected="selected"'; } ?>>Level 0: Xtreme! (Slowest)</option>
 				<option value="1"<?php if (get_site_option('ewww_image_optimizer_pngout_level') == 1) { echo ' selected="selected"'; } ?>>Level 1: Intense (Slow)</option>
 				<option value="2"<?php if (get_site_option('ewww_image_optimizer_pngout_level') == 2) { echo ' selected="selected"'; } ?>>Level 2: Longest Match (Fast)</option>
 				<option value="3"<?php if (get_site_option('ewww_image_optimizer_pngout_level') == 3) { echo ' selected="selected"'; } ?>>Level 3: Huffman Only (Faster)</option>
-			</select> (default=2) - <i>If you have CPU cycles to spare, go with level 0</i></td></tr>
+			</select> (default=2)</span>
+			<p class="description">If you have CPU cycles to spare, go with level 0</p></td></tr>
 			</table>
 			<h3>Conversion Settings</h3>
-			<p><i>Conversion settings do not apply to NextGEN or GRAND FlAGallery.</i><br />
-				<b>NOTE:</b> Converting images does not update any posts that contain those images. You will need to manually update your image urls after you convert any images.</p>
+			<p>
+				Conversion is not available in NextGEN or GRAND FlAGallery.
+				By default, all images have a link available in the media library for one-time conversion. Turning on individual conversion operations below will enable conversion filters any time an image is uploaded or modified.<br />
+				<b>NOTE:</b> The plugin will attempt to update image locations for any posts that contain the images. You may need to manually update locations/urls for converted images. 
+			</p>
 			<table class="form-table">
-				<tr><td><label for="ewww_image_optimizer_disable_convert_links">Hide Conversion Links</label</td><td><input type="checkbox" id="ewww_image_optimizer_disable_convert_links" name="ewww_image_optimizer_disable_convert_links" <?php if (get_site_option('ewww_image_optimizer_disable_convert_links') == TRUE) { ?>checked="true"<?php } ?> /> Site or Network admins can use this to prevent other users from using the conversion links in the Media Library to bypass the settings below.</td></tr>
-				<tr><td><label for="ewww_image_optimizer_delete_originals">Delete originals</label></td><td><input type="checkbox" id="ewww_image_optimizer_delete_originals" name="ewww_image_optimizer_delete_originals" <?php if (get_site_option('ewww_image_optimizer_delete_originals') == TRUE) { ?>checked="true"<?php } ?> /> This will remove the original image from the server after a successful conversion.</td></tr>
-				<tr><td><label for="ewww_image_optimizer_jpg_to_png">enable <b>JPG</b> to <b>PNG</b> conversion</label></td><td><input type="checkbox" id="ewww_image_optimizer_jpg_to_png" name="ewww_image_optimizer_jpg_to_png" <?php if (get_site_option('ewww_image_optimizer_jpg_to_png') == TRUE) { ?>checked="true"<?php } ?> /> <b>WARNING:</b> Removes metadata! Requires GD support in PHP or 'convert' from ImageMagick and should be used sparingly. PNG is generally much better than JPG for logos and other images with a limited range of colors. Checking this option will slow down JPG processing significantly, and you may want to enable it only temporarily.</td></tr>
-				<tr><td><label for="ewww_image_optimizer_png_to_jpg">enable <b>PNG</b> to <b>JPG</b> conversion</label></td><td><input type="checkbox" id="ewww_image_optimizer_png_to_jpg" name="ewww_image_optimizer_png_to_jpg" <?php if (get_site_option('ewww_image_optimizer_png_to_jpg') == TRUE) { ?>checked="true"<?php } ?> /> <b>WARNING:</b> This is not a lossless conversion and requires GD support in PHP or the 'convert' utility provided by ImageMagick. JPG is generally much better than PNG for photographic use because it compresses the image and discards data. JPG does not support transparency, so we don't convert PNGs with transparency.</td></tr>
-				<tr><td><label for="ewww_image_optimizer_jpg_background">JPG background color</label></td><td>#<input type="text" id="ewww_image_optimizer_jpg_background" name="ewww_image_optimizer_jpg_background" style="width: 60px" value="<?php echo ewww_image_optimizer_jpg_background(); ?>" /> <span style="padding-left: 12px; font-size: 12px; border: solid 1px #555555; background-color: #<? echo ewww_image_optimizer_jpg_background(); ?>">&nbsp;</span> HEX format (#123def). This is used only if the PNG has transparency or leave it blank to skip PNGs with transparency.</td></tr>
-				<tr><td><label for="ewww_image_optimizer_jpg_quality">JPG quality level</label></td><td><input type="text" id="ewww_image_optimizer_jpg_quality" name="ewww_image_optimizer_jpg_quality" style="width: 40px" value="<?php echo ewww_image_optimizer_jpg_quality(); ?>" /> Valid values are 1-100. If left blank, the conversion process will attempt to set the optimal quality level or default to 92. Remember, this is a lossy conversion, so you are losing pixels, and it is not recommended to actually set the level here unless you want noticable loss of image quality.</td></tr>
-				<tr><td><label for="ewww_image_optimizer_gif_to_png">enable <b>GIF</b> to <b>PNG</b> conversion</label></td><td><input type="checkbox" id="ewww_image_optimizer_gif_to_png" name="ewww_image_optimizer_gif_to_png" <?php if (get_site_option('ewww_image_optimizer_gif_to_png') == TRUE) { ?>checked="true"<?php } ?> /> PNG is generally much better than GIF, but doesn't support animated images, so we don't convert those.</td></tr>
+				<tr><th><label for="ewww_image_optimizer_disable_convert_links">Hide Conversion Links</label</th><td><input type="checkbox" id="ewww_image_optimizer_disable_convert_links" name="ewww_image_optimizer_disable_convert_links" <?php if (get_site_option('ewww_image_optimizer_disable_convert_links') == TRUE) { ?>checked="true"<?php } ?> /> Site or Network admins can use this to prevent other users from using the conversion links in the Media Library which bypass the settings below.</td></tr>
+				<tr><th><label for="ewww_image_optimizer_delete_originals">Delete originals</label></th><td><input type="checkbox" id="ewww_image_optimizer_delete_originals" name="ewww_image_optimizer_delete_originals" <?php if (get_site_option('ewww_image_optimizer_delete_originals') == TRUE) { ?>checked="true"<?php } ?> /> This will remove the original image from the server after a successful conversion.</td></tr>
+				<tr><th><label for="ewww_image_optimizer_jpg_to_png">enable <b>JPG</b> to <b>PNG</b> conversion</label></th><td><span><input type="checkbox" id="ewww_image_optimizer_jpg_to_png" name="ewww_image_optimizer_jpg_to_png" <?php if (get_site_option('ewww_image_optimizer_jpg_to_png') == TRUE) { ?>checked="true"<?php } ?> /> <b>WARNING:</b> Removes metadata! Requires GD or ImageMagick and should be used sparingly.</span>
+				<p class="description">PNG is generally much better than JPG for logos and other images with a limited range of colors. Checking this option will slow down JPG processing significantly, and you may want to enable it only temporarily.</p></td></tr>
+				<tr><th><label for="ewww_image_optimizer_png_to_jpg">enable <b>PNG</b> to <b>JPG</b> conversion</label></th><td><span><input type="checkbox" id="ewww_image_optimizer_png_to_jpg" name="ewww_image_optimizer_png_to_jpg" <?php if (get_site_option('ewww_image_optimizer_png_to_jpg') == TRUE) { ?>checked="true"<?php } ?> /> <b>WARNING:</b> This is not a lossless conversion and requires GD or ImageMagick.</span>
+				<p class="description">JPG is generally much better than PNG for photographic use because it compresses the image and discards data. PNGs with transparency are not converted by default.</p>
+				<span><label for="ewww_image_optimizer_jpg_background">JPG background color:</label> #<input type="text" id="ewww_image_optimizer_jpg_background" name="ewww_image_optimizer_jpg_background" class="small-text" value="<?php echo ewww_image_optimizer_jpg_background(); ?>" /> <span style="padding-left: 12px; font-size: 12px; border: solid 1px #555555; background-color: #<? echo ewww_image_optimizer_jpg_background(); ?>">&nbsp;</span> HEX format (#123def).</span>
+				<p class="description">This is used only if the PNG has transparency. Leave this value blank to skip PNGs with transparency.</p>
+				<span><label for="ewww_image_optimizer_jpg_quality">JPG quality level:</label> <input type="text" id="ewww_image_optimizer_jpg_quality" name="ewww_image_optimizer_jpg_quality" class="small-text" value="<?php echo ewww_image_optimizer_jpg_quality(); ?>" /> Valid values are 1-100.</span>
+				<p class="description">If left blank, the plugin will attempt to set the optimal quality level or default to 92. Remember, this is a lossy conversion, so you are losing pixels, and it is not recommended to actually set the level here unless you want noticable loss of image quality.</p></td></tr>
+				<tr><th><label for="ewww_image_optimizer_gif_to_png">enable <b>GIF</b> to <b>PNG</b> conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_gif_to_png" name="ewww_image_optimizer_gif_to_png" <?php if (get_site_option('ewww_image_optimizer_gif_to_png') == TRUE) { ?>checked="true"<?php } ?> />
+				<p class="description"> PNG is generally much better than GIF, but animated images cannot be converted.</p></td></tr>
 			</table>
 			<p class="submit"><input type="submit" class="button-primary" value="Save Changes" /></p>
 		</form>
