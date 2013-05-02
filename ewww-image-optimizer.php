@@ -55,9 +55,9 @@ add_action('admin_enqueue_scripts', 'ewww_image_optimizer_media_scripts');
 register_deactivation_hook(__FILE__, 'ewww_image_optimizer_network_deactivate');
 
 /**
- * Check if this is an unsupported OS (not Linux or Mac OSX or FreeBSD or Windows)
+ * Check if this is an unsupported OS (not Linux or Mac OSX or FreeBSD or Windows or SunOS)
  */
-if('Linux' != PHP_OS && 'Darwin' != PHP_OS && 'FreeBSD' != PHP_OS && 'WINNT' != PHP_OS) {
+if('Linux' != PHP_OS && 'Darwin' != PHP_OS && 'FreeBSD' != PHP_OS && 'WINNT' != PHP_OS && 'SunOS' != PHP_OS) {
 	// call the function to display a notice
 	add_action('network_admin_notices', 'ewww_image_optimizer_notice_os');
 	add_action('admin_notices', 'ewww_image_optimizer_notice_os');
