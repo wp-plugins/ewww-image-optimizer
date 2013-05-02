@@ -2373,7 +2373,7 @@ function ewww_image_optimizer_options () {
 <?php		}
 		if ($_REQUEST['pngout'] == 'failed') { ?>
 			<div id='ewww-image-optimizer-pngout-failure' class='error'>
-				<p>pngout was not installed, <?php echo $_REQUEST['error']; ?></p>
+				<p>pngout was not installed, <?php echo $_REQUEST['error']; ?>. Make sure the wp-content/ewww folder is writable.</p>
 			</div>
 <?php		}
 	} ?>
