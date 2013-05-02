@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate image optimizers into WordPress.
- * @version 1.4.2
+ * @version 1.4.3
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -9,7 +9,7 @@ Plugin Name: EWWW Image Optimizer
 Plugin URI: http://www.shanebishop.net/ewww-image-optimizer/
 Description: Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
 Author: Shane Bishop
-Version: 1.4.2
+Version: 1.4.3
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
@@ -2267,22 +2267,19 @@ function ewww_image_optimizer_bulk_action_handler() {
 // buffered so as not to use so much memory
 // from http://stackoverflow.com/questions/3938534/download-file-to-server-from-url
 function ewww_image_optimizer_download_file ($url, $path) {
-	global $ewww_debug;
-	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_download_file()</b><br>";
-	//$newfname = $path;
 	if (!$file = fopen($url, 'rb')) {
-		$ewww_debug = "$ewww_debug cannot open $url<br>";
+		//$ewww_debug = "$ewww_debug cannot open $url<br>";
 		exit;
 	}
 	if ($file) {
 		if (!$newf = fopen ($path, 'wb')) {
-			$ewww_debug = "$ewww_debug cannot open $path<br>";
+		//	$ewww_debug = "$ewww_debug cannot open $path<br>";
 			exit;
 		}
 		if ($newf) {
 			while(!feof($file)) {
 				if (fwrite($newf, fread($file, 1024 * 8), 1024 * 8) === false) {
-					$ewww_debug = "$ewww_debug cannot write to $path<br>";
+		//			$ewww_debug = "$ewww_debug cannot write to $path<br>";
 					exit;
 				}
 			}
@@ -2304,11 +2301,7 @@ function ewww_image_optimizer_download_file ($url, $path) {
 // retrieves the pngout linux package with wget, unpacks it with tar, 
 // copies the appropriate version to the plugin folder, and sends the user back where they came from
 function ewww_image_optimizer_install_pngout() {
-	// TODO: ajaxify so we can nicely handle error messages here and in the download function
-	global $ewww_debug;
-	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_install_pngout()</b><br>";
-	// TODO: see if we can finetune our error messages a bit
-	if ( FALSE === current_user_can('install_plugins') ) {
+	if (FALSE === current_user_can('install_plugins')) {
 		wp_die(__('You don\'t have permission to install image optimizer utilities.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 	}
 	if (PHP_OS != 'WINNT' && ewww_image_optimizer_tool_found('tar', 't')) {
@@ -2316,7 +2309,7 @@ function ewww_image_optimizer_install_pngout() {
 	} elseif (PHP_OS != 'WINNT' && ewww_image_optimizer_tool_found('/usr/bin/tar', 't')) {
 		$tar = '/usr/bin/tar';
 	}
-	if (empty($tar) && PHP_OS != 'WINNT') $ewww_debug = "$ewww_debug no tar found...<br>";
+	if (empty($tar) && PHP_OS != 'WINNT') $pngout_error = "tar command not found";
 	if (PHP_OS == 'Linux') {
 		$os_string = 'linux';
 	}
@@ -2324,32 +2317,36 @@ function ewww_image_optimizer_install_pngout() {
 		$os_string = 'bsd';
 	}
 	$latest = '20130221';
-	if (PHP_OS == 'Linux' || PHP_OS == 'FreeBSD') {
-		if (!file_exists(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-' . $os_string . '-static.tar.gz')) {
-			$download_result = ewww_image_optimizer_download_file('http://static.jonof.id.au/dl/kenutils/pngout-' . $latest . '-' . $os_string . '-static.tar.gz', EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-' . $os_string . '-static.tar.gz');
+	if (empty($pngout_error)) {
+		if (PHP_OS == 'Linux' || PHP_OS == 'FreeBSD') {
+			if (!file_exists(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-' . $os_string . '-static.tar.gz')) {
+				$download_result = ewww_image_optimizer_download_file('http://static.jonof.id.au/dl/kenutils/pngout-' . $latest . '-' . $os_string . '-static.tar.gz', EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-' . $os_string . '-static.tar.gz');
+				if (!$download_result) $pngout_error = "file not downloaded";
+			}
+			$arch_type = php_uname('m');
+			exec("$tar xzf " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-' . $os_string . '-static.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-' . $latest . '-' . $os_string . '-static/' . $arch_type . '/pngout-static');
+			if (!rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-' . $os_string . '-static/' . $arch_type . '/pngout-static', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static'))
+				if (empty($pngout_error)) $pngout_error = "could not move pngout";
+			if (!chmod(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static', 0755))
+				if (empty($pngout_error)) $pngout_error = "could not set permissions";
+			$pngout_version = ewww_image_optimizer_tool_found(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static', 'p');
 		}
-		$arch_type = php_uname('m');//$_REQUEST['arch'];
-		/*if (PHP_OS == 'FreeBSD' && $arch_type == 'x86_64') {
-			$arch_type = 'amd64';
-		}*/
-		exec("$tar xzf " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-' . $os_string . '-static.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-' . $latest . '-' . $os_string . '-static/' . $arch_type . '/pngout-static');
-		rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-' . $os_string . '-static/' . $arch_type . '/pngout-static', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static');
-		chmod(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static', 0755);
-		//exec(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static 2>&1', $pngout_version);
-		$pngout_version = ewww_image_optimizer_tool_found(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static', 'p');
-	}
-	if (PHP_OS == 'Darwin') {
-	// from http://static.jonof.id.au/dl/kenutils/pngout-20120530-darwin.tar.gz
-		if (!file_exists(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-darwin.tar.gz')) {
-			ewww_image_optimizer_download_file('http://static.jonof.id.au/dl/kenutils/pngout-' . $latest . '-darwin.tar.gz', EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-darwin.tar.gz');
+		if (PHP_OS == 'Darwin') {
+			if (!file_exists(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-darwin.tar.gz')) {
+				$download_result = ewww_image_optimizer_download_file('http://static.jonof.id.au/dl/kenutils/pngout-' . $latest . '-darwin.tar.gz', EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-darwin.tar.gz');
+				if (!$download_result) $pngout_error = "file not downloaded";
+			}
+			exec("$tar xzf " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-darwin.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-' . $latest . '-darwin/pngout');
+			if (!rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-darwin/pngout', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static'))
+				if (empty($pngout_error)) $pngout_error = "could not move pngout";
+			if (!chmod(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static', 0755))
+				if (empty($pngout_error)) $pngout_error = "could not set permissions";
+			$pngout_version = ewww_image_optimizer_tool_found(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static', 'p');
 		}
-		exec("$tar xzf " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-darwin.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-' . $latest . '-darwin/pngout');
-		rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-darwin/pngout', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static');
-		chmod(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static', 0755);
-		$pngout_version = ewww_image_optimizer_tool_found(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static', 'p');
 	}
 	if (PHP_OS == 'WINNT') {
-		ewww_image_optimizer_download_file('http://advsys.net/ken/util/pngout.exe', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout.exe');
+		$download_result = ewww_image_optimizer_download_file('http://advsys.net/ken/util/pngout.exe', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout.exe');
+			if (!$download_result) $pngout_error = "file not downloaded";
 		$pngout_version = ewww_image_optimizer_tool_found(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout.exe', 'p');
 	}
 	if (!empty($pngout_version)) {
@@ -2358,7 +2355,7 @@ function ewww_image_optimizer_install_pngout() {
 	}
 	if (!isset($sendback)) {
 		$sendback = wp_get_referer();
-		$sendback = preg_replace('/\&pngout\=\w+/', '', $sendback) . "&pngout=failed";
+		$sendback = preg_replace('/\&pngout\=\w+/', '', $sendback) . '&pngout=failed&error=' . urlencode($pngout_error);
 	}
 	wp_redirect($sendback);
 	exit(0);
@@ -2376,7 +2373,7 @@ function ewww_image_optimizer_options () {
 <?php		}
 		if ($_REQUEST['pngout'] == 'failed') { ?>
 			<div id='ewww-image-optimizer-pngout-failure' class='error'>
-				<p>pngout was not installed, check permissions on the wp-content/ewww folder.</p>
+				<p>pngout was not installed, <?php echo $_REQUEST['error']; ?></p>
 			</div>
 <?php		}
 	} ?>
@@ -2518,7 +2515,7 @@ function ewww_image_optimizer_options () {
 			<p>The plugin performs a check to make sure your system has the programs we use for optimization: jpegtran, optipng, pngout, and gifsicle. In some rare cases, these checks may erroneously report that you are missing the required utilities even though you have them installed.</p>
 			<table class="form-table">
 				<tr><th><label for="ewww_image_optimizer_skip_bundle">Use system paths</label></th><td><input type="checkbox" id="ewww_image_optimizer_skip_bundle" name="ewww_image_optimizer_skip_bundle" value="true" <?php if (get_site_option('ewww_image_optimizer_skip_bundle') == TRUE) { ?>checked="true"<?php } ?> /> If you have already installed the utilities in a system location, such as /usr/local/bin or /usr/bin, use this to force the plugin to use those versions and skip the auto-installers.</td></tr>
-				<tr><th><label for="ewww_image_optimizer_debug">Debugging</label></th><td><input type="checkbox" id="ewww_image_optimizer_debug" name="ewww_image_optimizer_debug" value="true" <?php if (get_site_option('ewww_image_optimizer_debug') == TRUE) { ?>checked="true"<?php } ?> /> Only check this if instructed by plugin author, or if you feel comfortable digging around in the code to fix a problem you are experiencing.</td></tr>
+				<tr><th><label for="ewww_image_optimizer_debug">Debugging</label></th><td><input type="checkbox" id="ewww_image_optimizer_debug" name="ewww_image_optimizer_debug" value="true" <?php if (get_site_option('ewww_image_optimizer_debug') == TRUE) { ?>checked="true"<?php } ?> /> Use this to provide information for support purposes, or if you feel comfortable digging around in the code to fix a problem you are experiencing.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_skip_check">Skip utils check</label></th><td><input type="checkbox" id="ewww_image_optimizer_skip_check" name="ewww_image_optimizer_skip_check" value="true" <?php if (get_site_option('ewww_image_optimizer_skip_check') == TRUE) { ?>checked="true"<?php } ?> /> <b>DEPRECATED</b> - please uncheck this and report any errors in the support forum.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_disable_jpegtran">disable jpegtran</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_jpegtran" name="ewww_image_optimizer_disable_jpegtran" <?php if (get_site_option('ewww_image_optimizer_disable_jpegtran') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
 				<tr><th><label for="ewww_image_optimizer_disable_optipng">disable optipng</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_optipng" name="ewww_image_optimizer_disable_optipng" <?php if (get_site_option('ewww_image_optimizer_disable_optipng') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>

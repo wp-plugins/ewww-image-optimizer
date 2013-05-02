@@ -134,11 +134,12 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * BuddyPress integration
 
 = 1.4.3 =
-* global configuration for multi-site
+* global configuration for multi-site/network installs
 * prevent loading of bundled jquery on WP versions that don't need it to avoid conflicts with other plugins not doing the 'right thing'
-* removed enqueueing of common.js to make thins run quicker
+* removed enqueueing of common.js to make things run quicker
 * fixed hardcoded link for optimizing nextgen thumbs after upload
 * added links in media library for one time conversion of images
+* better error reporting for pngout auto-install
 
 = 1.4.2 =
 * fixed fatal errors when posix_getpwuid() is missing from server
