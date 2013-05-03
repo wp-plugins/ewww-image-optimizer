@@ -1,7 +1,5 @@
 <?php 
 class ewwwngg {
-	// pretty sure we don't need this anymore
-	//static $plugins_ok = true; 
 	/* initializes the nextgen integration functions */
 	function ewwwngg() {
 		add_filter('ngg_manage_images_columns', array(&$this, 'ewww_manage_images_columns'));
@@ -439,4 +437,3 @@ function ewwwngg() {
 	global $ewwwngg;
 	$ewwwngg = new ewwwngg();
 }
-

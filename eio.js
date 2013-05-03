@@ -2,18 +2,6 @@
 The JavaScript Source!! http://www.javascriptsource.com
 Created by: Abraham Joffe :: http://www.abrahamjoffe.com.au/ */
 
-/*var startTime=new Date();
-
-function currentTime(){
-  var a=Math.floor((new Date()-startTime)/100)/10;
-  if (a%1==0) a+=".0";
-  document.getElementById("endTime").innerHTML=a;
-}
-
-window.onload=function(){
-  clearTimeout(loopTime);
-}*/
-//window.onload=function(jQuery) {
 jQuery(document).ready(function($) {
 		var attachpost = ewww_vars.attachments.replace(/&quot;/g, '"');
 		var attachments = $.parseJSON(attachpost);
@@ -23,12 +11,6 @@ jQuery(document).ready(function($) {
 			var loop_action = 'bulk_flag_loop';
 			var cleanup_action = 'bulk_flag_cleanup';
 		} else if (ewww_vars.gallery == 'nextgen') {
-	/*		var bulk_data = {
-                        	action: 'bulk_ngg_preview',
-                                wrapped: true
-                        };
-                        $.post(ajaxurl, bulk_data, function(response) {
-                        });*/
 			var init_action = 'bulk_ngg_init';
 			var filename_action = 'bulk_ngg_filename';
 			var loop_action = 'bulk_ngg_loop';
@@ -49,8 +31,6 @@ jQuery(document).ready(function($) {
 			_wpnonce: ewww_vars._wpnonce,
 	        };
 		var i = 0;
-		  //              $('#bulk-status').append(ewww_vars.attachments + '<br>');
-		//                $('#bulk-status').append(attachments + '<br>');
 	        $.post(ajaxurl, init_data, function(response) {
 	                $('#bulk-loading').html(response);
 			$('#bulk-progressbar').progressbar({ max: attachments.length });
@@ -77,7 +57,6 @@ jQuery(document).ready(function($) {
 				$('#bulk-progressbar').progressbar("option", "value", i );
 				$('#bulk-counter').html('Optimized ' + i + '/' + attachments.length);
 		                $('#bulk-status').append(response);
-		    //            $('#bulk-status').append(attachment_id + '<br>');
 				if (i < attachments.length) {
 					processImage();
 				}

@@ -36,7 +36,7 @@ class ewwwflag {
 		echo '<option value="bulk_optimize_galleries">Bulk Optimize</option>';
 	}
 
-	// Handles the bulk html output, if $bulk == 1, the output will skip the 'wrap' div
+	// Handles the bulk html output
 	function ewww_flag_bulk () {
 		// if there is POST data, make sure bulkaction and doaction are the values we want
 		if (!empty($_POST)) {

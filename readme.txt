@@ -132,6 +132,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 = future =
 * these are possible future bugfixes and/or feature requests, if you see a feature you like here, go vote for it in the support forum
 * BuddyPress integration
+* SunOS (Solaris/OpenIndiana) support
 
 = 1.4.3 =
 * global configuration for multi-site/network installs
@@ -140,6 +141,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * fixed hardcoded link for optimizing nextgen thumbs after upload
 * added links in media library for one time conversion of images
 * better error reporting for pngout auto-install
+* no longer alert users of jpegtran update if they are using version 8
 
 = 1.4.2 =
 * fixed fatal errors when posix_getpwuid() is missing from server
@@ -161,7 +163,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * added: Windows support, includes gifsicle, optipng, and jpegtran executables
 * added: FreeBSD support, includes gifsicle, optipng, and jpegtran executables
 * rewrote calls to jpegtran to avoid shell-redirection and work in Windows
-* jpegtran is now bundled for all platformsi
+* jpegtran is now bundled for all platforms
 * updated gifsicle to 1.70
 * pngout installer and version updated to February 20-21 2013
 * removed use of shell_exec()

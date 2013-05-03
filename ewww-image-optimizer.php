@@ -756,6 +756,7 @@ function ewww_image_optimizer_admin_init() {
 			add_site_option('ewww_image_optimizer_pngout_level', 2);
 			update_site_option('ewww_image_optimizer_network_version', '1');
 		}
+		// set network settings if they have been POSTed
 		if (!empty($_POST['ewww_image_optimizer_optipng_level'])) {
 			//print_r($_POST);
 			if (empty($_POST['ewww_image_optimizer_skip_check'])) $_POST['ewww_image_optimizer_skip_check'] = '';
@@ -822,6 +823,7 @@ function ewww_image_optimizer_admin_init() {
 	add_option('ewww_image_optimizer_pngout_level', 2);
 }
 
+// removes the network settings when the plugin is deactivated
 function ewww_image_optimizer_network_deactivate($network_wide) {
 	if ($network_wide) {
 		delete_site_option('ewww_image_optimizer_skip_check');
@@ -844,6 +846,7 @@ function ewww_image_optimizer_network_deactivate($network_wide) {
 	}
 }
 
+// adds a global settings page to the network admin settings menu
 function ewww_image_optimizer_network_admin_menu() {
 	if (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('ewww-image-optimizer/ewww-image-optimizer.php')) {
 		// add options page to the settings menu
@@ -884,10 +887,7 @@ function ewww_image_optimizer_media_scripts($hook) {
 		global $wp_version;
 		$my_version = $wp_version;
 		$my_version = substr($my_version, 0, 3);
-		//echo "$my_version<br>";
 		if ($my_version < 3.6) {
-		//echo "$my_version<br>";
-		//echo plugins_url('jquery-ui-1.10.1.custom.css', __FILE__);
 			wp_enqueue_style('jquery-ui-tooltip', plugins_url('jquery-ui-1.10.1.custom.css', __FILE__));
 		}
 	}
@@ -2268,18 +2268,15 @@ function ewww_image_optimizer_bulk_action_handler() {
 // from http://stackoverflow.com/questions/3938534/download-file-to-server-from-url
 function ewww_image_optimizer_download_file ($url, $path) {
 	if (!$file = fopen($url, 'rb')) {
-		//$ewww_debug = "$ewww_debug cannot open $url<br>";
 		exit;
 	}
 	if ($file) {
 		if (!$newf = fopen ($path, 'wb')) {
-		//	$ewww_debug = "$ewww_debug cannot open $path<br>";
 			exit;
 		}
 		if ($newf) {
 			while(!feof($file)) {
 				if (fwrite($newf, fread($file, 1024 * 8), 1024 * 8) === false) {
-		//			$ewww_debug = "$ewww_debug cannot write to $path<br>";
 					exit;
 				}
 			}
@@ -2403,7 +2400,7 @@ function ewww_image_optimizer_options () {
 				echo "\n";
 				echo '<b>jpegtran: </b>';
 				$jpegtran_installed = ewww_image_optimizer_tool_found(EWWW_IMAGE_OPTIMIZER_JPEGTRAN, 'j');
-				if (!empty($jpegtran_installed) && preg_match('/version 9/', $jpegtran_installed)) {
+				if (!empty($jpegtran_installed) && preg_match('/version 8|9/', $jpegtran_installed)) {
 					echo '<span style="color: green; font-weight: bolder">OK</span>&emsp;version: ' . $jpegtran_installed . '<br />'; 
 				} elseif (!empty($jpegtran_installed)) {
 					echo '<span style="color: orange; font-weight: bolder">UPDATE AVAILABLE</span>*&emsp;<b>Copy</b> executable from ' . $jpegtran_src . ' to ' . $jpegtran_dst . ' or to a system path (like /usr/local/bin), OR <a href="http://www.ijg.org/"><b>Download</b> jpegtran source</a>&emsp;<b>version:</b> ' . $jpegtran_installed . '<br />';

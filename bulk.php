@@ -3,7 +3,7 @@
 function ewww_image_optimizer_bulk_preview() {
 	// retrieve the attachment IDs that were pre-loaded in the database
 	$attachments = get_option('ewww_image_optimizer_bulk_attachments');
-// make sure there are some attachments to optimize
+	// make sure there are some attachments to optimize
 	if (count($attachments) < 1) {
 		echo '<p>You don’t appear to have uploaded any images yet.</p>';
 		return;
@@ -40,8 +40,7 @@ function ewww_image_optimizer_bulk_preview() {
 				<input type="hidden" name="reset" value="1">
 				<button id="bulk-reset" type="submit" class="button-secondary action">Reset Status</button>
 			</form>
-<?php
-		endif;
+<?php		endif;
 	echo '</div></div>';
 }
 
@@ -101,6 +100,7 @@ function ewww_image_optimizer_bulk_script($hook) {
 	// store the attachment IDs we retrieved in the 'bulk_attachments' option so we can keep track of our progress in the database
 	update_option('ewww_image_optimizer_bulk_attachments', $attachments);
         // load the bulk optimization javascript and dependencies
+	// only re-register jquery on old versions of wordpress
 	if ($my_version < 3) {
 		wp_deregister_script('jquery');
 		wp_register_script('jquery', plugins_url('/jquery-1.9.1.min.js', __FILE__), false, '1.9.1');
