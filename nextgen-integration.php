@@ -264,7 +264,7 @@ class ewwwngg {
 		// make sure we are on a legitimate page and that we have the proper POST variables if necessary
 		if ($hook != $i18ngg . '_page_ewww-ngg-bulk' && $hook != $i18ngg . '_page_nggallery-manage-gallery')
 				return;
-		if ($hook == $i18ngg . '_page_nggallery-manage-gallery' && empty($_REQUEST['bulkaction']))
+		if ($hook == $i18ngg . '_page_nggallery-manage-gallery' && (empty($_REQUEST['bulkaction']) || $_REQUEST['bulkaction'] != 'bulk_optimize'))
 				return;
 		if ($hook == $i18ngg . '_page_nggallery-manage-gallery' && (empty($_REQUEST['doaction']) || !is_array($_REQUEST['doaction'])))
 				return;

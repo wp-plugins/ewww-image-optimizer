@@ -134,6 +134,10 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * BuddyPress integration
 * SunOS (Solaris/OpenIndiana) support
 
+= 1.4.4 =
+* fixed bulk optimization functions for non-English users in NextGEN
+* fixed bulk action conflict in NextGEN
+
 = 1.4.3 =
 * global configuration for multi-site/network installs
 * prevent loading of bundled jquery on WP versions that don't need it to avoid conflicts with other plugins not doing the 'right thing'
