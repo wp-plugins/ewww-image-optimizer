@@ -7,7 +7,9 @@ class ewwwngg {
 		add_action('ngg_added_new_image', array(&$this, 'ewww_added_new_image'));
 		add_action('admin_action_ewww_ngg_manual', array(&$this, 'ewww_ngg_manual'));
 		add_action('admin_menu', array(&$this, 'ewww_ngg_bulk_menu'));
-		add_action('admin_head-gallery_page_nggallery-manage-gallery', array(&$this, 'ewww_ngg_bulk_actions_script'));
+		$i18n = strtolower  ( _n( 'Gallery', 'Galleries', 1, 'nggallery' ) );
+		add_action('admin_head-' . $i18n . '_page_nggallery-manage-gallery', array(&$this, 'ewww_ngg_bulk_actions_script'));
+#		add_action('admin_head-gallery_page_nggallery-manage-gallery', array(&$this, 'ewww_ngg_bulk_actions_script'));
 		add_action('admin_enqueue_scripts', array(&$this, 'ewww_ngg_bulk_script'));
 		add_action('wp_ajax_bulk_ngg_preview', array(&$this, 'ewww_ngg_bulk_preview'));
 		add_action('wp_ajax_bulk_ngg_init', array(&$this, 'ewww_ngg_bulk_init'));
