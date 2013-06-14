@@ -7,7 +7,8 @@ class ewwwngg {
 		add_action('ngg_added_new_image', array(&$this, 'ewww_added_new_image'));
 		add_action('admin_action_ewww_ngg_manual', array(&$this, 'ewww_ngg_manual'));
 		add_action('admin_menu', array(&$this, 'ewww_ngg_bulk_menu'));
-		add_action('admin_head-gallery_page_nggallery-manage-gallery', array(&$this, 'ewww_ngg_bulk_actions_script'));
+		$i18ngg = strtolower  ( _n( 'Gallery', 'Galleries', 1, 'nggallery' ) );
+		add_action('admin_head-' . $i18ngg . '_page_nggallery-manage-gallery', array(&$this, 'ewww_ngg_bulk_actions_script'));
 		add_action('admin_enqueue_scripts', array(&$this, 'ewww_ngg_bulk_script'));
 		add_action('wp_ajax_bulk_ngg_preview', array(&$this, 'ewww_ngg_bulk_preview'));
 		add_action('wp_ajax_bulk_ngg_init', array(&$this, 'ewww_ngg_bulk_init'));
@@ -259,12 +260,13 @@ class ewwwngg {
 
 	/* prepares the javascript for a bulk operation */
 	function ewww_ngg_bulk_script($hook) {
+		$i18ngg = strtolower  ( _n( 'Gallery', 'Galleries', 1, 'nggallery' ) );
 		// make sure we are on a legitimate page and that we have the proper POST variables if necessary
-		if ($hook != 'gallery_page_ewww-ngg-bulk' && $hook != 'gallery_page_nggallery-manage-gallery')
+		if ($hook != $i18ngg . '_page_ewww-ngg-bulk' && $hook != $i18ngg . '_page_nggallery-manage-gallery')
 				return;
-		if ($hook == 'gallery_page_nggallery-manage-gallery' && empty($_REQUEST['bulkaction']))
+		if ($hook == $i18ngg . '_page_nggallery-manage-gallery' && (empty($_REQUEST['bulkaction']) || $_REQUEST['bulkaction'] != 'bulk_optimize'))
 				return;
-		if ($hook == 'gallery_page_nggallery-manage-gallery' && (empty($_REQUEST['doaction']) || !is_array($_REQUEST['doaction'])))
+		if ($hook == $i18ngg . '_page_nggallery-manage-gallery' && (empty($_REQUEST['doaction']) || !is_array($_REQUEST['doaction'])))
 				return;
 		$images = null;
 		// see if the user wants to reset the previous bulk status
@@ -305,7 +307,7 @@ class ewwwngg {
 			// get the list of attachment IDs from the db
 			$images = get_option('ewww_image_optimizer_bulk_ngg_attachments');
 		// otherwise, if we are on the standard bulk page, get all the images in the db
-		} elseif ($hook == 'gallery_page_ewww-ngg-bulk') {
+		} elseif ($hook == $i18ngg . '_page_ewww-ngg-bulk') {
 			global $wpdb;
 			$images = $wpdb->get_col("SELECT pid FROM $wpdb->nggpictures ORDER BY sortorder ASC");
 		}

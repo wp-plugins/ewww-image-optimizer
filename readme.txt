@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: images, image, attachments, attachment, optimize
 Requires at least: 2.8
 Tested up to: 3.5.1
-Stable tag: 1.4.3
+Stable tag: 1.4.4
 License: GPLv3
 
 Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
@@ -133,6 +133,10 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * these are possible future bugfixes and/or feature requests, if you see a feature you like here, go vote for it in the support forum
 * BuddyPress integration
 * SunOS (Solaris/OpenIndiana) support
+
+= 1.4.4 =
+* fixed bulk optimization functions for non-English users in NextGEN
+* fixed bulk action conflict in NextGEN
 
 = 1.4.3 =
 * global configuration for multi-site/network installs
@@ -324,6 +328,10 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * First release (forked from CW Image Optimizer)
 
 == Upgrade Notice ==
+
+= 1.4.4 =
+
+bugfix release for nextgen users only, everyone else can ignore this release
 
 = 1.4.0 =
 sorry about the accidental release of 1.3.9, use this one instead
