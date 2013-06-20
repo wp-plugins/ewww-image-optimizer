@@ -16,6 +16,8 @@ License: GPLv3
 // TODO: check redirect code from upload.php line 135 for improvements
 // TODO: internationalize plugin - if we get enough interest
 // TODO: use get_attached_file($id) for $file_path and derivatives
+// TODO: use whatever wordpress does for filetype (possibly)
+// TODO: find out how wordpress gets paths for meta sizes
 /**
  * Constants
  */
@@ -1023,12 +1025,12 @@ function ewww_image_optimizer_restore() {
 	// retrieve the existing attachment metadata
 	$meta = wp_get_attachment_metadata($attachment_ID);
 	// get the filepath from the metadata
-	$file_path = $meta['file'];
-	// store absolute paths for older wordpress versions
-	$store_absolute_path = true;
+	$file_path = get_attached_file($attachment_ID);
+	//$file_path = $meta['file'];
+	// store absolute paths for older wordpress versions (not anymore...)
+//	$store_absolute_path = true;
 	// if the path given is not the absolute path
-	if (FALSE === file_exists($file_path)) {
-	//if (FALSE === strpos($file_path, WP_CONTENT_DIR)) {
+//	if (FALSE === file_exists($file_path)) {
 		// don't store absolute paths
 		$store_absolute_path = false;
 		// retrieve the location of the wordpress upload folder
@@ -1036,8 +1038,8 @@ function ewww_image_optimizer_restore() {
 		// retrieve the path of the upload folder
 		$upload_path = trailingslashit( $upload_dir['basedir'] );
 		// generate the absolute path
-		$file_path =  $upload_path . $file_path;
-	}
+//		$file_path =  $upload_path . $file_path;
+//	}
 	if (!empty($meta['converted'])) {
 		if (file_exists($meta['orig_file'])) {
 			// update the filename in the metadata
@@ -1048,9 +1050,9 @@ function ewww_image_optimizer_restore() {
 			$meta['converted'] = 0;
 			unlink($meta['orig_file']);
 			// strip absolute path for Wordpress >= 2.6.2
-			if ( FALSE === $store_absolute_path ) {
+//			if ( FALSE === $store_absolute_path ) {
 				$meta['file'] = str_replace($upload_path, '', $meta['file']);
-			}
+//			}
 			// if we don't already have the update attachment filter
 			if (FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment'))
 				// add the update attachment filter
@@ -2115,20 +2117,24 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 				}
 				wp_update_attachment_metadata($id, $meta);
 			}
-			echo 'Metadata is missing file path.';
+//			echo 'Metadata is missing file path.';
 			//print __('Unsupported file type', EWWW_IMAGE_OPTIMIZER_DOMAIN) . $msg;
-			return;
+//			return;
 		}
-		// retrieve the filepath from the metadata
-		$file_path = $meta['file'];
+		// retrieve the filepath
+		$file_path = get_attached_file($id);
+		//$file_path = $meta['file'];
 		// retrieve the wordpress upload folder
 		$upload_dir = wp_upload_dir();
 		// retrieve the wordpress upload folder path
 		$upload_path = trailingslashit( $upload_dir['basedir'] );
 		// if the path given is not the absolute path
 		if (FALSE === file_exists($file_path)) {
+			echo 'Could not retrieve file path.';
+			//print __('Unsupported file type', EWWW_IMAGE_OPTIMIZER_DOMAIN) . $msg;
+			return;
 			// find the absolute path
-			$file_path = $upload_path . $file_path;
+//			$file_path = $upload_path . $file_path;
 		}
 		$msg = '';
 		$type = ewww_image_optimizer_mimetype($file_path, 'i');
