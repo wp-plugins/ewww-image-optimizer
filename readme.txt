@@ -134,6 +134,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * BuddyPress integration
 * SunOS (Solaris/OpenIndiana) support
 
+= 1.4.5 =
+* fixed detection of disabled exec() function when exec is the first function in the list
+
 = 1.4.4 =
 * fixed bulk optimization functions for non-English users in NextGEN
 * fixed bulk action conflict in NextGEN

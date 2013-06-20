@@ -13,7 +13,9 @@ Version: 1.4.4
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
+// TODO: check redirect code from upload.php line 135 for improvements
 // TODO: internationalize plugin - if we get enough interest
+// TODO: use get_attached_file($id) for $file_path and derivatives
 /**
  * Constants
  */
@@ -737,7 +739,7 @@ function ewww_image_optimizer_notice_utils() {
 
 	// Check if exec is disabled
 	$disabled = ini_get('disable_functions');
-	if(preg_match('/[^_]exec/', $disabled)){
+	if(preg_match('/^[^_]*exec/', $disabled)){
 		//display a warning if exec() is disabled, can't run much of anything without it
 		echo "<div id='ewww-image-optimizer-warning-opt-png' class='error'><p><strong>EWWW Image Optimizer requires exec().</strong> Your system administrator has disabled this function.</p></div>";
 	}
