@@ -2470,7 +2470,7 @@ function ewww_image_optimizer_options () {
 			}
 			$disabled = ini_get('disable_functions');
 			$ewww_debug = "$ewww_debug disabled functions: $disabled<br />";
-			if (preg_match('/[^_]exec/', $disabled)) {
+			if (preg_match('/^[^_]*exec/', $disabled)) {
 				echo 'exec(): <span style="color: red; font-weight: bolder">DISABLED</span>&emsp;&emsp;';
 			} else {
 				echo 'exec(): <span style="color: green; font-weight: bolder">OK</span>&emsp;&emsp;';
