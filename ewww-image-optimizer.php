@@ -13,11 +13,10 @@ Version: 1.4.4
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
-// TODO: check redirect code from upload.php line 135 for improvements
+// DONE: check redirect code from upload.php line 135 for improvements
 // TODO: internationalize plugin - if we get enough interest
-// TODO: use get_attached_file($id) for $file_path and derivatives
-// TODO: use whatever wordpress does for filetype (possibly)
-// TODO: find out how wordpress gets paths for meta sizes
+// DONE: use get_attached_file($id) for $file_path and derivatives
+// TODO: see if we can use the WP download_url() function
 /**
  * Constants
  */
@@ -1021,11 +1020,11 @@ function ewww_image_optimizer_restore() {
 		wp_die(__('No attachment ID was provided.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 	}
 	// store the attachment ID value
-	$attachment_ID = intval($_GET['attachment_ID']);
+	$id = intval($_GET['attachment_ID']);
 	// retrieve the existing attachment metadata
-	$meta = wp_get_attachment_metadata($attachment_ID);
+	$meta = wp_get_attachment_metadata($id);
 	// get the filepath from the metadata
-	$file_path = get_attached_file($attachment_ID);
+	$file_path = get_attached_file($id);
 	//$file_path = $meta['file'];
 	// store absolute paths for older wordpress versions (not anymore...)
 //	$store_absolute_path = true;
@@ -1097,7 +1096,7 @@ function ewww_image_optimizer_restore() {
 		}
 	}
 	// update the attachment metadata in the database
-	wp_update_attachment_metadata($attachment_ID, $meta );
+	wp_update_attachment_metadata($id, $meta );
 	// store the referring webpage location
 	$sendback = wp_get_referer();
 	// sanitize the referring webpage location
@@ -1135,19 +1134,20 @@ function ewww_image_optimizer_delete ($id) {
 	if (isset($meta['sizes']) ) {
 		// if the full-size didn't have an original image, so $file_path isn't set
 		if(empty($file_path)) {
-			// get the filepath from the metadata
-			$file_path = $meta['file'];
+			// get the filepath
+			$file_path = get_attached_file($id);
+//			$file_path = $meta['file'];
 			// retrieve the location of the wordpress upload folder
-			$upload_dir = wp_upload_dir();
+//			$upload_dir = wp_upload_dir();
 			// retrieve the path of the upload folder
-			$upload_path = trailingslashit( $upload_dir['basedir'] );
+//			$upload_path = trailingslashit( $upload_dir['basedir'] );
 			// if the path given is not the absolute path
-			if (FALSE === file_exists($file_path)) {
+//			if (FALSE === file_exists($file_path)) {
 				// don't store absolute paths
-				$store_absolute_path = false;
+//				$store_absolute_path = false;
 				// generate the absolute path
-				$file_path =  $upload_path . $file_path;
-			}
+//				$file_path =  $upload_path . $file_path;
+//			}
 		}
 		// one way or another, $file_path is now set, and we can get the base folder name
 		$base_dir = dirname($file_path) . '/';
@@ -1835,8 +1835,10 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 		// calculate how much space was saved
 		$savings = intval($s[0]) - intval($s[1]);
 		// convert it to human readable format
-		$savings_str = ewww_image_optimizer_format_bytes($savings, 1);
+		$savings_str = size_format($savings, 1);
+//		$savings_str = ewww_image_optimizer_format_bytes($savings, 1);
 		// replace spaces with proper html entity encoding
+		$savings_str = str_replace('B ', 'B', $savings_str);
 		$savings_str = str_replace(' ', '&nbsp;', $savings_str);
 		// determine the percentage savings
 		$percent = 100 - (100 * ($s[1] / $s[0]));
@@ -1873,35 +1875,38 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 	} else {
 		$gallery_type = 5;
 	}
-	// get the filepath from the metadata
-	$file_path = $meta['file'];
-	$ewww_debug = "$ewww_debug meta file path: $file_path<br>";
+	// get the filepath
+	$file_path = get_attached_file($ID);
+//	$file_path = $meta['file'];
+	$ewww_debug = "$ewww_debug retrieved file path: $file_path<br>";
 	// store absolute paths for older wordpress versions
-	$store_absolute_path = true;
+//	$store_absolute_path = true;
 	// retrieve the location of the wordpress upload folder
 	$upload_dir = wp_upload_dir();
 	// retrieve the path of the upload folder
 	$upload_path = trailingslashit($upload_dir['basedir']);
 	// if the path given is not the absolute path
-	if (FALSE == file_exists($file_path)) {
+//	if (FALSE == file_exists($file_path)) {
 		// don't store absolute paths
-		$store_absolute_path = false;
+//		$store_absolute_path = false;
 		// generate the absolute path
-		$file_path =  $upload_path . $file_path;
-		$ewww_debug = "$ewww_debug generated absolute path: $file_path<br>";
-	}
+//		$file_path =  $upload_path . $file_path;
+//		$ewww_debug = "$ewww_debug generated absolute path: $file_path<br>";
+//	}
 	// run the image optimizer on the file, and store the results
 	list($file, $msg, $conv, $original) = ewww_image_optimizer($file_path, $gallery_type, false, false);
-	// update the filename in the metadata
-	$meta['file'] = $file;
+	$meta['file'] = str_replace($upload_path, '', $file);
 	// update the optimization results in the metadata
 	$meta['ewww_image_optimizer'] = $msg;
-	// strip absolute path for Wordpress >= 2.6.2
-	if ( FALSE === $store_absolute_path ) {
-		$meta['file'] = str_replace($upload_path, '', $meta['file']);
-	}
+//	if ( FALSE === $store_absolute_path ) {
+//	}
 	// if the file was converted
 	if ($conv) {
+		// update the filename in the metadata
+		$new_file = substr($meta['file'], 0, -3);
+		// change extension
+		$new_ext = substr($file, -3);
+		$meta['file'] = $new_file . $new_ext;
 		$ewww_debug = "$ewww_debug image was converted<br>";
 		// if we don't already have the update attachment filter
 		if (FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment'))
@@ -2086,7 +2091,8 @@ function ewww_image_optimizer_columns($defaults) {
  * Return the filesize in a humanly readable format.
  * Taken from http://www.php.net/manual/en/function.filesize.php#91477
  */
-function ewww_image_optimizer_format_bytes($bytes, $precision = 2) {
+// TODO: remove this function, since we can use the size_format() function provided with WP
+/*function ewww_image_optimizer_format_bytes($bytes, $precision = 2) {
 	global $ewww_debug;
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_format_bytes()</b><br>";
 	$units = array('B', 'KB', 'MB', 'GB', 'TB');
@@ -2095,7 +2101,7 @@ function ewww_image_optimizer_format_bytes($bytes, $precision = 2) {
 	$pow = min($pow, count($units) - 1);
 	$bytes /= pow(1024, $pow);
 	return round($bytes, $precision) . ' ' . $units[$pow];
-}
+}*/
 
 /**
  * Print column data for optimizer results in the media library using
@@ -2108,6 +2114,7 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 	if ($column_name == 'ewww-image-optimizer') {
 		// retrieve the metadata
 		$meta = wp_get_attachment_metadata($id);
+		//print_r ($meta);
 		// if the filepath isn't set in the metadata
 		if(empty($meta['file'])){
 			if (isset($meta['file'])) {
@@ -2139,7 +2146,9 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 		$msg = '';
 		$type = ewww_image_optimizer_mimetype($file_path, 'i');
 		// get a human readable filesize
-		$file_size = ewww_image_optimizer_format_bytes(filesize($file_path));
+		$file_size = size_format(filesize($file_path), 2);
+		$file_size = str_replace('B ', 'B', $file_size);
+//		$file_size = ewww_image_optimizer_format_bytes(filesize($file_path));
 		// initialize $valid
 		$valid = true;
 		// run the appropriate code based on the mimetype
@@ -2267,7 +2276,8 @@ function ewww_image_optimizer_bulk_action_handler() {
 	// prep the attachment IDs for optimization
 	$ids = implode( ',', array_map( 'intval', $_REQUEST['media'] ) ); 
 	// Can't use wp_nonce_url() as it escapes HTML entities, call the optimizer with the $ids selected
-	wp_redirect( add_query_arg( '_wpnonce', wp_create_nonce( 'ewww-image-optimizer-bulk' ), admin_url( 'upload.php?page=ewww-image-optimizer-bulk&goback=1&ids=' . $ids ) ) ); 
+	wp_redirect(add_query_arg(array('page' => 'ewww-image-optimizer-bulk', '_wpnonce' => wp_create_nonce('ewww-image-optimizer-bulk'), 'goback' => 1, 'ids' => $ids), admin_url('upload.php'))); 
+	//wp_redirect( add_query_arg(array('page' => 'ewww-image-optimizer-bulk', '_wpnonce' => wp_create_nonce( 'ewww-image-optimizer-bulk', 'goback' => 1, 'ids' => $ids)), admin_url( 'upload.php?page=ewww-image-optimizer-bulk&goback=1&ids=' . $ids ) ) ); 
 	exit(); 
 }
 
@@ -2355,12 +2365,14 @@ function ewww_image_optimizer_install_pngout() {
 		$pngout_version = ewww_image_optimizer_tool_found(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout.exe', 'p');
 	}
 	if (!empty($pngout_version)) {
-		$sendback = wp_get_referer();
-		$sendback = preg_replace('/\&pngout\=\w+/', '', $sendback) . "&pngout=success";
+		//$sendback = remove_query_arg('pngout', wp_get_referer());
+		//$sendback = preg_replace('/\&pngout\=\w+/', '', $sendback) . "&pngout=success";
+		$sendback = add_query_arg('pngout', 'success', remove_query_arg(array('pngout', 'error'), wp_get_referer()));
 	}
 	if (!isset($sendback)) {
-		$sendback = wp_get_referer();
-		$sendback = preg_replace('/\&pngout\=\w+/', '', $sendback) . '&pngout=failed&error=' . urlencode($pngout_error);
+		//$sendback = wp_get_referer();
+		//$sendback = preg_replace('/\&pngout\=\w+/', '', $sendback) . '&pngout=failed&error=' . urlencode($pngout_error);
+		$sendback = add_query_arg(array('pngout' => 'failed', 'error' => urlencode($pngout_error)), remove_query_arg(array('pngout', 'error'), wp_get_referer()));
 	}
 	wp_redirect($sendback);
 	exit(0);
