@@ -28,10 +28,13 @@ EWWW Image Optimizer calls optimization utilities directly which is well suited 
 1. **Better PNG optimization.** YOu can use pngout and optipng in conjunction.
 1. **Root access not needed** Pre-compiled binaries are made available to install directly within the Wordpress folder. 
 
+= Theme Images =
+
+It is now possible to optimize all of the images within your current theme (you must have permissions to edit themes). If you are using a child theme, the images for the parent theme will also be optimized. If the theme is updated, you will need to re-optimize, so it is recommended that you contact the theme author if you find significant savings are possible.
+
 = NextGEN Integration =
 
-Features re-optimization capability, and bulk optimizing. The NextGEN Bulk Optimize function is located near the bottom of the NextGEN menu, and will optimize all images in all galleries.
-NOTE: Does not optimize thumbnails on initial upload, 1.4.1+ will provide the option to optimize thumbnails after uploading images.
+In NextGEN 2.0.x, images are not optimized on initial upload (yet). Newly uploaded images can be optimized via the Gallery Management pages. The plugin features re-optimization capability, and bulk optimizing. The NextGEN Bulk Optimize function is located near the bottom of the NextGEN menu, and will optimize all images in all galleries. It is also possible to optimize groups of images in a gallery, or multiple galleries at once. NOTE: Does not optimize thumbnails on initial upload, 1.4.1+ will provide the option to optimize thumbnails after uploading images.
 
 = GRAND Flash Album Gallery Integration =
 
@@ -133,8 +136,12 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * these are possible future bugfixes and/or feature requests, if you see a feature you like here, go vote for it in the support forum
 * BuddyPress integration
 * SunOS (Solaris/OpenIndiana) support
+* NextGEN 2+ support (in progress)
 
 = 1.4.5 =
+* added function to optimize all images in currently active theme
+* fixed errors with bulk functions in NextGEN 2.0.x
+* temporarily disabled auto-optimization for NextGEN 2.0.x since it is causing errors
 * fixed detection of disabled exec() function when exec is the first function in the list
 * use internal wordpress functions for retrieving image path, displaying filesize, and building redirect urls
 

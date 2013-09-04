@@ -1,10 +1,11 @@
 <?php 
 class ewwwngg {
+	// TODO: give link to relevant gallery after optimizing thumbs
 	/* initializes the nextgen integration functions */
 	function ewwwngg() {
 		add_filter('ngg_manage_images_columns', array(&$this, 'ewww_manage_images_columns'));
 		add_action('ngg_manage_image_custom_column', array(&$this, 'ewww_manage_image_custom_column'), 10, 2);
-		add_action('ngg_added_new_image', array(&$this, 'ewww_added_new_image'));
+		//add_action('ngg_added_new_image', array(&$this, 'ewww_added_new_image'));
 		add_action('admin_action_ewww_ngg_manual', array(&$this, 'ewww_ngg_manual'));
 		add_action('admin_menu', array(&$this, 'ewww_ngg_bulk_menu'));
 		$i18ngg = strtolower  ( _n( 'Gallery', 'Galleries', 1, 'nggallery' ) );
@@ -16,7 +17,7 @@ class ewwwngg {
 		add_action('wp_ajax_bulk_ngg_loop', array(&$this, 'ewww_ngg_bulk_loop'));
 		add_action('wp_ajax_bulk_ngg_cleanup', array(&$this, 'ewww_ngg_bulk_cleanup'));
 		add_action('wp_ajax_ewww_ngg_thumbs', array(&$this, 'ewww_ngg_thumbs_only'));
-		add_action('ngg_after_new_images_added', array(&$this, 'ewww_ngg_new_thumbs'), 10, 2);
+		//add_action('ngg_after_new_images_added', array(&$this, 'ewww_ngg_new_thumbs'), 10, 2);
 		register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_ngg_resume');
 		register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_ngg_attachments');
 	}
@@ -29,20 +30,27 @@ class ewwwngg {
 
 	/* ngg_added_new_image hook */
 	function ewww_added_new_image ($image) {
+	//	$metadata = $image->meta_data['full'];
 		// query the filesystem path of the gallery from the database
-		global $wpdb;
-		$q = $wpdb->prepare( "SELECT path FROM {$wpdb->prefix}ngg_gallery WHERE gid = %d LIMIT 1", $image['galleryID'] );
-		$gallery_path = $wpdb->get_var($q);
+		/*global $wpdb;
+		$q = $wpdb->prepare( "SELECT path FROM {$wpdb->prefix}ngg_gallery WHERE gid = %d LIMIT 1", $image->galleryID );
+		//$q = $wpdb->prepare( "SELECT path FROM {$wpdb->prefix}ngg_gallery WHERE gid = %d LIMIT 1", $image['galleryID'] );
+		$gallery_path = $wpdb->get_var($q);*/
+		//$storage  = $registry->get_utility('I_Gallery_Storage');
+		//$file_path = $nggAdmin->get_full_abspath($image);
+//		$image_object = var_dump($image);
+		$image_id = $image->meta_data['pid'];
+		file_put_contents ('/var/www/metadata.test', "\n$image_id", FILE_APPEND);
 		// if we have a path to work with
-		if ( $gallery_path ) {
+/*		if ( $gallery_path ) {
 			// TODO: optimize thumbs automatically 
 			// construct the absolute path of the current image
-			$file_path = trailingslashit($gallery_path) . $image['filename'];
+			$file_path = trailingslashit($gallery_path) . $image->filename;
 			// run the optimizer on the current image
 			$res = ewww_image_optimizer(ABSPATH . $file_path, 2, false, false);
 			// update the metadata for the optimized image
-			nggdb::update_image_meta($image['id'], array('ewww_image_optimizer' => $res[1]));
-		}
+			nggdb::update_image_meta($image->id, array('ewww_image_optimizer' => $res[1]));
+		}*/
 	}
 
 	/* output a small html form so that the user can optimize thumbs for the $images just added */
@@ -146,15 +154,15 @@ class ewwwngg {
 			// get the metadata for the image
 			$meta = new nggMeta( $id );
 			// get the optimization status for the image
-			$status = $meta->get_META( 'ewww_image_optimizer' );
+			$status = $meta->get_META('ewww_image_optimizer');
 			$msg = '';
 			// get the file path of the image
 			$file_path = $meta->image->imagePath;
 			// get the mimetype of the image
 			$type = ewww_image_optimizer_mimetype($file_path, 'i');
 			// retrieve the human-readable filesize of the image
-			$file_size = size_format(filesize($file_path), 2);
-			$file_size = str_replace('B ', 'B', $file_size);
+	                $file_size = size_format(filesize($file_path), 2);
+       		        $file_size = str_replace('B ', 'B', $file_size);
 			//$file_size = ewww_image_optimizer_format_bytes(filesize($file_path));
 			$valid = true;
 			// check to see if we have a tool to handle the mimetype detected
@@ -361,7 +369,7 @@ class ewwwngg {
                         wp_die( __( 'Cheatin&#8217; eh?' ) );
                 }
 		// need this file to work with metadata
-		require_once(WP_CONTENT_DIR . '/plugins/nextgen-gallery/lib/meta.php');
+		require_once(WP_CONTENT_DIR . '/plugins/nextgen-gallery/products/photocrati_nextgen/modules/ngglegacy/lib/meta.php');
 		$id = $_POST['attachment'];
 		// get the meta for the image
 		$meta = new nggMeta($id);
@@ -378,7 +386,7 @@ class ewwwngg {
                         wp_die( __( 'Cheatin&#8217; eh?' ) );
                 }
 		// need this file to work with metadata
-		require_once(WP_CONTENT_DIR . '/plugins/nextgen-gallery/lib/meta.php');
+		require_once(WP_CONTENT_DIR . '/plugins/nextgen-gallery/products/photocrati_nextgen/modules/ngglegacy/lib/meta.php');
 		// find out what time we started, in microseconds
 		$started = microtime(true);
 		$id = $_POST['attachment'];

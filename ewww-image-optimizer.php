@@ -77,8 +77,15 @@ if('Linux' != PHP_OS && 'Darwin' != PHP_OS && 'FreeBSD' != PHP_OS && 'WINNT' != 
 // need to include the plugin library for the is_plugin_active function (even though it isn't supposed to be necessary in the admin)
 require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 // include the file that loads the nextgen gallery optimization functions
-if (is_plugin_active('nextgen-gallery/nggallery.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('nextgen-gallery/nggallery.php')))
-require( dirname(__FILE__) . '/nextgen-integration.php' );
+if (is_plugin_active('nextgen-gallery/nggallery.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('nextgen-gallery/nggallery.php'))) {
+	$plugin_dir = str_replace('ewww-image-optimizer', '', dirname(__FILE__));
+	$nextgen_data = get_plugin_data($plugin_dir . 'nextgen-gallery/nggallery.php', false, false);
+	if (preg_match('/^2\./', $nextgen_data['Version'])) { // for Nextgen 2
+		require(dirname(__FILE__) . '/nextgen2-integration.php');
+	} else {
+		require(dirname(__FILE__) . '/nextgen-integration.php');
+	}
+}
 // include the file that loads the grand flagallery optimization functions
 if (is_plugin_active('flash-album-gallery/flag.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('flash-album-gallery/flag.php')))
 require( dirname(__FILE__) . '/flag-integration.php' );
@@ -820,6 +827,8 @@ function ewww_image_optimizer_admin_init() {
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_disable_convert_links');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_resume');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_attachments');
+	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_theme_resume');
+	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_theme_attachments');
 	// set a few defaults
 	add_option('ewww_image_optimizer_disable_pngout', TRUE);
 	add_option('ewww_image_optimizer_optipng_level', 2);
@@ -871,6 +880,8 @@ function ewww_image_optimizer_admin_menu() {
 	// adds bulk optimize to the media library menu
 	$ewww_bulk_page = add_media_page( 'Bulk Optimize', 'Bulk Optimize', 'edit_others_posts', 'ewww-image-optimizer-bulk', 'ewww_image_optimizer_bulk_preview');
 	add_action('admin_footer-' . $ewww_bulk_page, 'ewww_image_optimizer_debug');
+	$ewww_theme_optimize_page = add_theme_page( 'Optimize Theme Images', 'Optimize', 'edit_themes', 'ewww-image-optimizer-theme-images', 'ewww_image_optimizer_theme_images');
+	add_action('admin_footer-' . $ewww_theme_optimize_page, 'ewww_image_optimizer_debug');
 	if (!function_exists('is_plugin_active_for_network') || !is_plugin_active_for_network('ewww-image-optimizer/ewww-image-optimizer.php')) { 
 		// add options page to the settings menu
 		$ewww_options_page = add_options_page(
@@ -967,8 +978,8 @@ function ewww_image_optimizer_jpg_quality () {
 }
 
 // require the file that does the bulk processing
-require( dirname(__FILE__) . '/bulk.php' );
-
+require(dirname(__FILE__) . '/bulk.php');
+require(dirname(__FILE__) . '/theme-optimize.php');
 /**
  * Manually process an image from the Media Library
  */
@@ -1200,7 +1211,7 @@ function ewww_image_optimizer_update_saved_file ($meta, $ID) {
  * Returns an array of the $file, $results, $converted to tell us if an image changes formats, and the $original file if it did.
  *
  * @param   string $file		Full absolute path to the image file
- * @param   int $gallery_type		1=wordpress, 2=nextgen, 3=flagallery
+ * @param   int $gallery_type		1=wordpress, 2=nextgen, 3=flagallery, 4=theme_images, 5=image editor (I think)
  * @param   boolean $converted		tells us if this is a resize and the full image was converted to a new format
  * @returns array
  */
@@ -1867,7 +1878,7 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_resize_from_meta_data()</b><br>";
 	// don't do anything else if the attachment has no metadata
 	if (!isset($meta['file'])) {
-	$ewww_debug = "$ewww_debug file has no meta<br>";
+		$ewww_debug = "$ewww_debug file has no meta<br>";
 		return $meta;
 	}
 	if (FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_saved_file')) {
@@ -2446,7 +2457,7 @@ function ewww_image_optimizer_options () {
 				echo "\n";
 				echo '<b>gifsicle:</b> ';
 				$gifsicle_version = ewww_image_optimizer_tool_found(EWWW_IMAGE_OPTIMIZER_GIFSICLE, 'g');
-				if (!empty($gifsicle_version) && preg_match('/1.70/', $gifsicle_version)) { 
+				if (!empty($gifsicle_version) && preg_match('/1.7(0|1)/', $gifsicle_version)) { 
 					echo '<span style="color: green; font-weight: bolder">OK</span>&emsp;version: ' . $gifsicle_version . '<br />'; 
 				} elseif (!empty($gifsicle_version) && preg_match('/LCDF Gifsicle/', $gifsicle_version)) {
 						echo '<span style="color: orange; font-weight: bolder">UPDATE AVAILABLE</span>*&emsp;<b>Copy</b> binary from ' . $gifsicle_src . ' to ' . $gifsicle_dst . ' or to a system path (like /usr/local/bin), OR <a href="http://www.lcdf.org/gifsicle/gifsicle-1.70.tar.gz"><b>Download</b> gifsicle source</a>&emsp;<b>version:</b> ' . $gifsicle_version . '<br />';
