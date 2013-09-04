@@ -18,11 +18,11 @@ jQuery(document).ready(function($) {
 			if (!document.getElementById('bulk-loading')) {
                         	$('.wrap').prepend('<h2>Bulk Optimize</h2><div id="bulk-loading"></div><div id="bulk-progressbar"></div><div id="bulk-counter"></div><div id="bulk-status"></div><div id="bulk-forms"><p>We have ' + attachments.length + ' images to optimize.</p><form id="bulk-start" method="post" action=""><input type="submit" class="button-secondary action" value="Start optimizing" /></form></div>');
 			}
-		} else if (ewww_vars.gallery == 'theme_images') {
-			var init_action = 'bulk_theme_images_init';
-			var filename_action = 'bulk_theme_images_filename';
-			var loop_action = 'bulk_theme_images_loop';
-			var cleanup_action = 'bulk_theme_images_cleanup';
+		} else if (ewww_vars.gallery == 'aux') {
+			var init_action = 'bulk_aux_images_init';
+			var filename_action = 'bulk_aux_images_filename';
+			var loop_action = 'bulk_aux_images_loop';
+			var cleanup_action = 'bulk_aux_images_cleanup';
 		} else {
 			var init_action = 'bulk_init';
 			var filename_action = 'bulk_filename';

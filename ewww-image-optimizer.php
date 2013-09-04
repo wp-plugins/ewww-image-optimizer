@@ -56,6 +56,7 @@ add_action('admin_action_-1', 'ewww_image_optimizer_bulk_action_handler');
 add_action('admin_action_ewww_image_optimizer_install_pngout', 'ewww_image_optimizer_install_pngout');
 add_action('admin_enqueue_scripts', 'ewww_image_optimizer_media_scripts');
 register_deactivation_hook(__FILE__, 'ewww_image_optimizer_network_deactivate');
+register_activation_hook(__FILE__, 'ewww_image_optimizer_install_table');
 
 /**
  * Check if this is an unsupported OS (not Linux or Mac OSX or FreeBSD or Windows or SunOS)
@@ -75,7 +76,7 @@ if('Linux' != PHP_OS && 'Darwin' != PHP_OS && 'FreeBSD' != PHP_OS && 'WINNT' != 
 	add_action('admin_notices', 'ewww_image_optimizer_notice_utils');
 } 
 // need to include the plugin library for the is_plugin_active function (even though it isn't supposed to be necessary in the admin)
-require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+require_once(ABSPATH . 'wp-admin/includes/plugin.php');
 // include the file that loads the nextgen gallery optimization functions
 if (is_plugin_active('nextgen-gallery/nggallery.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('nextgen-gallery/nggallery.php'))) {
 	$plugin_dir = str_replace('ewww-image-optimizer', '', dirname(__FILE__));
@@ -96,6 +97,25 @@ function ewww_image_optimizer_notice_os() {
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_notice_os()</b><br>";
 	echo "<div id='ewww-image-optimizer-warning-os' class='error'><p><strong>EWWW Image Optimizer is supported on Linux, FreeBSD, Mac OSX, and Windows.</strong> Unfortunately, the EWWW Image Optimizer plugin doesn't work with " . htmlentities(PHP_OS) . ". Feel free to file a support request if you would like support for your operating system of choice.</p></div>";
 }   
+
+// adds table to db for storing status of auxiliary images that have been optimized
+function ewww_image_optimizer_install_table() {
+	global $wpdb;
+	$table_name = $wpdb->prefix . "ewwwio_images";
+      
+	// create a table with 4 columns: an id, the file path, the md5sum, and the optimization results
+	$sql = "CREATE TABLE $table_name (
+		id mediumint(9) NOT NULL AUTO_INCREMENT,
+		path text NOT NULL,
+		image_md5 VARCHAR(55) NOT NULL,
+		results VARCHAR(55) NOT NULL,
+		UNIQUE KEY id (id)
+	);";
+
+	// include the upgrade library to initialize a table
+	require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+	dbDelta($sql);
+}
 
 // lets the user know their network settings have been saved
 function ewww_image_optimizer_network_settings_saved() {
@@ -827,8 +847,9 @@ function ewww_image_optimizer_admin_init() {
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_disable_convert_links');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_resume');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_attachments');
-	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_theme_resume');
-	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_theme_attachments');
+	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_aux_resume');
+	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_aux_attachments');
+	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_aux_type');
 	// set a few defaults
 	add_option('ewww_image_optimizer_disable_pngout', TRUE);
 	add_option('ewww_image_optimizer_optipng_level', 2);
@@ -880,8 +901,11 @@ function ewww_image_optimizer_admin_menu() {
 	// adds bulk optimize to the media library menu
 	$ewww_bulk_page = add_media_page( 'Bulk Optimize', 'Bulk Optimize', 'edit_others_posts', 'ewww-image-optimizer-bulk', 'ewww_image_optimizer_bulk_preview');
 	add_action('admin_footer-' . $ewww_bulk_page, 'ewww_image_optimizer_debug');
-	$ewww_theme_optimize_page = add_theme_page( 'Optimize Theme Images', 'Optimize', 'edit_themes', 'ewww-image-optimizer-theme-images', 'ewww_image_optimizer_theme_images');
+	$ewww_theme_optimize_page = add_theme_page( 'Optimize Theme Images', 'Optimize', 'edit_themes', 'ewww-image-optimizer-theme-images', 'ewww_image_optimizer_aux_images');
 	add_action('admin_footer-' . $ewww_theme_optimize_page, 'ewww_image_optimizer_debug');
+	// TODO: check if buddypress is active
+	$ewww_buddypress_optimize_page = add_media_page( 'Optimize Buddypress Images', 'Buddypress Optimize', 'edit_themes', 'ewww-image-optimizer-buddypress-images', 'ewww_image_optimizer_aux_images');
+	add_action('admin_footer-' . $ewww_buddypress_optimize_page, 'ewww_image_optimizer_debug');
 	if (!function_exists('is_plugin_active_for_network') || !is_plugin_active_for_network('ewww-image-optimizer/ewww-image-optimizer.php')) { 
 		// add options page to the settings menu
 		$ewww_options_page = add_options_page(
@@ -979,7 +1003,7 @@ function ewww_image_optimizer_jpg_quality () {
 
 // require the file that does the bulk processing
 require(dirname(__FILE__) . '/bulk.php');
-require(dirname(__FILE__) . '/theme-optimize.php');
+require(dirname(__FILE__) . '/aux-optimize.php');
 /**
  * Manually process an image from the Media Library
  */
@@ -1211,7 +1235,7 @@ function ewww_image_optimizer_update_saved_file ($meta, $ID) {
  * Returns an array of the $file, $results, $converted to tell us if an image changes formats, and the $original file if it did.
  *
  * @param   string $file		Full absolute path to the image file
- * @param   int $gallery_type		1=wordpress, 2=nextgen, 3=flagallery, 4=theme_images, 5=image editor (I think)
+ * @param   int $gallery_type		1=wordpress, 2=nextgen, 3=flagallery, 4=aux_images, 5=image editor (I think)
  * @param   boolean $converted		tells us if this is a resize and the full image was converted to a new format
  * @returns array
  */
