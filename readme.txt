@@ -3,11 +3,11 @@ Contributors: nosilver4u
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=QFXCW38HE24NY
 Tags: images, image, attachments, attachment, optimize
 Requires at least: 2.8
-Tested up to: 3.5.1
+Tested up to: 3.6
 Stable tag: 1.4.4
 License: GPLv3
 
-Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
+Reduce file sizes for images within WordPress including NextGEN, GRAND FlAGallery and BuddyPress. Uses jpegtran, optipng/pngout, and gifsicle.
 
 == Description ==
 
@@ -30,7 +30,7 @@ EWWW Image Optimizer calls optimization utilities directly which is well suited 
 
 = Theme Images =
 
-It is now possible to optimize all of the images within your current theme (you must have permissions to edit themes). If you are using a child theme, the images for the parent theme will also be optimized. If the theme is updated, you will need to re-optimize, so it is recommended that you contact the theme author if you find significant savings are possible.
+In the Appearance menu, it is now possible to optimize all of the images within your current theme (you must have permissions to edit themes). If you are using a child theme, the images for the parent theme will also be optimized. If the theme is updated, you will need to re-optimize, so it is recommended that you contact the theme author if you find significant savings are possible.
 
 = NextGEN Integration =
 
@@ -39,6 +39,10 @@ In NextGEN 2.0.x, images are not optimized on initial upload (yet). Newly upload
 = GRAND Flash Album Gallery Integration =
 
 Features optimization on upload capability, re-optimization, and bulk optimizing. The Bulk Optimize function is located near the bottom of the FlAGallery menu, and will optimize all images in all galleries. It is also possible to optimize groups of images in a gallery, or multiple galleries at once.
+
+= BuddyPress Integration =
+
+Located under Media, the BuddyPress Optimizer allows the user to optimize all avatars (group and individual). Stores a history of optimized images, so that you can optimize new images without re-optimizing old images.
 
 == Installation ==
 
@@ -134,11 +138,11 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 = future =
 * these are possible future bugfixes and/or feature requests, if you see a feature you like here, go vote for it in the support forum
-* BuddyPress integration
 * SunOS (Solaris/OpenIndiana) support
 * NextGEN 2+ support (in progress)
 
 = 1.4.5 =
+* BuddyPress integration to optimize avatars
 * added function to optimize all images in currently active theme
 * fixed errors with bulk functions in NextGEN 2.0.x
 * temporarily disabled auto-optimization for NextGEN 2.0.x since it is causing errors

@@ -899,13 +899,20 @@ function ewww_image_optimizer_network_admin_menu() {
 // adds the bulk optimize and settings page to the admin menu
 function ewww_image_optimizer_admin_menu() {
 	// adds bulk optimize to the media library menu
-	$ewww_bulk_page = add_media_page( 'Bulk Optimize', 'Bulk Optimize', 'edit_others_posts', 'ewww-image-optimizer-bulk', 'ewww_image_optimizer_bulk_preview');
+	$ewww_bulk_page = add_media_page('Bulk Optimize', 'Bulk Optimize', 'edit_others_posts', 'ewww-image-optimizer-bulk', 'ewww_image_optimizer_bulk_preview');
 	add_action('admin_footer-' . $ewww_bulk_page, 'ewww_image_optimizer_debug');
-	$ewww_theme_optimize_page = add_theme_page( 'Optimize Theme Images', 'Optimize', 'edit_themes', 'ewww-image-optimizer-theme-images', 'ewww_image_optimizer_aux_images');
+	$ewww_theme_optimize_page = add_theme_page('Optimize Theme Images', 'Optimize', 'edit_themes', 'ewww-image-optimizer-theme-images', 'ewww_image_optimizer_aux_images');
 	add_action('admin_footer-' . $ewww_theme_optimize_page, 'ewww_image_optimizer_debug');
-	// TODO: check if buddypress is active
-	$ewww_buddypress_optimize_page = add_media_page( 'Optimize Buddypress Images', 'Buddypress Optimize', 'edit_themes', 'ewww-image-optimizer-buddypress-images', 'ewww_image_optimizer_aux_images');
-	add_action('admin_footer-' . $ewww_buddypress_optimize_page, 'ewww_image_optimizer_debug');
+	// if buddypress is active, add the BuddyPress Optimizer to the menu
+	if (is_plugin_active('buddypress/bp-loader.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('buddypress/bp-loader.php'))) {
+		$ewww_buddypress_optimize_page = add_media_page('Optimize BuddyPress Images', 'BuddyPress Optimize', 'edit_themes', 'ewww-image-optimizer-buddypress-images', 'ewww_image_optimizer_aux_images');
+		add_action('admin_footer-' . $ewww_buddypress_optimize_page, 'ewww_image_optimizer_debug');
+	}
+	// if WP Symposium is active, add the Symposium Optimizer to the menu
+/*	if (is_plugin_active('wp-symposium/wp-symposium.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('wp-symposium/wp-symposium.php'))) {
+		$ewww_symposium_optimize_page = add_media_page('Optimize WP Symposium Images', 'WP Symposium Optimize', 'edit_themes', 'ewww-image-optimizer-symposium-images', 'ewww_image_optimizer_aux_images');
+		add_action('admin_footer-' . $ewww_symposium_optimize_page, 'ewww_image_optimizer_debug');
+	}*/
 	if (!function_exists('is_plugin_active_for_network') || !is_plugin_active_for_network('ewww-image-optimizer/ewww-image-optimizer.php')) { 
 		// add options page to the settings menu
 		$ewww_options_page = add_options_page(
