@@ -1,6 +1,5 @@
 <?php 
 class ewwwngg {
-	// TODO: give link to relevant gallery after optimizing thumbs
 	/* initializes the nextgen integration functions */
 	function ewwwngg() {
 		add_filter('ngg_manage_images_columns', array(&$this, 'ewww_manage_images_columns'));

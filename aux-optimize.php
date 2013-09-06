@@ -30,7 +30,7 @@ function ewww_image_optimizer_aux_images () {
 		$h2 = 'WP Symposium';
 	} ?>
 	<div class="wrap">
-	<div id="icon-themes" class="icon32"><br /></div><h2>EWWW Optimize <?php echo $h2; ?> Images</h2>
+	<div id="icon-themes" class="icon32"><br /></div><h2>Optimize <?php echo $h2; ?> Images</h2>
 		<div id="bulk-loading"></div>
 		<div id="bulk-progressbar"></div>
 		<div id="bulk-counter"></div>
@@ -87,9 +87,9 @@ function ewww_image_optimizer_aux_images () {
 				$image_url = $upload_info['baseurl'] . $image_name;
 				$savings = $optimized_image[1];
 				if ($alternate) {
-					echo "<tr class='alternate'><td style='width:80px' class='column-icon'><img width='50' height='50' src='$image_url' /></td><td class='title'>$image_name</td><td>$savings</td></tr>";
+					echo "<tr class='alternate'><td style='width:80px' class='column-icon'><img width='50' height='50' src='$image_url' /></td><td class='title'>...$image_name</td><td>$savings</td></tr>";
 				} else {
-					echo "<tr><td style='width:80px' class='column-icon'><img width='50' height='50' src='$image_url' /></td><td class='title'>$image_name</td><td>$savings</td></tr>";
+					echo "<tr><td style='width:80px' class='column-icon'><img width='50' height='50' src='$image_url' /></td><td class='title'>...$image_name</td><td>$savings</td></tr>";
 				}
 				$alternate = !$alternate;
 			}
@@ -253,12 +253,14 @@ function ewww_image_optimizer_aux_images_loop() {
 	$attachments = get_option('ewww_image_optimizer_aux_attachments');
 	// do the optimization for the current image
 	$results = ewww_image_optimizer($attachment, 4, false, false);
-	// store info on the current info for future reference
-	$wpdb->insert( $wpdb->prefix . "ewwwio_images", array(
-			'path' => $attachment,
-			'image_md5' => md5_file($attachment),
-			'results' => $results[1]
-		));
+	if (get_option('ewww_image_optimizer_aux_type') !== 'theme') {
+		// store info on the current info for future reference
+		$wpdb->insert( $wpdb->prefix . "ewwwio_images", array(
+				'path' => $attachment,
+				'image_md5' => md5_file($attachment),
+				'results' => $results[1]
+			));
+	}
 	// output the path
 	printf( "<p>Optimized image: <strong>%s</strong><br>", esc_html($attachment) );
 	// tell the user what the results were for the original image

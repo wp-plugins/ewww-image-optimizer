@@ -13,10 +13,7 @@ Version: 1.4.4
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
-// DONE: check redirect code from upload.php line 135 for improvements
 // TODO: internationalize plugin - if we get enough interest
-// DONE: use get_attached_file($id) for $file_path and derivatives
-// TODO: see if we can use the WP download_url() function
 /**
  * Constants
  */
@@ -2130,22 +2127,6 @@ function ewww_image_optimizer_columns($defaults) {
 }
 
 /**
- * Return the filesize in a humanly readable format.
- * Taken from http://www.php.net/manual/en/function.filesize.php#91477
- */
-// TODO: remove this function, since we can use the size_format() function provided with WP
-/*function ewww_image_optimizer_format_bytes($bytes, $precision = 2) {
-	global $ewww_debug;
-	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_format_bytes()</b><br>";
-	$units = array('B', 'KB', 'MB', 'GB', 'TB');
-	$bytes = max($bytes, 0);
-	$pow = floor(($bytes ? log($bytes) : 0) / log(1024));
-	$pow = min($pow, count($units) - 1);
-	$bytes /= pow(1024, $pow);
-	return round($bytes, $precision) . ' ' . $units[$pow];
-}*/
-
-/**
  * Print column data for optimizer results in the media library using
  * the `manage_media_custom_column` hook.
  */
@@ -2323,38 +2304,6 @@ function ewww_image_optimizer_bulk_action_handler() {
 	exit(); 
 }
 
-// retrieves the file located at $url and stores it at $path, used for our one-click installs
-// buffered so as not to use so much memory
-// from http://stackoverflow.com/questions/3938534/download-file-to-server-from-url
-function ewww_image_optimizer_download_file ($url, $path) {
-	if (!$file = fopen($url, 'rb')) {
-		exit;
-	}
-	if ($file) {
-		if (!$newf = fopen ($path, 'wb')) {
-			exit;
-		}
-		if ($newf) {
-			while(!feof($file)) {
-				if (fwrite($newf, fread($file, 1024 * 8), 1024 * 8) === false) {
-					exit;
-				}
-			}
-		}
-	}
-	if ($file) {
-		fclose($file);
-	}
-	if ($newf) {
-		fclose($newf);
-	}
-	if (file_exists($path)) {
-		return true;
-	} else {
-		return false;
-	}
-}
-
 // retrieves the pngout linux package with wget, unpacks it with tar, 
 // copies the appropriate version to the plugin folder, and sends the user back where they came from
 function ewww_image_optimizer_install_pngout() {
@@ -2376,44 +2325,47 @@ function ewww_image_optimizer_install_pngout() {
 	$latest = '20130221';
 	if (empty($pngout_error)) {
 		if (PHP_OS == 'Linux' || PHP_OS == 'FreeBSD') {
-			if (!file_exists(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-' . $os_string . '-static.tar.gz')) {
-				$download_result = ewww_image_optimizer_download_file('http://static.jonof.id.au/dl/kenutils/pngout-' . $latest . '-' . $os_string . '-static.tar.gz', EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-' . $os_string . '-static.tar.gz');
-				if (!$download_result) $pngout_error = "file not downloaded";
+			$download_result = download_url('http://static.jonof.id.au/dl/kenutils/pngout-' . $latest . '-' . $os_string . '-static.tar.gz');
+			if (is_wp_error($download_result)) {
+				$pngout_error = $download_result->get_error_message();
+			} else {
+				$arch_type = php_uname('m');
+				exec("$tar xzf $download_result -C " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-' . $latest . '-' . $os_string . '-static/' . $arch_type . '/pngout-static');
+				if (!rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-' . $os_string . '-static/' . $arch_type . '/pngout-static', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static'))
+					if (empty($pngout_error)) $pngout_error = "could not move pngout";
+				if (!chmod(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static', 0755))
+					if (empty($pngout_error)) $pngout_error = "could not set permissions";
+				$pngout_version = ewww_image_optimizer_tool_found(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static', 'p');
 			}
-			$arch_type = php_uname('m');
-			exec("$tar xzf " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-' . $os_string . '-static.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-' . $latest . '-' . $os_string . '-static/' . $arch_type . '/pngout-static');
-			if (!rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-' . $os_string . '-static/' . $arch_type . '/pngout-static', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static'))
-				if (empty($pngout_error)) $pngout_error = "could not move pngout";
-			if (!chmod(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static', 0755))
-				if (empty($pngout_error)) $pngout_error = "could not set permissions";
-			$pngout_version = ewww_image_optimizer_tool_found(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static', 'p');
 		}
 		if (PHP_OS == 'Darwin') {
-			if (!file_exists(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-darwin.tar.gz')) {
-				$download_result = ewww_image_optimizer_download_file('http://static.jonof.id.au/dl/kenutils/pngout-' . $latest . '-darwin.tar.gz', EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-darwin.tar.gz');
-				if (!$download_result) $pngout_error = "file not downloaded";
+			$download_result = download_url('http://static.jonof.id.au/dl/kenutils/pngout-' . $latest . '-darwin.tar.gz');
+			if (is_wp_error($download_result)) {
+				$pngout_error = $download_result->get_error_message();
+			} else {
+				exec("$tar xzf $download_result -C " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-' . $latest . '-darwin/pngout');
+				if (!rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-darwin/pngout', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static'))
+					if (empty($pngout_error)) $pngout_error = "could not move pngout";
+				if (!chmod(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static', 0755))
+					if (empty($pngout_error)) $pngout_error = "could not set permissions";
+				$pngout_version = ewww_image_optimizer_tool_found(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static', 'p');
 			}
-			exec("$tar xzf " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-darwin.tar.gz -C ' . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-' . $latest . '-darwin/pngout');
-			if (!rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-darwin/pngout', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static'))
-				if (empty($pngout_error)) $pngout_error = "could not move pngout";
-			if (!chmod(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static', 0755))
-				if (empty($pngout_error)) $pngout_error = "could not set permissions";
-			$pngout_version = ewww_image_optimizer_tool_found(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static', 'p');
 		}
 	}
 	if (PHP_OS == 'WINNT') {
-		$download_result = ewww_image_optimizer_download_file('http://advsys.net/ken/util/pngout.exe', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout.exe');
-			if (!$download_result) $pngout_error = "file not downloaded";
-		$pngout_version = ewww_image_optimizer_tool_found(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout.exe', 'p');
+		$download_result = download_url('http://advsys.net/ken/util/pngout.exe');
+		if (is_wp_error($download_result)) {
+			$pngout_error = $download_result->get_error_message();
+		} else {
+			if (!rename($download_result, EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout.exe'))
+				if (empty($pngout_error)) $pngout_error = "could not move pngout";
+			$pngout_version = ewww_image_optimizer_tool_found(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout.exe', 'p');
+		}
 	}
 	if (!empty($pngout_version)) {
-		//$sendback = remove_query_arg('pngout', wp_get_referer());
-		//$sendback = preg_replace('/\&pngout\=\w+/', '', $sendback) . "&pngout=success";
 		$sendback = add_query_arg('pngout', 'success', remove_query_arg(array('pngout', 'error'), wp_get_referer()));
 	}
 	if (!isset($sendback)) {
-		//$sendback = wp_get_referer();
-		//$sendback = preg_replace('/\&pngout\=\w+/', '', $sendback) . '&pngout=failed&error=' . urlencode($pngout_error);
 		$sendback = add_query_arg(array('pngout' => 'failed', 'error' => urlencode($pngout_error)), remove_query_arg(array('pngout', 'error'), wp_get_referer()));
 	}
 	wp_redirect($sendback);
@@ -2432,7 +2384,7 @@ function ewww_image_optimizer_options () {
 <?php		}
 		if ($_REQUEST['pngout'] == 'failed') { ?>
 			<div id='ewww-image-optimizer-pngout-failure' class='error'>
-				<p>pngout was not installed, <?php echo $_REQUEST['error']; ?>. Make sure the wp-content/ewww folder is writable.</p>
+				<p>pngout was not installed: <?php echo $_REQUEST['error']; ?>. Make sure the wp-content/ewww folder is writable.</p>
 			</div>
 <?php		}
 	} ?>

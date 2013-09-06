@@ -320,7 +320,9 @@ class ewwwflag {
 			// get the mimetype
 			$type = ewww_image_optimizer_mimetype($file_path, 'i');
 			// get the file size
-			$file_size = ewww_image_optimizer_format_bytes(filesize($file_path));
+			$file_size = size_format(filesize($file_path), 2);
+			$file_size = str_replace('B ', 'B', $file_size);
+			//$file_size = ewww_image_optimizer_format_bytes(filesize($file_path));
 			$valid = true;
 			// if we don't have a valid tool for the image type, output the appropriate message
 	                switch($type) {

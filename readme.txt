@@ -147,7 +147,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * fixed errors with bulk functions in NextGEN 2.0.x
 * temporarily disabled auto-optimization for NextGEN 2.0.x since it is causing errors
 * fixed detection of disabled exec() function when exec is the first function in the list
-* use internal wordpress functions for retrieving image path, displaying filesize, and building redirect urls
+* use internal wordpress functions for retrieving image path, displaying filesize, building redirect urls, and downloading pngout
 
 = 1.4.4 =
 * fixed bulk optimization functions for non-English users in NextGEN

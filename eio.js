@@ -1,7 +1,3 @@
-/* This script and many more are available free online at
-The JavaScript Source!! http://www.javascriptsource.com
-Created by: Abraham Joffe :: http://www.abrahamjoffe.com.au/ */
-
 jQuery(document).ready(function($) {
 		var attachpost = ewww_vars.attachments.replace(/&quot;/g, '"');
 		var attachments = $.parseJSON(attachpost);

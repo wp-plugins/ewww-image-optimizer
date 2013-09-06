@@ -1,5 +1,6 @@
 <?php 
 class ewwwngg {
+	 // TODO: give link to relevant gallery after optimizing thumbs
 	/* initializes the nextgen integration functions */
 	function ewwwngg() {
 		add_filter('ngg_manage_images_columns', array(&$this, 'ewww_manage_images_columns'));
@@ -35,7 +36,6 @@ class ewwwngg {
 		$gallery_path = $wpdb->get_var($q);
 		// if we have a path to work with
 		if ( $gallery_path ) {
-			// TODO: optimize thumbs automatically 
 			// construct the absolute path of the current image
 			$file_path = trailingslashit($gallery_path) . $image['filename'];
 			// run the optimizer on the current image
