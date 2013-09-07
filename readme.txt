@@ -11,7 +11,7 @@ Reduce file sizes for images within WordPress including NextGEN, GRAND FlAGaller
 
 == Description ==
 
-The EWWW Image Optimizer is a WordPress plugin that will automatically and losslessly optimize your images as you upload them to your blog. It can also optimize the images that you have already uploaded in the past. It is also now possible to convert your images automatically to the file format that will produce the smallest image (make sure you read the WARNINGS).
+The EWWW Image Optimizer is a WordPress plugin that will automatically and losslessly optimize your images as you upload them to your blog. It can also optimize the images that you have already uploaded in the past. It is also possible to convert your images automatically to the file format that will produce the smallest image size (make sure you read the WARNINGS).
 
 By default, EWWW Image Optimizer uses lossless optimization techniques, so your image quality will be exactly the same before and after the optimization. The only thing that will change is your file size. The one small exception to this is GIF animations. While the optimization is technically lossless, you will not be able to properly edit the animation again without performing an --unoptimize operation with gifsicle. The gif2png and jpg2png conversions are also lossless but the png2jpg process is not lossless.
 
@@ -34,7 +34,8 @@ In the Appearance menu, it is now possible to optimize all of the images within 
 
 = NextGEN Integration =
 
-In NextGEN 2.0.x, images are not optimized on initial upload (yet). Newly uploaded images can be optimized via the Gallery Management pages. The plugin features re-optimization capability, and bulk optimizing. The NextGEN Bulk Optimize function is located near the bottom of the NextGEN menu, and will optimize all images in all galleries. It is also possible to optimize groups of images in a gallery, or multiple galleries at once. NOTE: Does not optimize thumbnails on initial upload, 1.4.1+ will provide the option to optimize thumbnails after uploading images.
+Features optimization on upload capability, re-optimization, and bulk optimizing. The NextGEN Bulk Optimize function is located near the bottom of the NextGEN menu, and will optimize all images in all galleries. It is also possible to optimize groups of images in a gallery, or multiple galleries at once.
+NOTE: Does not optimize thumbnails on initial upload for legacy (1.9.x) versions of NextGEN, but instead provides a button to optimize thumbnails after uploading images.
 
 = GRAND Flash Album Gallery Integration =
 
@@ -139,13 +140,13 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 = future =
 * these are possible future bugfixes and/or feature requests, if you see a feature you like here, go vote for it in the support forum
 * SunOS (Solaris/OpenIndiana) support
-* NextGEN 2+ support (in progress)
+* WP Symposium support
 
-= 1.4.5 =
+= 1.5.0 =
 * BuddyPress integration to optimize avatars
 * added function to optimize all images in currently active theme
-* fixed errors with bulk functions in NextGEN 2.0.x
-* temporarily disabled auto-optimization for NextGEN 2.0.x since it is causing errors
+* full compatibility with NextGEN 2.0.x
+* thumbnails are now optimized automatically on upload with NextGEN 2.0.x
 * fixed detection of disabled exec() function when exec is the first function in the list
 * use internal wordpress functions for retrieving image path, displaying filesize, building redirect urls, and downloading pngout
 
@@ -344,8 +345,10 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 == Upgrade Notice ==
 
-= 1.4.4 =
+= 1.5.0 =
+Fixes and enhancements for NextGEN 2, Buddypress support, and theme image optimization
 
+= 1.4.4 =
 bugfix release for nextgen users only, everyone else can ignore this release
 
 = 1.4.0 =

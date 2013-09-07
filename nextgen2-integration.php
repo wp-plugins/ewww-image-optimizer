@@ -4,7 +4,7 @@ class ewwwngg {
 	function ewwwngg() {
 		add_filter('ngg_manage_images_columns', array(&$this, 'ewww_manage_images_columns'));
 		add_action('ngg_manage_image_custom_column', array(&$this, 'ewww_manage_image_custom_column'), 10, 2);
-		//add_action('ngg_added_new_image', array(&$this, 'ewww_added_new_image'));
+		add_action('ngg_added_new_image', array(&$this, 'ewww_added_new_image'));
 		add_action('admin_action_ewww_ngg_manual', array(&$this, 'ewww_ngg_manual'));
 		add_action('admin_menu', array(&$this, 'ewww_ngg_bulk_menu'));
 		$i18ngg = strtolower  ( _n( 'Gallery', 'Galleries', 1, 'nggallery' ) );
@@ -29,27 +29,26 @@ class ewwwngg {
 
 	/* ngg_added_new_image hook */
 	function ewww_added_new_image ($image) {
-	//	$metadata = $image->meta_data['full'];
-		// query the filesystem path of the gallery from the database
-		/*global $wpdb;
-		$q = $wpdb->prepare( "SELECT path FROM {$wpdb->prefix}ngg_gallery WHERE gid = %d LIMIT 1", $image->galleryID );
-		//$q = $wpdb->prepare( "SELECT path FROM {$wpdb->prefix}ngg_gallery WHERE gid = %d LIMIT 1", $image['galleryID'] );
-		$gallery_path = $wpdb->get_var($q);*/
-		//$storage  = $registry->get_utility('I_Gallery_Storage');
-		//$file_path = $nggAdmin->get_full_abspath($image);
-//		$image_object = var_dump($image);
-		$image_id = $image->meta_data['pid'];
-		file_put_contents ('/var/www/metadata.test', "\n$image_id", FILE_APPEND);
-		// if we have a path to work with
-/*		if ( $gallery_path ) {
-			// TODO: optimize thumbs automatically 
-			// construct the absolute path of the current image
-			$file_path = trailingslashit($gallery_path) . $image->filename;
-			// run the optimizer on the current image
-			$res = ewww_image_optimizer(ABSPATH . $file_path, 2, false, false);
-			// update the metadata for the optimized image
-			nggdb::update_image_meta($image->id, array('ewww_image_optimizer' => $res[1]));
-		}*/
+		// creating the 'registry' object for working with nextgen
+		$registry = C_Component_Registry::get_instance();
+		// creating a database storage object from the 'registry' object
+		$storage  = $registry->get_utility('I_Gallery_Storage');
+		// find the image id
+		$image_id = $storage->object->_get_image_id($image);
+		// get an array of sizes available for the $image
+		$sizes = $storage->get_image_sizes($image);
+		// run the optimizer on the image for each $size
+		foreach ($sizes as $size) {
+			// get the absolute path
+			$file_path = $storage->get_image_abspath($image, $size);
+			// optimize the image and grab the results
+			$res = ewww_image_optimizer($file_path, 2, false, false);
+			// only if we're dealing with the full-size original
+			if ($size === 'full') {
+				// update the metadata for the optimized image
+				nggdb::update_image_meta($image_id, array('ewww_image_optimizer' => $res[1]));
+			}
+		}
 	}
 
 	/* output a small html form so that the user can optimize thumbs for the $images just added */
