@@ -1,7 +1,7 @@
 === EWWW Image Optimizer ===
 Contributors: nosilver4u
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=QFXCW38HE24NY
-Tags: images, image, attachments, attachment, optimize
+Tags: images, image, attachments, attachment, optimize, nextgen, buddypress, flagallery, flash, gallery, lossless, photos, photo, picture, pictures, seo, compression
 Requires at least: 2.8
 Tested up to: 3.6
 Stable tag: 1.5.0
