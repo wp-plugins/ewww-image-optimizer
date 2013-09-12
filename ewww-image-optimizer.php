@@ -2489,13 +2489,13 @@ function ewww_image_optimizer_options () {
 			}
 			if (PHP_OS != 'WINNT') {
 				if (!ewww_image_optimizer_tool_found('/usr/bin/file', 'f') && !ewww_image_optimizer_tool_found('file', 'f')) {
-					echo '<span style="color: red; font-weight: bolder">file command not found on your system</span>';
+					echo '<span style="color: red; font-weight: bolder"> file command not found on your system</span>';
 				}
 				if (!ewww_image_optimizer_tool_found('/usr/bin/nice', 'n') && !ewww_image_optimizer_tool_found('nice', 'n')) {
-					echo '<span style="color: orange; font-weight: bolder">nice command not found on your system (not required)</span>';
+					echo '<span style="color: orange; font-weight: bolder"> nice command not found on your system (not required)</span>';
 				}
 				if (!ewww_image_optimizer_tool_found('tar', 't') && !ewww_image_optimizer_tool_found('/usr/bin/tar', 't')) {
-					echo '<span style="color: red; font-weight: bolder">tar command not found on your system (required for automatic pngout installer)</span>';
+					echo '<span style="color: red; font-weight: bolder"> tar command not found on your system (required for automatic pngout installer)</span>';
 				}
 			}
 			echo "<br />\n<b>Only need one of these: </b>";
