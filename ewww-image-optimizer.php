@@ -785,7 +785,6 @@ function ewww_image_optimizer_admin_init() {
 		}
 		// set network settings if they have been POSTed
 		if (!empty($_POST['ewww_image_optimizer_optipng_level'])) {
-			//print_r($_POST);
 			if (empty($_POST['ewww_image_optimizer_skip_check'])) $_POST['ewww_image_optimizer_skip_check'] = '';
 			update_site_option('ewww_image_optimizer_skip_check', $_POST['ewww_image_optimizer_skip_check']);
 			if (empty($_POST['ewww_image_optimizer_skip_bundle'])) $_POST['ewww_image_optimizer_skip_bundle'] = '';
@@ -1250,28 +1249,57 @@ function ewww_image_optimizer_update_saved_file ($meta, $ID) {
 	return $meta;
 }
 
+// submits the api key for verification
+function ewww_image_optimizer_cloud_verify() {
+	$api_key = get_site_option('ewww_image_optimizer_cloud_key');
+	if (empty($api_key)) {
+		update_site_option('ewww_image_optimizer_cloud_jpg', '');
+		update_site_option('ewww_image_optimizer_cloud_png', '');
+		update_site_option('ewww_image_optimizer_cloud_gif', '');
+		return false;
+	}
+	$url = 'http://localhost/optimize/';
+	$result = wp_remote_post($url, array(
+		'body' => array('api_key' => $api_key)
+	));
+	if (preg_match('/great/', $result['body'])) {
+		return '<span style="color: green"> Verified </span>';
+	} else {
+		update_site_option('ewww_image_optimizer_cloud_jpg', '');
+		update_site_option('ewww_image_optimizer_cloud_png', '');
+		update_site_option('ewww_image_optimizer_cloud_gif', '');
+		return '<span style="color: red"> Could NOT Verify Key </span>';
+	}
+}
+
 // submits an image to the cloud optimizer and saves the optimized image to disk
 function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false) {
 	if(get_site_option('ewww_image_optimizer_jpegtran_copy') == TRUE){
         	// don't copy metadata
-                $metadata = false;
+                $metadata = 0;
         } else {
                 // copy all the metadata
-                $metadata = true;
+                $metadata = 1;
         }
+	if (empty($convert)) {
+		$convert = 0;
+	} else {
+		$convert = 1;
+	}
 	$api_key = get_site_option('ewww_image_optimizer_cloud_key');
 	$url = 'http://localhost/optimize/';
-	$local_file = $file;
-	$boundary = wp_generate_password(24, true, true);
+	$boundary = wp_generate_password(24, false);
 
 	$headers = array(
-        	'content-type' => 'multipart/form-data; boundary=' . $boundary
+        	'content-type' => 'multipart/form-data; boundary=' . $boundary,
+		'timeout' => 90,
+		'httpversion' => '1.0',
+		'blocking' => true
 		);
-	$post_fields = array('oldform' => true, 'convert' => $convert, 'metadata' => $metadata, 'api_key' => $api_key
+	$post_fields = array('oldform' => 1, 'convert' => $convert, 'metadata' => $metadata, 'api_key' => $api_key,
 	);
 
 	$payload = '';
-
 	foreach ($post_fields as $name => $value) {
         	$payload .= '--' . $boundary;
 	        $payload .= "\r\n";
@@ -1282,10 +1310,11 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false) {
 
 	$payload .= '--' . $boundary;
 	$payload .= "\r\n";
-	$payload .= 'Content-Disposition: form-data; name="file"; filename="' . basename($local_file) . '"' . "\r\n";
+	$payload .= 'Content-Disposition: form-data; name="file"; filename="' . basename($file) . '"' . "\r\n";
 	$payload .= 'Content-Type: ' . $type . "\r\n";
 	$payload .= "\r\n";
-	$payload .= file_get_contents($local_file);
+//echo ewww_image_optimizer_mimetype($file, 'i') . "<br";
+	$payload .= file_get_contents($file);
 	$payload .= "\r\n";
 	$payload .= '--' . $boundary;
 	$payload .= 'Content-Disposition: form-data; name="submitHandler"' . "\r\n";
@@ -1293,13 +1322,12 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false) {
 	$payload .= "Upload\r\n";
 	$payload .= '--' . $boundary . '--';
 
-
 	$response = wp_remote_post($url, array(
 		'timeout' => 90,
 		'headers' => $headers,
 		'body' => $payload,
 		));
-	if (empty($response) || is_wp_error($response)) {
+	if (empty($response['body']) || is_wp_error($response)) {
 		return FALSE;
 	} else {
 		return $response['body'];
@@ -1526,8 +1554,8 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					$jpgimage = ewww_image_optimizer_cloud_optimizer($file, $type);
 					file_put_contents($tempfile, $jpgimage);
 					if (ewww_image_optimizer_mimetype($tempfile, 'i') !== 'image/jpeg') {
-						unlink($tempfile);
 						$new_size = 0;
+						echo "bad things man<br>";
 					} else {
 						$new_size = filesize($tempfile);
 					}
@@ -1581,7 +1609,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				// if the optimization didn't produce a smaller JPG
 				} else {
 					// delete the optimized file
-					unlink($tempfile);
+					//unlink($tempfile);
 					// store the results
 					$result = "unchanged";
 				}
@@ -2657,9 +2685,9 @@ function ewww_image_optimizer_options () {
 			<?php settings_fields('ewww_image_optimizer_options'); 
 		} ?>
 			<h3>Cloud Settings</h3>
-			<p><b>BETA:</b> Free (temporary) API keys will be given to the <a href="http://www.exactlywww.com/cloud">first 100 users who request them</a>. If your webhost does not permit running the optimization tools locally via the exec() function or you would like to offload image optimization to a third-party server, you can purchase an API key for our cloud optimization service. The API key should be entered below, and cloud optimization must be enabled for each image format individually. No personal data is transmitted to the remote optimization server, and images are not stored after optimization is performed.</p>
+			<p><b>BETA:</b> Free (temporary) API keys will be given to the <a href="http://www.exactlywww.com/cloud/">first 100 users who request them</a>. If your webhost does not permit running the optimization tools locally via the exec() function or you would like to offload image optimization to a third-party server, you can purchase an API key for our cloud optimization service. The API key should be entered below, and cloud optimization must be enabled for each image format individually. No personal data is transmitted to the remote optimization server, and images are not stored after optimization is performed.</p>
 			<table class="form-table">
-				<tr><th><label for="ewww_image_optimizer_cloud_key">Cloud optimization API Key</label></th><td><input type="text" id="ewww_image_optimizer_cloud_key" name="ewww_image_optimizer_cloud_key" value="<?php echo get_site_option('ewww_image_optimizer_cloud_key'); ?>" size="32" /> API Key will be validated when you save your settings. <a href="http://www.exactlywww.com/cloud">Purchase a key now</a>.</td></tr>
+				<tr><th><label for="ewww_image_optimizer_cloud_key">Cloud optimization API Key</label></th><td><input type="text" id="ewww_image_optimizer_cloud_key" name="ewww_image_optimizer_cloud_key" value="<?php echo get_site_option('ewww_image_optimizer_cloud_key'); ?>" size="32" /> <?php echo ewww_image_optimizer_cloud_verify(); ?>API Key will be validated when you save your settings. <a href="http://www.exactlywww.com/cloud/">Purchase a key now</a>.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_cloud_jpg">JPG cloud optimization</label></th><td><input type="checkbox" id="ewww_image_optimizer_cloud_jpg" name="ewww_image_optimizer_cloud_jpg" value="true" <?php if (get_site_option('ewww_image_optimizer_cloud_jpg') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
 				<tr><th><label for="ewww_image_optimizer_cloud_png">PNG cloud optimization</label></th><td><input type="checkbox" id="ewww_image_optimizer_cloud_png" name="ewww_image_optimizer_cloud_png" value="true" <?php if (get_site_option('ewww_image_optimizer_cloud_png') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
 				<tr><th><label for="ewww_image_optimizer_cloud_gif">GIF cloud optimization</label></th><td><input type="checkbox" id="ewww_image_optimizer_cloud_gif" name="ewww_image_optimizer_cloud_gif" value="true" <?php if (get_site_option('ewww_image_optimizer_cloud_gif') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
