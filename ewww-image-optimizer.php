@@ -26,6 +26,7 @@ if (function_exists('plugin_dir_path')) {
 } else {
 	define('EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH', trailingslashit(dirname(__FILE__)));
 }
+define('EWWW_IMAGE_OPTIMIZER_CLOUD', ewww_image_optimizer_cloud_verify());
 // the folder where we install optimization tools
 define('EWWW_IMAGE_OPTIMIZER_TOOL_PATH', WP_CONTENT_DIR . '/ewww/');
 // initialize debug global
@@ -58,7 +59,7 @@ register_activation_hook(__FILE__, 'ewww_image_optimizer_install_table');
 /**
  * Check if this is an unsupported OS (not Linux or Mac OSX or FreeBSD or Windows or SunOS)
  */
-if('Linux' != PHP_OS && 'Darwin' != PHP_OS && 'FreeBSD' != PHP_OS && 'WINNT' != PHP_OS && 'SunOS' != PHP_OS) {
+if('Linux' != PHP_OS && 'Darwin' != PHP_OS && 'FreeBSD' != PHP_OS && 'WINNT' != PHP_OS && 'SunOS' != PHP_OS && !EWWW_IMAGE_OPTIMIZER_CLOUD) {
 	// call the function to display a notice
 	add_action('network_admin_notices', 'ewww_image_optimizer_notice_os');
 	add_action('admin_notices', 'ewww_image_optimizer_notice_os');
@@ -67,7 +68,7 @@ if('Linux' != PHP_OS && 'Darwin' != PHP_OS && 'FreeBSD' != PHP_OS && 'WINNT' != 
 	define('EWWW_IMAGE_OPTIMIZER_GIFSICLE', false);
 	define('EWWW_IMAGE_OPTIMIZER_JPEGTRAN', false);
 	define('EWWW_IMAGE_OPTIMIZER_OPTIPNG', false);
-} else {
+} elseif (!EWWW_IMAGE_OPTIMIZER_CLOUD) {
 	//Otherwise, we run the function to check for optimization utilities
 	add_action('network_admin_notices', 'ewww_image_optimizer_notice_utils');
 	add_action('admin_notices', 'ewww_image_optimizer_notice_utils');
@@ -676,6 +677,7 @@ function ewww_image_optimizer_install_tools () {
 		
 // we check for safe mode and exec, then also direct the user where to go if they don't have the tools installed
 function ewww_image_optimizer_notice_utils() {
+	// TODO: add in detecion for cloud key so we aren't flagging utilities they don't need
 	global $ewww_debug;
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_notice_utils()</b><br>";
 	// query the php settings for safe mode
@@ -1258,17 +1260,17 @@ function ewww_image_optimizer_cloud_verify() {
 		update_site_option('ewww_image_optimizer_cloud_gif', '');
 		return false;
 	}
-	$url = 'http://localhost/optimize/';
+	$url = 'http://optimize.exactlywww.com/';
 	$result = wp_remote_post($url, array(
 		'body' => array('api_key' => $api_key)
 	));
 	if (preg_match('/great/', $result['body'])) {
-		return '<span style="color: green"> Verified </span>';
+		return TRUE;
 	} else {
 		update_site_option('ewww_image_optimizer_cloud_jpg', '');
 		update_site_option('ewww_image_optimizer_cloud_png', '');
 		update_site_option('ewww_image_optimizer_cloud_gif', '');
-		return '<span style="color: red"> Could NOT Verify Key </span>';
+		return FALSE;
 	}
 }
 
@@ -1287,7 +1289,7 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false) {
 		$convert = 1;
 	}
 	$api_key = get_site_option('ewww_image_optimizer_cloud_key');
-	$url = 'http://localhost/optimize/';
+	$url = 'http://optimize.exactlywww.com/';
 	$boundary = wp_generate_password(24, false);
 
 	$headers = array(
@@ -1555,7 +1557,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					file_put_contents($tempfile, $jpgimage);
 					if (ewww_image_optimizer_mimetype($tempfile, 'i') !== 'image/jpeg') {
 						$new_size = 0;
-						echo "bad things man<br>";
+//						echo "bad things man<br>";
 					} else {
 						$new_size = filesize($tempfile);
 					}
@@ -2688,7 +2690,7 @@ function ewww_image_optimizer_options () {
 			<h3>Cloud Settings</h3>
 			<p><b>BETA:</b> Free (temporary) API keys will be given to the <a href="http://www.exactlywww.com/cloud/">first 100 users who request them</a>. If your webhost does not permit running the optimization tools locally via the exec() function or you would like to offload image optimization to a third-party server, you can purchase an API key for our cloud optimization service. The API key should be entered below, and cloud optimization must be enabled for each image format individually. No personal data is transmitted to the remote optimization server, and images are not stored after optimization is performed.</p>
 			<table class="form-table">
-				<tr><th><label for="ewww_image_optimizer_cloud_key">Cloud optimization API Key</label></th><td><input type="text" id="ewww_image_optimizer_cloud_key" name="ewww_image_optimizer_cloud_key" value="<?php echo get_site_option('ewww_image_optimizer_cloud_key'); ?>" size="32" /> <?php echo ewww_image_optimizer_cloud_verify(); ?>API Key will be validated when you save your settings. <a href="http://www.exactlywww.com/cloud/">Purchase a key now</a>.</td></tr>
+				<tr><th><label for="ewww_image_optimizer_cloud_key">Cloud optimization API Key</label></th><td><input type="text" id="ewww_image_optimizer_cloud_key" name="ewww_image_optimizer_cloud_key" value="<?php echo get_site_option('ewww_image_optimizer_cloud_key'); ?>" size="32" /> <?php if (ewww_image_optimizer_cloud_verify()) { echo '<span style="color: green"> Verified </span>'; } else { echo '<span style="color: red"> Could NOT Verify Key </span>'; } ?>API Key will be validated when you save your settings. <a href="http://www.exactlywww.com/cloud/">Purchase a key now</a>.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_cloud_jpg">JPG cloud optimization</label></th><td><input type="checkbox" id="ewww_image_optimizer_cloud_jpg" name="ewww_image_optimizer_cloud_jpg" value="true" <?php if (get_site_option('ewww_image_optimizer_cloud_jpg') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
 				<tr><th><label for="ewww_image_optimizer_cloud_png">PNG cloud optimization</label></th><td><input type="checkbox" id="ewww_image_optimizer_cloud_png" name="ewww_image_optimizer_cloud_png" value="true" <?php if (get_site_option('ewww_image_optimizer_cloud_png') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
 				<tr><th><label for="ewww_image_optimizer_cloud_gif">GIF cloud optimization</label></th><td><input type="checkbox" id="ewww_image_optimizer_cloud_gif" name="ewww_image_optimizer_cloud_gif" value="true" <?php if (get_site_option('ewww_image_optimizer_cloud_gif') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
