@@ -142,6 +142,10 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * SunOS (Solaris/OpenIndiana) support
 * WP Symposium support
 
+= 1.6.0 =
+* Cloud Optimization option (BETA: get your free API key at http://www.exactlywww.com/cloud/)
+* fixed if exec() is disabled or safe mode is on, don't bother testing local tools
+
 = 1.5.0 =
 * BuddyPress integration to optimize avatars
 * added function to optimize all images in currently active theme
