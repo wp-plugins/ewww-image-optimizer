@@ -480,7 +480,12 @@ function ewww_image_optimizer_path_check() {
 	if ($optipng) $ewww_debug = "$ewww_debug using: $optipng<br>";
 	if ($gifsicle) $ewww_debug = "$ewww_debug using: $gifsicle<br>";
 	if ($pngout) $ewww_debug = "$ewww_debug using: $pngout<br>";
-	return array($jpegtran, $optipng, $gifsicle, $pngout);
+	return array(
+		'JPEGTRAN' => $jpegtran,
+		'OPTIPNG' => $optipng,
+		'GIFSICLE' => $gifsicle,
+		'PNGOUT' => $pngout
+	);
 }
 
 // generates the source and destination paths for the executables that we bundle with the plugin based on the operating system
@@ -722,14 +727,7 @@ function ewww_image_optimizer_notice_utils() {
 	}
 
 	// attempt to retrieve values for utility paths, and store them in the appropriate variables
-	list ($jpegtran_path, $optipng_path, $gifsicle_path, $pngout_path) = ewww_image_optimizer_path_check();
-	// store those values back into an array, TODO: probably a more efficient way of doing this
-	$required = array(
-		'JPEGTRAN' => $jpegtran_path,
-		'OPTIPNG' => $optipng_path,
-		'GIFSICLE' => $gifsicle_path,
-		'PNGOUT' => $pngout_path
-	);
+	$required = ewww_image_optimizer_path_check();
 	// if the user has disabled the utility checks
 	if(get_site_option('ewww_image_optimizer_skip_check') == TRUE){
 		// set a variable for each tool
@@ -767,25 +765,25 @@ function ewww_image_optimizer_notice_utils() {
 				if (!$skip_jpegtran_check && $req === false) {
 					$missing[] = 'jpegtran';
 				}
-				define('EWWW_IMAGE_OPTIMIZER_' . $key, $jpegtran_path);
+				define('EWWW_IMAGE_OPTIMIZER_' . $key, $req);
 				break; 
 			case 'OPTIPNG':
 				if (!$skip_optipng_check && $req === false) {
 					$missing[] = 'optipng';
 				}
-				define('EWWW_IMAGE_OPTIMIZER_' . $key, $optipng_path);
+				define('EWWW_IMAGE_OPTIMIZER_' . $key, $req);
 				break;
 			case 'GIFSICLE':
 				if (!$skip_gifsicle_check && $req === false) {
 					$missing[] = 'gifsicle';
 				}
-				define('EWWW_IMAGE_OPTIMIZER_' . $key, $gifsicle_path);
+				define('EWWW_IMAGE_OPTIMIZER_' . $key, $req);
 				break;
 			case 'PNGOUT':
 				if (!$skip_pngout_check && $req === false) {
 					$missing[] = 'pngout';
 				}
-				define('EWWW_IMAGE_OPTIMIZER_' . $key, $pngout_path);
+				define('EWWW_IMAGE_OPTIMIZER_' . $key, $req);
 				break;
 		}
 	}
@@ -940,7 +938,6 @@ function ewww_image_optimizer_admin_menu() {
 	// adds bulk optimize to the media library menu
 	$ewww_bulk_page = add_media_page('Bulk Optimize', 'Bulk Optimize', 'edit_others_posts', 'ewww-image-optimizer-bulk', 'ewww_image_optimizer_bulk_preview');
 	add_action('admin_footer-' . $ewww_bulk_page, 'ewww_image_optimizer_debug');
-	// TODO: only display this if a network admin is logged in
 	$ewww_theme_optimize_page = add_theme_page('Optimize Theme Images', 'Optimize', 'edit_themes', 'ewww-image-optimizer-theme-images', 'ewww_image_optimizer_aux_images');
 	add_action('admin_footer-' . $ewww_theme_optimize_page, 'ewww_image_optimizer_debug');
 	// if buddypress is active, add the BuddyPress Optimizer to the menu
@@ -1107,20 +1104,12 @@ function ewww_image_optimizer_restore() {
 	$meta = wp_get_attachment_metadata($id);
 	// get the filepath from the metadata
 	$file_path = get_attached_file($id);
-	//$file_path = $meta['file'];
-	// store absolute paths for older wordpress versions (not anymore...)
-//	$store_absolute_path = true;
-	// if the path given is not the absolute path
-//	if (FALSE === file_exists($file_path)) {
-		// don't store absolute paths
-		$store_absolute_path = false;
-		// retrieve the location of the wordpress upload folder
-		$upload_dir = wp_upload_dir();
-		// retrieve the path of the upload folder
-		$upload_path = trailingslashit( $upload_dir['basedir'] );
-		// generate the absolute path
-//		$file_path =  $upload_path . $file_path;
-//	}
+	// don't store absolute paths
+	$store_absolute_path = false;
+	// retrieve the location of the wordpress upload folder
+	$upload_dir = wp_upload_dir();
+	// retrieve the path of the upload folder
+	$upload_path = trailingslashit( $upload_dir['basedir'] );
 	if (!empty($meta['converted'])) {
 		if (file_exists($meta['orig_file'])) {
 			// update the filename in the metadata
@@ -1130,10 +1119,7 @@ function ewww_image_optimizer_restore() {
 			$meta['orig_file'] = $file_path;
 			$meta['converted'] = 0;
 			unlink($meta['orig_file']);
-			// strip absolute path for Wordpress >= 2.6.2
-//			if ( FALSE === $store_absolute_path ) {
-				$meta['file'] = str_replace($upload_path, '', $meta['file']);
-//			}
+			$meta['file'] = str_replace($upload_path, '', $meta['file']);
 			// if we don't already have the update attachment filter
 			if (FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment'))
 				// add the update attachment filter
@@ -1218,18 +1204,6 @@ function ewww_image_optimizer_delete ($id) {
 		if(empty($file_path)) {
 			// get the filepath
 			$file_path = get_attached_file($id);
-//			$file_path = $meta['file'];
-			// retrieve the location of the wordpress upload folder
-//			$upload_dir = wp_upload_dir();
-			// retrieve the path of the upload folder
-//			$upload_path = trailingslashit( $upload_dir['basedir'] );
-			// if the path given is not the absolute path
-//			if (FALSE === file_exists($file_path)) {
-				// don't store absolute paths
-//				$store_absolute_path = false;
-				// generate the absolute path
-//				$file_path =  $upload_path . $file_path;
-//			}
 		}
 		// one way or another, $file_path is now set, and we can get the base folder name
 		$base_dir = dirname($file_path) . '/';
@@ -1300,7 +1274,7 @@ function ewww_image_optimizer_cloud_verify() {
 }
 
 // submits an image to the cloud optimizer and saves the optimized image to disk
-function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false) {
+function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $background = null, $quality = null) {
 	if(get_site_option('ewww_image_optimizer_jpegtran_copy') == TRUE){
         	// don't copy metadata
                 $metadata = 0;
@@ -1323,7 +1297,13 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false) {
 		'httpversion' => '1.0',
 		'blocking' => true
 		);
-	$post_fields = array('oldform' => 1, 'convert' => $convert, 'metadata' => $metadata, 'api_key' => $api_key,
+	$post_fields = array(
+		'oldform' => 1, 
+		'convert' => $convert, 
+		'metadata' => $metadata, 
+		'api_key' => $api_key,
+		'background' => $background,
+		'quality' => $quality,
 	);
 
 	$payload = '';
@@ -1340,7 +1320,6 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false) {
 	$payload .= 'Content-Disposition: form-data; name="file"; filename="' . basename($file) . '"' . "\r\n";
 	$payload .= 'Content-Type: ' . $type . "\r\n";
 	$payload .= "\r\n";
-//echo ewww_image_optimizer_mimetype($file, 'i') . "<br";
 	$payload .= file_get_contents($file);
 	$payload .= "\r\n";
 	$payload .= '--' . $boundary;
@@ -1423,7 +1402,8 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 	}
 	if (!EWWW_IMAGE_OPTIMIZER_CLOUD) {
 		// get the utility paths
-		list ($jpegtran_path, $optipng_path, $gifsicle_path, $pngout_path) = ewww_image_optimizer_path_check();
+		$tools = ewww_image_optimizer_path_check();
+//		list ($jpegtran_path, $optipng_path, $gifsicle_path, $pngout_path) = ewww_image_optimizer_path_check();
 	}
 	// if the user has disabled the utility checks
 	if (get_site_option('ewww_image_optimizer_skip_check') == TRUE || EWWW_IMAGE_OPTIMIZER_CLOUD) {
@@ -1508,7 +1488,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				// set the optimization process to OFF
 				$optimize = false;
 			// otherwise, if we aren't skipping the utility verification and jpegtran doesn't exist
-			} elseif (!$skip_jpegtran_check && !$jpegtran_path) {
+			} elseif (!$skip_jpegtran_check && !$tools['JPEGTRAN']) {
 				// store an appropriate message in $result
 				$result = '<em>jpegtran</em> is missing';
 				// set the optimization process to OFF
@@ -1556,7 +1536,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					if (file_exists($pngfile)) {
 						$ewww_debug = "$ewww_debug optimizing converted PNG with pngout<br>";
 						// run pngout on the new PNG
-						exec("$nice $pngout_path -s$pngout_level -q $pngfile");
+						exec("$nice " . $tools['PNGOUT'] . " -s$pngout_level -q $pngfile");
 					}
 				}
 				// if optipng isn't disabled
@@ -1567,7 +1547,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					if (file_exists($pngfile)) {
 						$ewww_debug = "$ewww_debug optimizing converted PNG with optipng<br>";
 						// run optipng on the new PNG
-						exec("$nice $optipng_path -o$optipng_level -quiet $pngfile");
+						exec("$nice " . $tools['OPTIPNG'] . " -o$optipng_level -quiet $pngfile");
 					}
 				}
 				}
@@ -1596,7 +1576,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					file_put_contents($tempfile, $jpgimage);
 					if (ewww_image_optimizer_mimetype($tempfile, 'i') !== 'image/jpeg') {
 						$new_size = 0;
-//						echo "bad things man<br>";
 					} else {
 						$new_size = filesize($tempfile);
 					}
@@ -1613,9 +1592,9 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					$copy_opt = 'all';
 				}
 				// run jpegtran - non-progressive
-				exec("$nice $jpegtran_path -copy $copy_opt -optimize -outfile $tempfile $file");
+				exec("$nice " . $tools['JPEGTRAN'] . " -copy $copy_opt -optimize -outfile $tempfile $file");
 				// run jpegtran - progressive
-				exec("$nice $jpegtran_path -copy $copy_opt -optimize -progressive -outfile $progfile $file");
+				exec("$nice " . $tools['JPEGTRAN'] . " -copy $copy_opt -optimize -progressive -outfile $progfile $file");
 				// check the filesize of the non-progressive JPG
 				$non_size = filesize($tempfile);
 				// check the filesize of the progressive JPG
@@ -1712,13 +1691,13 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				// turn off optimization
 				$optimize = false;
 			// if the utility checking is on, optipng is enabled, but optipng cannot be found
-			} elseif (!$skip_optipng_check && !$optipng_path && !get_site_option('ewww_image_optimizer_disable_optipng')) {
+			} elseif (!$skip_optipng_check && !$tools['OPTIPNG'] && !get_site_option('ewww_image_optimizer_disable_optipng')) {
 				// tell the user optipng is missing
 				$result = '<em>optipng</em> is missing';
 				// turn off optimization
 				$optimize = false;
 			// if the utility checking is on, pngout is enabled, but pngout cannot be found
-			} elseif (!$skip_pngout_check && !$pngout_path && !get_site_option('ewww_image_optimizer_disable_pngout')) {
+			} elseif (!$skip_pngout_check && !$tools['PNGOUT'] && !get_site_option('ewww_image_optimizer_disable_pngout')) {
 				// tell the user pngout is missing
 				$result = '<em>pngout</em> is missing';
 				// turn off optimization
@@ -1731,17 +1710,8 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 			$orig_size = filesize($file);
 			// if conversion is on and the PNG doesn't have transparency or the user set a background color to replace transparency, or this is a resize and the full-size image was converted
 			if (($convert && (!ewww_image_optimizer_png_alpha($file) || ewww_image_optimizer_jpg_background())) || $converted) {
-				if (get_site_option('ewww_image_optimizer_cloud_png')) {
-					$jpgimage = ewww_image_optimizer_cloud_optimizer($file, $type, $convert);
-					file_put_contents($jpgfile, $jpgimage);
-					if (ewww_image_optimizer_mimetype($jpgfile, 'i') !== 'image/jpeg') {
-						unlink($jpgfile);
-						$jpg_size = 0;
-					} else {
-						$jpg_size = filesize($jpgfile);
-					}
-				} else {
 				// if the user set a fill background for transparency
+				$background = '';
 				if ($background = ewww_image_optimizer_jpg_background()) {
 					// set background color for GD
 					$r = hexdec('0x' . strtoupper(substr($background, 0, 2)));
@@ -1759,8 +1729,18 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				} else {
 					$cquality = '';
 				}
+				if (get_site_option('ewww_image_optimizer_cloud_png')) {
+					//if (empty($cquality)) $cquality = '-quality 92';
+					$jpgimage = ewww_image_optimizer_cloud_optimizer($file, $type, $convert, $background, $cquality);
+					file_put_contents($jpgfile, $jpgimage);
+					if (ewww_image_optimizer_mimetype($jpgfile, 'i') !== 'image/jpeg') {
+						unlink($jpgfile);
+						$jpg_size = 0;
+					} else {
+						$jpg_size = filesize($jpgfile);
+					}
+				} else {
 				// retrieve version info for ImageMagick
-				//exec('convert -version', $convert_version);
 				if (ewww_image_optimizer_tool_found('convert', 'i')) {
 					$convert_path = 'convert';
 				} elseif (ewww_image_optimizer_tool_found('/usr/bin/convert', 'i')) {
@@ -1794,7 +1774,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 						imagejpeg($output, $jpgfile, 92);
 					}
 				} elseif (!empty($convert_path)) {
-				//} elseif (!empty($convert_version) && strpos($convert_version[0], 'ImageMagick')) {
 					exec ("$convert_path $background -flatten $cquality $file $jpgfile");
 				}
 				// retrieve the filesize of the new JPG
@@ -1813,9 +1792,9 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 						$copy_opt = 'all';
 					}
 					// run jpegtran - non-progressive
-					exec("$nice $jpegtran_path -copy $copy_opt -optimize -outfile $tempfile $jpgfile");
+					exec("$nice " . $tools['JPEGTRAN'] . " -copy $copy_opt -optimize -outfile $tempfile $jpgfile");
 					// run jpegtran - progressive
-					exec("$nice $jpegtran_path -copy $copy_opt -optimize -progressive -outfile $progfile $jpgfile");
+					exec("$nice " . $tools['JPEGTRAN'] . " -copy $copy_opt -optimize -progressive -outfile $progfile $jpgfile");
 					// check the filesize of the non-progressive JPG
 					$non_size = filesize($tempfile);
 					// check the filesize of the progressive JPG
@@ -1876,14 +1855,14 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					// retrieve the optimization level for pngout
 					$pngout_level = get_site_option('ewww_image_optimizer_pngout_level');
 					// run pngout on the PNG file
-					exec("$nice $pngout_path -s$pngout_level -q $file");
+					exec("$nice " . $tools['PNGOUT'] . " -s$pngout_level -q $file");
 				}
 				// if optipng is enabled
 				if(!get_site_option('ewww_image_optimizer_disable_optipng')) {
 					// retrieve the optimization level for optipng
 					$optipng_level = get_site_option('ewww_image_optimizer_optipng_level');
 					// run optipng on the PNG file
-					exec("$nice $optipng_path -o$optipng_level -quiet $file");
+					exec("$nice " . $tools['OPTIPNG'] . " -o$optipng_level -quiet $file");
 				}
 				}
 			}
@@ -1955,7 +1934,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				// turn optimization off
 				$optimize = false;
 			// if utility checking is on, and gifsicle is not installed
-			} elseif (!$skip_gifsicle_check && !$gifsicle_path) {
+			} elseif (!$skip_gifsicle_check && !$tools['GIFSICLE']) {
 				// return an appropriate message
 				$result = '<em>gifsicle</em> is missing';
 				// turn optimization off
@@ -1976,24 +1955,24 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					}
 				} else {
 				// if pngout is enabled
-				if (!get_site_option('ewww_image_optimizer_disable_pngout') && $pngout_path) {
+				if (!get_site_option('ewww_image_optimizer_disable_pngout') && $tools['PNGOUT']) {
 					// retrieve the pngout optimization level
 					$pngout_level = get_site_option('ewww_image_optimizer_pngout_level');
 					// run pngout on the file
-					exec("$nice $pngout_path -s$pngout_level -q $file $pngfile");
+					exec("$nice " . $tools['PNGOUT'] . " -s$pngout_level -q $file $pngfile");
 				}
 				// if optipng is enabled
-				if (!get_site_option('ewww_image_optimizer_disable_optipng') && $optipng_path) {
+				if (!get_site_option('ewww_image_optimizer_disable_optipng') && $tools['OPTIPNG']) {
 					// retrieve the optipng optimization level
 					$optipng_level = get_site_option('ewww_image_optimizer_optipng_level');
 					// if $pngfile exists (which means pngout was run already)
 					if (file_exists($pngfile)) {
 						// run optipng on the PNG file
-						exec("$nice $optipng_path -o$optipng_level -quiet $pngfile");
+						exec("$nice " . $tools['OPTIPNG'] . " -o$optipng_level -quiet $pngfile");
 					// otherwise, if pngout was not used
 					} else {
 						// run optipng on the GIF file
-						exec("$nice $optipng_path -out $pngfile -o$optipng_level -quiet $file");
+						exec("$nice " . $tools['OPTIPNG'] . " -out $pngfile -o$optipng_level -quiet $file");
 					}
 				}
 				}
@@ -2027,7 +2006,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					}
 				} else {
 					// run gifsicle on the GIF
-					exec("$nice $gifsicle_path -b -O3 --careful $file");
+					exec("$nice " . $tools['GIFSICLE'] . " -b -O3 --careful $file");
 				}
 			}
 			// flush the cache for filesize
