@@ -3,7 +3,7 @@ Contributors: nosilver4u
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=QFXCW38HE24NY
 Tags: images, image, attachments, attachment, optimize, nextgen, buddypress, flagallery, flash, gallery, lossless, photos, photo, picture, pictures, seo, compression
 Requires at least: 2.8
-Tested up to: 3.6
+Tested up to: 3.6.1
 Stable tag: 1.5.0
 License: GPLv3
 
@@ -145,6 +145,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 = 1.6.0 =
 * Cloud Optimization option (BETA: get your free API key at http://www.exactlywww.com/cloud/)
 * fixed if exec() is disabled or safe mode is on, don't bother testing local tools
+* more tweaks for exec() detection, including suhosin extension
 
 = 1.5.0 =
 * BuddyPress integration to optimize avatars
