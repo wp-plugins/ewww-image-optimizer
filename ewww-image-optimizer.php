@@ -14,6 +14,8 @@ Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
 // TODO: internationalize plugin - if we get enough interest
+// initialize debug global
+$ewww_debug = get_current_user() . '<br>';
 /**
  * Constants
  */
@@ -34,8 +36,6 @@ if (get_site_option('ewww_image_optimizer_cloud_jpg') && get_site_option('ewww_i
 }
 // the folder where we install optimization tools
 define('EWWW_IMAGE_OPTIMIZER_TOOL_PATH', WP_CONTENT_DIR . '/ewww/');
-// initialize debug global
-$ewww_debug = get_current_user() . '<br>';
 
 /**
  * Hooks
@@ -48,8 +48,9 @@ add_filter("plugin_action_links_$plugin", 'ewww_image_optimizer_settings_link');
 add_filter('wp_save_image_editor_file', 'ewww_image_optimizer_save_image_editor_file', 10, 5);
 add_action('manage_media_custom_column', 'ewww_image_optimizer_custom_column', 10, 2);
 add_action('admin_init', 'ewww_image_optimizer_admin_init');
-add_action('admin_action_ewww_image_optimizer_manual', 'ewww_image_optimizer_manual');
-add_action('admin_action_ewww_image_optimizer_restore', 'ewww_image_optimizer_restore');
+add_action('admin_action_ewww_image_optimizer_manual_optimize', 'ewww_image_optimizer_manual');
+add_action('admin_action_ewww_image_optimizer_manual_restore', 'ewww_image_optimizer_manual');
+add_action('admin_action_ewww_image_optimizer_manual_convert', 'ewww_image_optimizer_manual');
 add_action('delete_attachment', 'ewww_image_optimizer_delete');
 add_action('admin_menu', 'ewww_image_optimizer_admin_menu');
 add_action('network_admin_menu', 'ewww_image_optimizer_network_admin_menu');
@@ -61,9 +62,7 @@ add_action('admin_enqueue_scripts', 'ewww_image_optimizer_media_scripts');
 register_deactivation_hook(__FILE__, 'ewww_image_optimizer_network_deactivate');
 register_activation_hook(__FILE__, 'ewww_image_optimizer_install_table');
 
-/**
- * Check if this is an unsupported OS (not Linux or Mac OSX or FreeBSD or Windows or SunOS)
- */
+// Check if this is an unsupported OS (not Linux or Mac OSX or FreeBSD or Windows or SunOS)
 if(EWWW_IMAGE_OPTIMIZER_CLOUD) {
 	define('EWWW_IMAGE_OPTIMIZER_PNGOUT', false);
 	define('EWWW_IMAGE_OPTIMIZER_GIFSICLE', false);
@@ -83,6 +82,7 @@ if(EWWW_IMAGE_OPTIMIZER_CLOUD) {
 	add_action('network_admin_notices', 'ewww_image_optimizer_notice_utils');
 	add_action('admin_notices', 'ewww_image_optimizer_notice_utils');
 } 
+
 // need to include the plugin library for the is_plugin_active function (even though it isn't supposed to be necessary in the admin)
 require_once(ABSPATH . 'wp-admin/includes/plugin.php');
 // include the file that loads the nextgen gallery optimization functions
@@ -95,6 +95,7 @@ if (is_plugin_active('nextgen-gallery/nggallery.php') || (function_exists('is_pl
 		require(dirname(__FILE__) . '/nextgen-integration.php');
 	}
 }
+
 // include the file that loads the grand flagallery optimization functions
 if (is_plugin_active('flash-album-gallery/flag.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('flash-album-gallery/flag.php')))
 require( dirname(__FILE__) . '/flag-integration.php' );
@@ -703,7 +704,8 @@ function ewww_image_optimizer_notice_utils() {
 
 	// Check if exec is disabled
 	$disabled = ini_get('disable_functions');
-	if(preg_match('/^[^_]*exec/', $disabled)){
+	$suhosin_disabled = ini_get('suhosin.executor.func.blacklist');
+	if(preg_match('/[^_]*exec/', $disabled) || preg_match('/[^_]*exec/', $suhosin_disabled)) {
 		//display a warning if exec() is disabled, can't run much of anything without it
 		echo "<div id='ewww-image-optimizer-warning-opt-png' class='error'><p><strong>EWWW Image Optimizer requires exec().</strong> Your system administrator has disabled this function.</p></div>";
 		define('EWWW_IMAGE_OPTIMIZER_NOEXEC', true);
@@ -969,9 +971,9 @@ function ewww_image_optimizer_media_scripts($hook) {
 		global $wp_version;
 		$my_version = $wp_version;
 		$my_version = substr($my_version, 0, 3);
-		if ($my_version < 3.6) {
-			wp_enqueue_style('jquery-ui-tooltip', plugins_url('jquery-ui-1.10.1.custom.css', __FILE__));
-		}
+//		if ($my_version < 3.6) {
+			wp_enqueue_style('jquery-ui-tooltip-custom', plugins_url('jquery-ui-1.10.1.custom.css', __FILE__));
+//		}
 	}
 }
 
@@ -1048,6 +1050,7 @@ function ewww_image_optimizer_jpg_quality () {
 // require the file that does the bulk processing
 require(dirname(__FILE__) . '/bulk.php');
 require(dirname(__FILE__) . '/aux-optimize.php');
+
 /**
  * Manually process an image from the Media Library
  */
@@ -1068,8 +1071,13 @@ function ewww_image_optimizer_manual() {
 	$attachment_ID = intval($_GET['attachment_ID']);
 	// retrieve the existing attachment metadata
 	$original_meta = wp_get_attachment_metadata( $attachment_ID );
-	// call the optimize from metadata function and store the resulting new metadata
-	$new_meta = ewww_image_optimizer_resize_from_meta_data( $original_meta, $attachment_ID );
+	// if the call was to optimize...
+	if ($_REQUEST['action'] === 'ewww_image_optimizer_manual_optimize') {
+		// call the optimize from metadata function and store the resulting new metadata
+		$new_meta = ewww_image_optimizer_resize_from_meta_data($original_meta, $attachment_ID);
+	} elseif ($_REQUEST['action'] === 'ewww_image_optimizer_manual_restore') {
+		$new_meta = ewww_image_optimizer_restore_from_meta_data($original_meta, $attachment_ID);
+	}
 	// update the attachment metadata in the database
 	wp_update_attachment_metadata( $attachment_ID, $new_meta );
 	// store the referring webpage location
@@ -1085,10 +1093,10 @@ function ewww_image_optimizer_manual() {
 /**
  * Manually restore a converted image
  */
-function ewww_image_optimizer_restore() {
+function ewww_image_optimizer_restore_from_meta_data($meta, $id) {
 	global $ewww_debug;
-	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_restore()</b><br>";
-	// check permissions of current user
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_restore_from_meta_data()</b><br>";
+/*	// check permissions of current user
 	if ( FALSE === current_user_can('upload_files') ) {
 		// display error message if insufficient permissions
 		wp_die(__('You don\'t have permission to work with uploaded files.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
@@ -1097,11 +1105,11 @@ function ewww_image_optimizer_restore() {
 	if ( FALSE === isset($_GET['attachment_ID'])) {
 		// display an error message since we don't have anything to work on
 		wp_die(__('No attachment ID was provided.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
-	}
+	}*/
 	// store the attachment ID value
-	$id = intval($_GET['attachment_ID']);
+//	$id = intval($_GET['attachment_ID']);
 	// retrieve the existing attachment metadata
-	$meta = wp_get_attachment_metadata($id);
+//	$meta = wp_get_attachment_metadata($id);
 	// get the filepath from the metadata
 	$file_path = get_attached_file($id);
 	// don't store absolute paths
@@ -1163,8 +1171,9 @@ function ewww_image_optimizer_restore() {
 			}		
 		}
 	}
+	return $meta;
 	// update the attachment metadata in the database
-	wp_update_attachment_metadata($id, $meta );
+/*	wp_update_attachment_metadata($id, $meta );
 	// store the referring webpage location
 	$sendback = wp_get_referer();
 	// sanitize the referring webpage location
@@ -1172,7 +1181,7 @@ function ewww_image_optimizer_restore() {
 	// send the user back where they came from
 	wp_redirect($sendback);
 	// we are done, nothing to see here
-	exit(0);
+	exit(0);*/
 }
 
 // deletes 'orig_file' when an attachment is being deleted
@@ -1252,6 +1261,8 @@ function ewww_image_optimizer_update_saved_file ($meta, $ID) {
 
 // submits the api key for verification
 function ewww_image_optimizer_cloud_verify() {
+	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_cloud_verify()</b><br>";
 	$api_key = get_site_option('ewww_image_optimizer_cloud_key');
 	if (empty($api_key)) {
 		update_site_option('ewww_image_optimizer_cloud_jpg', '');
@@ -1263,18 +1274,24 @@ function ewww_image_optimizer_cloud_verify() {
 	$result = wp_remote_post($url, array(
 		'body' => array('api_key' => $api_key)
 	));
-	if (preg_match('/(great|exceeded)/', $result['body'])) {
-		return $result['body'];
-	} else {
+	if (is_wp_error($result)) {
+		$error_message = $result->get_error_message();
+		$ewww_debug = "$ewww_debug verification failed: $error_message <br>";
+	}
+	if (empty($result['body']) || !empty($error_message) || !preg_match('/(great|exceeded)/', $result['body'])) {
 		update_site_option('ewww_image_optimizer_cloud_jpg', '');
 		update_site_option('ewww_image_optimizer_cloud_png', '');
 		update_site_option('ewww_image_optimizer_cloud_gif', '');
 		return FALSE;
+	} else {
+		return $result['body'];
 	}
 }
 
 // submits an image to the cloud optimizer and saves the optimized image to disk
-function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $background = null, $quality = null) {
+function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $r = '255', $g = '255', $b = '255', $quality = null) {
+	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_cloud_optimizer()</b><br>";
 	if(get_site_option('ewww_image_optimizer_jpegtran_copy') == TRUE){
         	// don't copy metadata
                 $metadata = 0;
@@ -1302,7 +1319,9 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $b
 		'convert' => $convert, 
 		'metadata' => $metadata, 
 		'api_key' => $api_key,
-		'background' => $background,
+		'red' => $r,
+		'green' => $g,
+		'blue' => $b,
 		'quality' => $quality,
 	);
 
@@ -1333,6 +1352,10 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $b
 		'headers' => $headers,
 		'body' => $payload,
 		));
+	if (is_wp_error($response)) {
+		$error_message = $response->get_error_message();
+		$ewww_debug = "$ewww_debug verification failed: $error_message <br>";
+	}
 	if (empty($response['body']) || is_wp_error($response)) {
 		return FALSE;
 	} else {
@@ -1346,7 +1369,7 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $b
  * Returns an array of the $file, $results, $converted to tell us if an image changes formats, and the $original file if it did.
  *
  * @param   string $file		Full absolute path to the image file
- * @param   int $gallery_type		1=wordpress, 2=nextgen, 3=flagallery, 4=aux_images, 5=image editor (I think)
+ * @param   int $gallery_type		1=wordpress, 2=nextgen, 3=flagallery, 4=aux_images, 5=image editor
  * @param   boolean $converted		tells us if this is a resize and the full image was converted to a new format
  * @returns array
  */
@@ -1719,6 +1742,10 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					$b = hexdec('0x' . strtoupper(substr($background, 4, 2)));
 					// set the background flag for 'convert'
 					$background = "-background " . '"' . "#$background" . '"';
+				} else {
+					$r = '255';
+					$g = '255';
+					$b = '255';
 				}
 				// if the user manually set the JPG quality
 				if ($quality = ewww_image_optimizer_jpg_quality()) {
@@ -1728,10 +1755,11 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					$cquality = "-quality $quality";
 				} else {
 					$cquality = '';
+					$gquality = '92';
 				}
 				if (get_site_option('ewww_image_optimizer_cloud_png')) {
 					//if (empty($cquality)) $cquality = '-quality 92';
-					$jpgimage = ewww_image_optimizer_cloud_optimizer($file, $type, $convert, $background, $cquality);
+					$jpgimage = ewww_image_optimizer_cloud_optimizer($file, $type, $convert, $r, $g, $b, $gquality);
 					file_put_contents($jpgfile, $jpgimage);
 					if (ewww_image_optimizer_mimetype($jpgfile, 'i') !== 'image/jpeg') {
 						unlink($jpgfile);
@@ -1757,27 +1785,28 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					// create a new image with those dimensions
 					$output = imagecreatetruecolor($width, $height);
 					// if the red color is set
-					if (isset($r)) {
+					//if (!isset($r)) {
 						// allocate the background color
 						$rgb = imagecolorallocate($output, $r, $g, $b);
 						// fill the new image with the background color 
 						imagefilledrectangle($output, 0, 0, $width, $height, $rgb);
-					}
+					//}
 					// copy the original image to the new image
 					imagecopy($output, $input, 0, 0, 0, 0, $width, $height);
 					// if the JPG quality is set
-					if (isset($gquality)) {
+//					if (!empty($gquality)) {
 						// output the JPG with the quality setting
 						imagejpeg($output, $jpgfile, $gquality);
-					} else {
+//					} else {
 						// otherwise, output the JPG at quality 92
-						imagejpeg($output, $jpgfile, 92);
-					}
+//						imagejpeg($output, $jpgfile, 92);
+//					}
 				} elseif (!empty($convert_path)) {
 					exec ("$convert_path $background -flatten $cquality $file $jpgfile");
 				}
 				// retrieve the filesize of the new JPG
 				$jpg_size = filesize($jpgfile);
+				echo "$jpg_size <br>";
 				// next we need to optimize that JPG if jpegtran is enabled
 				if (!get_site_option('ewww_image_optimizer_disable_jpegtran') && file_exists($jpgfile)) {
 					// generate temporary file-names:
@@ -2407,11 +2436,11 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 			// output the filesize
 			print "<br>Image Size: $file_size";
 			// output a link to re-optimize manually
-			printf("<br><a href=\"admin.php?action=ewww_image_optimizer_manual&amp;attachment_ID=%d\">%s</a>",
+			printf("<br><a href=\"admin.php?action=ewww_image_optimizer_manual_optimize&amp;attachment_ID=%d\">%s</a>",
 				$id,
 				__('Re-optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 			if (!get_site_option('ewww_image_optimizer_disable_convert_links'))
-				echo " | <a class='ewww-convert' title='$convert_desc' href='admin.php?action=ewww_image_optimizer_manual&amp;attachment_ID=$id&amp;convert=1'>$convert_link</a>";
+				echo " | <a class='ewww-convert' title='$convert_desc' href='admin.php?action=ewww_image_optimizer_manual_optimize&amp;attachment_ID=$id&amp;convert=1'>$convert_link</a>";
 			$restorable = false;
 			if (!empty($meta['converted'])) {
 				if (!empty($meta['orig_file']) && file_exists($meta['orig_file'])) {
@@ -2430,7 +2459,7 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 				}
 			}
 			if ($restorable) {
-				printf("<br><a href=\"admin.php?action=ewww_image_optimizer_restore&amp;attachment_ID=%d\">%s</a>",
+				printf("<br><a href=\"admin.php?action=ewww_image_optimizer_manual_restore&amp;attachment_ID=%d\">%s</a>",
 					$id,
 					__('Restore original', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 			}
@@ -2440,11 +2469,11 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 			// tell them the filesize
 			print "<br>Image Size: $file_size";
 			// and give the user the option to optimize the image right now
-			printf("<br><a href=\"admin.php?action=ewww_image_optimizer_manual&amp;attachment_ID=%d\">%s</a>",
+			printf("<br><a href=\"admin.php?action=ewww_image_optimizer_manual_optimize&amp;attachment_ID=%d\">%s</a>",
 				$id,
 				__('Optimize now!', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 			if (!get_site_option('ewww_image_optimizer_disable_convert_links'))
-				echo " | <a class='ewww-convert' title='$convert_desc' href='admin.php?action=ewww_image_optimizer_manual&amp;attachment_ID=$id&amp;convert=1'>$convert_link</a>";
+				echo " | <a class='ewww-convert' title='$convert_desc' href='admin.php?action=ewww_image_optimizer_manual_optimize&amp;attachment_ID=$id&amp;convert=1'>$convert_link</a>";
 		}
 	}
 }
@@ -2770,7 +2799,7 @@ function ewww_image_optimizer_options () {
 			</table>
 			<h3>Conversion Settings</h3>
 			<p>
-				Conversion is not available in NextGEN or GRAND FlAGallery.
+				Conversion is not available in NextGEN or GRAND FlAGallery. These settings also apply to cloud optimization.
 				By default, all images have a link available in the media library for one-time conversion. Turning on individual conversion operations below will enable conversion filters any time an image is uploaded or modified.<br />
 				<b>NOTE:</b> The plugin will attempt to update image locations for any posts that contain the images. You may need to manually update locations/urls for converted images. 
 			</p>
