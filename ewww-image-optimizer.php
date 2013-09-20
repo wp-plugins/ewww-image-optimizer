@@ -704,8 +704,10 @@ function ewww_image_optimizer_notice_utils() {
 
 	// Check if exec is disabled
 	$disabled = ini_get('disable_functions');
+	$ewww_debug = "$ewww_debug disable_functions = $disabled <br>";
 	$suhosin_disabled = ini_get('suhosin.executor.func.blacklist');
-	if(preg_match('/[^_]*exec/', $disabled) || preg_match('/[^_]*exec/', $suhosin_disabled)) {
+	$ewww_debug = "$ewww_debug suhosin_blacklist = $suhosin_disabled <br>";
+	if(preg_match('/([\s,]+exec|^exec)/', $disabled) || preg_match('/([\s,]+exec|^exec)/', $suhosin_disabled)) {
 		//display a warning if exec() is disabled, can't run much of anything without it
 		echo "<div id='ewww-image-optimizer-warning-opt-png' class='error'><p><strong>EWWW Image Optimizer requires exec().</strong> Your system administrator has disabled this function.</p></div>";
 		define('EWWW_IMAGE_OPTIMIZER_NOEXEC', true);
@@ -1278,7 +1280,7 @@ function ewww_image_optimizer_cloud_verify() {
 		$error_message = $result->get_error_message();
 		$ewww_debug = "$ewww_debug verification failed: $error_message <br>";
 	}
-	if (empty($result['body']) || !empty($error_message) || !preg_match('/(great|exceeded)/', $result['body'])) {
+	if (!empty($error_message) || empty($result['body']) || !preg_match('/(great|exceeded)/', $result['body'])) {
 		update_site_option('ewww_image_optimizer_cloud_jpg', '');
 		update_site_option('ewww_image_optimizer_cloud_png', '');
 		update_site_option('ewww_image_optimizer_cloud_gif', '');
@@ -1356,7 +1358,7 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $r
 		$error_message = $response->get_error_message();
 		$ewww_debug = "$ewww_debug verification failed: $error_message <br>";
 	}
-	if (empty($response['body']) || is_wp_error($response)) {
+	if (is_wp_error($response) || empty($response['body'])) {
 		return FALSE;
 	} else {
 		return $response['body'];

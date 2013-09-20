@@ -141,6 +141,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * these are possible future bugfixes and/or feature requests, if you see a feature you like here, go vote for it in the support forum
 * SunOS (Solaris/OpenIndiana) support
 * WP Symposium support
+* Bulk restoration of converted images
 
 = 1.6.0 =
 * Cloud Optimization option (BETA: get your free API key at http://www.exactlywww.com/cloud/)
