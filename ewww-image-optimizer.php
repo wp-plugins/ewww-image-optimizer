@@ -1531,50 +1531,50 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 			if ($convert || $converted) {
 				$ewww_debug = "$ewww_debug attempting to convert JPG to PNG: $pngfile <br>";
 				if (get_site_option('ewww_image_optimizer_cloud_jpg')) {
-					$pngimage = ewww_image_optimizer_cloud_optimizer($file, $type, $convert);
+					$pngimage = ewww_image_optimizer_cloud_optimizer($file, $type, true);
 					file_put_contents($pngfile, $pngimage);
 					if (ewww_image_optimizer_mimetype($pngfile, 'i') !== 'image/png') {
 						unlink($pngfile);
 					}
 				} else {
-				// retrieve version info for ImageMagick
-				if (ewww_image_optimizer_tool_found('convert', 'i')) {
-					$convert_path = 'convert';
-				} elseif (ewww_image_optimizer_tool_found('/usr/bin/convert', 'i')) {
-					$convert_path = '/usr/bin/convert';
-				} elseif (ewww_image_optimizer_tool_found('/usr/local/bin/convert', 'i')) {
-					$convert_path = '/usr/local/bin/convert';
-				}
-				// convert the JPG to PNG (try with GD if possible, 'convert' if not)
-				if (!empty($convert_path)) {
-					$ewww_debug = "$ewww_debug converting with ImageMagick<br>";
-					exec("$convert_path $file -strip $pngfile");
-				} elseif (ewww_image_optimizer_gd_support()) {
-					$ewww_debug = "$ewww_debug converting with GD<br>";
-					imagepng(imagecreatefromjpeg($file), $pngfile);
-				}
-				// if pngout isn't disabled
-				if (!get_site_option('ewww_image_optimizer_disable_pngout')) {
-					// retrieve the pngout optimization level
-					$pngout_level = get_site_option('ewww_image_optimizer_pngout_level');
-					// if the PNG file was created
-					if (file_exists($pngfile)) {
-						$ewww_debug = "$ewww_debug optimizing converted PNG with pngout<br>";
-						// run pngout on the new PNG
-						exec("$nice " . $tools['PNGOUT'] . " -s$pngout_level -q $pngfile");
+					// retrieve version info for ImageMagick
+					if (ewww_image_optimizer_tool_found('convert', 'i')) {
+						$convert_path = 'convert';
+					} elseif (ewww_image_optimizer_tool_found('/usr/bin/convert', 'i')) {
+						$convert_path = '/usr/bin/convert';
+					} elseif (ewww_image_optimizer_tool_found('/usr/local/bin/convert', 'i')) {
+						$convert_path = '/usr/local/bin/convert';
 					}
-				}
-				// if optipng isn't disabled
-				if (!get_site_option('ewww_image_optimizer_disable_optipng')) {
-					// retrieve the optipng optimization level
-					$optipng_level = get_site_option('ewww_image_optimizer_optipng_level');
-					// if the PNG file was created
-					if (file_exists($pngfile)) {
-						$ewww_debug = "$ewww_debug optimizing converted PNG with optipng<br>";
-						// run optipng on the new PNG
-						exec("$nice " . $tools['OPTIPNG'] . " -o$optipng_level -quiet $pngfile");
+					// convert the JPG to PNG (try with GD if possible, 'convert' if not)
+					if (!empty($convert_path)) {
+						$ewww_debug = "$ewww_debug converting with ImageMagick<br>";
+						exec("$convert_path $file -strip $pngfile");
+					} elseif (ewww_image_optimizer_gd_support()) {
+						$ewww_debug = "$ewww_debug converting with GD<br>";
+						imagepng(imagecreatefromjpeg($file), $pngfile);
 					}
-				}
+					// if pngout isn't disabled
+					if (!get_site_option('ewww_image_optimizer_disable_pngout')) {
+						// retrieve the pngout optimization level
+						$pngout_level = get_site_option('ewww_image_optimizer_pngout_level');
+						// if the PNG file was created
+						if (file_exists($pngfile)) {
+							$ewww_debug = "$ewww_debug optimizing converted PNG with pngout<br>";
+							// run pngout on the new PNG
+							exec("$nice " . $tools['PNGOUT'] . " -s$pngout_level -q $pngfile");
+						}
+					}
+					// if optipng isn't disabled
+					if (!get_site_option('ewww_image_optimizer_disable_optipng')) {
+						// retrieve the optipng optimization level
+						$optipng_level = get_site_option('ewww_image_optimizer_optipng_level');
+						// if the PNG file was created
+						if (file_exists($pngfile)) {
+							$ewww_debug = "$ewww_debug optimizing converted PNG with optipng<br>";
+							// run optipng on the new PNG
+							exec("$nice " . $tools['OPTIPNG'] . " -o$optipng_level -quiet $pngfile");
+						}
+					}
 				}
 				// find out the size of the new PNG file
 				$png_size = filesize($pngfile);
@@ -1654,13 +1654,15 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				// if the optimization didn't produce a smaller JPG
 				} else {
 					// delete the optimized file
-					//unlink($tempfile);
+					unlink($tempfile);
 					// store the results
 					$result = "unchanged";
+					$new_size = $orig_size;
 				}
 			}
 			// if we generated a smaller PNG than the optimized JPG
 			if ($converted && $new_size > $png_size) {
+				$ewww_debug = "$ewww_debug converted PNG is better: $png_size vs. $new_size<br>";
 				// store the size of the converted PNG
 				$new_size = $png_size;
 				// check to see if the user wants the originals deleted
@@ -1674,6 +1676,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				$result = "$orig_size vs. $new_size";
 			// if the PNG was smaller than the original JPG, but bigger than the optimized JPG
 			} elseif ($converted) {
+				$ewww_debug = "$ewww_debug converted PNG is no good<br>";
 				// unsuccessful conversion
 				$converted = FALSE;
 				// remove the converted PNG
@@ -1808,7 +1811,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				}
 				// retrieve the filesize of the new JPG
 				$jpg_size = filesize($jpgfile);
-				echo "$jpg_size <br>";
 				// next we need to optimize that JPG if jpegtran is enabled
 				if (!get_site_option('ewww_image_optimizer_disable_jpegtran') && file_exists($jpgfile)) {
 					// generate temporary file-names:
@@ -2088,7 +2090,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 		$savings = intval($s[0]) - intval($s[1]);
 		// convert it to human readable format
 		$savings_str = size_format($savings, 1);
-//		$savings_str = ewww_image_optimizer_format_bytes($savings, 1);
 		// replace spaces with proper html entity encoding
 		$savings_str = str_replace('B ', 'B', $savings_str);
 		$savings_str = str_replace(' ', '&nbsp;', $savings_str);
@@ -2360,9 +2361,6 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 				}
 				wp_update_attachment_metadata($id, $meta);
 			}
-//			echo 'Metadata is missing file path.';
-			//print __('Unsupported file type', EWWW_IMAGE_OPTIMIZER_DOMAIN) . $msg;
-//			return;
 		}
 		// retrieve the filepath
 		$file_path = get_attached_file($id);

@@ -17,7 +17,7 @@ By default, EWWW Image Optimizer uses lossless optimization techniques, so your 
 
 Images are optimized using the [jpegtran](http://jpegclub.org/jpegtran/), [optipng](http://optipng.sourceforge.net/), [pngout](advsys.net/ken/utils.htm), and [gifsicle](http://www.lcdf.org/gifsicle/) image tools (available for free). For PNG files, either optipng or pngout can be used. If you want the best optimization, install both, set optipng to level 3 (beyond that is just crazy and rarely yields significant gains) and pngout to level 0. Images are converted using the above tools and GD or 'convert' (ImageMagick).
 
-EWWW Image Optimizer calls optimization utilities directly which is well suited to shared hosting situations where these utilities may already be installed. Pre-compiled binaries/executables are provided for optipng, gifsicle, and jpegtran. Pngout can be installed with one-click from the settings page.
+EWWW Image Optimizer calls optimization utilities directly which is well suited to shared hosting situations where these utilities may already be installed. Pre-compiled binaries/executables are provided for optipng, gifsicle, and jpegtran. Pngout can be installed with one-click from the settings page. If none of that works, there is a new cloud option (currently in BETA) that will work for those who cannot run the optimizers on their own server.
 
 **Why use EWWW Image Optimizer?**
 
@@ -26,7 +26,7 @@ EWWW Image Optimizer calls optimization utilities directly which is well suited 
 1. **Less bandwidth usage.** Optimizing your images can save you hundreds of KB per image, which means significantly less bandwidth usage.
 1. **Super fast.** Because it runs on your own server, you don’t have to wait for a third party service to receive, process, and return your images. You can optimize hundreds of images in just a few minutes. PNG files take the longest, but you can adjust the settings for your situation.
 1. **Better PNG optimization.** YOu can use pngout and optipng in conjunction.
-1. **Root access not needed** Pre-compiled binaries are made available to install directly within the Wordpress folder. 
+1. **Root access not needed** Pre-compiled binaries are made available to install directly within the Wordpress folder, and cloud optimization is provided for those who cannot run the binaries locally.
 
 = Theme Images =
 
@@ -142,6 +142,11 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * SunOS (Solaris/OpenIndiana) support
 * WP Symposium support
 * Bulk restoration of converted images
+
+= 1.6.1 =
+fixed: temporary jpgs were not being deleted (leftovers from testing for last release)
+fixed: jpgs would not be converted to pngs if jpgs had already been optimized
+fixed: cloud service not converting gif to png
 
 = 1.6.0 =
 * Cloud Optimization option (BETA: get your free API key at http://www.exactlywww.com/cloud/)
@@ -351,7 +356,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 == Upgrade Notice ==
 
-= 1.6.0 =
+= 1.6.1 =
 * New Cloud Optimization option for those who can't (or won't) enable exec() on their servers (BETA: get your free API key at http://www.exactlywww.com/cloud/)
 
 = 1.5.0 =
