@@ -143,6 +143,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * WP Symposium support
 * Bulk restoration of converted images
 
+= 1.6.2 =
+* added license exceeded status into status message so users know if they've gone over
+
 = 1.6.1 =
 fixed: temporary jpgs were not being deleted (leftovers from testing for last release)
 fixed: jpgs would not be converted to pngs if jpgs had already been optimized

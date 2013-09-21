@@ -1380,6 +1380,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer()</b><br>";
 	// initialize the original filename 
 	$original = $file;
+	$msg = '';
 	if (!EWWW_IMAGE_OPTIMIZER_CLOUD) {
 		// check to see if 'nice' exists
 		if (ewww_image_optimizer_tool_found('/usr/bin/nice', 'n')) {
@@ -1534,6 +1535,10 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					$pngimage = ewww_image_optimizer_cloud_optimizer($file, $type, true);
 					file_put_contents($pngfile, $pngimage);
 					if (ewww_image_optimizer_mimetype($pngfile, 'i') !== 'image/png') {
+						if (preg_match('/exceeded/', $pngimage)) {
+							$ewww_debug = "$ewww_debug License Exceeded<br>";
+							$msg = 'exceeded';
+						}
 						unlink($pngfile);
 					}
 				} else {
@@ -1600,6 +1605,10 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					$jpgimage = ewww_image_optimizer_cloud_optimizer($file, $type);
 					file_put_contents($tempfile, $jpgimage);
 					if (ewww_image_optimizer_mimetype($tempfile, 'i') !== 'image/jpeg') {
+						if (preg_match('/exceeded/', $jpgimage)) {
+							$ewww_debug = "$ewww_debug License Exceeded<br>";
+							$msg = 'exceeded';
+						}
 						$new_size = 0;
 					} else {
 						$new_size = filesize($tempfile);
@@ -1767,6 +1776,10 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					$jpgimage = ewww_image_optimizer_cloud_optimizer($file, $type, $convert, $r, $g, $b, $gquality);
 					file_put_contents($jpgfile, $jpgimage);
 					if (ewww_image_optimizer_mimetype($jpgfile, 'i') !== 'image/jpeg') {
+						if (preg_match('/exceeded/', $jpgimage)) {
+							$ewww_debug = "$ewww_debug License Exceeded<br>";
+							$msg = 'exceeded';
+						}
 						unlink($jpgfile);
 						$jpg_size = 0;
 					} else {
@@ -1878,6 +1891,10 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					$pngimage = ewww_image_optimizer_cloud_optimizer($file, $type);
 					file_put_contents($pngfile, $pngimage);
 					if (ewww_image_optimizer_mimetype($pngfile, 'i') !== 'image/png') {
+						if (preg_match('/exceeded/', $pngimage)) {
+							$ewww_debug = "$ewww_debug License Exceeded<br>";
+							$msg = 'exceeded';
+						}
 						unlink($pngfile);
 					} else {
 						rename($pngfile, $file);
@@ -1984,6 +2001,10 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					$pngimage = ewww_image_optimizer_cloud_optimizer($file, $type, $convert);
 					file_put_contents($pngfile, $pngimage);
 					if (ewww_image_optimizer_mimetype($pngfile, 'i') !== 'image/png') {
+						if (preg_match('/exceeded/', $pngimage)) {
+							$ewww_debug = "$ewww_debug License Exceeded<br>";
+							$msg = 'exceeded';
+						}
 						unlink($pngfile);
 					}
 				} else {
@@ -2033,6 +2054,10 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					$gifimage = ewww_image_optimizer_cloud_optimizer($file, $type);
 					file_put_contents($giffile, $gifimage);
 					if (ewww_image_optimizer_mimetype($giffile, 'i') !== 'image/gif') {
+						if (preg_match('/exceeded/', $gifimage)) {
+							$ewww_debug = "$ewww_debug License Exceeded<br>";
+							$msg = 'exceeded';
+						}
 						unlink($giffile);
 					} else {
 						rename($giffile, $file);
@@ -2077,13 +2102,17 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 			// if not a JPG, PNG, or GIF, tell the user we don't work with strangers
 			return array($file, __('Unknown type: ' . $type, EWWW_IMAGE_OPTIMIZER_DOMAIN), $converted, $original);
 	}
+	// if their cloud api license limit has been exceeded
+	if ($msg == 'exceeded') {
+		return array($file, __('License exceeded', EWWW_IMAGE_OPTIMIZER_DOMAIN), $converted, $original);
+	}
 	// if the image is unchanged
-	if($result == 'unchanged') {
+	if ($result == 'unchanged') {
 		// tell the user we couldn't save them anything
 		return array($file, __('No savings', EWWW_IMAGE_OPTIMIZER_DOMAIN), $converted, $original);
 	}
 	// if the image changed
-	if(strpos($result, ' vs. ') !== false) {
+	if (strpos($result, ' vs. ') !== false) {
 		// strip and split $result where it says ' vs. '
 		$s = explode(' vs. ', $result);
 		// calculate how much space was saved
