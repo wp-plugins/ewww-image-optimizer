@@ -327,19 +327,19 @@ class ewwwflag {
 			// if we don't have a valid tool for the image type, output the appropriate message
 	                switch($type) {
         	                case 'image/jpeg':
-                	                if(EWWW_IMAGE_OPTIMIZER_JPEGTRAN == false) {
+                	                if(!EWWW_IMAGE_OPTIMIZER_JPEGTRAN && !EWWW_IMAGE_OPTIMIZER_CLOUD) {
                         	                $valid = false;
 	     	                                $msg = '<br>' . __('<em>jpegtran</em> is missing');
 	                                }
 					break;
 				case 'image/png':
-					if(EWWW_IMAGE_OPTIMIZER_PNGOUT == false && EWWW_IMAGE_OPTIMIZER_OPTIPNG == false) {
+					if(!EWWW_IMAGE_OPTIMIZER_PNGOUT && !EWWW_IMAGE_OPTIMIZER_OPTIPNG && !EWWW_IMAGE_OPTIMIZER_CLOUD) {
 						$valid = false;
 						$msg = '<br>' . __('<em>optipng/pngout</em> is missing');
 					}
 					break;
 				case 'image/gif':
-					if(EWWW_IMAGE_OPTIMIZER_GIFSICLE == false) {
+					if(!EWWW_IMAGE_OPTIMIZER_GIFSICLE && !EWWW_IMAGE_OPTIMIZER_CLOUD) {
 						$valid = false;
 						$msg = '<br>' . __('<em>gifsicle</em> is missing');
 					}
