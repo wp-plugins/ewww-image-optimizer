@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: images, image, attachments, attachment, optimize, nextgen, buddypress, flagallery, flash, gallery, lossless, photos, photo, picture, pictures, seo, compression
 Requires at least: 2.8
 Tested up to: 3.6.1
-Stable tag: 1.6.1
+Stable tag: 1.6.2
 License: GPLv3
 
 Reduce file sizes for images within WordPress including NextGEN, GRAND FlAGallery and BuddyPress. Uses jpegtran, optipng/pngout, and gifsicle.
@@ -145,6 +145,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 = 1.6.2 =
 * added license exceeded status into status message so users know if they've gone over
+* prevent tool checks and cloud verification from firing on every page load, yikes...
 
 = 1.6.1 =
 fixed: temporary jpgs were not being deleted (leftovers from testing for last release)
@@ -358,6 +359,9 @@ fixed: cloud service not converting gif to png
 * First release (forked from CW Image Optimizer)
 
 == Upgrade Notice ==
+
+= 1.6.2 =
+* All Cloud users should upgrade immediately to avoid extended page load times
 
 = 1.6.1 =
 * New Cloud Optimization option for those who can't (or won't) enable exec() on their servers (BETA: get your free API key at http://www.exactlywww.com/cloud/)
