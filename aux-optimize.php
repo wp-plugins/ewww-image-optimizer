@@ -148,7 +148,7 @@ function ewww_image_optimizer_aux_images_script($hook) {
 		return;
 	}
         // check to see if we are supposed to empty the auxiliary images table and verify we are authorized to do so
-	if (!empty($_REQUEST['empty']) && wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-aux-images' )) {
+	if (!empty($_REQUEST['empty']) && wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-aux-images' ) && !$theme_images) {
 		global $wpdb;
 		// empty the ewwwio_images table to allow re-optimization
 		$table_name = $wpdb->prefix . "ewwwio_images"; 
