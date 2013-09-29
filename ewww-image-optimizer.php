@@ -2177,6 +2177,10 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 	// get the filepath
 	$file_path = get_attached_file($ID);
 	$ewww_debug = "$ewww_debug WP thinks the file is at: $file_path<br>";
+	// retrieve the location of the wordpress upload folder
+-	$upload_dir = wp_upload_dir();
+-	// retrieve the path of the upload folder
+-	$upload_path = trailingslashit($upload_dir['basedir']);
 	// if the attachment has been uploaded via the image store plugin
 	if ('ims_image' == get_post_type($ID)) {
 		$gallery_type = 6;
