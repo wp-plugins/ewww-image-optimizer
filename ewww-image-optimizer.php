@@ -34,12 +34,12 @@ define('EWWW_IMAGE_OPTIMIZER_TOOL_PATH', WP_CONTENT_DIR . '/ewww/');
 /**
  * Hooks
  */
-add_filter('wp_generate_attachment_metadata', 'ewww_image_optimizer_resize_from_meta_data', 10, 2);
+add_filter('wp_generate_attachment_metadata', 'ewww_image_optimizer_resize_from_meta_data', 60, 2);
 add_filter('manage_media_columns', 'ewww_image_optimizer_columns');
 // variable for plugin settings link
 $plugin = plugin_basename ( __FILE__ );
 add_filter("plugin_action_links_$plugin", 'ewww_image_optimizer_settings_link');
-add_filter('wp_save_image_editor_file', 'ewww_image_optimizer_save_image_editor_file', 10, 5);
+add_filter('wp_save_image_editor_file', 'ewww_image_optimizer_save_image_editor_file', 60, 5);
 add_action('manage_media_custom_column', 'ewww_image_optimizer_custom_column', 10, 2);
 add_action('admin_init', 'ewww_image_optimizer_admin_init');
 add_action('admin_action_ewww_image_optimizer_manual_optimize', 'ewww_image_optimizer_manual');
@@ -53,6 +53,7 @@ add_action('admin_action_bulk_optimize', 'ewww_image_optimizer_bulk_action_handl
 add_action('admin_action_-1', 'ewww_image_optimizer_bulk_action_handler'); 
 add_action('admin_action_ewww_image_optimizer_install_pngout', 'ewww_image_optimizer_install_pngout');
 add_action('admin_enqueue_scripts', 'ewww_image_optimizer_media_scripts');
+//add_action('in_admin_footer', 'ewww_image_optimizer_footer_debug');
 register_deactivation_hook(__FILE__, 'ewww_image_optimizer_network_deactivate');
 register_activation_hook(__FILE__, 'ewww_image_optimizer_install_table');
 
@@ -986,6 +987,16 @@ function ewww_image_optimizer_debug() {
 	if (get_site_option('ewww_image_optimizer_debug')) echo '<div style="background-color:#ffff99;position:relative;bottom:60px;padding:5px 20px 10px;margin:0 0 15px 146px"><h3>Debug Log</h3>' . $ewww_debug . '</div>';
 }
 
+// used to output debug messages to a logfile in the plugin folder in cases where output to the screen is a bad idea
+function ewww_image_optimizer_debug_log() {
+	global $ewww_debug;
+	if (get_site_option('ewww_image_optimizer_debug')) {
+		$timestamp = date('y-m-d h:i:s.u') . "  ";
+		$ewww_debug = preg_replace('/<br>/', "\n", $ewww_debug);
+		file_put_contents(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'debug.log', $timestamp . $ewww_debug, FILE_APPEND);
+	}
+}
+
 // adds a link on the Plugins page for the EWWW IO settings
 function ewww_image_optimizer_settings_link($links) {
 	// load the html for the settings link
@@ -1250,7 +1261,7 @@ function ewww_image_optimizer_save_image_editor_file ($nothing, $file, $image, $
 	// if we don't already have this update attachment filter
 	if (FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_saved_file'))
 		// add the update saved file filter
-		add_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_saved_file', 10, 2);
+		add_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_saved_file', 60, 2);
 	return;
 }
 
@@ -1373,7 +1384,7 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $r
  * Returns an array of the $file, $results, $converted to tell us if an image changes formats, and the $original file if it did.
  *
  * @param   string $file		Full absolute path to the image file
- * @param   int $gallery_type		1=wordpress, 2=nextgen, 3=flagallery, 4=aux_images, 5=image editor
+ * @param   int $gallery_type		1=wordpress, 2=nextgen, 3=flagallery, 4=aux_images, 5=image editor, 6=imagestore
  * @param   boolean $converted		tells us if this is a resize and the full image was converted to a new format
  * @returns array
  */
@@ -1410,7 +1421,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 	if (FALSE === file_exists($file)) {
 		// tell the user we couldn't find the file
 		$msg = sprintf(__("Could not find <span class='code'>%s</span>", EWWW_IMAGE_OPTIMIZER_DOMAIN), $file);
-		$ewww_debug = "$ewww_debug file doesn't appear to exist<br>";
+		$ewww_debug = "$ewww_debug file doesn't appear to exist: $file <br>";
 		// send back the above message
 		return array($file, $msg, $converted, $original);
 	}
@@ -2159,16 +2170,38 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 	} else {
 		$gallery_type = 5;
 	}
+	$ewww_debug = "$ewww_debug attachment id: $ID<br>";
+	$print_meta = print_r($meta, true);
+	$print_meta = preg_replace('/\n/', '<br>', $print_meta);
+	$ewww_debug = "$ewww_debug attachment meta before optimizing: $print_meta<br>";
 	// get the filepath
 	$file_path = get_attached_file($ID);
-//	$file_path = $meta['file'];
+	$ewww_debug = "$ewww_debug WP thinks the file is at: $file_path<br>";
+	// if the attachment has been uploaded via the image store plugin
+	if ('ims_image' == get_post_type($ID)) {
+		$gallery_type = 6;
+		$ims_options = get_site_option('ims_front_options');
+		$ims_path = trailingslashit(WP_CONTENT_DIR . $ims_options['galleriespath']);
+		if (is_dir($file_path)) {
+//			$ims_options = print_r($ims_options, true);
+			$ewww_debug = "$ewww_debug Image Store Options: $ims_options<br>";
+			$upload_path = $file_path;
+			$file_path = $meta['file'];
+			// generate the absolute path
+			$file_path =  $upload_path . $file_path;
+		} elseif (is_file($meta['file'])) {
+			$file_path = $meta['file'];
+		} else {
+			$file_path = WP_CONTENT_DIR . $meta['file'];
+/*			$image_dir = dirname($meta['file']);
+			$dir_list = scandir($image_dir);
+			$dir_list = print_r($dir_list, true);
+			$ewww_debug = "$ewww_debug directory listing: $dir_list<br>";*/
+		}
+	}
 	$ewww_debug = "$ewww_debug retrieved file path: $file_path<br>";
 	// store absolute paths for older wordpress versions
 //	$store_absolute_path = true;
-	// retrieve the location of the wordpress upload folder
-	$upload_dir = wp_upload_dir();
-	// retrieve the path of the upload folder
-	$upload_path = trailingslashit($upload_dir['basedir']);
 	// if the path given is not the absolute path
 //	if (FALSE == file_exists($file_path)) {
 		// don't store absolute paths
@@ -2207,7 +2240,11 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 	if (isset($meta['sizes']) ) {
 		$ewww_debug = "$ewww_debug processing resizes<br>";
 		// meta sizes don't contain a path, so we calculate one
-		$base_dir = dirname($file_path) . '/';
+		if ($gallery_type === 6) {
+			$base_dir = dirname($file_path) . '/_resized/';
+		} else {
+			$base_dir = dirname($file_path) . '/';
+		}
 		// process each resized version
 		$processed = array();
 		foreach($meta['sizes'] as $size => $data) {
@@ -2227,8 +2264,13 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 			}
 			// if this is a unique size
 			if (!$dup_size) {
+//				if ($gallery_type === 6) {
+//					$resize_path = $data['path'];
+//				} else {
+					$resize_path = $base_dir . $data['file'];
+//				}
 				// run the optimization and store the results
-				list($optimized_file, $results, $resize_conv, $original) = ewww_image_optimizer($base_dir . $data['file'], $gallery_type, $conv, true);
+				list($optimized_file, $results, $resize_conv, $original) = ewww_image_optimizer($resize_path, $gallery_type, $conv, true);
 				// if the resize was converted, store the result and the original filename in the metadata for later recovery
 				if ($resize_conv) {
 					// if we don't already have the update attachment filter
@@ -2238,8 +2280,10 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 					$meta['sizes'][$size]['converted'] = 1;
 					$meta['sizes'][$size]['orig_file'] = str_replace($base_dir, '', $original);
 				}
-				// update the filename
-				$meta['sizes'][$size]['file'] = str_replace($base_dir, '', $optimized_file);
+//				if ($gallery_type != 6) {
+					// update the filename
+					$meta['sizes'][$size]['file'] = str_replace($base_dir, '', $optimized_file);
+//				}
 				// update the optimization results
 				$meta['sizes'][$size]['ewww_image_optimizer'] = $results;
 			}
@@ -2248,6 +2292,10 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 			$processed[$size]['height'] = $data['height'];
 		}
 	}
+	$print_meta = print_r($meta, true);
+	$print_meta = preg_replace('/\n/', '<br>', $print_meta);
+	$ewww_debug = "$ewww_debug attachment meta after optimizing: $print_meta<br>";
+	ewww_image_optimizer_debug_log();
 	// send back the updated metadata
 	return $meta;
 }

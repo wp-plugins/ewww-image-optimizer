@@ -2,7 +2,7 @@
 Contributors: nosilver4u
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=QFXCW38HE24NY
 Tags: images, image, attachments, attachment, optimize, nextgen, buddypress, flagallery, flash, gallery, lossless, photos, photo, picture, pictures, seo, compression
-Requires at least: 2.8
+Requires at least: 3.0
 Tested up to: 3.6.1
 Stable tag: 1.6.2
 License: GPLv3
@@ -145,6 +145,8 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 = 1.6.3 =
 * prevent excess database calls when optimizing theme images
+* fixed plugin mangles metadata for Image Store plugin
+* added optimization support for Image Store plugin
 
 = 1.6.2 =
 * added license exceeded status into status message so users know if they've gone over
@@ -408,3 +410,5 @@ Improved performance for PNGs by specifying proper optimization level
 == Contact and Credits ==
 
 Written by [Shane Bishop](http://www.shanebishop.net). Based upon CW Image Optimizer, which was written by [Jacob Allred](http://www.jacoballred.com/) at [Corban Works, LLC](http://www.corbanworks.com/). CW Image Optimizer was based on WP Smush.it.
+[Hammer](http://thenounproject.com/noun/hammer/#icon-No1306) designed by [John Caserta](http://thenounproject.com/johncaserta) from The Noun Project
+[Images](http://thenounproject.com/noun/images/#icon-No22772) designed by [Simon Henrotte](http://thenounproject.com/Gizmodesbois) from The Noun Project
