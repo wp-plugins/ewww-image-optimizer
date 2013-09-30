@@ -64,7 +64,8 @@ function ewww_image_optimizer_bulk_script($hook) {
                 $attachments = get_posts( array(
                         'numberposts' => -1,
                         'include' => explode(',', $_REQUEST['ids']),
-                        'post_type' => 'attachment',
+                        'post_type' => array('attachment', 'ims_image'),
+			'post_status' => 'any',
                         'post_mime_type' => 'image',
 			'fields' => 'ids'
                 ));
@@ -79,7 +80,8 @@ function ewww_image_optimizer_bulk_script($hook) {
                 // load up all the image attachments we can find
                 $attachments = get_posts( array(
                         'numberposts' => -1,
-                        'post_type' => 'attachment',
+                        'post_type' => array('attachment', 'ims_image'),
+			'post_status' => 'any',
                         'post_mime_type' => 'image',
 			'fields' => 'ids'
                 ));

@@ -967,8 +967,49 @@ function ewww_image_optimizer_admin_menu() {
 		);
 		add_action('admin_footer-' . $ewww_options_page, 'ewww_image_optimizer_debug');
 	}
+	if(is_plugin_active('image-store/ImStore.php') || is_plugin_active_for_network('image-store/ImStore.php')) {
+		$ewww_ims_page = add_media_page('IMS Optimize', 'IMS Optimize', 'edit_themes', 'ewww-ims-optimize', 'ewww_image_optimizer_ims');
+		add_action('admin_footer-' . $ewww_ims_page, 'ewww_image_optimizer_debug');
+	}
 }
 
+// list IMS images and optimization status
+function ewww_image_optimizer_ims() {
+                $attachments = get_posts( array(
+                        'numberposts' => -1,
+                        'post_type' => 'ims_image',
+			'post_status' => 'any',
+                        'post_mime_type' => 'image',
+			'fields' => 'ids'
+                ));
+		print_r($attachments);
+		echo '<h3>IMS Images</h3><table class="wp-list-table widefat media" cellspacing="0"><thead><tr><th>&nbsp;</th><th>&nbsp;</th><th>filename</th><th>Image Optimizer</th></tr></thead>';
+		$alternate = true;
+		foreach ($attachments as $ID) {
+			$meta = get_metadata('post', $ID);
+//			$meta = $meta[0];
+			$meta = unserialize($meta['_wp_attachment_metadata'][0]);
+//			$image_name = str_replace($upload_path, '', $optimized_image[0]);
+			$image_name = basename($meta['file']);
+//			$image_url = $upload_info['baseurl'] . $image_name;
+			$image_url = $meta['sizes']['mini']['url'];
+			$echo_meta = print_r($meta, true);
+			$echo_meta = preg_replace('/\n/', '<br>', $echo_meta);
+			$echo_meta = preg_replace('/ /', '&nbsp;', $echo_meta);
+			$savings = $meta['ewww_image_optimizer'];
+	$file_path = get_attached_file($ID);
+			if ($alternate) {
+				echo "<tr class='alternate'><td>$echo_meta</td><td style='width:80px' class='column-icon'><img src='$image_url' /></td><td class='title'>$image_name<br>$file_path</td><td>$savings</td></tr>";
+			} else {
+				echo "<tr><td>$echo_meta</td><td style='width:80px' class='column-icon'><img src='$image_url' /></td><td class='title'>$image_name<br>$file_path</td><td>$savings</td></tr>";
+			}
+			$alternate = !$alternate;
+		}
+		echo '</table>';
+	return;	
+}
+
+// enqueue custom jquery stylesheet
 function ewww_image_optimizer_media_scripts($hook) {
 	if ($hook == 'upload.php') {
 		wp_enqueue_script('jquery-ui-tooltip');
@@ -2178,14 +2219,14 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 	$file_path = get_attached_file($ID);
 	$ewww_debug = "$ewww_debug WP thinks the file is at: $file_path<br>";
 	// retrieve the location of the wordpress upload folder
--	$upload_dir = wp_upload_dir();
--	// retrieve the path of the upload folder
--	$upload_path = trailingslashit($upload_dir['basedir']);
+	$upload_dir = wp_upload_dir();
+	// retrieve the path of the upload folder
+	$upload_path = trailingslashit($upload_dir['basedir']);
 	// if the attachment has been uploaded via the image store plugin
 	if ('ims_image' == get_post_type($ID)) {
 		$gallery_type = 6;
 		$ims_options = get_site_option('ims_front_options');
-		$ims_path = trailingslashit(WP_CONTENT_DIR . $ims_options['galleriespath']);
+		$ims_path = $ims_options['galleriespath'];
 		if (is_dir($file_path)) {
 //			$ims_options = print_r($ims_options, true);
 			$ewww_debug = "$ewww_debug Image Store Options: $ims_options<br>";
@@ -2195,13 +2236,19 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 			$file_path =  $upload_path . $file_path;
 		} elseif (is_file($meta['file'])) {
 			$file_path = $meta['file'];
+			$upload_path = '';
 		} else {
-			$file_path = WP_CONTENT_DIR . $meta['file'];
+			$upload_path = WP_CONTENT_DIR;
+			if (strpos($meta['file'], $ims_path) === false) {
+				$upload_path = trailingslashit(WP_CONTENT_DIR);
+			}
+			$file_path = $upload_path . $meta['file'];
 /*			$image_dir = dirname($meta['file']);
 			$dir_list = scandir($image_dir);
 			$dir_list = print_r($dir_list, true);
 			$ewww_debug = "$ewww_debug directory listing: $dir_list<br>";*/
 		}
+			
 	}
 	$ewww_debug = "$ewww_debug retrieved file path: $file_path<br>";
 	// store absolute paths for older wordpress versions
@@ -2296,9 +2343,9 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 			$processed[$size]['height'] = $data['height'];
 		}
 	}
-	$print_meta = print_r($meta, true);
-	$print_meta = preg_replace('/\n/', '<br>', $print_meta);
-	$ewww_debug = "$ewww_debug attachment meta after optimizing: $print_meta<br>";
+//	$print_meta = print_r($meta, true);
+//	$print_meta = preg_replace('/\n/', '<br>', $print_meta);
+//	$ewww_debug = "$ewww_debug attachment meta after optimizing: $print_meta<br>";
 	ewww_image_optimizer_debug_log();
 	// send back the updated metadata
 	return $meta;
