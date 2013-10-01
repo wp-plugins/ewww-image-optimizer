@@ -968,44 +968,101 @@ function ewww_image_optimizer_admin_menu() {
 		add_action('admin_footer-' . $ewww_options_page, 'ewww_image_optimizer_debug');
 	}
 	if(is_plugin_active('image-store/ImStore.php') || is_plugin_active_for_network('image-store/ImStore.php')) {
-		$ewww_ims_page = add_media_page('IMS Optimize', 'IMS Optimize', 'edit_themes', 'ewww-ims-optimize', 'ewww_image_optimizer_ims');
+		$ims_menu ='edit.php?post_type=ims_gallery';
+		$ewww_ims_page = add_submenu_page($ims_menu, 'Image Store Optimize', 'Optimize', 'ims_change_settings', 'ewww-ims-optimize', 'ewww_image_optimizer_ims');
+//		$ewww_ims_page = add_media_page('IMS Optimize', 'IMS Optimize', 'edit_themes', 'ewww-ims-optimize', 'ewww_image_optimizer_ims');
 		add_action('admin_footer-' . $ewww_ims_page, 'ewww_image_optimizer_debug');
 	}
 }
 
+
 // list IMS images and optimization status
 function ewww_image_optimizer_ims() {
-                $attachments = get_posts( array(
-                        'numberposts' => -1,
-                        'post_type' => 'ims_image',
-			'post_status' => 'any',
-                        'post_mime_type' => 'image',
-			'fields' => 'ids'
-                ));
-		print_r($attachments);
-		echo '<h3>IMS Images</h3><table class="wp-list-table widefat media" cellspacing="0"><thead><tr><th>&nbsp;</th><th>&nbsp;</th><th>filename</th><th>Image Optimizer</th></tr></thead>';
-		$alternate = true;
-		foreach ($attachments as $ID) {
-			$meta = get_metadata('post', $ID);
-//			$meta = $meta[0];
-			$meta = unserialize($meta['_wp_attachment_metadata'][0]);
-//			$image_name = str_replace($upload_path, '', $optimized_image[0]);
-			$image_name = basename($meta['file']);
-//			$image_url = $upload_info['baseurl'] . $image_name;
-			$image_url = $meta['sizes']['mini']['url'];
-			$echo_meta = print_r($meta, true);
-			$echo_meta = preg_replace('/\n/', '<br>', $echo_meta);
-			$echo_meta = preg_replace('/ /', '&nbsp;', $echo_meta);
-			$savings = $meta['ewww_image_optimizer'];
-	$file_path = get_attached_file($ID);
-			if ($alternate) {
-				echo "<tr class='alternate'><td>$echo_meta</td><td style='width:80px' class='column-icon'><img src='$image_url' /></td><td class='title'>$image_name<br>$file_path</td><td>$savings</td></tr>";
-			} else {
-				echo "<tr><td>$echo_meta</td><td style='width:80px' class='column-icon'><img src='$image_url' /></td><td class='title'>$image_name<br>$file_path</td><td>$savings</td></tr>";
+$ims_columns = get_column_headers('ims_gallery');
+		echo "<h3>Image Store Optimization</h3>";
+//		print_r($ims_columns);
+		if (empty($_REQUEST['gid'])) {
+	                $galleries = get_posts( array(
+	                        'numberposts' => -1,
+	                        'post_type' => 'ims_gallery',
+				'post_status' => 'any',
+				'fields' => 'ids'
+	                ));
+			sort($galleries, SORT_NUMERIC);
+			$gallery_string = implode(',', $galleries);
+//			print_r($galleries);
+			echo "<p>Choose a gallery or <a href='upload.php?page=ewww-image-optimizer-bulk&ids=$gallery_string'>optimize all galleries</a></p>";
+			echo '<table class="wp-list-table widefat media" cellspacing="0"><thead><tr><th>Gallery ID</th><th>Gallery Name</th><th>Images</th><th>Image Optimizer</th></tr></thead>';
+			foreach ($galleries as $gid) {
+		                $attachments = get_posts( array(
+		                        'numberposts' => -1,
+		                        'post_type' => 'ims_image',
+					'post_status' => 'any',
+		                        'post_mime_type' => 'image',
+					'post_parent' => $gid,
+					'fields' => 'ids'
+		                ));
+				$image_count = sizeof($attachments);
+				$image_string = implode(',', $attachments);
+				$gallery_name = get_the_title($gid);
+				echo "<tr><td>$gid</td>";
+				echo "<td><a href='edit.php?post_type=ims_gallery&page=ewww-ims-optimize&gid=$gid'>$gallery_name</a></td>";
+				echo "<td>$image_count</td>";
+				echo "<td><a href='upload.php?page=ewww-image-optimizer-bulk&ids=$image_string'>Optimize Gallery</a></td></tr>";
 			}
-			$alternate = !$alternate;
+			echo "</table>";
+		} else {		
+			$gid = $_REQUEST['gid'];
+	                $attachments = get_posts( array(
+	                        'numberposts' => -1,
+	                        'post_type' => 'ims_image',
+				'post_status' => 'any',
+	                        'post_mime_type' => 'image',
+				'post_parent' => $gid,
+				'fields' => 'ids'
+	                ));
+			sort($attachments, SORT_NUMERIC);
+			$image_string = implode(',', $attachments);
+			echo "<p><a href='upload.php?page=ewww-image-optimizer-bulk&ids=$image_string'>Optimize Gallery</a></p>";
+//			print_r($attachments);
+			echo '<table class="wp-list-table widefat media" cellspacing="0"><thead><tr><th>ID</th><th>&nbsp;</th><th>Title</th><th>Gallery</th><th>Image Optimizer</th></tr></thead>';
+			$alternate = true;
+			foreach ($attachments as $ID) {
+				$meta = get_metadata('post', $ID);
+	//			$meta = $meta[0];
+			//	$orig_meta = $meta;
+				$meta = unserialize($meta['_wp_attachment_metadata'][0]);
+	//			$image_name = str_replace($upload_path, '', $optimized_image[0]);
+				//$image_name = basename($meta['file']);
+				$image_name = get_the_title($ID);
+				$gallery_name = get_the_title($gid);
+	//			$image_url = $upload_info['baseurl'] . $image_name;
+				$image_url = $meta['sizes']['mini']['url'];
+				$echo_meta = print_r($meta, true);
+				$echo_meta = preg_replace('/\n/', '<br>', $echo_meta);
+				$echo_meta = preg_replace('/ /', '&nbsp;', $echo_meta);
+				$echo_meta = '';
+//				$savings = $meta['ewww_image_optimizer'];
+//				$file_path = get_attached_file($ID);
+				if ($alternate) {
+					echo "<tr class='alternate'><td>$ID</td>";
+					echo "<td style='width:80px' class='column-icon'><img src='$image_url' /></td>";
+					echo "<td class='title'>$image_name</td>";
+					echo "<td>$gallery_name</td><td>";
+					ewww_image_optimizer_custom_column('ewww-image-optimizer', $ID);
+					echo "</td></tr>";
+				} else {
+					echo "<tr><td>$ID</td>";
+					echo "<td style='width:80px' class='column-icon'><img src='$image_url' /></td>";
+					echo "<td class='title'>$image_name</td>";
+					echo "<td>$gallery_name</td><td>";
+					ewww_image_optimizer_custom_column('ewww-image-optimizer', $ID);
+					echo "</td></tr>";
+				}
+				$alternate = !$alternate;
+			}
+			echo '</table>';
 		}
-		echo '</table>';
 	return;	
 }
 
@@ -2477,11 +2534,12 @@ function ewww_image_optimizer_columns($defaults) {
 function ewww_image_optimizer_custom_column($column_name, $id) {
 	global $ewww_debug;
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_custom_column()</b><br>";
+//	echo "$column_name - $id <br>";
 	// once we get to the EWWW IO custom column
 	if ($column_name == 'ewww-image-optimizer') {
 		// retrieve the metadata
 		$meta = wp_get_attachment_metadata($id);
-		//print_r ($meta);
+//		print_r ($meta);
 		// if the filepath isn't set in the metadata
 		if(empty($meta['file'])){
 			if (isset($meta['file'])) {
@@ -2569,7 +2627,7 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 			printf("<br><a href=\"admin.php?action=ewww_image_optimizer_manual_optimize&amp;attachment_ID=%d\">%s</a>",
 				$id,
 				__('Re-optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN));
-			if (!get_site_option('ewww_image_optimizer_disable_convert_links'))
+			if (!get_site_option('ewww_image_optimizer_disable_convert_links') && 'ims_image' != get_post_type($id))
 				echo " | <a class='ewww-convert' title='$convert_desc' href='admin.php?action=ewww_image_optimizer_manual_optimize&amp;attachment_ID=$id&amp;convert=1'>$convert_link</a>";
 			$restorable = false;
 			if (!empty($meta['converted'])) {
@@ -2602,7 +2660,7 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 			printf("<br><a href=\"admin.php?action=ewww_image_optimizer_manual_optimize&amp;attachment_ID=%d\">%s</a>",
 				$id,
 				__('Optimize now!', EWWW_IMAGE_OPTIMIZER_DOMAIN));
-			if (!get_site_option('ewww_image_optimizer_disable_convert_links'))
+			if (!get_site_option('ewww_image_optimizer_disable_convert_links') && 'ims_image' != get_post_type($id))
 				echo " | <a class='ewww-convert' title='$convert_desc' href='admin.php?action=ewww_image_optimizer_manual_optimize&amp;attachment_ID=$id&amp;convert=1'>$convert_link</a>";
 		}
 	}

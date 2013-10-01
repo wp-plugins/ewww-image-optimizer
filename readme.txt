@@ -1,7 +1,7 @@
 === EWWW Image Optimizer ===
 Contributors: nosilver4u
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=QFXCW38HE24NY
-Tags: images, image, attachments, attachment, optimize, nextgen, buddypress, flagallery, flash, gallery, lossless, photos, photo, picture, pictures, seo, compression
+Tags: images, image, attachments, attachment, optimize, nextgen, buddypress, flagallery, flash, gallery, lossless, photos, photo, picture, pictures, seo, compression, image-store, imstore
 Requires at least: 3.0
 Tested up to: 3.6.1
 Stable tag: 1.6.2
@@ -24,8 +24,8 @@ EWWW Image Optimizer calls optimization utilities directly which is well suited 
 1. **Your pages will load faster.** Smaller image sizes means faster page loads. This will make your visitors happy, and can increase ad revenue.
 1. **Faster backups.** Smaller image sizes also means faster backups.
 1. **Less bandwidth usage.** Optimizing your images can save you hundreds of KB per image, which means significantly less bandwidth usage.
-1. **Super fast.** Because it runs on your own server, you don’t have to wait for a third party service to receive, process, and return your images. You can optimize hundreds of images in just a few minutes. PNG files take the longest, but you can adjust the settings for your situation.
-1. **Better PNG optimization.** YOu can use pngout and optipng in conjunction.
+1. **Super fast.** The plugin can run on your own server, so you don’t have to wait for a third party service to receive, process, and return your images. You can optimize hundreds of images in just a few minutes. PNG files take the longest, but you can adjust the settings for your situation.
+1. **Better PNG optimization.** You can use pngout and optipng in conjunction.
 1. **Root access not needed** Pre-compiled binaries are made available to install directly within the Wordpress folder, and cloud optimization is provided for those who cannot run the binaries locally.
 
 = Theme Images =
@@ -44,6 +44,10 @@ Features optimization on upload capability, re-optimization, and bulk optimizing
 = BuddyPress Integration =
 
 Located under Media, the BuddyPress Optimizer allows the user to optimize all avatars (group and individual). Stores a history of optimized images, so that you can optimize new images without re-optimizing old images.
+
+= Image Store Integration
+
+Uploads are automatically optimized. Look for Optimize under the Image Store (Galleries) menu to see status of optimization and for re-optimization and bulk-optimization options. Using the Bulk Optimization tool under Media Library automatically includes all Image Store uploads.
 
 == Installation ==
 
