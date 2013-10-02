@@ -416,3 +416,23 @@ Improved performance for PNGs by specifying proper optimization level
 Written by [Shane Bishop](http://www.shanebishop.net). Based upon CW Image Optimizer, which was written by [Jacob Allred](http://www.jacoballred.com/) at [Corban Works, LLC](http://www.corbanworks.com/). CW Image Optimizer was based on WP Smush.it.
 [Hammer](http://thenounproject.com/noun/hammer/#icon-No1306) designed by [John Caserta](http://thenounproject.com/johncaserta) from The Noun Project
 [Images](http://thenounproject.com/noun/images/#icon-No22772) designed by [Simon Henrotte](http://thenounproject.com/Gizmodesbois) from The Noun Project
+
+== Webhosts ==
+
+In general, these lists only apply to shared hosting services. If the providers below have VPS or dedicated server options, those will likely work just fine. If you have any contributions or corrections to these lists, please contact me via the form at http://www.shanebishop.net
+
+Known good webhosts where things work out of the box.
+
+* [Bluehost](http://www.bluehost.com)
+* [Dreamhost](http://www.dreamhost.com)
+* [GoDaddy](http://www.godaddy.com) (only with PHP 5.3)
+* [WebFaction](http://www.webfaction.com)
+* [Hosterdam](http://www.hosterdam.com) (FreeBSD)
+* [OVH](http://www.ovh.co.uk)
+* [Hetzner Online](http://www.hetzner.de)
+
+List of known bad webhosts where the plugin will only work in cloud mode or only some tools are installed locally.
+
+* ipower
+* Gandi
+* ipage (JPG only)
