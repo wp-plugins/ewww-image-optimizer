@@ -214,6 +214,7 @@ function ewww_image_optimizer_install_table() {
 		path text NOT NULL,
 		image_md5 VARCHAR(55) NOT NULL,
 		results VARCHAR(55) NOT NULL,
+		gallery VARCHAR(30),
 		UNIQUE KEY id (id)
 	);";
 

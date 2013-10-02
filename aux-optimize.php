@@ -115,6 +115,7 @@ function ewww_image_optimizer_image_scan($dir, $skip_previous = false) {
 			$path = $path->getPathname();
 			if ($skip_previous) {
 				$table = $wpdb->prefix . 'ewwwio_images';
+				// TODO: additional check for matching md5: no match, go ahead and re-optimize
 				$query = "SELECT image_md5 FROM $table WHERE path = '$path'";
 				$already_optimized = $wpdb->get_results($query);
 			}
@@ -258,7 +259,8 @@ function ewww_image_optimizer_aux_images_loop() {
 		$wpdb->insert( $wpdb->prefix . "ewwwio_images", array(
 				'path' => $attachment,
 				'image_md5' => md5_file($attachment),
-				'results' => $results[1]
+				'results' => $results[1],
+				'gallery' => get_option('ewww_image_optimizer_aux_type'),
 			));
 	}
 	// output the path

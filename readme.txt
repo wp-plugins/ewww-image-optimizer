@@ -157,9 +157,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * prevent tool checks and cloud verification from firing on every page load, yikes...
 
 = 1.6.1 =
-fixed: temporary jpgs were not being deleted (leftovers from testing for last release)
-fixed: jpgs would not be converted to pngs if jpgs had already been optimized
-fixed: cloud service not converting gif to png
+*fixed: temporary jpgs were not being deleted (leftovers from testing for last release)
+*fixed: jpgs would not be converted to pngs if jpgs had already been optimized
+*fixed: cloud service not converting gif to png
 
 = 1.6.0 =
 * Cloud Optimization option (BETA: get your free API key at http://www.exactlywww.com/cloud/)
