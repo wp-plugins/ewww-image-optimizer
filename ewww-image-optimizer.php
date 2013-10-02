@@ -46,7 +46,7 @@ add_action('admin_action_ewww_image_optimizer_manual_optimize', 'ewww_image_opti
 add_action('admin_action_ewww_image_optimizer_manual_restore', 'ewww_image_optimizer_manual');
 add_action('admin_action_ewww_image_optimizer_manual_convert', 'ewww_image_optimizer_manual');
 add_action('delete_attachment', 'ewww_image_optimizer_delete');
-add_action('admin_menu', 'ewww_image_optimizer_admin_menu');
+add_action('admin_menu', 'ewww_image_optimizer_admin_menu', 60);
 add_action('network_admin_menu', 'ewww_image_optimizer_network_admin_menu');
 add_action('admin_head-upload.php', 'ewww_image_optimizer_add_bulk_actions_via_javascript'); 
 add_action('admin_action_bulk_optimize', 'ewww_image_optimizer_bulk_action_handler'); 
@@ -952,6 +952,7 @@ function ewww_image_optimizer_admin_menu() {
 		$ewww_buddypress_optimize_page = add_media_page('Optimize BuddyPress Images', 'BuddyPress Optimize', 'edit_themes', 'ewww-image-optimizer-buddypress-images', 'ewww_image_optimizer_aux_images');
 		add_action('admin_footer-' . $ewww_buddypress_optimize_page, 'ewww_image_optimizer_debug');
 	}
+	// TODO: whenever the dude starts a new thread, see if we can move the optimizer into the Symposium menu - may have to make admin_menu action even lower priority
 	// if WP Symposium is active, add the Symposium Optimizer to the menu
 /*	if (is_plugin_active('wp-symposium/wp-symposium.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('wp-symposium/wp-symposium.php'))) {
 		$ewww_symposium_optimize_page = add_media_page('Optimize WP Symposium Images', 'WP Symposium Optimize', 'edit_themes', 'ewww-image-optimizer-symposium-images', 'ewww_image_optimizer_aux_images');
@@ -1091,8 +1092,8 @@ function ewww_image_optimizer_debug_log() {
 	global $ewww_debug;
 	if (get_site_option('ewww_image_optimizer_debug')) {
 		$timestamp = date('y-m-d h:i:s.u') . "  ";
-		$ewww_debug = preg_replace('/<br>/', "\n", $ewww_debug);
-		file_put_contents(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'debug.log', $timestamp . $ewww_debug, FILE_APPEND);
+		$ewww_debug_log = preg_replace('/<br>/', "\n", $ewww_debug);
+		file_put_contents(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'debug.log', $timestamp . $ewww_debug_log, FILE_APPEND);
 	}
 }
 
@@ -1383,22 +1384,30 @@ function ewww_image_optimizer_cloud_verify() {
 		update_site_option('ewww_image_optimizer_cloud_gif', '');
 		return false;
 	}
-	$url = 'http://optimize.exactlywww.com/';
-	$result = wp_remote_post($url, array(
-		'timeout' => 10,
-		'body' => array('api_key' => $api_key)
-	));
-	if (is_wp_error($result)) {
-		$error_message = $result->get_error_message();
-		$ewww_debug = "$ewww_debug verification failed: $error_message <br>";
+	$servers = gethostbynamel('optimize.exactlywww.com');
+	foreach ($servers as $ip) {
+		$url = "http://$ip/";
+		$result = wp_remote_post($url, array(
+			'timeout' => 10,
+			'body' => array('api_key' => $api_key)
+		));
+		if (is_wp_error($result)) {
+			$error_message = $result->get_error_message();
+			$ewww_debug = "$ewww_debug verification failed: $error_message <br>";
+		} elseif (!empty($result['body']) && preg_match('/(great|exceeded)/', $result['body'])) {
+			$verified = $result['body'];
+			define('EWWW_IMAGE_OPTIMIZER_CLOUD_IP', $ip);
+			$ewww_debug = "$ewww_debug verification success via: $ip <br>";
+			break;
+		}
 	}
-	if (!empty($error_message) || empty($result['body']) || !preg_match('/(great|exceeded)/', $result['body'])) {
+	if (empty($verified)) {
 		update_site_option('ewww_image_optimizer_cloud_jpg', '');
 		update_site_option('ewww_image_optimizer_cloud_png', '');
 		update_site_option('ewww_image_optimizer_cloud_gif', '');
 		return FALSE;
 	} else {
-		return $result['body'];
+		return $verified;
 	}
 }
 
@@ -1419,7 +1428,7 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $r
 		$convert = 1;
 	}
 	$api_key = get_site_option('ewww_image_optimizer_cloud_key');
-	$url = 'http://optimize.exactlywww.com/';
+	$url = 'http://' . EWWW_IMAGE_OPTIMIZER_CLOUD_IP . '/';
 	$boundary = wp_generate_password(24, false);
 
 	$headers = array(
@@ -2270,9 +2279,9 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 		$gallery_type = 5;
 	}
 	$ewww_debug = "$ewww_debug attachment id: $ID<br>";
-	$print_meta = print_r($meta, true);
-	$print_meta = preg_replace('/\n/', '<br>', $print_meta);
-	$ewww_debug = "$ewww_debug attachment meta before optimizing: $print_meta<br>";
+//	$print_meta = print_r($meta, true);
+//	$print_meta = preg_replace('/\n/', '<br>', $print_meta);
+//	$ewww_debug = "$ewww_debug attachment meta before optimizing: $print_meta<br>";
 	// get the filepath
 	$file_path = get_attached_file($ID);
 	$ewww_debug = "$ewww_debug WP thinks the file is at: $file_path<br>";

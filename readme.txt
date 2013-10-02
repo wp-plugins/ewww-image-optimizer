@@ -148,9 +148,11 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * Bulk restoration of converted images
 
 = 1.6.3 =
+* plugin will failover gracefully if one of the cloud optimization servers is offline
 * prevent excess database calls when optimizing theme images
 * fixed plugin mangles metadata for Image Store plugin
 * added optimization support for Image Store plugin
+* verify md5 on buddypress optimization, so changed images will get re-optimized by the bulk tool
 
 = 1.6.2 =
 * added license exceeded status into status message so users know if they've gone over
