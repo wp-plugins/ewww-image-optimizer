@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate image optimizers into WordPress.
- * @version 1.6.2
+ * @version 1.6.3
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -9,7 +9,7 @@ Plugin Name: EWWW Image Optimizer
 Plugin URI: http://www.shanebishop.net/ewww-image-optimizer/
 Description: Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
 Author: Shane Bishop
-Version: 1.6.2
+Version: 1.6.3
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
@@ -2953,7 +2953,8 @@ function ewww_image_optimizer_options () {
 			<?php settings_fields('ewww_image_optimizer_options'); 
 		} ?>
 			<h3>Cloud Settings</h3>
-			<p><b>BETA:</b> Free (temporary) API keys will be given to the <a href="http://www.exactlywww.com/cloud/">first 100 users who request them</a>. If your webhost does not permit running the optimization tools locally via the exec() function or you would like to offload image optimization to a third-party server, you can purchase an API key for our cloud optimization service. The API key should be entered below, and cloud optimization must be enabled for each image format individually. No personal data is transmitted to the remote optimization server, and images are not stored after optimization is performed.</p>
+			<p><b>BETA:</b> Free (temporary) API keys will be given to the <a href="http://www.exactlywww.com/cloud/">first 100 users who request them</a>. <br />
+			If exec() is disabled for security reasons (and enabling it is not an option), or you would like to offload image optimization to a third-party server, you can purchase an API key for our cloud optimization service. The API key should be entered below, and cloud optimization must be enabled for each image format individually. No personal data is transmitted to the remote optimization server, and images are removed immediately after optimization is performed.</p>
 			<table class="form-table">
 				<tr><th><label for="ewww_image_optimizer_cloud_key">Cloud optimization API Key</label></th><td><input type="text" id="ewww_image_optimizer_cloud_key" name="ewww_image_optimizer_cloud_key" value="<?php echo get_site_option('ewww_image_optimizer_cloud_key'); ?>" size="32" /> API Key will be validated when you save your settings. <a href="http://www.exactlywww.com/cloud/">Purchase a key now</a>.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_cloud_jpg">JPG cloud optimization</label></th><td><input type="checkbox" id="ewww_image_optimizer_cloud_jpg" name="ewww_image_optimizer_cloud_jpg" value="true" <?php if (get_site_option('ewww_image_optimizer_cloud_jpg') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
@@ -2961,20 +2962,25 @@ function ewww_image_optimizer_options () {
 				<tr><th><label for="ewww_image_optimizer_cloud_gif">GIF cloud optimization</label></th><td><input type="checkbox" id="ewww_image_optimizer_cloud_gif" name="ewww_image_optimizer_cloud_gif" value="true" <?php if (get_site_option('ewww_image_optimizer_cloud_gif') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
 			</table>
 			<h3>General Settings</h3>
+			<?php if (!EWWW_IMAGE_OPTIMIZER_CLOUD) { ?> 
 			<p>The plugin performs a check to make sure your system has the programs we use for optimization: jpegtran, optipng, pngout, and gifsicle. In some rare cases, these checks may erroneously report that you are missing the required utilities even though you have them installed.</p>
+			<?php } ?>
 			<table class="form-table">
-				<tr><th><label for="ewww_image_optimizer_skip_bundle">Use system paths</label></th><td><input type="checkbox" id="ewww_image_optimizer_skip_bundle" name="ewww_image_optimizer_skip_bundle" value="true" <?php if (get_site_option('ewww_image_optimizer_skip_bundle') == TRUE) { ?>checked="true"<?php } ?> /> If you have already installed the utilities in a system location, such as /usr/local/bin or /usr/bin, use this to force the plugin to use those versions and skip the auto-installers.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_debug">Debugging</label></th><td><input type="checkbox" id="ewww_image_optimizer_debug" name="ewww_image_optimizer_debug" value="true" <?php if (get_site_option('ewww_image_optimizer_debug') == TRUE) { ?>checked="true"<?php } ?> /> Use this to provide information for support purposes, or if you feel comfortable digging around in the code to fix a problem you are experiencing.</td></tr>
+				<?php if (!EWWW_IMAGE_OPTIMIZER_CLOUD) { ?>
+				<tr><th><label for="ewww_image_optimizer_skip_bundle">Use system paths</label></th><td><input type="checkbox" id="ewww_image_optimizer_skip_bundle" name="ewww_image_optimizer_skip_bundle" value="true" <?php if (get_site_option('ewww_image_optimizer_skip_bundle') == TRUE) { ?>checked="true"<?php } ?> /> If you have already installed the utilities in a system location, such as /usr/local/bin or /usr/bin, use this to force the plugin to use those versions and skip the auto-installers.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_skip_check">Skip utils check</label></th><td><input type="checkbox" id="ewww_image_optimizer_skip_check" name="ewww_image_optimizer_skip_check" value="true" <?php if (get_site_option('ewww_image_optimizer_skip_check') == TRUE) { ?>checked="true"<?php } ?> /> <b>DEPRECATED</b> - please uncheck this and report any errors in the support forum.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_disable_jpegtran">disable jpegtran</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_jpegtran" name="ewww_image_optimizer_disable_jpegtran" <?php if (get_site_option('ewww_image_optimizer_disable_jpegtran') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
 				<tr><th><label for="ewww_image_optimizer_disable_optipng">disable optipng</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_optipng" name="ewww_image_optimizer_disable_optipng" <?php if (get_site_option('ewww_image_optimizer_disable_optipng') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
 				<tr><th><label for="ewww_image_optimizer_disable_pngout">disable pngout</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_pngout" name="ewww_image_optimizer_disable_pngout" <?php if (get_site_option('ewww_image_optimizer_disable_pngout') == TRUE) { ?>checked="true"<?php } ?> /></td><tr>
 				<tr><th><label for="ewww_image_optimizer_disable_gifsicle">disable gifsicle</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_gifsicle" name="ewww_image_optimizer_disable_gifsicle" <?php if (get_site_option('ewww_image_optimizer_disable_gifsicle') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
+				<?php } ?>
 			</table>
 			<h3>Optimization settings</h3>
 			<table class="form-table">
 				<tr><th><label for="ewww_image_optimizer_jpegtran_copy">Remove JPG metadata</label></th>
 				<td><input type="checkbox" id="ewww_image_optimizer_jpegtran_copy" name="ewww_image_optimizer_jpegtran_copy" value="true" <?php if (get_site_option('ewww_image_optimizer_jpegtran_copy') == TRUE) { ?>checked="true"<?php } ?> /> This wil remove ALL metadata (EXIF and comments)</td></tr>
+				<?php if (!EWWW_IMAGE_OPTIMIZER_CLOUD) { ?>
 				<tr><th><label for="ewww_image_optimizer_optipng_level">optipng optimization level</label></th>
 				<td><span><select id="ewww_image_optimizer_optipng_level" name="ewww_image_optimizer_optipng_level">
 				<option value="1"<?php if (get_site_option('ewww_image_optimizer_optipng_level') == 1) { echo ' selected="selected"'; } ?>>Level 1: 1 trial</option>
@@ -2994,12 +3000,11 @@ function ewww_image_optimizer_options () {
 				<option value="3"<?php if (get_site_option('ewww_image_optimizer_pngout_level') == 3) { echo ' selected="selected"'; } ?>>Level 3: Huffman Only (Faster)</option>
 			</select> (default=2)</span>
 			<p class="description">If you have CPU cycles to spare, go with level 0</p></td></tr>
+				<?php } ?>
 			</table>
 			<h3>Conversion Settings</h3>
-			<p>
-				Conversion is not available in NextGEN or GRAND FlAGallery. These settings also apply to cloud optimization.
-				By default, all images have a link available in the media library for one-time conversion. Turning on individual conversion operations below will enable conversion filters any time an image is uploaded or modified.<br />
-				<b>NOTE:</b> The plugin will attempt to update image locations for any posts that contain the images. You may need to manually update locations/urls for converted images. 
+			<p>Conversion is only available for images in the Media Library. By default, all images have a link available in the media library for one-time conversion. Turning on individual conversion operations below will enable conversion filters any time an image is uploaded or modified.<br />
+				<b>NOTE:</b> The plugin will <b>attempt</b> to update image locations for any posts that contain the images. You may still need to manually update locations/urls for converted images. 
 			</p>
 			<table class="form-table">
 				<tr><th><label for="ewww_image_optimizer_disable_convert_links">Hide Conversion Links</label</th><td><input type="checkbox" id="ewww_image_optimizer_disable_convert_links" name="ewww_image_optimizer_disable_convert_links" <?php if (get_site_option('ewww_image_optimizer_disable_convert_links') == TRUE) { ?>checked="true"<?php } ?> /> Site or Network admins can use this to prevent other users from using the conversion links in the Media Library which bypass the settings below.</td></tr>
@@ -3012,7 +3017,7 @@ function ewww_image_optimizer_options () {
 				<p class="description">This is used only if the PNG has transparency. Leave this value blank to skip PNGs with transparency.</p>
 				<span><label for="ewww_image_optimizer_jpg_quality">JPG quality level:</label> <input type="text" id="ewww_image_optimizer_jpg_quality" name="ewww_image_optimizer_jpg_quality" class="small-text" value="<?php echo ewww_image_optimizer_jpg_quality(); ?>" /> Valid values are 1-100.</span>
 				<p class="description">If left blank, the plugin will attempt to set the optimal quality level or default to 92. Remember, this is a lossy conversion, so you are losing pixels, and it is not recommended to actually set the level here unless you want noticable loss of image quality.</p></td></tr>
-				<tr><th><label for="ewww_image_optimizer_gif_to_png">enable <b>GIF</b> to <b>PNG</b> conversion</label></th><td><input type="checkbox" id="ewww_image_optimizer_gif_to_png" name="ewww_image_optimizer_gif_to_png" <?php if (get_site_option('ewww_image_optimizer_gif_to_png') == TRUE) { ?>checked="true"<?php } ?> />
+				<tr><th><label for="ewww_image_optimizer_gif_to_png">enable <b>GIF</b> to <b>PNG</b> conversion</label></th><td><span><input type="checkbox" id="ewww_image_optimizer_gif_to_png" name="ewww_image_optimizer_gif_to_png" <?php if (get_site_option('ewww_image_optimizer_gif_to_png') == TRUE) { ?>checked="true"<?php } ?> /> No warnings here, just do it</span>
 				<p class="description"> PNG is generally much better than GIF, but animated images cannot be converted.</p></td></tr>
 			</table>
 			<p class="submit"><input type="submit" class="button-primary" value="Save Changes" /></p>

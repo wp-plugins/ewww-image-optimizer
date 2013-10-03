@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: images, image, attachments, attachment, optimize, nextgen, buddypress, flagallery, flash, gallery, lossless, photos, photo, picture, pictures, seo, compression, image-store, imstore
 Requires at least: 3.0
 Tested up to: 3.6.1
-Stable tag: 1.6.2
+Stable tag: 1.6.3
 License: GPLv3
 
 Reduce file sizes for images within WordPress including NextGEN, GRAND FlAGallery and BuddyPress. Uses jpegtran, optipng/pngout, and gifsicle.
@@ -153,6 +153,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * fixed plugin mangles metadata for Image Store plugin
 * added optimization support for Image Store plugin
 * verify md5 on buddypress optimization, so changed images will get re-optimized by the bulk tool
+* cleaned up settings page (mostly) for cloud users
 
 = 1.6.2 =
 * added license exceeded status into status message so users know if they've gone over
