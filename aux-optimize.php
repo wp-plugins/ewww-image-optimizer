@@ -115,7 +115,8 @@ function ewww_image_optimizer_image_scan($dir, $skip_previous = false) {
 			$path = $path->getPathname();
 			if ($skip_previous) {
 				$table = $wpdb->prefix . 'ewwwio_images';
-				$query = "SELECT image_md5 FROM $table WHERE path = '$path'";
+				$image_md5 = md5_file($path);
+				$query = "SELECT id FROM $table WHERE path = '$path' AND image_md5 = '$image_md5'";
 				$already_optimized = $wpdb->get_results($query);
 			}
 			$mimetype = ewww_image_optimizer_mimetype($path, 'i');
@@ -148,7 +149,7 @@ function ewww_image_optimizer_aux_images_script($hook) {
 		return;
 	}
         // check to see if we are supposed to empty the auxiliary images table and verify we are authorized to do so
-	if (!empty($_REQUEST['empty']) && wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-aux-images' )) {
+	if (!empty($_REQUEST['empty']) && wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-aux-images' ) && !$theme_images) {
 		global $wpdb;
 		// empty the ewwwio_images table to allow re-optimization
 		$table_name = $wpdb->prefix . "ewwwio_images"; 
@@ -258,7 +259,8 @@ function ewww_image_optimizer_aux_images_loop() {
 		$wpdb->insert( $wpdb->prefix . "ewwwio_images", array(
 				'path' => $attachment,
 				'image_md5' => md5_file($attachment),
-				'results' => $results[1]
+				'results' => $results[1],
+				'gallery' => get_option('ewww_image_optimizer_aux_type'),
 			));
 	}
 	// output the path
@@ -287,7 +289,13 @@ function ewww_image_optimizer_aux_images_cleanup() {
 	update_option('ewww_image_optimizer_aux_resume', '');
 	update_option('ewww_image_optimizer_aux_attachments', '');
 	// and let the user know we are done
-	echo '<p><b>Finished</b> - <a href="themes.php">Return to Themes</a></p>';
+	if (get_option('ewww_image_optimizer_aux_type') === 'theme') {
+		echo '<p><b>Finished</b> - <a href="themes.php">View Themes</a></p>';
+	} elseif (get_option('ewww_image_optimizer_aux_type') === 'buddypress') {
+		echo '<p><b>Finished</b> - <a href="admin.php?page=bp-groups">View Buddypress Groups</a></p>';
+	} elseif (get_option('ewww_image_optimizer_aux_type') === 'symposium') {
+		echo '<p><b>Finished</b> - <a href="admin.php?page=symposium_manage">Manage WP Symposium</a></p>';
+	}
 	die();
 }
 add_action('wp_ajax_bulk_aux_images_init', 'ewww_image_optimizer_aux_images_initialize');

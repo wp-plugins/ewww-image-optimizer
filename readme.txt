@@ -1,10 +1,10 @@
 === EWWW Image Optimizer ===
 Contributors: nosilver4u
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=QFXCW38HE24NY
-Tags: images, image, attachments, attachment, optimize
-Requires at least: 2.8
-Tested up to: 3.6
-Stable tag: 1.5.0
+Tags: images, image, attachments, attachment, optimize, nextgen, buddypress, flagallery, flash, gallery, lossless, photos, photo, picture, pictures, seo, compression, image-store, imstore
+Requires at least: 3.0
+Tested up to: 3.6.1
+Stable tag: 1.6.3
 License: GPLv3
 
 Reduce file sizes for images within WordPress including NextGEN, GRAND FlAGallery and BuddyPress. Uses jpegtran, optipng/pngout, and gifsicle.
@@ -17,16 +17,16 @@ By default, EWWW Image Optimizer uses lossless optimization techniques, so your 
 
 Images are optimized using the [jpegtran](http://jpegclub.org/jpegtran/), [optipng](http://optipng.sourceforge.net/), [pngout](advsys.net/ken/utils.htm), and [gifsicle](http://www.lcdf.org/gifsicle/) image tools (available for free). For PNG files, either optipng or pngout can be used. If you want the best optimization, install both, set optipng to level 3 (beyond that is just crazy and rarely yields significant gains) and pngout to level 0. Images are converted using the above tools and GD or 'convert' (ImageMagick).
 
-EWWW Image Optimizer calls optimization utilities directly which is well suited to shared hosting situations where these utilities may already be installed. Pre-compiled binaries/executables are provided for optipng, gifsicle, and jpegtran. Pngout can be installed with one-click from the settings page.
+EWWW Image Optimizer calls optimization utilities directly which is well suited to shared hosting situations where these utilities may already be installed. Pre-compiled binaries/executables are provided for optipng, gifsicle, and jpegtran. Pngout can be installed with one-click from the settings page. If none of that works, there is a new cloud option (currently in BETA) that will work for those who cannot run the optimizers on their own server.
 
 **Why use EWWW Image Optimizer?**
 
 1. **Your pages will load faster.** Smaller image sizes means faster page loads. This will make your visitors happy, and can increase ad revenue.
 1. **Faster backups.** Smaller image sizes also means faster backups.
 1. **Less bandwidth usage.** Optimizing your images can save you hundreds of KB per image, which means significantly less bandwidth usage.
-1. **Super fast.** Because it runs on your own server, you don’t have to wait for a third party service to receive, process, and return your images. You can optimize hundreds of images in just a few minutes. PNG files take the longest, but you can adjust the settings for your situation.
-1. **Better PNG optimization.** YOu can use pngout and optipng in conjunction.
-1. **Root access not needed** Pre-compiled binaries are made available to install directly within the Wordpress folder. 
+1. **Super fast.** The plugin can run on your own server, so you don’t have to wait for a third party service to receive, process, and return your images. You can optimize hundreds of images in just a few minutes. PNG files take the longest, but you can adjust the settings for your situation.
+1. **Better PNG optimization.** You can use pngout and optipng in conjunction.
+1. **Root access not needed** Pre-compiled binaries are made available to install directly within the Wordpress folder, and cloud optimization is provided for those who cannot run the binaries locally.
 
 = Theme Images =
 
@@ -44,6 +44,10 @@ Features optimization on upload capability, re-optimization, and bulk optimizing
 = BuddyPress Integration =
 
 Located under Media, the BuddyPress Optimizer allows the user to optimize all avatars (group and individual). Stores a history of optimized images, so that you can optimize new images without re-optimizing old images.
+
+= Image Store Integration
+
+Uploads are automatically optimized. Look for Optimize under the Image Store (Galleries) menu to see status of optimization and for re-optimization and bulk-optimization options. Using the Bulk Optimization tool under Media Library automatically includes all Image Store uploads.
 
 == Installation ==
 
@@ -141,6 +145,29 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * these are possible future bugfixes and/or feature requests, if you see a feature you like here, go vote for it in the support forum
 * SunOS (Solaris/OpenIndiana) support
 * WP Symposium support
+* Bulk restoration of converted images
+
+= 1.6.3 =
+* plugin will failover gracefully if one of the cloud optimization servers is offline
+* prevent excess database calls when optimizing theme images
+* fixed plugin mangles metadata for Image Store plugin
+* added optimization support for Image Store plugin
+* verify md5 on buddypress optimization, so changed images will get re-optimized by the bulk tool
+* cleaned up settings page (mostly) for cloud users
+
+= 1.6.2 =
+* added license exceeded status into status message so users know if they've gone over
+* prevent tool checks and cloud verification from firing on every page load, yikes...
+
+= 1.6.1 =
+*fixed: temporary jpgs were not being deleted (leftovers from testing for last release)
+*fixed: jpgs would not be converted to pngs if jpgs had already been optimized
+*fixed: cloud service not converting gif to png
+
+= 1.6.0 =
+* Cloud Optimization option (BETA: get your free API key at http://www.exactlywww.com/cloud/)
+* fixed if exec() is disabled or safe mode is on, don't bother testing local tools
+* more tweaks for exec() detection, including suhosin extension
 
 = 1.5.0 =
 * BuddyPress integration to optimize avatars
@@ -345,6 +372,12 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 == Upgrade Notice ==
 
+= 1.6.2 =
+* All Cloud users should upgrade immediately to avoid extended page load times
+
+= 1.6.1 =
+* New Cloud Optimization option for those who can't (or won't) enable exec() on their servers (BETA: get your free API key at http://www.exactlywww.com/cloud/)
+
 = 1.5.0 =
 Fixes and enhancements for NextGEN 2, Buddypress support, and theme image optimization
 
@@ -384,3 +417,25 @@ Improved performance for PNGs by specifying proper optimization level
 == Contact and Credits ==
 
 Written by [Shane Bishop](http://www.shanebishop.net). Based upon CW Image Optimizer, which was written by [Jacob Allred](http://www.jacoballred.com/) at [Corban Works, LLC](http://www.corbanworks.com/). CW Image Optimizer was based on WP Smush.it.
+[Hammer](http://thenounproject.com/noun/hammer/#icon-No1306) designed by [John Caserta](http://thenounproject.com/johncaserta) from The Noun Project
+[Images](http://thenounproject.com/noun/images/#icon-No22772) designed by [Simon Henrotte](http://thenounproject.com/Gizmodesbois) from The Noun Project
+
+== Webhosts ==
+
+In general, these lists only apply to shared hosting services. If the providers below have VPS or dedicated server options, those will likely work just fine. If you have any contributions or corrections to these lists, please contact me via the form at http://www.shanebishop.net
+
+Known good webhosts where things work out of the box.
+
+* [Bluehost](http://www.bluehost.com)
+* [Dreamhost](http://www.dreamhost.com)
+* [GoDaddy](http://www.godaddy.com) (only with PHP 5.3)
+* [WebFaction](http://www.webfaction.com)
+* [Hosterdam](http://www.hosterdam.com) (FreeBSD)
+* [OVH](http://www.ovh.co.uk)
+* [Hetzner Online](http://www.hetzner.de)
+
+List of known bad webhosts where the plugin will only work in cloud mode or only some tools are installed locally.
+
+* ipower
+* Gandi
+* ipage (JPG only)

@@ -46,6 +46,7 @@ function ewww_image_optimizer_bulk_preview() {
 
 // prepares the bulk operation and includes the javascript functions
 function ewww_image_optimizer_bulk_script($hook) {
+	global $ewww_debug;
 	// make sure we are being called from the bulk optimization page
 	if ('media_page_ewww-image-optimizer-bulk' != $hook)
 		return;
@@ -60,14 +61,35 @@ function ewww_image_optimizer_bulk_script($hook) {
 	$resume = get_option('ewww_image_optimizer_bulk_resume');
 	// see if we were given attachment IDs to work with via GET/POST
         if (!empty($_REQUEST['ids'])) {
-                // retrieve post IDs correlating to the IDs submitted to make sure they are all valid
-                $attachments = get_posts( array(
-                        'numberposts' => -1,
-                        'include' => explode(',', $_REQUEST['ids']),
-                        'post_type' => 'attachment',
-                        'post_mime_type' => 'image',
-			'fields' => 'ids'
-                ));
+		$ids = explode(',', $_REQUEST['ids']);
+		$ewww_debug = "$ewww_debug gallery ids: " . print_r($ids, true) . "<br>";
+		$ewww_debug = "$ewww_debug post_type: " . get_post_type($ids[0]) . "<br>";
+		if ('ims_gallery' == get_post_type($ids[0])) {
+			$attachments = array();
+			foreach ($ids as $gid) {
+				$ewww_debug = "$ewww_debug gallery id: $gid<br>";
+		                $ims_images = get_posts(array(
+		                        'numberposts' => -1,
+		                        'post_type' => 'ims_image',
+					'post_status' => 'any',
+		                        'post_mime_type' => 'image',
+					'post_parent' => $gid,
+					'fields' => 'ids'
+		                ));
+				$attachments = array_merge($attachments, $ims_images);
+				$ewww_debug = "$ewww_debug attachment ids: " . print_r($attachments, true) . "<br>";
+			}
+		} else {
+	                // retrieve post IDs correlating to the IDs submitted to make sure they are all valid
+	                $attachments = get_posts( array(
+	                        'numberposts' => -1,
+	                        'include' => $ids,
+	                        'post_type' => array('attachment', 'ims_image'),
+				'post_status' => 'any',
+	                        'post_mime_type' => 'image',
+				'fields' => 'ids'
+	                ));
+		}
 		// unset the 'bulk resume' option since we were given specific IDs to optimize
 		update_option('ewww_image_optimizer_bulk_resume', '');
         // check if there is a previous bulk operation to resume
@@ -79,12 +101,13 @@ function ewww_image_optimizer_bulk_script($hook) {
                 // load up all the image attachments we can find
                 $attachments = get_posts( array(
                         'numberposts' => -1,
-                        'post_type' => 'attachment',
+                        'post_type' => array('attachment', 'ims_image'),
+			'post_status' => 'any',
                         'post_mime_type' => 'image',
 			'fields' => 'ids'
                 ));
         }
-	// the 'fields' option as added in 3.1, so (in older versions) we need to strip 
+	// the 'fields' option was added in 3.1, so (in older versions) we need to strip 
 	// the excess data from attachments, since we only want the attachment IDs
 	global $wp_version;
 	$my_version = $wp_version;
