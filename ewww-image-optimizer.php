@@ -2314,34 +2314,18 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 				$upload_path = trailingslashit(WP_CONTENT_DIR);
 			}
 			$file_path = $upload_path . $meta['file'];
-/*			$image_dir = dirname($meta['file']);
-			$dir_list = scandir($image_dir);
-			$dir_list = print_r($dir_list, true);
-			$ewww_debug = "$ewww_debug directory listing: $dir_list<br>";*/
 		}
 			
 	}
 	$ewww_debug = "$ewww_debug retrieved file path: $file_path<br>";
-	// store absolute paths for older wordpress versions
-//	$store_absolute_path = true;
-	// if the path given is not the absolute path
-//	if (FALSE == file_exists($file_path)) {
-		// don't store absolute paths
-//		$store_absolute_path = false;
-		// generate the absolute path
-//		$file_path =  $upload_path . $file_path;
-//		$ewww_debug = "$ewww_debug generated absolute path: $file_path<br>";
-//	}
 	// run the image optimizer on the file, and store the results
 	list($file, $msg, $conv, $original) = ewww_image_optimizer($file_path, $gallery_type, false, false);
+	// update the optimization results in the metadata
+	$meta['ewww_image_optimizer'] = $msg;
 	if (strpos($msg, 'Could not find') === 0) {
 		return $meta;
 	}
 	$meta['file'] = str_replace($upload_path, '', $file);
-	// update the optimization results in the metadata
-	$meta['ewww_image_optimizer'] = $msg;
-//	if ( FALSE === $store_absolute_path ) {
-//	}
 	// if the file was converted
 	if ($conv) {
 		// update the filename in the metadata
@@ -2417,9 +2401,6 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 			$processed[$size]['height'] = $data['height'];
 		}
 	}
-//	$print_meta = print_r($meta, true);
-//	$print_meta = preg_replace('/\n/', '<br>', $print_meta);
-//	$ewww_debug = "$ewww_debug attachment meta after optimizing: $print_meta<br>";
 	ewww_image_optimizer_debug_log();
 	// send back the updated metadata
 	return $meta;
@@ -2578,15 +2559,12 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 			echo 'Could not retrieve file path.';
 			//print __('Unsupported file type', EWWW_IMAGE_OPTIMIZER_DOMAIN) . $msg;
 			return;
-			// find the absolute path
-//			$file_path = $upload_path . $file_path;
 		}
 		$msg = '';
 		$type = ewww_image_optimizer_mimetype($file_path, 'i');
 		// get a human readable filesize
 		$file_size = size_format(filesize($file_path), 2);
 		$file_size = str_replace('B ', 'B', $file_size);
-//		$file_size = ewww_image_optimizer_format_bytes(filesize($file_path));
 		// initialize $valid
 		$valid = true;
 		// run the appropriate code based on the mimetype
