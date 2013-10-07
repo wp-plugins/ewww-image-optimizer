@@ -57,6 +57,10 @@ add_action('admin_enqueue_scripts', 'ewww_image_optimizer_media_scripts');
 register_deactivation_hook(__FILE__, 'ewww_image_optimizer_network_deactivate');
 register_activation_hook(__FILE__, 'ewww_image_optimizer_install_table');
 
+// load the class to extend WP_Image_Editor
+// TODO: only load this in WP 3.5+
+require(dirname(__FILE__) . '/image-editor.php');
+
 // need to include the plugin library for the is_plugin_active function (even though it isn't supposed to be necessary in the admin)
 require_once(ABSPATH . 'wp-admin/includes/plugin.php');
 // include the file that loads the nextgen gallery optimization functions
@@ -2269,7 +2273,7 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 	global $ewww_debug;
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_resize_from_meta_data()</b><br>";
 	// don't do anything else if the attachment has no metadata
-	if (!isset($meta['file'])) {
+	if (empty($meta)) {
 		$ewww_debug = "$ewww_debug file has no meta<br>";
 		return $meta;
 	}
@@ -2290,7 +2294,7 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 	// retrieve the path of the upload folder
 	$upload_path = trailingslashit($upload_dir['basedir']);
 	// if the attachment has been uploaded via the image store plugin
-	if ('ims_image' == get_post_type($ID)) {
+	if ('ims_image' == get_post_type($ID) && !empty($meta['file'])) {
 		$gallery_type = 6;
 		$ims_options = get_site_option('ims_front_options');
 		$ims_path = $ims_options['galleriespath'];
@@ -2330,6 +2334,9 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 //	}
 	// run the image optimizer on the file, and store the results
 	list($file, $msg, $conv, $original) = ewww_image_optimizer($file_path, $gallery_type, false, false);
+	if (strpos($msg, 'Could not find') === 0) {
+		return $meta;
+	}
 	$meta['file'] = str_replace($upload_path, '', $file);
 	// update the optimization results in the metadata
 	$meta['ewww_image_optimizer'] = $msg;
@@ -2562,7 +2569,6 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 		}
 		// retrieve the filepath
 		$file_path = get_attached_file($id);
-		//$file_path = $meta['file'];
 		// retrieve the wordpress upload folder
 		$upload_dir = wp_upload_dir();
 		// retrieve the wordpress upload folder path
@@ -3018,7 +3024,7 @@ function ewww_image_optimizer_options () {
 				<span><label for="ewww_image_optimizer_jpg_quality">JPG quality level:</label> <input type="text" id="ewww_image_optimizer_jpg_quality" name="ewww_image_optimizer_jpg_quality" class="small-text" value="<?php echo ewww_image_optimizer_jpg_quality(); ?>" /> Valid values are 1-100.</span>
 				<p class="description">If left blank, the plugin will attempt to set the optimal quality level or default to 92. Remember, this is a lossy conversion, so you are losing pixels, and it is not recommended to actually set the level here unless you want noticable loss of image quality.</p></td></tr>
 				<tr><th><label for="ewww_image_optimizer_gif_to_png">enable <b>GIF</b> to <b>PNG</b> conversion</label></th><td><span><input type="checkbox" id="ewww_image_optimizer_gif_to_png" name="ewww_image_optimizer_gif_to_png" <?php if (get_site_option('ewww_image_optimizer_gif_to_png') == TRUE) { ?>checked="true"<?php } ?> /> No warnings here, just do it</span>
-				<p class="description"> PNG is generally much better than GIF, but animated images cannot be converted.</p></td></tr>
+				<p class="description"> PNG is generally better than GIF, but animated images cannot be converted.</p></td></tr>
 			</table>
 			<p class="submit"><input type="submit" class="button-primary" value="Save Changes" /></p>
 		</form>
