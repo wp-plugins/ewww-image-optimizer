@@ -147,6 +147,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * WP Symposium support
 * Bulk restoration of converted images
 
+= 1.6.4 =
+* fixed unnecessary check for 'file' field in attachment metadata
+
 = 1.6.3 =
 * plugin will failover gracefully if one of the cloud optimization servers is offline
 * prevent excess database calls when optimizing theme images

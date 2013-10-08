@@ -53,6 +53,7 @@ add_action('admin_action_bulk_optimize', 'ewww_image_optimizer_bulk_action_handl
 add_action('admin_action_-1', 'ewww_image_optimizer_bulk_action_handler'); 
 add_action('admin_action_ewww_image_optimizer_install_pngout', 'ewww_image_optimizer_install_pngout');
 add_action('admin_enqueue_scripts', 'ewww_image_optimizer_media_scripts');
+add_action('ewww_image_optimizer_auto', 'ewww_image_optimizer_auto');
 //add_action('in_admin_footer', 'ewww_image_optimizer_footer_debug');
 register_deactivation_hook(__FILE__, 'ewww_image_optimizer_network_deactivate');
 register_activation_hook(__FILE__, 'ewww_image_optimizer_install_table');
@@ -82,6 +83,8 @@ require( dirname(__FILE__) . '/flag-integration.php' );
  * Plugin admin initialization function
  */
 function ewww_image_optimizer_admin_init() {
+	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_admin_init()</b><br>";
 	ewww_image_optimizer_cloud_verify();
 	if (get_site_option('ewww_image_optimizer_cloud_jpg') && get_site_option('ewww_image_optimizer_cloud_png') && get_site_option('ewww_image_optimizer_cloud_gif')) {
 		define('EWWW_IMAGE_OPTIMIZER_CLOUD', TRUE);
@@ -161,6 +164,8 @@ function ewww_image_optimizer_admin_init() {
 			update_site_option('ewww_image_optimizer_cloud_png', $_POST['ewww_image_optimizer_cloud_png']);
 			if (empty($_POST['ewww_image_optimizer_cloud_gif'])) $_POST['ewww_image_optimizer_cloud_gif'] = '';
 			update_site_option('ewww_image_optimizer_cloud_gif', $_POST['ewww_image_optimizer_cloud_gif']);
+			if (empty($_POST['ewww_image_optimizer_auto'])) $_POST['ewww_image_optimizer_auto'] = '';
+			update_site_option('ewww_image_optimizer_auto', $_POST['ewww_image_optimizer_auto']);
 			add_action('network_admin_notices', 'ewww_image_optimizer_network_settings_saved');
 		}
 	}
@@ -194,10 +199,18 @@ function ewww_image_optimizer_admin_init() {
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_cloud_jpg');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_cloud_png');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_cloud_gif');
+	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_auto');
 	// set a few defaults
 	add_option('ewww_image_optimizer_disable_pngout', TRUE);
 	add_option('ewww_image_optimizer_optipng_level', 2);
 	add_option('ewww_image_optimizer_pngout_level', 2);
+	// setup scheduled optimization if the user has enabled it, and it isn't already scheduled
+	if (get_site_option('ewww_image_optimizer_auto') == TRUE && !wp_next_scheduled('ewww_image_optimizer_auto')) {
+		$ewww_debug = "$ewww_debug scheduling auto-optimization<br>";
+		wp_schedule_event(time(), 'hourly', 'ewww_image_optimizer_auto');
+	} else {
+		$ewww_debug = "$ewww_debug auto-optimization already scheduled: " . wp_next_scheduled('ewww_image_optimizer_auto') . "<br>";
+	}
 }
 
 // tells the user they are on an unsupported operating system
@@ -233,6 +246,20 @@ function ewww_image_optimizer_network_settings_saved() {
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_network_settings_saved()</b><br>";
 	echo "<div id='ewww-image-optimizer-settings-saved' class='updated fade'><p><strong>Settings saved.</strong></p></div>";
 }   
+
+// runs scheduled optimization of various auxiliary images
+function ewww_image_optimizer_auto() {
+	global $ewww_debug;
+	$ewww_debug = "$ewww_debug running scheduled optimization<br>";
+	ewww_image_optimizer_aux_images_script('appearance_page_ewww-image-optimizer-theme-images');
+	ewww_image_optimizer_aux_images_initialize(true);
+	$attachments = get_option('ewww_image_optimizer_aux_attachments');
+	foreach ($attachments as $attachment) {
+		ewww_image_optimizer_aux_images_loop($attachment, true);
+	}	
+	ewww_image_optimizer_aux_images_cleanup(true);
+	ewww_image_optimizer_debug_log();
+}
 
 // checks the binary at $path against a list of valid md5sums
 function ewww_image_optimizer_md5check($path) {
@@ -924,6 +951,7 @@ function ewww_image_optimizer_network_deactivate($network_wide) {
 		delete_site_option('ewww_image_optimizer_cloud_jpg');
 		delete_site_option('ewww_image_optimizer_cloud_png');
 		delete_site_option('ewww_image_optimizer_cloud_gif');
+		delete_site_option('ewww_image_optimizer_auto');
 		delete_site_option('ewww_image_optimizer_network_version');
 	}
 }
@@ -951,6 +979,8 @@ function ewww_image_optimizer_admin_menu() {
 	add_action('admin_footer-' . $ewww_bulk_page, 'ewww_image_optimizer_debug');
 	$ewww_theme_optimize_page = add_theme_page('Optimize Theme Images', 'Optimize', 'edit_themes', 'ewww-image-optimizer-theme-images', 'ewww_image_optimizer_aux_images');
 	add_action('admin_footer-' . $ewww_theme_optimize_page, 'ewww_image_optimizer_debug');
+	$ewww_aux_optimize_page = add_management_page('Optimize More Images', 'Optimize More', 'edit_themes', 'ewww-image-optimizer-aux-images', 'ewww_image_optimizer_aux_images');
+	add_action('admin_footer-' . $ewww_aux_optimize_page, 'ewww_image_optimizer_debug');
 	// if buddypress is active, add the BuddyPress Optimizer to the menu
 	if (is_plugin_active('buddypress/bp-loader.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('buddypress/bp-loader.php'))) {
 		$ewww_buddypress_optimize_page = add_media_page('Optimize BuddyPress Images', 'BuddyPress Optimize', 'edit_themes', 'ewww-image-optimizer-buddypress-images', 'ewww_image_optimizer_aux_images');
@@ -976,7 +1006,6 @@ function ewww_image_optimizer_admin_menu() {
 	if(is_plugin_active('image-store/ImStore.php') || is_plugin_active_for_network('image-store/ImStore.php')) {
 		$ims_menu ='edit.php?post_type=ims_gallery';
 		$ewww_ims_page = add_submenu_page($ims_menu, 'Image Store Optimize', 'Optimize', 'ims_change_settings', 'ewww-ims-optimize', 'ewww_image_optimizer_ims');
-//		$ewww_ims_page = add_media_page('IMS Optimize', 'IMS Optimize', 'edit_themes', 'ewww-ims-optimize', 'ewww_image_optimizer_ims');
 		add_action('admin_footer-' . $ewww_ims_page, 'ewww_image_optimizer_debug');
 	}
 }
@@ -2951,6 +2980,7 @@ function ewww_image_optimizer_options () {
 			<?php } ?>
 			<table class="form-table">
 				<tr><th><label for="ewww_image_optimizer_debug">Debugging</label></th><td><input type="checkbox" id="ewww_image_optimizer_debug" name="ewww_image_optimizer_debug" value="true" <?php if (get_site_option('ewww_image_optimizer_debug') == TRUE) { ?>checked="true"<?php } ?> /> Use this to provide information for support purposes, or if you feel comfortable digging around in the code to fix a problem you are experiencing.</td></tr>
+				<tr><th><label for="ewww_image_optimizer_auto">Scheduled optimization</label></th><td><input type="checkbox" id="ewww_image_optimizer_auto" name="ewww_image_optimizer_auto" value="true" <?php if (get_site_option('ewww_image_optimizer_auto') == TRUE) { ?>checked="true"<?php } ?> /> This will enable scheduled optimization of images for your theme, buddypress, and any additional folders you have configured below. Runs hourly: wp_cron only runs when your site is visited, so it may be even longer between optimizations.</td></tr>
 				<?php if (!EWWW_IMAGE_OPTIMIZER_CLOUD) { ?>
 				<tr><th><label for="ewww_image_optimizer_skip_bundle">Use system paths</label></th><td><input type="checkbox" id="ewww_image_optimizer_skip_bundle" name="ewww_image_optimizer_skip_bundle" value="true" <?php if (get_site_option('ewww_image_optimizer_skip_bundle') == TRUE) { ?>checked="true"<?php } ?> /> If you have already installed the utilities in a system location, such as /usr/local/bin or /usr/bin, use this to force the plugin to use those versions and skip the auto-installers.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_skip_check">Skip utils check</label></th><td><input type="checkbox" id="ewww_image_optimizer_skip_check" name="ewww_image_optimizer_skip_check" value="true" <?php if (get_site_option('ewww_image_optimizer_skip_check') == TRUE) { ?>checked="true"<?php } ?> /> <b>DEPRECATED</b> - please uncheck this and report any errors in the support forum.</td></tr>

@@ -1,6 +1,8 @@
 <?php
 // presents the bulk optimize form with the number of images, and runs it once they submit the button
 function ewww_image_optimizer_bulk_preview() {
+	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_bulk_preview()</b><br>";
 	// retrieve the attachment IDs that were pre-loaded in the database
 	$attachments = get_option('ewww_image_optimizer_bulk_attachments');
 	// make sure there are some attachments to optimize
@@ -176,6 +178,7 @@ function ewww_image_optimizer_bulk_filename() {
  
 // called by javascript to process each image in the loop
 function ewww_image_optimizer_bulk_loop() {
+	global $wpdb;
 	global $ewww_debug;
 	// verify that an authorized user has started the optimizer
 	if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
