@@ -1,9 +1,9 @@
 <?php
-class EWWWIO_GD_Editor extends WP_Image_Editor_Imagick {
+/*class EWWWIO_GD_Editor extends WP_Image_Editor_GD {
 
 	public function jpegtran($quality = null) {
-		try {
+//		try {
 //			$this->image->
-		}
+//		}
 	}
-}
+}*/
