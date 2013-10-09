@@ -166,6 +166,8 @@ function ewww_image_optimizer_admin_init() {
 			update_site_option('ewww_image_optimizer_cloud_gif', $_POST['ewww_image_optimizer_cloud_gif']);
 			if (empty($_POST['ewww_image_optimizer_auto'])) $_POST['ewww_image_optimizer_auto'] = '';
 			update_site_option('ewww_image_optimizer_auto', $_POST['ewww_image_optimizer_auto']);
+			if (empty($_POST['ewww_image_optimizer_aux_images'])) $_POST['ewww_image_optimizer_aux_images'] = '';
+			update_site_option('ewww_image_optimizer_aux_images', $_POST['ewww_image_optimizer_aux_images']);
 			add_action('network_admin_notices', 'ewww_image_optimizer_network_settings_saved');
 		}
 	}
@@ -187,8 +189,8 @@ function ewww_image_optimizer_admin_init() {
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpg_to_png');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_png_to_jpg');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_gif_to_png');
-	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpg_background');
-	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpg_quality');
+	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpg_background', 'ewww_image_optimizer_jpg_background_sanitize');
+	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpg_quality', 'ewww_image_optimizer_jpg_quality_sanitize');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_disable_convert_links');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_resume');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_attachments');
@@ -200,6 +202,7 @@ function ewww_image_optimizer_admin_init() {
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_cloud_png');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_cloud_gif');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_auto');
+	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_aux_paths', 'ewww_image_optimizer_aux_paths_sanitize');
 	// set a few defaults
 	add_option('ewww_image_optimizer_disable_pngout', TRUE);
 	add_option('ewww_image_optimizer_optipng_level', 2);
@@ -952,6 +955,7 @@ function ewww_image_optimizer_network_deactivate($network_wide) {
 		delete_site_option('ewww_image_optimizer_cloud_png');
 		delete_site_option('ewww_image_optimizer_cloud_gif');
 		delete_site_option('ewww_image_optimizer_auto');
+		delete_site_option('ewww_image_optimizer_aux_paths');
 		delete_site_option('ewww_image_optimizer_network_version');
 	}
 }
@@ -1160,6 +1164,34 @@ function ewww_image_optimizer_gd_support() {
 	}
 }
 
+// makes sure the user isn't putting crap in the database
+function ewww_image_optimizer_jpg_background_sanitize ($input) {
+	return sanitize_text_field($input);
+}
+
+function ewww_image_optimizer_jpg_quality_sanitize ($input) {
+	return sanitize_text_field($input);
+}
+
+function ewww_image_optimizer_aux_paths_sanitize ($input) {
+	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_aux_paths_santitize()</b><br>";
+	$paths = explode("\n", $input);
+	foreach ($paths as $path) {
+		$path = sanitize_text_field($path);
+		$ewww_debug = "$ewww_debug validating auxiliary path: $path <br>";
+		// retrieve the location of the wordpress upload folder
+		$upload_dir = wp_upload_dir();
+		// retrieve the path of the upload folder
+		$upload_path = str_replace($upload_dir['basedir'], '', $path);
+		$upload_path_t = str_replace(trailingslashit($upload_dir['basedir']), '', $path);
+		if (is_dir($path) && strpos($path, trailingslashit(ABSPATH)) === 0 && !empty($upload_path) && !empty($upload_path_t)) {
+			$path_array[] = $path;
+		}
+	}
+	ewww_image_optimizer_debug_log();
+	return $path_array;
+}
 // Retrieves jpg background fill setting, or returns null for png2jpg conversions
 function ewww_image_optimizer_jpg_background () {
 	global $ewww_debug;
@@ -1192,6 +1224,16 @@ function ewww_image_optimizer_jpg_quality () {
 		// send back nothing
 		return NULL;
 	}
+}
+
+// Retrieve the paths for auxiliary images to optimize
+function ewww_image_optimizer_aux_paths () {
+	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_aux_paths()</b><br>";
+	$aux_paths = get_site_option('ewww_image_optimizer_aux_paths');
+//	$path_array = null;
+//	return esc_textarea($path_array);
+	return $path_array;
 }
 
 // require the file that does the bulk processing
@@ -2981,6 +3023,7 @@ function ewww_image_optimizer_options () {
 			<table class="form-table">
 				<tr><th><label for="ewww_image_optimizer_debug">Debugging</label></th><td><input type="checkbox" id="ewww_image_optimizer_debug" name="ewww_image_optimizer_debug" value="true" <?php if (get_site_option('ewww_image_optimizer_debug') == TRUE) { ?>checked="true"<?php } ?> /> Use this to provide information for support purposes, or if you feel comfortable digging around in the code to fix a problem you are experiencing.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_auto">Scheduled optimization</label></th><td><input type="checkbox" id="ewww_image_optimizer_auto" name="ewww_image_optimizer_auto" value="true" <?php if (get_site_option('ewww_image_optimizer_auto') == TRUE) { ?>checked="true"<?php } ?> /> This will enable scheduled optimization of images for your theme, buddypress, and any additional folders you have configured below. Runs hourly: wp_cron only runs when your site is visited, so it may be even longer between optimizations.</td></tr>
+				<tr><th><label for="ewww_image_optimizer_aux_paths">Folders to optimize</label></th><td>One path per line, must be within <?php echo ABSPATH; ?>, but cannot be the uploads/ folder (sub-directories are ok)<br /><textarea id="ewww_image_optimizer_aux_paths" name="ewww_image_optimizer_aux_paths" rows="3" cols="60"><?php $aux_paths = $aux_paths = get_site_option('ewww_image_optimizer_aux_paths'); foreach ($aux_paths as $path) echo "$path\n"; ?></textarea><p class="description">Provide paths containing images to be optimized using scheduled optimization or 'Optimize More' in the Tools menu. <b>Please submit a <a href="http://wordpress.org/support/plugin/ewww-image-optimizer">support request in the forums</a> to have folders created by a particular plugin auto-included in the future.</b></p></td></tr>
 				<?php if (!EWWW_IMAGE_OPTIMIZER_CLOUD) { ?>
 				<tr><th><label for="ewww_image_optimizer_skip_bundle">Use system paths</label></th><td><input type="checkbox" id="ewww_image_optimizer_skip_bundle" name="ewww_image_optimizer_skip_bundle" value="true" <?php if (get_site_option('ewww_image_optimizer_skip_bundle') == TRUE) { ?>checked="true"<?php } ?> /> If you have already installed the utilities in a system location, such as /usr/local/bin or /usr/bin, use this to force the plugin to use those versions and skip the auto-installers.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_skip_check">Skip utils check</label></th><td><input type="checkbox" id="ewww_image_optimizer_skip_check" name="ewww_image_optimizer_skip_check" value="true" <?php if (get_site_option('ewww_image_optimizer_skip_check') == TRUE) { ?>checked="true"<?php } ?> /> <b>DEPRECATED</b> - please uncheck this and report any errors in the support forum.</td></tr>

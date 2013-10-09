@@ -83,15 +83,12 @@ function ewww_image_optimizer_aux_images () {
 		if (!empty($_POST['show'])) {
 			$query = "SELECT path,results,gallery FROM $table";
 			$already_optimized = $wpdb->get_results($query, ARRAY_N);
-//		print_r($already_optimized);
 		        $upload_info = wp_upload_dir();
 			$upload_path = $upload_info['basedir'];
 			echo '<br /><table class="wp-list-table widefat media" cellspacing="0"><thead><tr><th>&nbsp;</th><th>filename</th><th>Image Optimizer</th></tr></thead>';
 			$alternate = true;
 			foreach ($already_optimized as $optimized_image) {
-				//$image_name = str_replace($upload_path, '', $optimized_image[0]);
 				$image_name = str_replace(ABSPATH, '', $optimized_image[0]);
-				//$image_url = $upload_info['baseurl'] . $image_name;
 				$image_url = trailingslashit(get_site_url()) . $image_name;
 				$savings = $optimized_image[1];
 				if ($alternate) {
@@ -123,12 +120,10 @@ function ewww_image_optimizer_image_scan($dir, $skip_previous = false) {
 			continue;
 		} else {
 			$path = $path->getPathname();
-		//	if ($skip_previous) {
-				$table = $wpdb->prefix . 'ewwwio_images';
-				$image_md5 = md5_file($path);
-				$query = "SELECT id FROM $table WHERE path = '$path' AND image_md5 = '$image_md5'";
-				$already_optimized = $wpdb->get_results($query);
-		//	}
+//			$table = $wpdb->prefix . 'ewwwio_images';
+			$image_md5 = md5_file($path);
+			$query = "SELECT id FROM " . $wpdb->prefix . 'ewwwio_images' . " WHERE path = '$path' AND image_md5 = '$image_md5'";
+			$already_optimized = $wpdb->get_results($query);
 			$mimetype = ewww_image_optimizer_mimetype($path, 'i');
 			if (preg_match('/^image\/(jpeg|png|gif)/', $mimetype) && empty($already_optimized)) {
 				$images[] = $path;
@@ -151,16 +146,19 @@ function ewww_image_optimizer_aux_images_script($hook) {
 	$symposium_images = false;
 	// find out what page we are being called from
 	if ('appearance_page_ewww-image-optimizer-theme-images' === $hook) {
-		$theme_images = true;
-		update_option('ewww_image_optimizer_aux_type', 'theme');
+//		$theme_images = true;
+//		update_option('ewww_image_optimizer_aux_type', 'theme');
+		update_option('ewww_image_optimizer_aux_type', 'all');
 	} else if ('media_page_ewww-image-optimizer-buddypress-images' === $hook) {
-		$buddypress_images = true;
-		update_option('ewww_image_optimizer_aux_type', 'buddypress');
+//		$buddypress_images = true;
+//		update_option('ewww_image_optimizer_aux_type', 'buddypress');
+		update_option('ewww_image_optimizer_aux_type', 'all');
 	} else if ('media_page_ewww-image-optimizer-symposium-images' === $hook) {
-		$symposium_images = true;
-		update_option('ewww_image_optimizer_aux_type', 'symposium');
+//		$symposium_images = true;
+//		update_option('ewww_image_optimizer_aux_type', 'symposium');
+		update_option('ewww_image_optimizer_aux_type', 'all');
 	} else if ('tools_page_ewww-image-optimizer-aux-images' === $hook) {
-		$theme_images = true;
+	//	$theme_images = true;
 		update_option('ewww_image_optimizer_aux_type', 'all');
 	} else {
 		return;
@@ -174,23 +172,32 @@ function ewww_image_optimizer_aux_images_script($hook) {
     		$wpdb->query($sql); 
 	}
 	// collect a list of images if we are working with a theme
-	if ($theme_images) {
+//	if ($theme_images) { // TODO: should always be optimizing theme, right?
+// TODO: going to need to check multiple themes on a multisite setup
 		$child_path = get_stylesheet_directory();
 		$parent_path = get_template_directory();
 		$attachments = ewww_image_optimizer_image_scan($child_path, true); 
 		if ($child_path !== $parent_path) {
 			$attachments = array_merge($attachments, ewww_image_optimizer_image_scan($parent_path, true));
 		}
+//	}
+	// collect a list of images in auxiliary folders provided by user
+	$aux_paths = get_site_option('ewww_image_optimizer_aux_paths');
+	foreach ($aux_paths as $aux_path) {
+		$attachments = array_merge($attachments, ewww_image_optimizer_image_scan($aux_path));
 	}
+
 	// collect a list of images for buddypress
-	if ($buddypress_images) {
+	if (is_plugin_active('buddypress/bp-loader.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('buddypress/bp-loader.php'))) {
+//	if ($buddypress_images) {
 		// get the value of the wordpress upload directory
 	        $upload_dir = wp_upload_dir();
 		// scan the 'avatars' and 'group-avatars' folders for images
-		$attachments = array_merge(ewww_image_optimizer_image_scan($upload_dir['basedir'] . '/avatars', true), ewww_image_optimizer_image_scan($upload_dir['basedir'] . '/group-avatars', true));
+		$attachments = array_merge($attachments, ewww_image_optimizer_image_scan($upload_dir['basedir'] . '/avatars', true), ewww_image_optimizer_image_scan($upload_dir['basedir'] . '/group-avatars', true));
 	}
-	if ($symposium_images) {
-		$attachments = ewww_image_optimizer_image_scan(get_option('symposium_img_path'), true);
+//	if ($symposium_images) {
+	if (is_plugin_active('wp-symposium/wp-symposium.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('wp-symposium/wp-symposium.php'))) {
+		$attachments = array_merge($attachments, ewww_image_optimizer_image_scan(get_option('symposium_img_path'), true));
 	}
         // check to see if we are supposed to reset the bulk operation and verify we are authorized to do so
 	if (!empty($_REQUEST['reset']) && wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-aux-images' )) {
@@ -336,6 +343,8 @@ function ewww_image_optimizer_aux_images_cleanup($auto = false) {
 			echo '<p><b>Finished</b> - <a href="admin.php?page=bp-groups">View Buddypress Groups</a></p>';
 		} elseif (get_option('ewww_image_optimizer_aux_type') === 'symposium') {
 			echo '<p><b>Finished</b> - <a href="admin.php?page=symposium_manage">Manage WP Symposium</a></p>';
+		} elseif (get_option('ewww_image_optimizer_aux_type') === 'all') {
+			echo '<p><b>Finished</b></p>';
 		}
 		die();
 	}

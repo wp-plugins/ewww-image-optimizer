@@ -49,6 +49,9 @@ Located under Media, the BuddyPress Optimizer allows the user to optimize all av
 
 Uploads are automatically optimized. Look for Optimize under the Image Store (Galleries) menu to see status of optimization and for re-optimization and bulk-optimization options. Using the Bulk Optimization tool under Media Library automatically includes all Image Store uploads.
 
+= Optimize Almost Everything =
+As of version 1.7.0, site admins can specify any folder within their wordpress folder to be optimized. The 'Optimize More' option under Tools will optimize theme images, BuddyPress avatars, WP Symposium images, and any user-specified folders. The Wordpress 'uploads' folder cannot be specified, but sub-folders of the 'uploads' folder are permitted. Additionally, this tool can run on an hourly basis via wp_cron to keep newly uploaded images optimized.
+
 == Installation ==
 
 1. Upload the 'ewww-image-optimizer' plugin to your '/wp-content/plugins/' directory.
@@ -144,10 +147,12 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 = future =
 * these are possible future bugfixes and/or feature requests, if you see a feature you like here, go vote for it in the support forum
 * SunOS (Solaris/OpenIndiana) support
-* WP Symposium support
 * Bulk restoration of converted images
 
-= 1.6.4 =
+= 1.7.0 =
+* added ability to optimize specified folders within your wordpress install
+* option to optimize on a schedule for images that cannot be automatically optimized on upload (buddypress, symposium, user-specified folders)
+* WP Symposium support via 'Optimize More' in Tools menu
 * fixed unnecessary check for 'file' field in attachment metadata
 
 = 1.6.3 =
