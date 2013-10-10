@@ -172,8 +172,8 @@ function ewww_image_optimizer_aux_images_script($hook) {
     		$wpdb->query($sql); 
 	}
 	// collect a list of images if we are working with a theme
-//	if ($theme_images) { // TODO: should always be optimizing theme, right?
-// TODO: going to need to check multiple themes on a multisite setup
+// TODO: going to need to check multiple themes on a multisite setup, maybe not since cron is run per site
+//	if (function_exists('is_plugin_active_for_network') && !is_plugin_active_for_network('ewww-image-optimizer/ewww-image-optimizer.php')) {
 		$child_path = get_stylesheet_directory();
 		$parent_path = get_template_directory();
 		$attachments = ewww_image_optimizer_image_scan($child_path, true); 
@@ -182,9 +182,10 @@ function ewww_image_optimizer_aux_images_script($hook) {
 		}
 //	}
 	// collect a list of images in auxiliary folders provided by user
-	$aux_paths = get_site_option('ewww_image_optimizer_aux_paths');
-	foreach ($aux_paths as $aux_path) {
-		$attachments = array_merge($attachments, ewww_image_optimizer_image_scan($aux_path));
+	if ($aux_paths = get_site_option('ewww_image_optimizer_aux_paths')) {
+		foreach ($aux_paths as $aux_path) {
+			$attachments = array_merge($attachments, ewww_image_optimizer_image_scan($aux_path));
+		}
 	}
 
 	// collect a list of images for buddypress
@@ -267,7 +268,7 @@ function ewww_image_optimizer_aux_images_filename() {
 }
  
 // called by javascript to process each image in the loop
-function ewww_image_optimizer_aux_images_loop($attachment = null, $auto = false) {
+function ewww_image_optimizer_aux_images_loop($attachment = null, $auto = false, $gallery = null) {
 	global $wpdb;
 	global $ewww_debug;
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_aux_images_loop()</b><br>";
@@ -281,6 +282,7 @@ function ewww_image_optimizer_aux_images_loop($attachment = null, $auto = false)
 	set_time_limit (50);
 	// get the path of the current attachment
 	if (empty($attachment)) $attachment = $_POST['attachment'];
+	if (empty($gallery)) $gallery = get_option('ewww_image_optimizer_aux_type');
 	// get the 'aux attachments' with a list of attachments remaining
 	$attachments = get_option('ewww_image_optimizer_aux_attachments');
 	// do the optimization for the current image
@@ -293,7 +295,7 @@ function ewww_image_optimizer_aux_images_loop($attachment = null, $auto = false)
 				'path' => $attachment,
 				'image_md5' => md5_file($attachment),
 				'results' => $results[1],
-				'gallery' => get_option('ewww_image_optimizer_aux_type'),
+				'gallery' => $gallery,
 			));
 	} else {
 		// store info on the current image for future reference

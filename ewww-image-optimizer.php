@@ -54,13 +54,10 @@ add_action('admin_action_-1', 'ewww_image_optimizer_bulk_action_handler');
 add_action('admin_action_ewww_image_optimizer_install_pngout', 'ewww_image_optimizer_install_pngout');
 add_action('admin_enqueue_scripts', 'ewww_image_optimizer_media_scripts');
 add_action('ewww_image_optimizer_auto', 'ewww_image_optimizer_auto');
+add_filter('wp_image_editors', 'ewww_image_optimizer_load_editor');
 //add_action('in_admin_footer', 'ewww_image_optimizer_footer_debug');
 register_deactivation_hook(__FILE__, 'ewww_image_optimizer_network_deactivate');
 register_activation_hook(__FILE__, 'ewww_image_optimizer_install_table');
-
-// load the class to extend WP_Image_Editor
-// TODO: only load this in WP 3.5+
-require(dirname(__FILE__) . '/image-editor.php');
 
 // need to include the plugin library for the is_plugin_active function (even though it isn't supposed to be necessary in the admin)
 require_once(ABSPATH . 'wp-admin/includes/plugin.php');
@@ -86,7 +83,7 @@ function ewww_image_optimizer_admin_init() {
 	global $ewww_debug;
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_admin_init()</b><br>";
 	ewww_image_optimizer_cloud_verify();
-	if (get_site_option('ewww_image_optimizer_cloud_jpg') && get_site_option('ewww_image_optimizer_cloud_png') && get_site_option('ewww_image_optimizer_cloud_gif')) {
+	if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_jpg') && ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_png') && ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_gif')) {
 		define('EWWW_IMAGE_OPTIMIZER_CLOUD', TRUE);
 	} else {
 		define('EWWW_IMAGE_OPTIMIZER_CLOUD', FALSE);
@@ -166,8 +163,8 @@ function ewww_image_optimizer_admin_init() {
 			update_site_option('ewww_image_optimizer_cloud_gif', $_POST['ewww_image_optimizer_cloud_gif']);
 			if (empty($_POST['ewww_image_optimizer_auto'])) $_POST['ewww_image_optimizer_auto'] = '';
 			update_site_option('ewww_image_optimizer_auto', $_POST['ewww_image_optimizer_auto']);
-			if (empty($_POST['ewww_image_optimizer_aux_images'])) $_POST['ewww_image_optimizer_aux_images'] = '';
-			update_site_option('ewww_image_optimizer_aux_images', $_POST['ewww_image_optimizer_aux_images']);
+			if (empty($_POST['ewww_image_optimizer_aux_paths'])) $_POST['ewww_image_optimizer_aux_paths'] = '';
+			update_site_option('ewww_image_optimizer_aux_paths', ewww_image_optimizer_aux_paths_sanitize($_POST['ewww_image_optimizer_aux_paths']));
 			add_action('network_admin_notices', 'ewww_image_optimizer_network_settings_saved');
 		}
 	}
@@ -208,11 +205,24 @@ function ewww_image_optimizer_admin_init() {
 	add_option('ewww_image_optimizer_optipng_level', 2);
 	add_option('ewww_image_optimizer_pngout_level', 2);
 	// setup scheduled optimization if the user has enabled it, and it isn't already scheduled
-	if (get_site_option('ewww_image_optimizer_auto') == TRUE && !wp_next_scheduled('ewww_image_optimizer_auto')) {
+	if (ewww_image_optimizer_get_option('ewww_image_optimizer_auto') == TRUE && !wp_next_scheduled('ewww_image_optimizer_auto')) {
 		$ewww_debug = "$ewww_debug scheduling auto-optimization<br>";
 		wp_schedule_event(time(), 'hourly', 'ewww_image_optimizer_auto');
-	} else {
+	} elseif (ewww_image_optimizer_get_option('ewww_image_optimizer_auto') == TRUE) {
 		$ewww_debug = "$ewww_debug auto-optimization already scheduled: " . wp_next_scheduled('ewww_image_optimizer_auto') . "<br>";
+	} elseif (wp_next_scheduled('ewww_image_optimizer_auto')) {
+		$ewww_debug = "$ewww_debug un-scheduling auto-optimization<br>";
+		wp_clear_scheduled_hook('ewww_image_optimizer_auto');
+		if (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('ewww-image-optimizer/ewww-image-optimizer.php')) {
+			global $wpdb;
+			$query = "SELECT blog_id FROM {$wpdb->blogs} WHERE site_id = '{$wpdb->siteid}' ";
+			$blogs = $wpdb->get_results($query, ARRAY_A);
+			foreach ($blogs as $blog) {
+				switch_to_blog($blog['blog_id']);
+				wp_clear_scheduled_hook('ewww_image_optimizer_auto');
+			}
+			restore_current_blog();
+		}
 	}
 }
 
@@ -250,18 +260,37 @@ function ewww_image_optimizer_network_settings_saved() {
 	echo "<div id='ewww-image-optimizer-settings-saved' class='updated fade'><p><strong>Settings saved.</strong></p></div>";
 }   
 
+// load the class to extend WP_Image_Editor
+function ewww_image_optimizer_load_editor($editors) {
+	// TODO: only load this in WP 3.5+
+	if (!class_exists('EWWWIO_GD_Editor')) {
+		include_once(plugin_dir_path(__FILE__) . '/image-editor.php');
+	}
+	array_unshift($editors, 'EWWWIO_GD_Editor');
+	return $editors;
+}
+
 // runs scheduled optimization of various auxiliary images
 function ewww_image_optimizer_auto() {
 	global $ewww_debug;
-	$ewww_debug = "$ewww_debug running scheduled optimization<br>";
-	ewww_image_optimizer_aux_images_script('appearance_page_ewww-image-optimizer-theme-images');
-	ewww_image_optimizer_aux_images_initialize(true);
-	$attachments = get_option('ewww_image_optimizer_aux_attachments');
-	foreach ($attachments as $attachment) {
-		ewww_image_optimizer_aux_images_loop($attachment, true);
-	}	
-	ewww_image_optimizer_aux_images_cleanup(true);
-	ewww_image_optimizer_debug_log();
+	if (ewww_image_optimizer_get_option('ewww_image_optimizer_auto') == TRUE) {
+		$ewww_debug = "$ewww_debug running scheduled optimization<br>";
+		update_option('ewww_image_optimizer_aux_resume', '');
+		update_option('ewww_image_optimizer_aux_attachments', '');
+		ewww_image_optimizer_aux_images_script('appearance_page_ewww-image-optimizer-theme-images');
+		ewww_image_optimizer_aux_images_initialize(true);
+		$attachments = get_option('ewww_image_optimizer_aux_attachments');
+		foreach ($attachments as $attachment) {
+			if (!get_option('ewww_image_optimizer_aux_resume')) {
+				ewww_image_optimizer_debug_log();
+				return;
+			}
+			ewww_image_optimizer_aux_images_loop($attachment, true, 'auto');
+		}	
+		ewww_image_optimizer_aux_images_cleanup(true);
+		ewww_image_optimizer_debug_log();
+	}
+	return;
 }
 
 // checks the binary at $path against a list of valid md5sums
@@ -496,7 +525,7 @@ function ewww_image_optimizer_path_check() {
 		}
 	} else {
 	// check to see if the user has disabled using bundled binaries
-	$use_system = get_site_option('ewww_image_optimizer_skip_bundle');
+	$use_system = ewww_image_optimizer_get_option('ewww_image_optimizer_skip_bundle');
 	// first check for the jpegtran binary in the ewww tool folder
 	if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran') && !$use_system) {
 		$jpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran';
@@ -779,7 +808,7 @@ function ewww_image_optimizer_install_tools () {
 		echo "<div id='ewww-image-optimizer-warning-tool-install' class='error'><p><strong>EWWW Image Optimizer couldn't install tools in " . htmlentities(EWWW_IMAGE_OPTIMIZER_TOOL_PATH) . ".</strong> Please adjust permissions or create the folder. If you have installed the tools elsewhere on your system, check the option to 'Use system paths'. For more details, visit the <a href='options-general.php?page=ewww-image-optimizer/ewww-image-optimizer.php'>Settings Page</a> or the <a href='http://wordpress.org/extend/plugins/ewww-image-optimizer/installation/'>Installation Instructions</a>.</p></div>";
 	}
 	$migrate_fail = false;
-	if ($jpegtran_path = get_site_option('ewww_image_optimizer_jpegtran_path')) {
+	if ($jpegtran_path = ewww_image_optimizer_get_option('ewww_image_optimizer_jpegtran_path')) {
 		$ewww_debug = "$ewww_debug found path setting for jpegtran, migrating<br>";
 		if (file_exists($jpegtran_path)) {
 			$ewww_debug = "$ewww_debug found custom jpegtran binary<br>";
@@ -792,7 +821,7 @@ function ewww_image_optimizer_install_tools () {
 			}
 		}
 	}
-	if ($optipng_path = get_site_option('ewww_image_optimizer_optipng_path')) {
+	if ($optipng_path = ewww_image_optimizer_get_option('ewww_image_optimizer_optipng_path')) {
 		$ewww_debug = "$ewww_debug found path setting for optipng, migrating<br>";
 		if (file_exists($optipng_path)) {
 			$ewww_debug = "$ewww_debug found custom optipng binary<br>";
@@ -805,7 +834,7 @@ function ewww_image_optimizer_install_tools () {
 			}
 		}
 	}
-	if ($gifsicle_path = get_site_option('ewww_image_optimizer_gifsicle_path')) {
+	if ($gifsicle_path = ewww_image_optimizer_get_option('ewww_image_optimizer_gifsicle_path')) {
 		$ewww_debug = "$ewww_debug found path setting for gifsicle, migrating<br>";
 		if (file_exists($gifsicle_path)) {
 			$ewww_debug = "$ewww_debug found custom gifsicle binary<br>";
@@ -829,7 +858,7 @@ function ewww_image_optimizer_notice_utils() {
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_notice_utils()</b><br>";
 
 	// make sure the bundled tools are installed
-	if(!get_site_option('ewww_image_optimizer_skip_bundle')) {
+	if(!ewww_image_optimizer_get_option('ewww_image_optimizer_skip_bundle')) {
 		ewww_image_optimizer_install_tools ();
 	}
 
@@ -864,7 +893,7 @@ function ewww_image_optimizer_notice_utils() {
 	// attempt to retrieve values for utility paths, and store them in the appropriate variables
 	$required = ewww_image_optimizer_path_check();
 	// if the user has disabled the utility checks
-	if(get_site_option('ewww_image_optimizer_skip_check') == TRUE){
+	if(ewww_image_optimizer_get_option('ewww_image_optimizer_skip_check') == TRUE){
 		// set a variable for each tool
 		$skip_jpegtran_check = true;
 		$skip_optipng_check = true;
@@ -878,16 +907,16 @@ function ewww_image_optimizer_notice_utils() {
 		$skip_pngout_check = false;
 	}
 	// if the user has disabled a variable, we aren't going to bother checking to see if it is there
-	if (get_site_option('ewww_image_optimizer_disable_jpegtran')) {
+	if (ewww_image_optimizer_get_option('ewww_image_optimizer_disable_jpegtran')) {
 		$skip_jpegtran_check = true;
 	}
-	if (get_site_option('ewww_image_optimizer_disable_optipng')) {
+	if (ewww_image_optimizer_get_option('ewww_image_optimizer_disable_optipng')) {
 		$skip_optipng_check = true;
 	}
-	if (get_site_option('ewww_image_optimizer_disable_gifsicle')) {
+	if (ewww_image_optimizer_get_option('ewww_image_optimizer_disable_gifsicle')) {
 		$skip_gifsicle_check = true;
 	}
-	if (get_site_option('ewww_image_optimizer_disable_pngout')) {
+	if (ewww_image_optimizer_get_option('ewww_image_optimizer_disable_pngout')) {
 		$skip_pngout_check = true;
 	}
 	// we are going to store our validation results in $missing
@@ -932,8 +961,18 @@ function ewww_image_optimizer_notice_utils() {
 
 // removes the network settings when the plugin is deactivated
 function ewww_image_optimizer_network_deactivate($network_wide) {
+	global $ewww_debug;
+	global $wpdb;
+	wp_clear_scheduled_hook('ewww_image_optimizer_auto');
 	if ($network_wide) {
-		delete_site_option('ewww_image_optimizer_skip_check');
+		$query = "SELECT blog_id FROM {$wpdb->blogs} WHERE site_id = '{$wpdb->siteid}' ";
+		$blogs = $wpdb->get_results($query, ARRAY_A);
+		foreach ($blogs as $blog) {
+			switch_to_blog($blog['blog_id']);
+			wp_clear_scheduled_hook('ewww_image_optimizer_auto');
+		}
+		restore_current_blog();
+	/*	delete_site_option('ewww_image_optimizer_skip_check');
 		delete_site_option('ewww_image_optimizer_skip_bundle');
 		delete_site_option('ewww_image_optimizer_debug');
 		delete_site_option('ewww_image_optimizer_jpegtran_copy');
@@ -956,7 +995,7 @@ function ewww_image_optimizer_network_deactivate($network_wide) {
 		delete_site_option('ewww_image_optimizer_cloud_gif');
 		delete_site_option('ewww_image_optimizer_auto');
 		delete_site_option('ewww_image_optimizer_aux_paths');
-		delete_site_option('ewww_image_optimizer_network_version');
+		delete_site_option('ewww_image_optimizer_network_version');*/
 	}
 }
 
@@ -1121,13 +1160,13 @@ function ewww_image_optimizer_media_scripts($hook) {
 // used to output any debug messages available
 function ewww_image_optimizer_debug() {
 	global $ewww_debug;
-	if (get_site_option('ewww_image_optimizer_debug')) echo '<div style="background-color:#ffff99;position:relative;bottom:60px;padding:5px 20px 10px;margin:0 0 15px 146px"><h3>Debug Log</h3>' . $ewww_debug . '</div>';
+	if (ewww_image_optimizer_get_option('ewww_image_optimizer_debug')) echo '<div style="background-color:#ffff99;position:relative;bottom:60px;padding:5px 20px 10px;margin:0 0 15px 146px"><h3>Debug Log</h3>' . $ewww_debug . '</div>';
 }
 
 // used to output debug messages to a logfile in the plugin folder in cases where output to the screen is a bad idea
 function ewww_image_optimizer_debug_log() {
 	global $ewww_debug;
-	if (get_site_option('ewww_image_optimizer_debug')) {
+	if (ewww_image_optimizer_get_option('ewww_image_optimizer_debug')) {
 		$timestamp = date('y-m-d h:i:s.u') . "  ";
 		$ewww_debug_log = preg_replace('/<br>/', "\n", $ewww_debug);
 		file_put_contents(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'debug.log', $timestamp . $ewww_debug_log, FILE_APPEND);
@@ -1176,6 +1215,7 @@ function ewww_image_optimizer_jpg_quality_sanitize ($input) {
 function ewww_image_optimizer_aux_paths_sanitize ($input) {
 	global $ewww_debug;
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_aux_paths_santitize()</b><br>";
+	$path_array = array();
 	$paths = explode("\n", $input);
 	foreach ($paths as $path) {
 		$path = sanitize_text_field($path);
@@ -1197,7 +1237,7 @@ function ewww_image_optimizer_jpg_background () {
 	global $ewww_debug;
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_jpeg_background()</b><br>";
 	// retrieve the user-supplied value for jpg background color
-	$background = get_site_option('ewww_image_optimizer_jpg_background');
+	$background = ewww_image_optimizer_get_option('ewww_image_optimizer_jpg_background');
 	//verify that the supplied value is in hex notation
 	if (preg_match('/^\#*([0-9a-fA-F]){6}$/',$background)) {
 		// we remove a leading # symbol, since we take care of it later
@@ -1215,7 +1255,7 @@ function ewww_image_optimizer_jpg_quality () {
 	global $ewww_debug;
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_jpg_quality()</b><br>";
 	// retrieve the user-supplied value for jpg quality
-	$quality = get_site_option('ewww_image_optimizer_jpg_quality');
+	$quality = ewww_image_optimizer_get_option('ewww_image_optimizer_jpg_quality');
 	// verify that the quality level is an integer, 1-100
 	if (preg_match('/^(100|[1-9][0-9]?)$/',$quality)) {
 		// send back the valid quality level
@@ -1227,10 +1267,11 @@ function ewww_image_optimizer_jpg_quality () {
 }
 
 // Retrieve the paths for auxiliary images to optimize
+// TODO: remove this
 function ewww_image_optimizer_aux_paths () {
 	global $ewww_debug;
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_aux_paths()</b><br>";
-	$aux_paths = get_site_option('ewww_image_optimizer_aux_paths');
+	$aux_paths = ewww_image_optimizer_get_option('ewww_image_optimizer_aux_paths');
 //	$path_array = null;
 //	return esc_textarea($path_array);
 	return $path_array;
@@ -1452,11 +1493,14 @@ function ewww_image_optimizer_update_saved_file ($meta, $ID) {
 function ewww_image_optimizer_cloud_verify() {
 	global $ewww_debug;
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_cloud_verify()</b><br>";
-	$api_key = get_site_option('ewww_image_optimizer_cloud_key');
+	$api_key = ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_key');
 	if (empty($api_key)) {
 		update_site_option('ewww_image_optimizer_cloud_jpg', '');
 		update_site_option('ewww_image_optimizer_cloud_png', '');
 		update_site_option('ewww_image_optimizer_cloud_gif', '');
+		update_option('ewww_image_optimizer_cloud_jpg', '');
+		update_option('ewww_image_optimizer_cloud_png', '');
+		update_option('ewww_image_optimizer_cloud_gif', '');
 		return false;
 	}
 	$servers = gethostbynamel('optimize.exactlywww.com');
@@ -1471,7 +1515,9 @@ function ewww_image_optimizer_cloud_verify() {
 			$ewww_debug = "$ewww_debug verification failed: $error_message <br>";
 		} elseif (!empty($result['body']) && preg_match('/(great|exceeded)/', $result['body'])) {
 			$verified = $result['body'];
-			define('EWWW_IMAGE_OPTIMIZER_CLOUD_IP', $ip);
+			if (!defined('EWWW_IMAGE_OPTIMIZER_CLOUD_IP')) {
+				define('EWWW_IMAGE_OPTIMIZER_CLOUD_IP', $ip);
+			}
 			$ewww_debug = "$ewww_debug verification success via: $ip <br>";
 			break;
 		}
@@ -1480,6 +1526,9 @@ function ewww_image_optimizer_cloud_verify() {
 		update_site_option('ewww_image_optimizer_cloud_jpg', '');
 		update_site_option('ewww_image_optimizer_cloud_png', '');
 		update_site_option('ewww_image_optimizer_cloud_gif', '');
+		update_option('ewww_image_optimizer_cloud_jpg', '');
+		update_option('ewww_image_optimizer_cloud_png', '');
+		update_option('ewww_image_optimizer_cloud_gif', '');
 		return FALSE;
 	} else {
 		return $verified;
@@ -1490,7 +1539,7 @@ function ewww_image_optimizer_cloud_verify() {
 function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $r = '255', $g = '255', $b = '255', $quality = null) {
 	global $ewww_debug;
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_cloud_optimizer()</b><br>";
-	if(get_site_option('ewww_image_optimizer_jpegtran_copy') == TRUE){
+	if(ewww_image_optimizer_get_option('ewww_image_optimizer_jpegtran_copy') == TRUE){
         	// don't copy metadata
                 $metadata = 0;
         } else {
@@ -1502,7 +1551,7 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $r
 	} else {
 		$convert = 1;
 	}
-	$api_key = get_site_option('ewww_image_optimizer_cloud_key');
+	$api_key = ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_key');
 	$url = 'http://' . EWWW_IMAGE_OPTIMIZER_CLOUD_IP . '/';
 	$boundary = wp_generate_password(24, false);
 
@@ -1628,7 +1677,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 //		list ($jpegtran_path, $optipng_path, $gifsicle_path, $pngout_path) = ewww_image_optimizer_path_check();
 	}
 	// if the user has disabled the utility checks
-	if (get_site_option('ewww_image_optimizer_skip_check') == TRUE || EWWW_IMAGE_OPTIMIZER_CLOUD) {
+	if (ewww_image_optimizer_get_option('ewww_image_optimizer_skip_check') == TRUE || EWWW_IMAGE_OPTIMIZER_CLOUD) {
 		$skip_jpegtran_check = true;
 		$skip_optipng_check = true;
 		$skip_gifsicle_check = true;
@@ -1640,14 +1689,14 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 		$skip_gifsicle_check = false;
 		$skip_pngout_check = false;
 	}
-	if (get_site_option('ewww_image_optimizer_cloud_jpg')) {
+	if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_jpg')) {
 		$skip_jpegtran_check = true;
 	}	
-	if (get_site_option('ewww_image_optimizer_cloud_png')) {
+	if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_png')) {
 		$skip_optipng_check = true;
 		$skip_pngout_check = true;
 	}	
-	if (get_site_option('ewww_image_optimizer_cloud_gif')) {
+	if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_gif')) {
 		$skip_gifsicle_check = true;
 	}	
 	// if the full-size image was converted
@@ -1675,7 +1724,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 	switch($type) {
 		case 'image/jpeg':
 			// if jpg2png conversion is enabled, and this image is in the wordpress media library
-			if ((get_site_option('ewww_image_optimizer_jpg_to_png') && $gallery_type == 1) || !empty($_GET['convert'])) {
+			if ((ewww_image_optimizer_get_option('ewww_image_optimizer_jpg_to_png') && $gallery_type == 1) || !empty($_GET['convert'])) {
 				// toggle the convert process to ON
 				$convert = true;
 				// generate the filename for a PNG
@@ -1704,7 +1753,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				$convert = false;
 			}
 			// if jpegtran optimization is disabled
-			if (get_site_option('ewww_image_optimizer_disable_jpegtran')) {
+			if (ewww_image_optimizer_get_option('ewww_image_optimizer_disable_jpegtran')) {
 				// store an appropriate message in $result
 				$result = 'jpegtran is disabled';
 				// set the optimization process to OFF
@@ -1727,7 +1776,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 			// if the conversion process is turned ON, or if this is a resize and the full-size was converted
 			if ($convert || $converted) {
 				$ewww_debug = "$ewww_debug attempting to convert JPG to PNG: $pngfile <br>";
-				if (get_site_option('ewww_image_optimizer_cloud_jpg')) {
+				if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_jpg')) {
 					$pngimage = ewww_image_optimizer_cloud_optimizer($file, $type, true);
 					file_put_contents($pngfile, $pngimage);
 					if (ewww_image_optimizer_mimetype($pngfile, 'i') !== 'image/png') {
@@ -1755,9 +1804,9 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 						imagepng(imagecreatefromjpeg($file), $pngfile);
 					}
 					// if pngout isn't disabled
-					if (!get_site_option('ewww_image_optimizer_disable_pngout')) {
+					if (!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_pngout')) {
 						// retrieve the pngout optimization level
-						$pngout_level = get_site_option('ewww_image_optimizer_pngout_level');
+						$pngout_level = ewww_image_optimizer_get_option('ewww_image_optimizer_pngout_level');
 						// if the PNG file was created
 						if (file_exists($pngfile)) {
 							$ewww_debug = "$ewww_debug optimizing converted PNG with pngout<br>";
@@ -1766,9 +1815,9 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 						}
 					}
 					// if optipng isn't disabled
-					if (!get_site_option('ewww_image_optimizer_disable_optipng')) {
+					if (!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_optipng')) {
 						// retrieve the optipng optimization level
-						$optipng_level = get_site_option('ewww_image_optimizer_optipng_level');
+						$optipng_level = ewww_image_optimizer_get_option('ewww_image_optimizer_optipng_level');
 						// if the PNG file was created
 						if (file_exists($pngfile)) {
 							$ewww_debug = "$ewww_debug optimizing converted PNG with optipng<br>";
@@ -1796,7 +1845,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 			// if optimization is turned ON
 			if ($optimize) {
 				$ewww_debug = "$ewww_debug attempting to optimize JPG...<br>";
-				if (get_site_option('ewww_image_optimizer_cloud_jpg')) {
+				if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_jpg')) {
 					$tempfile = $file . ".tmp";
 					$jpgimage = ewww_image_optimizer_cloud_optimizer($file, $type);
 					file_put_contents($tempfile, $jpgimage);
@@ -1814,7 +1863,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				$tempfile = $file . ".tmp"; //non-progressive jpeg
 				$progfile = $file . ".prog"; // progressive jpeg
 				// check to see if we are supposed to strip metadata (badly named)
-				if(get_site_option('ewww_image_optimizer_jpegtran_copy') == TRUE){
+				if(ewww_image_optimizer_get_option('ewww_image_optimizer_jpegtran_copy') == TRUE){
 					// don't copy metadata
 					$copy_opt = 'none';
 				} else {
@@ -1871,7 +1920,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				// store the size of the converted PNG
 				$new_size = $png_size;
 				// check to see if the user wants the originals deleted
-				if (get_site_option('ewww_image_optimizer_delete_originals') == TRUE) {
+				if (ewww_image_optimizer_get_option('ewww_image_optimizer_delete_originals') == TRUE) {
 					// delete the original JPG
 					unlink($file);
 				}
@@ -1890,7 +1939,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 			break;
 		case 'image/png':
 			// png2jpg conversion is turned on, and the image is in the wordpress media library
-			if ((get_site_option('ewww_image_optimizer_png_to_jpg') && $gallery_type == 1) || !empty($_GET['convert'])) {
+			if ((ewww_image_optimizer_get_option('ewww_image_optimizer_png_to_jpg') && $gallery_type == 1) || !empty($_GET['convert'])) {
 				// turn the conversion process ON
 				$convert = true;
 				// if this is a resize version
@@ -1918,19 +1967,19 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				$convert = false;
 			}
 			// if pngout and optipng are disabled
-			if (get_site_option('ewww_image_optimizer_disable_optipng') && get_site_option('ewww_image_optimizer_disable_pngout')) {
+			if (ewww_image_optimizer_get_option('ewww_image_optimizer_disable_optipng') && ewww_image_optimizer_get_option('ewww_image_optimizer_disable_pngout')) {
 				// tell the user all PNG tools are disabled
 				$result = 'png tools are disabled';
 				// turn off optimization
 				$optimize = false;
 			// if the utility checking is on, optipng is enabled, but optipng cannot be found
-			} elseif (!$skip_optipng_check && !$tools['OPTIPNG'] && !get_site_option('ewww_image_optimizer_disable_optipng')) {
+			} elseif (!$skip_optipng_check && !$tools['OPTIPNG'] && !ewww_image_optimizer_get_option('ewww_image_optimizer_disable_optipng')) {
 				// tell the user optipng is missing
 				$result = '<em>optipng</em> is missing';
 				// turn off optimization
 				$optimize = false;
 			// if the utility checking is on, pngout is enabled, but pngout cannot be found
-			} elseif (!$skip_pngout_check && !$tools['PNGOUT'] && !get_site_option('ewww_image_optimizer_disable_pngout')) {
+			} elseif (!$skip_pngout_check && !$tools['PNGOUT'] && !ewww_image_optimizer_get_option('ewww_image_optimizer_disable_pngout')) {
 				// tell the user pngout is missing
 				$result = '<em>pngout</em> is missing';
 				// turn off optimization
@@ -1967,7 +2016,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					$cquality = '';
 					$gquality = '92';
 				}
-				if (get_site_option('ewww_image_optimizer_cloud_png')) {
+				if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_png')) {
 					//if (empty($cquality)) $cquality = '-quality 92';
 					$jpgimage = ewww_image_optimizer_cloud_optimizer($file, $type, $convert, $r, $g, $b, $gquality);
 					file_put_contents($jpgfile, $jpgimage);
@@ -2021,12 +2070,12 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				// retrieve the filesize of the new JPG
 				$jpg_size = filesize($jpgfile);
 				// next we need to optimize that JPG if jpegtran is enabled
-				if (!get_site_option('ewww_image_optimizer_disable_jpegtran') && file_exists($jpgfile)) {
+				if (!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_jpegtran') && file_exists($jpgfile)) {
 					// generate temporary file-names:
 					$tempfile = $jpgfile . ".tmp"; //non-progressive jpeg
 					$progfile = $jpgfile . ".prog"; // progressive jpeg
 					// check to see if we are supposed to strip metadata (badly named)
-					if(get_site_option('ewww_image_optimizer_jpegtran_copy') == TRUE){
+					if(ewww_image_optimizer_get_option('ewww_image_optimizer_jpegtran_copy') == TRUE){
 						// don't copy metadata
 						$copy_opt = 'none';
 					} else {
@@ -2082,7 +2131,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 			}
 			// if optimization is turned on
 			if ($optimize) {
-				if (get_site_option('ewww_image_optimizer_cloud_png')) {
+				if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_png')) {
 					$pngfile = $file . '.tmp';
 					$pngimage = ewww_image_optimizer_cloud_optimizer($file, $type);
 					file_put_contents($pngfile, $pngimage);
@@ -2097,16 +2146,16 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					}
 				} else {
 				// if pngout is enabled
-				if(!get_site_option('ewww_image_optimizer_disable_pngout')) {
+				if(!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_pngout')) {
 					// retrieve the optimization level for pngout
-					$pngout_level = get_site_option('ewww_image_optimizer_pngout_level');
+					$pngout_level = ewww_image_optimizer_get_option('ewww_image_optimizer_pngout_level');
 					// run pngout on the PNG file
 					exec("$nice " . $tools['PNGOUT'] . " -s$pngout_level -q $file");
 				}
 				// if optipng is enabled
-				if(!get_site_option('ewww_image_optimizer_disable_optipng')) {
+				if(!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_optipng')) {
 					// retrieve the optimization level for optipng
-					$optipng_level = get_site_option('ewww_image_optimizer_optipng_level');
+					$optipng_level = ewww_image_optimizer_get_option('ewww_image_optimizer_optipng_level');
 					// run optipng on the PNG file
 					exec("$nice " . $tools['OPTIPNG'] . " -o$optipng_level -quiet $file");
 				}
@@ -2121,7 +2170,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				// store the size of the JPG as the new filesize
 				$new_size = $jpg_size;
 				// if the user wants originals delted after a conversion
-				if (get_site_option('ewww_image_optimizer_delete_originals') == TRUE) {
+				if (ewww_image_optimizer_get_option('ewww_image_optimizer_delete_originals') == TRUE) {
 					// delete the original PNG
 					unlink($file);
 				}
@@ -2145,7 +2194,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 			break;
 		case 'image/gif':
 			// if gif2png is turned on, and the image is in the wordpress media library
-			if ((get_site_option('ewww_image_optimizer_gif_to_png') && $gallery_type == 1) || !empty($_GET['convert'])) {
+			if ((ewww_image_optimizer_get_option('ewww_image_optimizer_gif_to_png') && $gallery_type == 1) || !empty($_GET['convert'])) {
 				// turn conversion ON
 				$convert = true;
 				// generate the filename for a PNG
@@ -2174,7 +2223,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				$convert = false;
 			}
 			// if gifsicle is disabled
-			if (get_site_option('ewww_image_optimizer_disable_gifsicle')) {
+			if (ewww_image_optimizer_get_option('ewww_image_optimizer_disable_gifsicle')) {
 				// return an appropriate message
 				$result = 'gifsicle is disabled';
 				// turn optimization off
@@ -2193,7 +2242,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 			$orig_size = filesize($file);
 			// if conversion is ON, the GIF isn't animated, or this is a resize and the full-size image was converted
 			if (($convert && !ewww_image_optimizer_is_animated($file)) || $converted) {
-				if (get_site_option('ewww_image_optimizer_cloud_gif')) {
+				if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_gif')) {
 					$pngimage = ewww_image_optimizer_cloud_optimizer($file, $type, $convert);
 					file_put_contents($pngfile, $pngimage);
 					if (ewww_image_optimizer_mimetype($pngfile, 'i') !== 'image/png') {
@@ -2205,16 +2254,16 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					}
 				} else {
 				// if pngout is enabled
-				if (!get_site_option('ewww_image_optimizer_disable_pngout') && $tools['PNGOUT']) {
+				if (!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_pngout') && $tools['PNGOUT']) {
 					// retrieve the pngout optimization level
-					$pngout_level = get_site_option('ewww_image_optimizer_pngout_level');
+					$pngout_level = ewww_image_optimizer_get_option('ewww_image_optimizer_pngout_level');
 					// run pngout on the file
 					exec("$nice " . $tools['PNGOUT'] . " -s$pngout_level -q $file $pngfile");
 				}
 				// if optipng is enabled
-				if (!get_site_option('ewww_image_optimizer_disable_optipng') && $tools['OPTIPNG']) {
+				if (!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_optipng') && $tools['OPTIPNG']) {
 					// retrieve the optipng optimization level
-					$optipng_level = get_site_option('ewww_image_optimizer_optipng_level');
+					$optipng_level = ewww_image_optimizer_get_option('ewww_image_optimizer_optipng_level');
 					// if $pngfile exists (which means pngout was run already)
 					if (file_exists($pngfile)) {
 						// run optipng on the PNG file
@@ -2245,7 +2294,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 			}
 			// if optimization is turned ON
 			if ($optimize) {
-				if (get_site_option('ewww_image_optimizer_cloud_gif')) {
+				if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_gif')) {
 					$giffile = $file . '.tmp';
 					$gifimage = ewww_image_optimizer_cloud_optimizer($file, $type);
 					file_put_contents($giffile, $gifimage);
@@ -2272,7 +2321,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				// store the PNG size as the new filesize
 				$new_size = $png_size;
 				// if the user wants original GIFs deleted after successful conversion
-				if (get_site_option('ewww_image_optimizer_delete_originals') == TRUE) {
+				if (ewww_image_optimizer_get_option('ewww_image_optimizer_delete_originals') == TRUE) {
 					// delete the original GIF
 					unlink($file);
 				}
@@ -2354,9 +2403,6 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 		$gallery_type = 5;
 	}
 	$ewww_debug = "$ewww_debug attachment id: $ID<br>";
-//	$print_meta = print_r($meta, true);
-//	$print_meta = preg_replace('/\n/', '<br>', $print_meta);
-//	$ewww_debug = "$ewww_debug attachment meta before optimizing: $print_meta<br>";
 	// get the filepath
 	$file_path = get_attached_file($ID);
 	$ewww_debug = "$ewww_debug WP thinks the file is at: $file_path<br>";
@@ -2367,7 +2413,7 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 	// if the attachment has been uploaded via the image store plugin
 	if ('ims_image' == get_post_type($ID) && !empty($meta['file'])) {
 		$gallery_type = 6;
-		$ims_options = get_site_option('ims_front_options');
+		$ims_options = ewww_image_optimizer_get_option('ims_front_options');
 		$ims_path = $ims_options['galleriespath'];
 		if (is_dir($file_path)) {
 //			$ims_options = print_r($ims_options, true);
@@ -2444,11 +2490,7 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 			}
 			// if this is a unique size
 			if (!$dup_size) {
-//				if ($gallery_type === 6) {
-//					$resize_path = $data['path'];
-//				} else {
-					$resize_path = $base_dir . $data['file'];
-//				}
+				$resize_path = $base_dir . $data['file'];
 				// run the optimization and store the results
 				list($optimized_file, $results, $resize_conv, $original) = ewww_image_optimizer($resize_path, $gallery_type, $conv, true);
 				// if the resize was converted, store the result and the original filename in the metadata for later recovery
@@ -2692,7 +2734,7 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 			printf("<br><a href=\"admin.php?action=ewww_image_optimizer_manual_optimize&amp;attachment_ID=%d\">%s</a>",
 				$id,
 				__('Re-optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN));
-			if (!get_site_option('ewww_image_optimizer_disable_convert_links') && 'ims_image' != get_post_type($id))
+			if (!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_convert_links') && 'ims_image' != get_post_type($id))
 				echo " | <a class='ewww-convert' title='$convert_desc' href='admin.php?action=ewww_image_optimizer_manual_optimize&amp;attachment_ID=$id&amp;convert=1'>$convert_link</a>";
 			$restorable = false;
 			if (!empty($meta['converted'])) {
@@ -2725,7 +2767,7 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 			printf("<br><a href=\"admin.php?action=ewww_image_optimizer_manual_optimize&amp;attachment_ID=%d\">%s</a>",
 				$id,
 				__('Optimize now!', EWWW_IMAGE_OPTIMIZER_DOMAIN));
-			if (!get_site_option('ewww_image_optimizer_disable_convert_links') && 'ims_image' != get_post_type($id))
+			if (!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_convert_links') && 'ims_image' != get_post_type($id))
 				echo " | <a class='ewww-convert' title='$convert_desc' href='admin.php?action=ewww_image_optimizer_manual_optimize&amp;attachment_ID=$id&amp;convert=1'>$convert_link</a>";
 		}
 	}
@@ -2836,6 +2878,16 @@ function ewww_image_optimizer_install_pngout() {
 	exit(0);
 }
 
+// retrieve an option: use 'site' setting if plugin is network activated, otherwise use 'blog' setting
+function ewww_image_optimizer_get_option ($option_name) {
+	if (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('ewww-image-optimizer/ewww-image-optimizer.php')) {
+		$option_value = get_site_option($option_name);
+	} else {
+		$option_value = get_option($option_name);
+	}
+	return $option_value;
+}
+
 // displays the EWWW IO options and provides one-click install for the optimizer utilities
 function ewww_image_optimizer_options () {
 	global $ewww_debug;
@@ -2866,7 +2918,7 @@ function ewww_image_optimizer_options () {
 		<div id="status" style="border: 1px solid #ccc; padding: 0 8px; border-radius: 12px;">
 			<h3>Plugin Status</h3>
 			<?php
-			if (get_site_option('ewww_image_optimizer_cloud_key')) {
+			if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_key')) {
 				echo '<p><b>Cloud API Key:</b> ';
 				$verify_cloud = ewww_image_optimizer_cloud_verify(); 
 				if (preg_match('/great/', $verify_cloud)) {
@@ -2878,7 +2930,7 @@ function ewww_image_optimizer_options () {
 				}
 				echo '</p>';
 			}
-			if (get_site_option('ewww_image_optimizer_skip_bundle') && !EWWW_IMAGE_OPTIMIZER_CLOUD && !EWWW_IMAGE_OPTIMIZER_NOEXEC) { ?>
+			if (ewww_image_optimizer_get_option('ewww_image_optimizer_skip_bundle') && !EWWW_IMAGE_OPTIMIZER_CLOUD && !EWWW_IMAGE_OPTIMIZER_NOEXEC) { ?>
 				<p>If updated versions are available below you may either download the newer versions and install them yourself, or uncheck "Use system paths" and install them automatically.<br />
 				<i>*Updates are optional, but may contain increased optimization or security patches</i></p>
 			<?php } elseif (!EWWW_IMAGE_OPTIMIZER_CLOUD && !EWWW_IMAGE_OPTIMIZER_NOEXEC) { ?>
@@ -2888,7 +2940,7 @@ function ewww_image_optimizer_options () {
 			if (!EWWW_IMAGE_OPTIMIZER_CLOUD && !EWWW_IMAGE_OPTIMIZER_NOEXEC) {
 				list ($jpegtran_src, $optipng_src, $gifsicle_src, $jpegtran_dst, $optipng_dst, $gifsicle_dst) = ewww_image_optimizer_install_paths();
 			}
-			if (!get_site_option('ewww_image_optimizer_disable_jpegtran') && !get_site_option('ewww_image_optimizer_cloud_jpg')  && !EWWW_IMAGE_OPTIMIZER_NOEXEC) {
+			if (!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_jpegtran') && !ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_jpg')  && !EWWW_IMAGE_OPTIMIZER_NOEXEC) {
 				echo "\n";
 				echo '<b>jpegtran: </b>';
 				$jpegtran_installed = ewww_image_optimizer_tool_found(EWWW_IMAGE_OPTIMIZER_JPEGTRAN, 'j');
@@ -2901,20 +2953,20 @@ function ewww_image_optimizer_options () {
 				}
 			}
 			echo "\n";
-			if (!get_site_option('ewww_image_optimizer_disable_optipng') && !get_site_option('ewww_image_optimizer_cloud_png') && !EWWW_IMAGE_OPTIMIZER_NOEXEC) {
+			if (!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_optipng') && !ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_png') && !EWWW_IMAGE_OPTIMIZER_NOEXEC) {
 				echo "\n";
 				echo '<b>optipng:</b> '; 
 				$optipng_version = ewww_image_optimizer_tool_found(EWWW_IMAGE_OPTIMIZER_OPTIPNG, 'o');
 				if (!empty($optipng_version) && preg_match('/0.7.4/', $optipng_version)) { 
 					echo '<span style="color: green; font-weight: bolder">OK</span>&emsp;version: ' . $optipng_version . '<br />'; 
 				} elseif (!empty($optipng_version)) {
-						echo '<span style="color: orange; font-weight: bolder">UPDATE AVAILABLE</span>*&emsp;<b>Copy</b> binary from ' . $optipng_src . ' to ' . $optipng_dst . ' or to a system path (like /usr/local/bin), OR <a href="http://prdownloads.sourceforge.net/optipng/optipng-0.7.4.tar.gz?download"><b>Download</b> optipng source</a>&emsp;<b>version:</b> ' . $optipng_version . '<br />';
+					echo '<span style="color: orange; font-weight: bolder">UPDATE AVAILABLE</span>*&emsp;<b>Copy</b> binary from ' . $optipng_src . ' to ' . $optipng_dst . ' or to a system path (like /usr/local/bin), OR <a href="http://prdownloads.sourceforge.net/optipng/optipng-0.7.4.tar.gz?download"><b>Download</b> optipng source</a>&emsp;<b>version:</b> ' . $optipng_version . '<br />';
 				} else {
-						echo '<span style="color: red; font-weight: bolder">MISSING</span>&emsp;<b>Copy</b> binary from ' . $optipng_src . ' to ' . $optipng_dst . ' or to a system path (like /usr/local/bin), OR <a href="http://prdownloads.sourceforge.net/optipng/optipng-0.7.4.tar.gz?download"><b>Download</b> optipng source</a><br />';
+					echo '<span style="color: red; font-weight: bolder">MISSING</span>&emsp;<b>Copy</b> binary from ' . $optipng_src . ' to ' . $optipng_dst . ' or to a system path (like /usr/local/bin), OR <a href="http://prdownloads.sourceforge.net/optipng/optipng-0.7.4.tar.gz?download"><b>Download</b> optipng source</a><br />';
 				}
 			}
 			echo "\n";
-			if (!get_site_option('ewww_image_optimizer_disable_gifsicle') && !get_site_option('ewww_image_optimizer_cloud_gif') && !EWWW_IMAGE_OPTIMIZER_NOEXEC) {
+			if (!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_gifsicle') && !ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_gif') && !EWWW_IMAGE_OPTIMIZER_NOEXEC) {
 				echo "\n";
 				echo '<b>gifsicle:</b> ';
 				$gifsicle_version = ewww_image_optimizer_tool_found(EWWW_IMAGE_OPTIMIZER_GIFSICLE, 'g');
@@ -2927,7 +2979,7 @@ function ewww_image_optimizer_options () {
 				}
 			}
 			echo "\n";
-			if (!get_site_option('ewww_image_optimizer_disable_pngout') && !get_site_option('ewww_image_optimizer_cloud_png') && !EWWW_IMAGE_OPTIMIZER_NOEXEC) {
+			if (!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_pngout') && !ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_png') && !EWWW_IMAGE_OPTIMIZER_NOEXEC) {
 				echo "\n";
 				echo '<b>pngout:</b> '; 
 				$pngout_version = ewww_image_optimizer_tool_found(EWWW_IMAGE_OPTIMIZER_PNGOUT, 'p');
@@ -3011,50 +3063,50 @@ function ewww_image_optimizer_options () {
 			<p><b>BETA:</b> Free (temporary) API keys will be given to the <a href="http://www.exactlywww.com/cloud/">first 100 users who request them</a>. <br />
 			If exec() is disabled for security reasons (and enabling it is not an option), or you would like to offload image optimization to a third-party server, you can purchase an API key for our cloud optimization service. The API key should be entered below, and cloud optimization must be enabled for each image format individually. No personal data is transmitted to the remote optimization server, and images are removed immediately after optimization is performed.</p>
 			<table class="form-table">
-				<tr><th><label for="ewww_image_optimizer_cloud_key">Cloud optimization API Key</label></th><td><input type="text" id="ewww_image_optimizer_cloud_key" name="ewww_image_optimizer_cloud_key" value="<?php echo get_site_option('ewww_image_optimizer_cloud_key'); ?>" size="32" /> API Key will be validated when you save your settings. <a href="http://www.exactlywww.com/cloud/">Purchase a key now</a>.</td></tr>
-				<tr><th><label for="ewww_image_optimizer_cloud_jpg">JPG cloud optimization</label></th><td><input type="checkbox" id="ewww_image_optimizer_cloud_jpg" name="ewww_image_optimizer_cloud_jpg" value="true" <?php if (get_site_option('ewww_image_optimizer_cloud_jpg') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
-				<tr><th><label for="ewww_image_optimizer_cloud_png">PNG cloud optimization</label></th><td><input type="checkbox" id="ewww_image_optimizer_cloud_png" name="ewww_image_optimizer_cloud_png" value="true" <?php if (get_site_option('ewww_image_optimizer_cloud_png') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
-				<tr><th><label for="ewww_image_optimizer_cloud_gif">GIF cloud optimization</label></th><td><input type="checkbox" id="ewww_image_optimizer_cloud_gif" name="ewww_image_optimizer_cloud_gif" value="true" <?php if (get_site_option('ewww_image_optimizer_cloud_gif') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
+				<tr><th><label for="ewww_image_optimizer_cloud_key">Cloud optimization API Key</label></th><td><input type="text" id="ewww_image_optimizer_cloud_key" name="ewww_image_optimizer_cloud_key" value="<?php echo ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_key'); ?>" size="32" /> API Key will be validated when you save your settings. <a href="http://www.exactlywww.com/cloud/">Purchase a key now</a>.</td></tr>
+				<tr><th><label for="ewww_image_optimizer_cloud_jpg">JPG cloud optimization</label></th><td><input type="checkbox" id="ewww_image_optimizer_cloud_jpg" name="ewww_image_optimizer_cloud_jpg" value="true" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_jpg') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
+				<tr><th><label for="ewww_image_optimizer_cloud_png">PNG cloud optimization</label></th><td><input type="checkbox" id="ewww_image_optimizer_cloud_png" name="ewww_image_optimizer_cloud_png" value="true" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_png') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
+				<tr><th><label for="ewww_image_optimizer_cloud_gif">GIF cloud optimization</label></th><td><input type="checkbox" id="ewww_image_optimizer_cloud_gif" name="ewww_image_optimizer_cloud_gif" value="true" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_gif') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
 			</table>
 			<h3>General Settings</h3>
 			<?php if (!EWWW_IMAGE_OPTIMIZER_CLOUD) { ?> 
 			<p>The plugin performs a check to make sure your system has the programs we use for optimization: jpegtran, optipng, pngout, and gifsicle. In some rare cases, these checks may erroneously report that you are missing the required utilities even though you have them installed.</p>
 			<?php } ?>
 			<table class="form-table">
-				<tr><th><label for="ewww_image_optimizer_debug">Debugging</label></th><td><input type="checkbox" id="ewww_image_optimizer_debug" name="ewww_image_optimizer_debug" value="true" <?php if (get_site_option('ewww_image_optimizer_debug') == TRUE) { ?>checked="true"<?php } ?> /> Use this to provide information for support purposes, or if you feel comfortable digging around in the code to fix a problem you are experiencing.</td></tr>
-				<tr><th><label for="ewww_image_optimizer_auto">Scheduled optimization</label></th><td><input type="checkbox" id="ewww_image_optimizer_auto" name="ewww_image_optimizer_auto" value="true" <?php if (get_site_option('ewww_image_optimizer_auto') == TRUE) { ?>checked="true"<?php } ?> /> This will enable scheduled optimization of images for your theme, buddypress, and any additional folders you have configured below. Runs hourly: wp_cron only runs when your site is visited, so it may be even longer between optimizations.</td></tr>
-				<tr><th><label for="ewww_image_optimizer_aux_paths">Folders to optimize</label></th><td>One path per line, must be within <?php echo ABSPATH; ?>, but cannot be the uploads/ folder (sub-directories are ok)<br /><textarea id="ewww_image_optimizer_aux_paths" name="ewww_image_optimizer_aux_paths" rows="3" cols="60"><?php $aux_paths = $aux_paths = get_site_option('ewww_image_optimizer_aux_paths'); foreach ($aux_paths as $path) echo "$path\n"; ?></textarea><p class="description">Provide paths containing images to be optimized using scheduled optimization or 'Optimize More' in the Tools menu. <b>Please submit a <a href="http://wordpress.org/support/plugin/ewww-image-optimizer">support request in the forums</a> to have folders created by a particular plugin auto-included in the future.</b></p></td></tr>
+				<tr><th><label for="ewww_image_optimizer_debug">Debugging</label></th><td><input type="checkbox" id="ewww_image_optimizer_debug" name="ewww_image_optimizer_debug" value="true" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_debug') == TRUE) { ?>checked="true"<?php } ?> /> Use this to provide information for support purposes, or if you feel comfortable digging around in the code to fix a problem you are experiencing.</td></tr>
+				<tr><th><label for="ewww_image_optimizer_auto">Scheduled optimization</label></th><td><input type="checkbox" id="ewww_image_optimizer_auto" name="ewww_image_optimizer_auto" value="true" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_auto') == TRUE) { ?>checked="true"<?php } ?> /> This will enable scheduled optimization of images for your theme, buddypress, and any additional folders you have configured below. Runs hourly: wp_cron only runs when your site is visited, so it may be even longer between optimizations.</td></tr>
+				<tr><th><label for="ewww_image_optimizer_aux_paths">Folders to optimize</label></th><td>One path per line, must be within <?php echo ABSPATH; ?>, but cannot be the uploads/ folder (sub-directories are ok)<br /><textarea id="ewww_image_optimizer_aux_paths" name="ewww_image_optimizer_aux_paths" rows="3" cols="60"><?php if ($aux_paths = $aux_paths = ewww_image_optimizer_get_option('ewww_image_optimizer_aux_paths')) { foreach ($aux_paths as $path) echo "$path\n"; } ?></textarea><p class="description">Provide paths containing images to be optimized using scheduled optimization or 'Optimize More' in the Tools menu. <b>Please submit a <a href="http://wordpress.org/support/plugin/ewww-image-optimizer">support request in the forums</a> to have folders created by a particular plugin auto-included in the future.</b></p></td></tr>
 				<?php if (!EWWW_IMAGE_OPTIMIZER_CLOUD) { ?>
-				<tr><th><label for="ewww_image_optimizer_skip_bundle">Use system paths</label></th><td><input type="checkbox" id="ewww_image_optimizer_skip_bundle" name="ewww_image_optimizer_skip_bundle" value="true" <?php if (get_site_option('ewww_image_optimizer_skip_bundle') == TRUE) { ?>checked="true"<?php } ?> /> If you have already installed the utilities in a system location, such as /usr/local/bin or /usr/bin, use this to force the plugin to use those versions and skip the auto-installers.</td></tr>
-				<tr><th><label for="ewww_image_optimizer_skip_check">Skip utils check</label></th><td><input type="checkbox" id="ewww_image_optimizer_skip_check" name="ewww_image_optimizer_skip_check" value="true" <?php if (get_site_option('ewww_image_optimizer_skip_check') == TRUE) { ?>checked="true"<?php } ?> /> <b>DEPRECATED</b> - please uncheck this and report any errors in the support forum.</td></tr>
-				<tr><th><label for="ewww_image_optimizer_disable_jpegtran">disable jpegtran</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_jpegtran" name="ewww_image_optimizer_disable_jpegtran" <?php if (get_site_option('ewww_image_optimizer_disable_jpegtran') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
-				<tr><th><label for="ewww_image_optimizer_disable_optipng">disable optipng</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_optipng" name="ewww_image_optimizer_disable_optipng" <?php if (get_site_option('ewww_image_optimizer_disable_optipng') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
-				<tr><th><label for="ewww_image_optimizer_disable_pngout">disable pngout</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_pngout" name="ewww_image_optimizer_disable_pngout" <?php if (get_site_option('ewww_image_optimizer_disable_pngout') == TRUE) { ?>checked="true"<?php } ?> /></td><tr>
-				<tr><th><label for="ewww_image_optimizer_disable_gifsicle">disable gifsicle</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_gifsicle" name="ewww_image_optimizer_disable_gifsicle" <?php if (get_site_option('ewww_image_optimizer_disable_gifsicle') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
+				<tr><th><label for="ewww_image_optimizer_skip_bundle">Use system paths</label></th><td><input type="checkbox" id="ewww_image_optimizer_skip_bundle" name="ewww_image_optimizer_skip_bundle" value="true" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_skip_bundle') == TRUE) { ?>checked="true"<?php } ?> /> If you have already installed the utilities in a system location, such as /usr/local/bin or /usr/bin, use this to force the plugin to use those versions and skip the auto-installers.</td></tr>
+				<tr><th><label for="ewww_image_optimizer_skip_check">Skip utils check</label></th><td><input type="checkbox" id="ewww_image_optimizer_skip_check" name="ewww_image_optimizer_skip_check" value="true" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_skip_check') == TRUE) { ?>checked="true"<?php } ?> /> <b>DEPRECATED</b> - please uncheck this and report any errors in the support forum.</td></tr>
+				<tr><th><label for="ewww_image_optimizer_disable_jpegtran">disable jpegtran</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_jpegtran" name="ewww_image_optimizer_disable_jpegtran" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_disable_jpegtran') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
+				<tr><th><label for="ewww_image_optimizer_disable_optipng">disable optipng</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_optipng" name="ewww_image_optimizer_disable_optipng" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_disable_optipng') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
+				<tr><th><label for="ewww_image_optimizer_disable_pngout">disable pngout</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_pngout" name="ewww_image_optimizer_disable_pngout" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_disable_pngout') == TRUE) { ?>checked="true"<?php } ?> /></td><tr>
+				<tr><th><label for="ewww_image_optimizer_disable_gifsicle">disable gifsicle</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_gifsicle" name="ewww_image_optimizer_disable_gifsicle" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_disable_gifsicle') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
 				<?php } ?>
 			</table>
 			<h3>Optimization settings</h3>
 			<table class="form-table">
 				<tr><th><label for="ewww_image_optimizer_jpegtran_copy">Remove JPG metadata</label></th>
-				<td><input type="checkbox" id="ewww_image_optimizer_jpegtran_copy" name="ewww_image_optimizer_jpegtran_copy" value="true" <?php if (get_site_option('ewww_image_optimizer_jpegtran_copy') == TRUE) { ?>checked="true"<?php } ?> /> This wil remove ALL metadata (EXIF and comments)</td></tr>
+				<td><input type="checkbox" id="ewww_image_optimizer_jpegtran_copy" name="ewww_image_optimizer_jpegtran_copy" value="true" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_jpegtran_copy') == TRUE) { ?>checked="true"<?php } ?> /> This wil remove ALL metadata (EXIF and comments)</td></tr>
 				<?php if (!EWWW_IMAGE_OPTIMIZER_CLOUD) { ?>
 				<tr><th><label for="ewww_image_optimizer_optipng_level">optipng optimization level</label></th>
 				<td><span><select id="ewww_image_optimizer_optipng_level" name="ewww_image_optimizer_optipng_level">
-				<option value="1"<?php if (get_site_option('ewww_image_optimizer_optipng_level') == 1) { echo ' selected="selected"'; } ?>>Level 1: 1 trial</option>
-				<option value="2"<?php if (get_site_option('ewww_image_optimizer_optipng_level') == 2) { echo ' selected="selected"'; } ?>>Level 2: 8 trials</option>
-				<option value="3"<?php if (get_site_option('ewww_image_optimizer_optipng_level') == 3) { echo ' selected="selected"'; } ?>>Level 3: 16 trials</option>
-				<option value="4"<?php if (get_site_option('ewww_image_optimizer_optipng_level') == 4) { echo ' selected="selected"'; } ?>>Level 4: 24 trials</option>
-				<option value="5"<?php if (get_site_option('ewww_image_optimizer_optipng_level') == 5) { echo ' selected="selected"'; } ?>>Level 5: 48 trials</option>
-				<option value="6"<?php if (get_site_option('ewww_image_optimizer_optipng_level') == 6) { echo ' selected="selected"'; } ?>>Level 6: 120 trials</option>
-				<option value="7"<?php if (get_site_option('ewww_image_optimizer_optipng_level') == 7) { echo ' selected="selected"'; } ?>>Level 7: 240 trials</option>
+				<option value="1"<?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_optipng_level') == 1) { echo ' selected="selected"'; } ?>>Level 1: 1 trial</option>
+				<option value="2"<?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_optipng_level') == 2) { echo ' selected="selected"'; } ?>>Level 2: 8 trials</option>
+				<option value="3"<?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_optipng_level') == 3) { echo ' selected="selected"'; } ?>>Level 3: 16 trials</option>
+				<option value="4"<?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_optipng_level') == 4) { echo ' selected="selected"'; } ?>>Level 4: 24 trials</option>
+				<option value="5"<?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_optipng_level') == 5) { echo ' selected="selected"'; } ?>>Level 5: 48 trials</option>
+				<option value="6"<?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_optipng_level') == 6) { echo ' selected="selected"'; } ?>>Level 6: 120 trials</option>
+				<option value="7"<?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_optipng_level') == 7) { echo ' selected="selected"'; } ?>>Level 7: 240 trials</option>
 				</select> (default=2)</span>
 				<p class="description">According to the author of optipng, 10 trials should satisfy most people, 30 trials should satisfy everyone.</p></td></tr>
 				<tr><th><label for="ewww_image_optimizer_pngout_level">pngout optimization level</label></th>
 				<td><span><select id="ewww_image_optimizer_pngout_level" name="ewww_image_optimizer_pngout_level">
-				<option value="0"<?php if (get_site_option('ewww_image_optimizer_pngout_level') == 0) { echo ' selected="selected"'; } ?>>Level 0: Xtreme! (Slowest)</option>
-				<option value="1"<?php if (get_site_option('ewww_image_optimizer_pngout_level') == 1) { echo ' selected="selected"'; } ?>>Level 1: Intense (Slow)</option>
-				<option value="2"<?php if (get_site_option('ewww_image_optimizer_pngout_level') == 2) { echo ' selected="selected"'; } ?>>Level 2: Longest Match (Fast)</option>
-				<option value="3"<?php if (get_site_option('ewww_image_optimizer_pngout_level') == 3) { echo ' selected="selected"'; } ?>>Level 3: Huffman Only (Faster)</option>
+				<option value="0"<?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_pngout_level') == 0) { echo ' selected="selected"'; } ?>>Level 0: Xtreme! (Slowest)</option>
+				<option value="1"<?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_pngout_level') == 1) { echo ' selected="selected"'; } ?>>Level 1: Intense (Slow)</option>
+				<option value="2"<?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_pngout_level') == 2) { echo ' selected="selected"'; } ?>>Level 2: Longest Match (Fast)</option>
+				<option value="3"<?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_pngout_level') == 3) { echo ' selected="selected"'; } ?>>Level 3: Huffman Only (Faster)</option>
 			</select> (default=2)</span>
 			<p class="description">If you have CPU cycles to spare, go with level 0</p></td></tr>
 				<?php } ?>
@@ -3064,17 +3116,17 @@ function ewww_image_optimizer_options () {
 				<b>NOTE:</b> The plugin will <b>attempt</b> to update image locations for any posts that contain the images. You may still need to manually update locations/urls for converted images. 
 			</p>
 			<table class="form-table">
-				<tr><th><label for="ewww_image_optimizer_disable_convert_links">Hide Conversion Links</label</th><td><input type="checkbox" id="ewww_image_optimizer_disable_convert_links" name="ewww_image_optimizer_disable_convert_links" <?php if (get_site_option('ewww_image_optimizer_disable_convert_links') == TRUE) { ?>checked="true"<?php } ?> /> Site or Network admins can use this to prevent other users from using the conversion links in the Media Library which bypass the settings below.</td></tr>
-				<tr><th><label for="ewww_image_optimizer_delete_originals">Delete originals</label></th><td><input type="checkbox" id="ewww_image_optimizer_delete_originals" name="ewww_image_optimizer_delete_originals" <?php if (get_site_option('ewww_image_optimizer_delete_originals') == TRUE) { ?>checked="true"<?php } ?> /> This will remove the original image from the server after a successful conversion.</td></tr>
-				<tr><th><label for="ewww_image_optimizer_jpg_to_png">enable <b>JPG</b> to <b>PNG</b> conversion</label></th><td><span><input type="checkbox" id="ewww_image_optimizer_jpg_to_png" name="ewww_image_optimizer_jpg_to_png" <?php if (get_site_option('ewww_image_optimizer_jpg_to_png') == TRUE) { ?>checked="true"<?php } ?> /> <b>WARNING:</b> Removes metadata! Requires GD or ImageMagick and should be used sparingly.</span>
+				<tr><th><label for="ewww_image_optimizer_disable_convert_links">Hide Conversion Links</label</th><td><input type="checkbox" id="ewww_image_optimizer_disable_convert_links" name="ewww_image_optimizer_disable_convert_links" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_disable_convert_links') == TRUE) { ?>checked="true"<?php } ?> /> Site or Network admins can use this to prevent other users from using the conversion links in the Media Library which bypass the settings below.</td></tr>
+				<tr><th><label for="ewww_image_optimizer_delete_originals">Delete originals</label></th><td><input type="checkbox" id="ewww_image_optimizer_delete_originals" name="ewww_image_optimizer_delete_originals" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_delete_originals') == TRUE) { ?>checked="true"<?php } ?> /> This will remove the original image from the server after a successful conversion.</td></tr>
+				<tr><th><label for="ewww_image_optimizer_jpg_to_png">enable <b>JPG</b> to <b>PNG</b> conversion</label></th><td><span><input type="checkbox" id="ewww_image_optimizer_jpg_to_png" name="ewww_image_optimizer_jpg_to_png" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_jpg_to_png') == TRUE) { ?>checked="true"<?php } ?> /> <b>WARNING:</b> Removes metadata! Requires GD or ImageMagick and should be used sparingly.</span>
 				<p class="description">PNG is generally much better than JPG for logos and other images with a limited range of colors. Checking this option will slow down JPG processing significantly, and you may want to enable it only temporarily.</p></td></tr>
-				<tr><th><label for="ewww_image_optimizer_png_to_jpg">enable <b>PNG</b> to <b>JPG</b> conversion</label></th><td><span><input type="checkbox" id="ewww_image_optimizer_png_to_jpg" name="ewww_image_optimizer_png_to_jpg" <?php if (get_site_option('ewww_image_optimizer_png_to_jpg') == TRUE) { ?>checked="true"<?php } ?> /> <b>WARNING:</b> This is not a lossless conversion and requires GD or ImageMagick.</span>
+				<tr><th><label for="ewww_image_optimizer_png_to_jpg">enable <b>PNG</b> to <b>JPG</b> conversion</label></th><td><span><input type="checkbox" id="ewww_image_optimizer_png_to_jpg" name="ewww_image_optimizer_png_to_jpg" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_png_to_jpg') == TRUE) { ?>checked="true"<?php } ?> /> <b>WARNING:</b> This is not a lossless conversion and requires GD or ImageMagick.</span>
 				<p class="description">JPG is generally much better than PNG for photographic use because it compresses the image and discards data. PNGs with transparency are not converted by default.</p>
 				<span><label for="ewww_image_optimizer_jpg_background">JPG background color:</label> #<input type="text" id="ewww_image_optimizer_jpg_background" name="ewww_image_optimizer_jpg_background" class="small-text" value="<?php echo ewww_image_optimizer_jpg_background(); ?>" /> <span style="padding-left: 12px; font-size: 12px; border: solid 1px #555555; background-color: #<? echo ewww_image_optimizer_jpg_background(); ?>">&nbsp;</span> HEX format (#123def).</span>
 				<p class="description">This is used only if the PNG has transparency. Leave this value blank to skip PNGs with transparency.</p>
 				<span><label for="ewww_image_optimizer_jpg_quality">JPG quality level:</label> <input type="text" id="ewww_image_optimizer_jpg_quality" name="ewww_image_optimizer_jpg_quality" class="small-text" value="<?php echo ewww_image_optimizer_jpg_quality(); ?>" /> Valid values are 1-100.</span>
 				<p class="description">If left blank, the plugin will attempt to set the optimal quality level or default to 92. Remember, this is a lossy conversion, so you are losing pixels, and it is not recommended to actually set the level here unless you want noticable loss of image quality.</p></td></tr>
-				<tr><th><label for="ewww_image_optimizer_gif_to_png">enable <b>GIF</b> to <b>PNG</b> conversion</label></th><td><span><input type="checkbox" id="ewww_image_optimizer_gif_to_png" name="ewww_image_optimizer_gif_to_png" <?php if (get_site_option('ewww_image_optimizer_gif_to_png') == TRUE) { ?>checked="true"<?php } ?> /> No warnings here, just do it</span>
+				<tr><th><label for="ewww_image_optimizer_gif_to_png">enable <b>GIF</b> to <b>PNG</b> conversion</label></th><td><span><input type="checkbox" id="ewww_image_optimizer_gif_to_png" name="ewww_image_optimizer_gif_to_png" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_gif_to_png') == TRUE) { ?>checked="true"<?php } ?> /> No warnings here, just do it</span>
 				<p class="description"> PNG is generally better than GIF, but animated images cannot be converted.</p></td></tr>
 			</table>
 			<p class="submit"><input type="submit" class="button-primary" value="Save Changes" /></p>
