@@ -39,7 +39,6 @@ add_filter('manage_media_columns', 'ewww_image_optimizer_columns');
 // variable for plugin settings link
 $plugin = plugin_basename ( __FILE__ );
 add_filter("plugin_action_links_$plugin", 'ewww_image_optimizer_settings_link');
-add_filter('wp_save_image_editor_file', 'ewww_image_optimizer_save_image_editor_file', 60, 5);
 add_action('manage_media_custom_column', 'ewww_image_optimizer_custom_column', 10, 2);
 add_action('admin_init', 'ewww_image_optimizer_admin_init');
 add_action('admin_action_ewww_image_optimizer_manual_optimize', 'ewww_image_optimizer_manual');
@@ -54,8 +53,13 @@ add_action('admin_action_-1', 'ewww_image_optimizer_bulk_action_handler');
 add_action('admin_action_ewww_image_optimizer_install_pngout', 'ewww_image_optimizer_install_pngout');
 add_action('admin_enqueue_scripts', 'ewww_image_optimizer_media_scripts');
 add_action('ewww_image_optimizer_auto', 'ewww_image_optimizer_auto');
-add_filter('wp_image_editors', 'ewww_image_optimizer_load_editor');
-//add_action('in_admin_footer', 'ewww_image_optimizer_footer_debug');
+//global $wp_version;
+$my_version = substr($wp_version, 0, 3);
+if ( $my_version < 3.5 ) {
+	add_filter('wp_save_image_editor_file', 'ewww_image_optimizer_save_image_editor_file', 60, 5);
+} else {
+	add_filter('wp_image_editors', 'ewww_image_optimizer_load_editor');
+}
 register_deactivation_hook(__FILE__, 'ewww_image_optimizer_network_deactivate');
 register_activation_hook(__FILE__, 'ewww_image_optimizer_install_table');
 
@@ -262,11 +266,15 @@ function ewww_image_optimizer_network_settings_saved() {
 
 // load the class to extend WP_Image_Editor
 function ewww_image_optimizer_load_editor($editors) {
+	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_load_editor()</b><br>";
 	// TODO: only load this in WP 3.5+
-	if (!class_exists('EWWWIO_GD_Editor')) {
+	if (!class_exists('EWWWIO_GD_Editor') && !class_exists('EWWWIO_Imagick_Editor')) {
+		$ewww_debug = "$ewww_debug loading image editors<br>";
 		include_once(plugin_dir_path(__FILE__) . '/image-editor.php');
 	}
 	array_unshift($editors, 'EWWWIO_GD_Editor');
+//	array_unshift($editors, 'EWWWIO_Imagick_Editor');
 	return $editors;
 }
 
@@ -1402,16 +1410,6 @@ function ewww_image_optimizer_restore_from_meta_data($meta, $id) {
 		}
 	}
 	return $meta;
-	// update the attachment metadata in the database
-/*	wp_update_attachment_metadata($id, $meta );
-	// store the referring webpage location
-	$sendback = wp_get_referer();
-	// sanitize the referring webpage location
-	$sendback = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $sendback);
-	// send the user back where they came from
-	wp_redirect($sendback);
-	// we are done, nothing to see here
-	exit(0);*/
 }
 
 // deletes 'orig_file' when an attachment is being deleted
@@ -1486,6 +1484,7 @@ function ewww_image_optimizer_update_saved_file ($meta, $ID) {
 	global $ewww_debug;
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_update_saved_file()</b><br>";
 	$meta = ewww_image_optimizer_resize_from_meta_data($meta, $ID);
+	ewww_image_optimizer_debug_log();
 	return $meta;
 }
 

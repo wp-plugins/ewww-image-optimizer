@@ -2,8 +2,10 @@
 class EWWWIO_GD_Editor extends WP_Image_Editor_GD {
 	protected function _save ($image, $filename = null, $mime_type = null) {
 		global $ewww_debug;
-		require_once(plugin_dir_path(__FILE__) . 'ewww-image-optimizer.php');
-		ewww_image_optimizer_admin_init();
+		if (!defined('EWWW_IMAGE_OPTIMIZER_DOMAIN')) {
+			require_once(plugin_dir_path(__FILE__) . 'ewww-image-optimizer.php');
+			ewww_image_optimizer_admin_init();
+		}
 		list( $filename, $extension, $mime_type ) = $this->get_output_format( $filename, $mime_type );
 	
 	                if ( ! $filename )
@@ -33,11 +35,13 @@ class EWWWIO_GD_Editor extends WP_Image_Editor_GD {
 	                $stat = stat( dirname( $filename ) );
 	                $perms = $stat['mode'] & 0000666; //same permissions as parent folder, strip off the executable bits
 	                @ chmod( $filename, $perms );
-			ewww_image_optimizer_aux_images_loop($filename, true, 'auto');
-			$ewww_debug = "$ewww_debug image editor saved: $filename <br>";
+			ewww_image_optimizer_aux_images_loop($filename, true, 'image_editor');
+			$image_md5 = md5_file($filename);
+			$ewww_debug = "$ewww_debug image editor (gd) saved: $filename <br>";
 			$ewww_debug = "$ewww_debug image width: " . $this->size['width'] . " <br>";
 			$ewww_debug = "$ewww_debug image height: " . $this->size['height'] . " <br>";
 			$ewww_debug = "$ewww_debug image mime: $mime_type <br>";
+			$ewww_debug = "$ewww_debug image md5: $image_md5 <br>";
 			ewww_image_optimizer_debug_log();	
 	                return array(
 	                        'path' => $filename,
@@ -49,11 +53,13 @@ class EWWWIO_GD_Editor extends WP_Image_Editor_GD {
 	}
 }
 
-class EWWWIO_Imagick_Editor extends WP_Image_Editor_Imagick {
+/*class EWWWIO_Imagick_Editor extends WP_Image_Editor_Imagick {
 	protected function _save( $image, $filename = null, $mime_type = null ) {
 		global $ewww_debug;
-		require_once(plugin_dir_path(__FILE__) . 'ewww-image-optimizer.php');
-		ewww_image_optimizer_admin_init();
+		if (!defined('EWWW_IMAGE_OPTIMIZER_DOMAIN')) {
+			require_once(plugin_dir_path(__FILE__) . 'ewww-image-optimizer.php');
+			ewww_image_optimizer_admin_init();
+		}
 	                list( $filename, $extension, $mime_type ) = $this->get_output_format( $filename, $mime_type );
 	
 	                if ( ! $filename )
@@ -77,8 +83,8 @@ class EWWWIO_Imagick_Editor extends WP_Image_Editor_Imagick {
 	                $stat = stat( dirname( $filename ) );
 	                $perms = $stat['mode'] & 0000666; //same permissions as parent folder, strip off the executable bits
 	                @ chmod( $filename, $perms );
-			ewww_image_optimizer_aux_images_loop($filename, true, 'auto');
-			$ewww_debug = "$ewww_debug image editor saved: $filename <br>";
+			ewww_image_optimizer_aux_images_loop($filename, true, 'image_editor');
+			$ewww_debug = "$ewww_debug image editor (imagick) saved: $filename <br>";
 			$ewww_debug = "$ewww_debug image width: " . $this->size['width'] . " <br>";
 			$ewww_debug = "$ewww_debug image height: " . $this->size['height'] . " <br>";
 			$ewww_debug = "$ewww_debug image mime: $mime_type <br>";
@@ -91,7 +97,7 @@ class EWWWIO_Imagick_Editor extends WP_Image_Editor_Imagick {
 	                        'mime-type' => $mime_type,
 	                );
 	        }
-}
+}*/
 //abstract class EWWWIO_Editor extends WP_Image_Editor {
 /*	abstract public function load();
 	abstract public function save( $destfilename = null, $mime_type = null );
