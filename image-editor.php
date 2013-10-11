@@ -2,7 +2,7 @@
 class EWWWIO_GD_Editor extends WP_Image_Editor_GD {
 	protected function _save ($image, $filename = null, $mime_type = null) {
 		global $ewww_debug;
-		if (!defined('EWWW_IMAGE_OPTIMIZER_DOMAIN')) {
+		if (!defined(EWWW_IMAGE_OPTIMIZER_DOMAIN)) {
 			require_once(plugin_dir_path(__FILE__) . 'ewww-image-optimizer.php');
 			ewww_image_optimizer_admin_init();
 		}
@@ -37,7 +37,8 @@ class EWWWIO_GD_Editor extends WP_Image_Editor_GD {
 	                @ chmod( $filename, $perms );
 			ewww_image_optimizer_aux_images_loop($filename, true, 'image_editor');
 			$image_md5 = md5_file($filename);
-			$ewww_debug = "$ewww_debug image editor (gd) saved: $filename <br>";
+			$save_time = microtime();
+			$ewww_debug = "$ewww_debug image editor (gd) saved at $save_time: $filename <br>";
 			$ewww_debug = "$ewww_debug image width: " . $this->size['width'] . " <br>";
 			$ewww_debug = "$ewww_debug image height: " . $this->size['height'] . " <br>";
 			$ewww_debug = "$ewww_debug image mime: $mime_type <br>";
