@@ -309,7 +309,8 @@ function ewww_image_optimizer_aux_images_loop($attachment = null, $auto = false,
 			));
 	}
 	// remove the first element fromt the $attachments array
-	array_shift($attachments);
+	if (!empty($attachments))
+		array_shift($attachments);
 	// store the updated list of attachment IDs back in the 'bulk_attachments' option
 	update_option('ewww_image_optimizer_aux_attachments', $attachments);
 	if (!$auto) {

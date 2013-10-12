@@ -2,7 +2,7 @@
 class EWWWIO_GD_Editor extends WP_Image_Editor_GD {
 	protected function _save ($image, $filename = null, $mime_type = null) {
 		global $ewww_debug;
-		if (!defined(EWWW_IMAGE_OPTIMIZER_DOMAIN)) {
+		if (!defined('EWWW_IMAGE_OPTIMIZER_DOMAIN')) {
 			require_once(plugin_dir_path(__FILE__) . 'ewww-image-optimizer.php');
 			ewww_image_optimizer_admin_init();
 		}
@@ -35,15 +35,13 @@ class EWWWIO_GD_Editor extends WP_Image_Editor_GD {
 	                $stat = stat( dirname( $filename ) );
 	                $perms = $stat['mode'] & 0000666; //same permissions as parent folder, strip off the executable bits
 	                @ chmod( $filename, $perms );
+			// TODO: see if we can skip this on resizes that are already being optimized (or skip those, and do this, either way...)
 			ewww_image_optimizer_aux_images_loop($filename, true, 'image_editor');
 			$image_md5 = md5_file($filename);
 			$save_time = microtime();
 			$ewww_debug = "$ewww_debug image editor (gd) saved at $save_time: $filename <br>";
-			$ewww_debug = "$ewww_debug image width: " . $this->size['width'] . " <br>";
-			$ewww_debug = "$ewww_debug image height: " . $this->size['height'] . " <br>";
-			$ewww_debug = "$ewww_debug image mime: $mime_type <br>";
-			$ewww_debug = "$ewww_debug image md5: $image_md5 <br>";
-			ewww_image_optimizer_debug_log();	
+			ewww_image_optimizer_debug_log();
+			$ewww_debug = '';
 	                return array(
 	                        'path' => $filename,
 	                        'file' => wp_basename( apply_filters( 'image_make_intermediate_size', $filename ) ),
@@ -54,7 +52,7 @@ class EWWWIO_GD_Editor extends WP_Image_Editor_GD {
 	}
 }
 
-/*class EWWWIO_Imagick_Editor extends WP_Image_Editor_Imagick {
+class EWWWIO_Imagick_Editor extends WP_Image_Editor_Imagick {
 	protected function _save( $image, $filename = null, $mime_type = null ) {
 		global $ewww_debug;
 		if (!defined('EWWW_IMAGE_OPTIMIZER_DOMAIN')) {
@@ -89,7 +87,8 @@ class EWWWIO_GD_Editor extends WP_Image_Editor_GD {
 			$ewww_debug = "$ewww_debug image width: " . $this->size['width'] . " <br>";
 			$ewww_debug = "$ewww_debug image height: " . $this->size['height'] . " <br>";
 			$ewww_debug = "$ewww_debug image mime: $mime_type <br>";
-			ewww_image_optimizer_debug_log();	
+			ewww_image_optimizer_debug_log();
+			$ewww_debug = '';
 	                return array(
 	                        'path' => $filename,
 	                        'file' => wp_basename( apply_filters( 'image_make_intermediate_size', $filename ) ),
@@ -98,7 +97,7 @@ class EWWWIO_GD_Editor extends WP_Image_Editor_GD {
 	                        'mime-type' => $mime_type,
 	                );
 	        }
-}*/
+}
 //abstract class EWWWIO_Editor extends WP_Image_Editor {
 /*	abstract public function load();
 	abstract public function save( $destfilename = null, $mime_type = null );

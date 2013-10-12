@@ -63,6 +63,12 @@ if ( $my_version < 3.5 ) {
 register_deactivation_hook(__FILE__, 'ewww_image_optimizer_network_deactivate');
 register_activation_hook(__FILE__, 'ewww_image_optimizer_install_table');
 
+// TODO: see if we can 'lazy load' this stuff later on
+
+// require the file that does the bulk processing
+require(dirname(__FILE__) . '/bulk.php');
+require(dirname(__FILE__) . '/aux-optimize.php');
+
 // need to include the plugin library for the is_plugin_active function (even though it isn't supposed to be necessary in the admin)
 require_once(ABSPATH . 'wp-admin/includes/plugin.php');
 // include the file that loads the nextgen gallery optimization functions
@@ -268,13 +274,13 @@ function ewww_image_optimizer_network_settings_saved() {
 function ewww_image_optimizer_load_editor($editors) {
 	global $ewww_debug;
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_load_editor()</b><br>";
-	// TODO: only load this in WP 3.5+
-	if (!class_exists('EWWWIO_GD_Editor') && !class_exists('EWWWIO_Imagick_Editor')) {
-		$ewww_debug = "$ewww_debug loading image editors<br>";
+	if (!class_exists('EWWWIO_GD_Editor') && !class_exists('EWWWIO_Imagick_Editor'))
 		include_once(plugin_dir_path(__FILE__) . '/image-editor.php');
-	}
-	array_unshift($editors, 'EWWWIO_GD_Editor');
-//	array_unshift($editors, 'EWWWIO_Imagick_Editor');
+	if (!in_array('EWWWIO_GD_Editor', $editors))
+		array_unshift($editors, 'EWWWIO_GD_Editor');
+	if (!in_array('EWWWIO_Imagick_Editor', $editors))
+		array_unshift($editors, 'EWWWIO_Imagick_Editor');
+	$ewww_debug = "$ewww_debug loading image editors: " . print_r($editors, true) . "<br>";
 	return $editors;
 }
 
@@ -1237,7 +1243,6 @@ function ewww_image_optimizer_aux_paths_sanitize ($input) {
 			$path_array[] = $path;
 		}
 	}
-	ewww_image_optimizer_debug_log();
 	return $path_array;
 }
 // Retrieves jpg background fill setting, or returns null for png2jpg conversions
@@ -1276,18 +1281,14 @@ function ewww_image_optimizer_jpg_quality () {
 
 // Retrieve the paths for auxiliary images to optimize
 // TODO: remove this
-function ewww_image_optimizer_aux_paths () {
+/*function ewww_image_optimizer_aux_paths () {
 	global $ewww_debug;
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_aux_paths()</b><br>";
 	$aux_paths = ewww_image_optimizer_get_option('ewww_image_optimizer_aux_paths');
 //	$path_array = null;
 //	return esc_textarea($path_array);
 	return $path_array;
-}
-
-// require the file that does the bulk processing
-require(dirname(__FILE__) . '/bulk.php');
-require(dirname(__FILE__) . '/aux-optimize.php');
+}*/
 
 /**
  * Manually process an image from the Media Library
@@ -1484,7 +1485,8 @@ function ewww_image_optimizer_update_saved_file ($meta, $ID) {
 	global $ewww_debug;
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_update_saved_file()</b><br>";
 	$meta = ewww_image_optimizer_resize_from_meta_data($meta, $ID);
-	ewww_image_optimizer_debug_log();
+//	ewww_image_optimizer_debug_log();
+	$ewww_debug = '';
 	return $meta;
 }
 
