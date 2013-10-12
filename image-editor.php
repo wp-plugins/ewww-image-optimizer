@@ -2,10 +2,10 @@
 class EWWWIO_GD_Editor extends WP_Image_Editor_GD {
 	protected function _save ($image, $filename = null, $mime_type = null) {
 		global $ewww_debug;
-		if (!defined('EWWW_IMAGE_OPTIMIZER_DOMAIN')) {
+		if (!defined('EWWW_IMAGE_OPTIMIZER_DOMAIN'))
 			require_once(plugin_dir_path(__FILE__) . 'ewww-image-optimizer.php');
+		if (!defined('EWWW_IMAGE_OPTIMIZER_JPEGTRAN'))
 			ewww_image_optimizer_admin_init();
-		}
 		list( $filename, $extension, $mime_type ) = $this->get_output_format( $filename, $mime_type );
 	
 	                if ( ! $filename )
@@ -37,7 +37,6 @@ class EWWWIO_GD_Editor extends WP_Image_Editor_GD {
 	                @ chmod( $filename, $perms );
 			// TODO: see if we can skip this on resizes that are already being optimized (or skip those, and do this, either way...)
 			ewww_image_optimizer_aux_images_loop($filename, true, 'image_editor');
-			$image_md5 = md5_file($filename);
 			$save_time = microtime();
 			$ewww_debug = "$ewww_debug image editor (gd) saved at $save_time: $filename <br>";
 			ewww_image_optimizer_debug_log();
