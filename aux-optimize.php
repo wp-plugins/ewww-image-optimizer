@@ -120,7 +120,6 @@ function ewww_image_optimizer_image_scan($dir, $skip_previous = false) {
 			continue;
 		} else {
 			$path = $path->getPathname();
-//			$table = $wpdb->prefix . 'ewwwio_images';
 			$image_md5 = md5_file($path);
 			$query = "SELECT id FROM " . $wpdb->prefix . 'ewwwio_images' . " WHERE path = '$path' AND image_md5 = '$image_md5'";
 			$already_optimized = $wpdb->get_results($query);
@@ -171,16 +170,13 @@ function ewww_image_optimizer_aux_images_script($hook) {
 		$sql = "TRUNCATE " . $table_name; 
     		$wpdb->query($sql); 
 	}
-	// collect a list of images if we are working with a theme
-// TODO: going to need to check multiple themes on a multisite setup, maybe not since cron is run per site
-//	if (function_exists('is_plugin_active_for_network') && !is_plugin_active_for_network('ewww-image-optimizer/ewww-image-optimizer.php')) {
-		$child_path = get_stylesheet_directory();
-		$parent_path = get_template_directory();
-		$attachments = ewww_image_optimizer_image_scan($child_path, true); 
-		if ($child_path !== $parent_path) {
-			$attachments = array_merge($attachments, ewww_image_optimizer_image_scan($parent_path, true));
-		}
-//	}
+	// collect a list of images from the current theme
+	$child_path = get_stylesheet_directory();
+	$parent_path = get_template_directory();
+	$attachments = ewww_image_optimizer_image_scan($child_path, true); 
+	if ($child_path !== $parent_path) {
+		$attachments = array_merge($attachments, ewww_image_optimizer_image_scan($parent_path, true));
+	}
 	// collect a list of images in auxiliary folders provided by user
 	if ($aux_paths = get_site_option('ewww_image_optimizer_aux_paths')) {
 		foreach ($aux_paths as $aux_path) {
@@ -190,13 +186,11 @@ function ewww_image_optimizer_aux_images_script($hook) {
 
 	// collect a list of images for buddypress
 	if (is_plugin_active('buddypress/bp-loader.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('buddypress/bp-loader.php'))) {
-//	if ($buddypress_images) {
 		// get the value of the wordpress upload directory
 	        $upload_dir = wp_upload_dir();
 		// scan the 'avatars' and 'group-avatars' folders for images
 		$attachments = array_merge($attachments, ewww_image_optimizer_image_scan($upload_dir['basedir'] . '/avatars', true), ewww_image_optimizer_image_scan($upload_dir['basedir'] . '/group-avatars', true));
 	}
-//	if ($symposium_images) {
 	if (is_plugin_active('wp-symposium/wp-symposium.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('wp-symposium/wp-symposium.php'))) {
 		$attachments = array_merge($attachments, ewww_image_optimizer_image_scan(get_option('symposium_img_path'), true));
 	}

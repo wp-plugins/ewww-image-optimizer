@@ -58,7 +58,7 @@ $my_version = substr($wp_version, 0, 3);
 if ( $my_version < 3.5 ) {
 	add_filter('wp_save_image_editor_file', 'ewww_image_optimizer_save_image_editor_file', 60, 5);
 } else {
-	add_filter('wp_image_editors', 'ewww_image_optimizer_load_editor');
+	add_filter('wp_image_editors', 'ewww_image_optimizer_load_editor', 60);
 }
 register_deactivation_hook(__FILE__, 'ewww_image_optimizer_network_deactivate');
 register_activation_hook(__FILE__, 'ewww_image_optimizer_install_table');
@@ -87,11 +87,11 @@ if (is_plugin_active('flash-album-gallery/flag.php') || (function_exists('is_plu
 require( dirname(__FILE__) . '/flag-integration.php' );
 
 /**
- * Plugin admin initialization function
+ * Plugin initialization function
  */
-function ewww_image_optimizer_admin_init() {
+function ewww_image_optimizer_init() {
 	global $ewww_debug;
-	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_admin_init()</b><br>";
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_init()</b><br>";
 	ewww_image_optimizer_cloud_verify();
 	if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_jpg') && ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_png') && ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_gif')) {
 		define('EWWW_IMAGE_OPTIMIZER_CLOUD', TRUE);
@@ -121,6 +121,13 @@ function ewww_image_optimizer_admin_init() {
 	} 
 
 	load_plugin_textdomain(EWWW_IMAGE_OPTIMIZER_DOMAIN);
+}
+
+// Plugin initialization for admin area
+function ewww_image_optimizer_admin_init() {
+	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_admin_init()</b><br>";
+	ewww_image_optimizer_init();
 	if (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('ewww-image-optimizer/ewww-image-optimizer.php')) {
 		// network version is simply incremented any time we need to make changes to this section for new defaults
 		if (get_site_option('ewww_image_optimizer_network_version') < 1) {
@@ -280,6 +287,8 @@ function ewww_image_optimizer_load_editor($editors) {
 		array_unshift($editors, 'EWWWIO_GD_Editor');
 	if (!in_array('EWWWIO_Imagick_Editor', $editors))
 		array_unshift($editors, 'EWWWIO_Imagick_Editor');
+	if (!in_array('EWWWIO_Gmagick_Editor', $editors) && class_exists('WP_Image_Editor_Gmagick'))
+		array_unshift($editors, 'EWWWIO_Gmagick_Editor');
 	$ewww_debug = "$ewww_debug loading image editors: " . print_r($editors, true) . "<br>";
 	return $editors;
 }
@@ -1279,17 +1288,6 @@ function ewww_image_optimizer_jpg_quality () {
 	}
 }
 
-// Retrieve the paths for auxiliary images to optimize
-// TODO: remove this
-/*function ewww_image_optimizer_aux_paths () {
-	global $ewww_debug;
-	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_aux_paths()</b><br>";
-	$aux_paths = ewww_image_optimizer_get_option('ewww_image_optimizer_aux_paths');
-//	$path_array = null;
-//	return esc_textarea($path_array);
-	return $path_array;
-}*/
-
 /**
  * Manually process an image from the Media Library
  */
@@ -1335,20 +1333,6 @@ function ewww_image_optimizer_manual() {
 function ewww_image_optimizer_restore_from_meta_data($meta, $id) {
 	global $ewww_debug;
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_restore_from_meta_data()</b><br>";
-/*	// check permissions of current user
-	if ( FALSE === current_user_can('upload_files') ) {
-		// display error message if insufficient permissions
-		wp_die(__('You don\'t have permission to work with uploaded files.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
-	}
-	// make sure we didn't accidentally get to this page without an attachment to work on
-	if ( FALSE === isset($_GET['attachment_ID'])) {
-		// display an error message since we don't have anything to work on
-		wp_die(__('No attachment ID was provided.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
-	}*/
-	// store the attachment ID value
-//	$id = intval($_GET['attachment_ID']);
-	// retrieve the existing attachment metadata
-//	$meta = wp_get_attachment_metadata($id);
 	// get the filepath from the metadata
 	$file_path = get_attached_file($id);
 	// don't store absolute paths
@@ -2392,6 +2376,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
  */
 function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 	global $ewww_debug;
+	global $wpdb;
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_resize_from_meta_data()</b><br>";
 	// don't do anything else if the attachment has no metadata
 	if (empty($meta)) {
@@ -2417,7 +2402,6 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 		$ims_options = ewww_image_optimizer_get_option('ims_front_options');
 		$ims_path = $ims_options['galleriespath'];
 		if (is_dir($file_path)) {
-//			$ims_options = print_r($ims_options, true);
 			$ewww_debug = "$ewww_debug Image Store Options: $ims_options<br>";
 			$upload_path = $file_path;
 			$file_path = $meta['file'];
@@ -2492,8 +2476,19 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 			// if this is a unique size
 			if (!$dup_size) {
 				$resize_path = $base_dir . $data['file'];
-				// run the optimization and store the results
-				list($optimized_file, $results, $resize_conv, $original) = ewww_image_optimizer($resize_path, $gallery_type, $conv, true);
+				// check the database to make sure it wasn't already optimized via wp_image_editor and friends
+				$image_md5 = md5_file($resize_path);
+				$query = "SELECT id,results FROM " . $wpdb->prefix . 'ewwwio_images' . " WHERE path = '$resize_path' AND image_md5 = '$image_md5'";
+				$already_optimized = $wpdb->get_results($query, ARRAY_A);
+				if (!empty($_GET['convert']) || ewww_image_optimizer_get_option('ewww_image_optimizer_jpg_to_png') || ewww_image_optimizer_get_option('ewww_image_optimizer_png_to_jpg') || ewww_image_optimizer_get_option('ewww_image_optimizer_gif_to_png'))
+					$already_optimized = '';
+				if (empty($already_optimized)) {
+					// run the optimization and store the results
+					list($optimized_file, $results, $resize_conv, $original) = ewww_image_optimizer($resize_path, $gallery_type, $conv, true);
+				} else {
+					$optimized_file = $resize_path;
+					$results = $already_optimized[0]['results'];
+				}
 				// if the resize was converted, store the result and the original filename in the metadata for later recovery
 				if ($resize_conv) {
 					// if we don't already have the update attachment filter
@@ -2503,10 +2498,8 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 					$meta['sizes'][$size]['converted'] = 1;
 					$meta['sizes'][$size]['orig_file'] = str_replace($base_dir, '', $original);
 				}
-//				if ($gallery_type != 6) {
-					// update the filename
-					$meta['sizes'][$size]['file'] = str_replace($base_dir, '', $optimized_file);
-//				}
+				// update the filename
+				$meta['sizes'][$size]['file'] = str_replace($base_dir, '', $optimized_file);
 				// update the optimization results
 				$meta['sizes'][$size]['ewww_image_optimizer'] = $results;
 			}
@@ -3134,5 +3127,18 @@ function ewww_image_optimizer_options () {
 		</form>
 	</div>
 	<?php
+	                $sliders = get_posts( array(
+	                        'numberposts' => -1,
+	                        'post_type' => 'ml-slider',
+				'post_status' => 'any',
+				'fields' => 'ids'
+	                ));
+			echo "<br>";
+			print_r($sliders);
+			echo "<br>";
+			foreach ($sliders as $slider) {
+				$meta = get_post_meta($slider, 'ml-slider_settings', true);
+				print_r($meta);
+			}
 }
 

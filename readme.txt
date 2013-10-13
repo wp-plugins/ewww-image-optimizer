@@ -151,9 +151,11 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 = 1.7.0 =
 * added ability to optimize specified folders within your wordpress install
-* option to optimize on a schedule for images that cannot be automatically optimized on upload (buddypress, symposium, user-specified folders)
+* option to optimize on a schedule for images that cannot be automatically optimized on upload (buddypress, symposium, metaslider, user-specified folders)
 * WP Symposium support via 'Optimize More' in Tools menu
 * fixed unnecessary check for 'file' field in attachment metadata
+* fixed blog-level settings not displayed when activated at the blog-level on multi-site
+* Any plugin that uses wp_image_editor (GD, Imagick, and Gmagick implementations) will be auto-optimized on upload
 
 = 1.6.3 =
 * plugin will failover gracefully if one of the cloud optimization servers is offline
