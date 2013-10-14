@@ -50,7 +50,7 @@ Located under Media, the BuddyPress Optimizer allows the user to optimize all av
 Uploads are automatically optimized. Look for Optimize under the Image Store (Galleries) menu to see status of optimization and for re-optimization and bulk-optimization options. Using the Bulk Optimization tool under Media Library automatically includes all Image Store uploads.
 
 = Optimize Almost Everything =
-As of version 1.7.0, site admins can specify any folder within their wordpress folder to be optimized. The 'Optimize More' option under Tools will optimize theme images, BuddyPress avatars, WP Symposium images, and any user-specified folders. The Wordpress 'uploads' folder cannot be specified, but sub-folders of the 'uploads' folder are permitted. Additionally, this tool can run on an hourly basis via wp_cron to keep newly uploaded images optimized.
+As of version 1.7.0, site admins can specify any folder within their wordpress folder to be optimized. The 'Optimize More' option under Tools will optimize theme images, BuddyPress avatars, WP Symposium images, and any user-specified folders. The Wordpress 'uploads' folder cannot be specified, but sub-folders of the 'uploads' folder are permitted. Additionally, this tool can run on an hourly basis via wp_cron to keep newly uploaded images optimized. Any images optimized via this tool are stored in the database so that the optimizer does not attempt to re-optimize them unless they are modified (and so you can take a look at the table to see what exactly is being optimized).
 
 == Installation ==
 
@@ -156,6 +156,8 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * fixed unnecessary check for 'file' field in attachment metadata
 * fixed blog-level settings not displayed when activated at the blog-level on multi-site
 * Any plugin that uses wp_image_editor (GD, Imagick, and Gmagick implementations) will be auto-optimized on upload
+* fixed Optimize More will crash if one of the standard folders does not exist (e.g.: buddypress avatar folders)
+* filenames are escaped to prevent potential crashes and security risks
 
 = 1.6.3 =
 * plugin will failover gracefully if one of the cloud optimization servers is offline

@@ -112,8 +112,10 @@ function ewww_image_optimizer_image_scan($dir, $skip_previous = false) {
 	global $ewww_debug;
 	global $wpdb;
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_image_scan()</b><br>";
-	$iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir), RecursiveIteratorIterator::CHILD_FIRST);
 	$images = Array();
+	if (!is_dir($dir))
+		return $images;
+	$iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir), RecursiveIteratorIterator::CHILD_FIRST);
 	$start = microtime(true);
 	foreach ($iterator as $path) {
 		if ($path->isDir()) {
@@ -137,6 +139,7 @@ function ewww_image_optimizer_image_scan($dir, $skip_previous = false) {
 // prepares the bulk operation and includes the javascript functions
 function ewww_image_optimizer_aux_images_script($hook) {
 	global $ewww_debug;
+	global $wpdb;
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_aux_images_script()</b><br>";
 	// initialize the $attachments variable for auxiliary images
 	$attachments = null;
@@ -193,6 +196,53 @@ function ewww_image_optimizer_aux_images_script($hook) {
 	}
 	if (is_plugin_active('wp-symposium/wp-symposium.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('wp-symposium/wp-symposium.php'))) {
 		$attachments = array_merge($attachments, ewww_image_optimizer_image_scan(get_option('symposium_img_path'), true));
+	}
+	if (is_plugin_active('ml-slider/ml-slider.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('ml-slider/ml-slider.php'))) {
+		$slide_paths = array();
+                $sliders = get_posts(array(
+                        'numberposts' => -1,
+                        'post_type' => 'ml-slider',
+			'post_status' => 'any',
+			'fields' => 'ids'
+                ));
+		foreach ($sliders as $slider) {
+			$slides = get_posts(array(
+                        	'numberposts' => -1,
+				'orderby' => 'menu_order',
+				'order' => 'ASC',
+				'post_type' => 'attachment',
+				'post_status' => 'inherit',
+				'fields' => 'ids',
+				'tax_query' => array(
+						array(
+							'taxonomy' => 'ml-slider',
+							'field' => 'slug',
+							'terms' => $slider
+						)
+					)
+				)
+			);
+			foreach ($slides as $slide) {
+				$backup_sizes = get_post_meta($slide, '_wp_attachment_backup_sizes', true);
+				$type = get_post_meta($slide, 'ml-slider_type', true);
+				$type = $type ? $type : 'image'; // backwards compatibility, fall back to 'image'
+				if ($type === 'image') {
+					foreach ($backup_sizes as $backup_size => $meta) {
+						if (preg_match('/resized-/', $backup_size)) {
+							$path = $meta['path'];
+							$image_md5 = md5_file($path);
+							$query = "SELECT id FROM " . $wpdb->prefix . 'ewwwio_images' . " WHERE path = '$path' AND image_md5 = '$image_md5'";
+							$already_optimized = $wpdb->get_results($query);
+							$mimetype = ewww_image_optimizer_mimetype($path, 'i');
+							if (preg_match('/^image\/(jpeg|png|gif)/', $mimetype) && empty($already_optimized)) {
+								$slide_paths[] = $path;
+							}
+						}
+					}
+				}
+			}
+		}
+		$attachments = array_merge($attachments, $slide_paths);
 	}
         // check to see if we are supposed to reset the bulk operation and verify we are authorized to do so
 	if (!empty($_REQUEST['reset']) && wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-aux-images' )) {
