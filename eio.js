@@ -15,6 +15,7 @@ jQuery(document).ready(function($) {
                         	$('.wrap').prepend('<h2>Bulk Optimize</h2><div id="bulk-loading"></div><div id="bulk-progressbar"></div><div id="bulk-counter"></div><div id="bulk-status"></div><div id="bulk-forms"><p>We have ' + attachments.length + ' images to optimize.</p><form id="bulk-start" method="post" action=""><input type="submit" class="button-secondary action" value="Start optimizing" /></form></div>');
 			}
 		} else if (ewww_vars.gallery == 'aux') {
+			var table_action = 'bulk_aux_images_table';
 			var init_action = 'bulk_aux_images_init';
 			var filename_action = 'bulk_aux_images_filename';
 			var loop_action = 'bulk_aux_images_loop';
@@ -25,6 +26,108 @@ jQuery(document).ready(function($) {
 			var loop_action = 'bulk_loop';
 			var cleanup_action = 'bulk_cleanup';
 		}
+	$('#show-table').submit(function() {
+		var pointer = 0;
+		var total_pages = Math.ceil(ewww_vars.image_count / 50);
+		$('#table-button').hide();
+		if (ewww_vars.image_count >= 50) {
+			$('.tablenav').show();
+			$('#next-images').show();
+			$('.last-page').show();
+		}
+	        var table_data = {
+	                action: table_action,
+			_wpnonce: ewww_vars._wpnonce,
+			offset: pointer,
+	        };
+		$('.displaying-num').text(ewww_vars.image_count + ' total images');
+		$.post(ajaxurl, table_data, function(response) {
+			$('#bulk-table').html(response);
+		});
+		$('.current-page').text(pointer + 1);
+		$('.total-pages').text(total_pages);
+		$('#pointer').text(pointer);
+		return false;
+	});
+	$('#next-images').click(function() {
+		var pointer = $('#pointer').text();
+		pointer++;
+	        var table_data = {
+	                action: table_action,
+			_wpnonce: ewww_vars._wpnonce,
+			offset: pointer,
+	        };
+		$.post(ajaxurl, table_data, function(response) {
+			$('#bulk-table').html(response);
+		});
+		if (ewww_vars.image_count <= ((pointer + 1) * 50)) {
+			$('#next-images').hide();
+			$('.last-page').hide();
+		}
+		$('.current-page').text(pointer + 1);
+		$('#pointer').text(pointer);
+		$('#prev-images').show();
+		$('.first-page').show();
+		return false;
+	});
+	$('#prev-images').click(function() {
+		var pointer = $('#pointer').text();
+		pointer--;
+	        var table_data = {
+	                action: table_action,
+			_wpnonce: ewww_vars._wpnonce,
+			offset: pointer,
+	        };
+		$.post(ajaxurl, table_data, function(response) {
+			$('#bulk-table').html(response);
+		});
+		if (!pointer) {
+			$('#prev-images').hide();
+			$('.first-page').hide();
+		}
+		$('.current-page').text(pointer + 1);
+		$('#pointer').text(pointer);
+		$('#next-images').show();
+		$('.last-page').show();
+		return false;
+	});
+	$('.last-page').click(function() {
+		var pointer = $('.total-pages').text();
+		pointer--;
+	        var table_data = {
+	                action: table_action,
+			_wpnonce: ewww_vars._wpnonce,
+			offset: pointer,
+	        };
+		$.post(ajaxurl, table_data, function(response) {
+			$('#bulk-table').html(response);
+		});
+		$('#next-images').hide();
+		$('.last-page').hide();
+		$('.current-page').text(pointer + 1);
+		$('#pointer').text(pointer);
+		$('#prev-images').show();
+		$('.first-page').show();
+		return false;
+	});
+	$('.first-page').click(function() {
+		var pointer = 0;
+	        var table_data = {
+	                action: table_action,
+			_wpnonce: ewww_vars._wpnonce,
+			offset: pointer,
+	        };
+		$.post(ajaxurl, table_data, function(response) {
+			$('#bulk-table').html(response);
+		});
+		$('#prev-images').hide();
+		$('.first-page').hide();
+		$('.current-page').text(pointer + 1);
+		$('#pointer').text(pointer);
+		$('#next-images').show();
+		$('.last-page').show();
+		return false;
+	});
 	$('#bulk-start').submit(function() {
 		document.getElementById('bulk-forms').style.display='none';
 	        var init_data = {

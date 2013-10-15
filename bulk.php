@@ -171,8 +171,9 @@ function ewww_image_optimizer_bulk_filename() {
 	$meta = wp_get_attachment_metadata( $attachment_ID );
 	// generate the WP spinner image for display
 	$loading_image = plugins_url('/wpspin.gif', __FILE__);
-	// let the user know that we are beginning
-	echo "<p>Optimizing <b>" . $meta['file'] . "</b>&nbsp;<img src='$loading_image' alt='loading'/></p>";
+	if(!empty($meta['file']))
+		// let the user know the file we are currently optimizing
+		echo "<p>Optimizing <b>" . $meta['file'] . "</b>&nbsp;<img src='$loading_image' alt='loading'/></p>";
 	die();
 }
  
@@ -194,10 +195,15 @@ function ewww_image_optimizer_bulk_loop() {
 	$attachments = get_option('ewww_image_optimizer_bulk_attachments');
 	// do the optimization for the current attachment (including resizes)
 	$meta = ewww_image_optimizer_resize_from_meta_data (wp_get_attachment_metadata( $attachment, true ), $attachment);
-	// output the filename (and path relative to 'uploads' folder
-	printf( "<p>Optimized image: <strong>%s</strong><br>", esc_html($meta['file']) );
-	// tell the user what the results were for the original image
-	printf( "Full size – %s<br>", $meta['ewww_image_optimizer'] );
+	if(!empty($meta['file'])) {
+		// output the filename (and path relative to 'uploads' folder)
+		printf( "<p>Optimized image: <strong>%s</strong><br>", esc_html($meta['file']) );
+	} else {
+		printf("<p>Skipped image, ID = <strong>%s</strong><br>", $attachment );
+	}
+	if(!empty($meta['ewww_image_optimizer']))
+		// tell the user what the results were for the original image
+		printf("Full size – %s<br>", $meta['ewww_image_optimizer']);
 	// check to see if there are resized version of the image
 	if (isset($meta['sizes']) && is_array($meta['sizes'])) {
 		// cycle through each resize

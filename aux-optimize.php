@@ -68,15 +68,12 @@ function ewww_image_optimizer_aux_images () {
 				<input type="hidden" name="empty" value="1">
 				<button id="empty-table" type="submit" class="button-secondary action">Empty Table</button>
 			</form><br />
-			<form method="post" action="">
-				<?php wp_nonce_field( 'ewww-image-optimizer-aux-images', '_wpnonce'); ?>
+			<form id="show-table" method="post" action="">
 				<?php if (empty($_POST['show'])) { ?>
-					<input type="hidden" name="show" value="1">
-					<button id="show-table" type="submit" class="button-secondary action">Show Optimized Images Table</button> 
-					<b>On large sites, this could take a while</b>
+					<input id="table-button" type="submit" class="button-secondary action" value="Show Optimized Images Table" />
 				<?php } else { ?>
 					<input type="hidden" name="show" value="0">
-					<button id="hide-table" type="submit" class="button-secondary action">Hide Optimized Images Table</button>
+					<input id="hide-table" type="submit" class="button-secondary action" value="Hide Optimized Images Table" />
 				<?php } ?>
 			</form>
 <?php		}
@@ -102,8 +99,48 @@ function ewww_image_optimizer_aux_images () {
 		}
 ?>
 		</div>
+			<div class="tablenav" style="display:none">
+			<div class="tablenav-pages">
+			<span class="displaying-num"></span>
+			<span id="paginator" class="pagination-links">
+				<a id="first-images" class="first-page" style="display:none">&laquo;</a>
+				<a id="prev-images" class="prev-page" style="display:none">&lsaquo;</a>
+				page <span class="current-page"></span> of 
+				<span class="total-pages"></span>
+				<a id="next-images" class="next-page" style="display:none">&rsaquo;</a>
+				<a id="last-images" class="last-page" style="display:none">&raquo;</a>
+			</span>
+			</div>
+			</div>
+			<div id="bulk-table"></div>
+			<span id="pointer" style="display:none">0</span>
 	</div>
 <?php
+}
+
+function ewww_image_optimizer_aux_images_table() {
+	global $wpdb;
+	$offset = 50 * $_POST['offset'];
+	$query = "SELECT path,results,gallery FROM " . $wpdb->prefix . "ewwwio_images ORDER BY id DESC LIMIT $offset,50";
+	$already_optimized = $wpdb->get_results($query, ARRAY_N);
+        $upload_info = wp_upload_dir();
+	$upload_path = $upload_info['basedir'];
+	echo '<br /><table class="wp-list-table widefat media" cellspacing="0"><thead><tr><th>&nbsp;</th><th>filename</th><th>Image Optimizer</th></tr></thead>';
+	$alternate = true;
+	foreach ($already_optimized as $optimized_image) {
+		$image_name = str_replace(ABSPATH, '', $optimized_image[0]);
+		$image_url = trailingslashit(get_site_url()) . $image_name;
+		$savings = $optimized_image[1];
+		if ($alternate) {
+			echo "<tr class='alternate'><td style='width:80px' class='column-icon'><img width='50' height='50' src='$image_url' /></td><td class='title'>...$image_name</td><td>$savings</td></tr>";
+		} else {
+			echo "<tr><td style='width:80px' class='column-icon'><img width='50' height='50' src='$image_url' /></td><td class='title'>...$image_name</td><td>$savings</td></tr>";
+		}
+		$alternate = !$alternate;
+	}
+	echo '</table>';
+//	echo "<br>" . $_POST['offset'] . "<br>";
+	die();
 }
 
 // scan a folder for images and return them as an array, second parameter (optional) 
@@ -264,16 +301,19 @@ function ewww_image_optimizer_aux_images_script($hook) {
 	}
 	wp_enqueue_script('ewwwjuiscript', plugins_url('/jquery-ui-1.10.2.custom.min.js', __FILE__), false);
 	wp_enqueue_script('ewwwbulkscript', plugins_url('/eio.js', __FILE__), array('jquery'));
+	$image_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->prefix . 'ewwwio_images');
 	// submit a couple variables to the javascript to work with
 	$attachments = json_encode($attachments);
 	wp_localize_script('ewwwbulkscript', 'ewww_vars', array(
 			'_wpnonce' => wp_create_nonce('ewww-image-optimizer-aux-images'),
 			'gallery' => 'aux',
-			'attachments' => $attachments
+			'attachments' => $attachments,
+			'image_count' => $image_count,
 		)
 	);
 	// load the stylesheet for the jquery progressbar
 	wp_enqueue_style('jquery-ui-progressbar', plugins_url('jquery-ui-1.10.1.custom.css', __FILE__));
+	wp_enqueue_style('colors-css');
 }
 add_action('admin_enqueue_scripts', 'ewww_image_optimizer_aux_images_script');
 
@@ -396,6 +436,7 @@ function ewww_image_optimizer_aux_images_cleanup($auto = false) {
 		die();
 	}
 }
+add_action('wp_ajax_bulk_aux_images_table', 'ewww_image_optimizer_aux_images_table');
 add_action('wp_ajax_bulk_aux_images_init', 'ewww_image_optimizer_aux_images_initialize');
 add_action('wp_ajax_bulk_aux_images_filename', 'ewww_image_optimizer_aux_images_filename');
 add_action('wp_ajax_bulk_aux_images_loop', 'ewww_image_optimizer_aux_images_loop');

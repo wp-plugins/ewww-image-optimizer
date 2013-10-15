@@ -15,7 +15,12 @@ License: GPLv3
 */
 // TODO: internationalize plugin - if we get enough interest
 // initialize debug global
-$ewww_debug = get_current_user() . '<br>';
+$disabled = ini_get('disable_functions');
+if (preg_match('/get_current_user/', $disabled)) {
+	$ewww_debug = '';
+} else {
+	$ewww_debug = get_current_user() . '<br>';
+}
 /**
  * Constants
  */
@@ -93,9 +98,9 @@ function ewww_image_optimizer_init() {
 	global $ewww_debug;
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_init()</b><br>";
 	ewww_image_optimizer_cloud_verify();
-	if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_jpg') && ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_png') && ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_gif')) {
+	if (!defined('EWWW_IMAGE_OPTIMIZER_CLOUD') && ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_jpg') && ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_png') && ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_gif')) {
 		define('EWWW_IMAGE_OPTIMIZER_CLOUD', TRUE);
-	} else {
+	} elseif (!defined('EWWW_IMAGE_OPTIMIZER_CLOUD')) {
 		define('EWWW_IMAGE_OPTIMIZER_CLOUD', FALSE);
 	}
 
@@ -2483,6 +2488,7 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 				} else {
 					$optimized_file = $resize_path;
 					$results = $already_optimized[0]['results'];
+					$resize_conv = false;
 				}
 				// if the resize was converted, store the result and the original filename in the metadata for later recovery
 				if ($resize_conv) {
@@ -2901,8 +2907,7 @@ function ewww_image_optimizer_options () {
 		<h2>EWWW Image Optimizer Settings</h2>
 		<p><a href="http://wordpress.org/extend/plugins/ewww-image-optimizer/">Plugin Home Page</a> |
 		<a href="http://wordpress.org/extend/plugins/ewww-image-optimizer/installation/">Installation Instructions</a> | 
-		<a href="http://wordpress.org/support/plugin/ewww-image-optimizer">Plugin Support</a> | 
-		Debug - see the new Debugging option below</p>
+		<a href="http://wordpress.org/support/plugin/ewww-image-optimizer">Plugin Support</a></p>
 		<p>I recommend hosting your Wordpress site with <a href=http://www.dreamhost.com/r.cgi?132143">Dreamhost.com</a> or <a href="http://www.bluehost.com/track/nosilver4u">Bluehost.com</a>. Using these referral links will allow you to support future development of this plugin: <a href=http://www.dreamhost.com/r.cgi?132143">Dreamhost</a> | <a href="http://www.bluehost.com/track/nosilver4u">Bluehost</a>. Alternatively, you can contribute directly by <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=QFXCW38HE24NY">donating with Paypal</a>.</p>
 		<div id="status" style="border: 1px solid #ccc; padding: 0 8px; border-radius: 12px;">
 			<h3>Plugin Status</h3>
@@ -3049,8 +3054,8 @@ function ewww_image_optimizer_options () {
 			<?php settings_fields('ewww_image_optimizer_options'); 
 		} ?>
 			<h3>Cloud Settings</h3>
-			<p><b>BETA:</b> Free (temporary) API keys will be given to the <a href="http://www.exactlywww.com/cloud/">first 100 users who request them</a>. <br />
-			If exec() is disabled for security reasons (and enabling it is not an option), or you would like to offload image optimization to a third-party server, you can purchase an API key for our cloud optimization service. The API key should be entered below, and cloud optimization must be enabled for each image format individually. No personal data is transmitted to the remote optimization server, and images are removed immediately after optimization is performed.</p>
+			<p><a href="http://www.exactlywww.com/cloud/">Purchase an API key here</a>. <br />
+			If exec() is disabled for security reasons (and enabling it is not an option), or you would like to offload image optimization to a third-party server, you can purchase an API key for our cloud optimization service. The API key should be entered below, and cloud optimization must be enabled for each image format individually.</p>
 			<table class="form-table">
 				<tr><th><label for="ewww_image_optimizer_cloud_key">Cloud optimization API Key</label></th><td><input type="text" id="ewww_image_optimizer_cloud_key" name="ewww_image_optimizer_cloud_key" value="<?php echo ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_key'); ?>" size="32" /> API Key will be validated when you save your settings. <a href="http://www.exactlywww.com/cloud/">Purchase a key now</a>.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_cloud_jpg">JPG cloud optimization</label></th><td><input type="checkbox" id="ewww_image_optimizer_cloud_jpg" name="ewww_image_optimizer_cloud_jpg" value="true" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_jpg') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
