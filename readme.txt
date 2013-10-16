@@ -158,6 +158,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * Any plugin that uses wp_image_editor (GD, Imagick, and Gmagick implementations) will be auto-optimized on upload
 * fixed Optimize More will crash if one of the standard folders does not exist (e.g.: buddypress avatar folders)
 * filenames are escaped to prevent potential crashes and security risks
+* temporary jpgs are checked to be sure they exist to avoid warnings
 
 = 1.6.3 =
 * plugin will failover gracefully if one of the cloud optimization servers is offline

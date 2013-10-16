@@ -1817,8 +1817,12 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 						}
 					}
 				}
-				// find out the size of the new PNG file
-				$png_size = filesize($pngfile);
+				if (is_file($pngfile)) {
+					// find out the size of the new PNG file
+					$png_size = filesize($pngfile);
+				} else {
+					$png_size = 0;
+				}
 				$ewww_debug = "$ewww_debug converted PNG size: $png_size<br>";
 				// if the PNG is smaller than the original JPG, and we didn't end up with an empty file
 				if ($orig_size > $png_size && $png_size != 0) {
@@ -1827,7 +1831,9 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				} else {
 					// otherwise delete the PNG
 					$converted = FALSE;
-					unlink ($pngfile);
+					if (is_file($pngfile)) {
+						unlink ($pngfile);
+					}
 				}
 			// if conversion and optimization are both turned OFF, finish the JPG processing
 			} elseif (!$optimize) {
@@ -1865,10 +1871,18 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				exec("$nice " . $tools['JPEGTRAN'] . " -copy $copy_opt -optimize -outfile " . escapeshellarg($tempfile) . " " . escapeshellarg($file));
 				// run jpegtran - progressive
 				exec("$nice " . $tools['JPEGTRAN'] . " -copy $copy_opt -optimize -progressive -outfile " . escapeshellarg($progfile) . " " . escapeshellarg($file));
-				// check the filesize of the non-progressive JPG
-				$non_size = filesize($tempfile);
-				// check the filesize of the progressive JPG
-				$prog_size = filesize($progfile);
+				if (is_file($tempfile)) {
+					// check the filesize of the non-progressive JPG
+					$non_size = filesize($tempfile);
+				} else {
+					$non_size = 0;
+				}
+				if (is_file($progfile)) {
+					// check the filesize of the progressive JPG
+					$prog_size = filesize($progfile);
+				} else {
+					$prog_size = 0;
+				}
 				$ewww_debug = "$ewww_debug optimized JPG (non-progresive) size: $non_size<br>";
 				$ewww_debug = "$ewww_debug optimized JPG (progresive) size: $prog_size<br>";
 				if ($non_size === false || $prog_size === false) {
@@ -1880,8 +1894,10 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				if ($prog_size > $non_size) {
 					// store the size of the non-progessive JPG
 					$new_size = $non_size;
-					// delete the progressive file
-					unlink($progfile);
+					if (is_file($progfile)) {
+						// delete the progressive file
+						unlink($progfile);
+					}
 				// if the progressive file is smaller or the same
 				} else {
 					// store the size of the progressive JPG
@@ -1898,8 +1914,10 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					$result = "$orig_size vs. $new_size";
 				// if the optimization didn't produce a smaller JPG
 				} else {
-					// delete the optimized file
-					unlink($tempfile);
+					if (is_file($tempfile)) {
+						// delete the optimized file
+						unlink($tempfile);
+					}
 					// store the results
 					$result = "unchanged";
 					$new_size = $orig_size;
@@ -2052,8 +2070,12 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				} elseif (!empty($convert_path)) {
 					exec ("$convert_path $background -flatten $cquality " . escapeshellarg($file) . " " . escapeshellarg($jpgfile));
 				}
-				// retrieve the filesize of the new JPG
-				$jpg_size = filesize($jpgfile);
+				if (is_file($jpgfile)) {
+					// retrieve the filesize of the new JPG
+					$jpg_size = filesize($jpgfile);
+				} else {
+					$jpg_size = 0;
+				}
 				// next we need to optimize that JPG if jpegtran is enabled
 				if (!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_jpegtran') && file_exists($jpgfile)) {
 					// generate temporary file-names:
@@ -2071,16 +2093,26 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					exec("$nice " . $tools['JPEGTRAN'] . " -copy $copy_opt -optimize -outfile " . escapeshellarg($tempfile) . " " . escapeshellarg($jpgfile));
 					// run jpegtran - progressive
 					exec("$nice " . $tools['JPEGTRAN'] . " -copy $copy_opt -optimize -progressive -outfile " . escapeshellarg($progfile) . " " . escapeshellarg($jpgfile));
-					// check the filesize of the non-progressive JPG
-					$non_size = filesize($tempfile);
-					// check the filesize of the progressive JPG
-					$prog_size = filesize($progfile);
+					if (is_file($tempfile)) {
+						// check the filesize of the non-progressive JPG
+						$non_size = filesize($tempfile);
+					} else {
+						$non_size = 0;
+					}
+					if (is_file($progfile)) {
+						// check the filesize of the progressive JPG
+						$prog_size = filesize($progfile);
+					} else {
+						$prog_size = 0;
+					}
 					// if the progressive file is bigger
 					if ($prog_size > $non_size) {
 						// store the size of the non-progessive JPG
 						$opt_jpg_size = $non_size;
-						// delete the progressive file
-						unlink($progfile);
+						if (is_file($progfile)) {
+							// delete the progressive file
+							unlink($progfile);
+						}
 					// if the progressive file is smaller or the same
 					} else {
 						// store the size of the progressive JPG
@@ -2095,7 +2127,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 						// store the size of the optimized JPG
 						$jpg_size = $opt_jpg_size;
 					// if the optimization didn't produce a smaller JPG
-					} else {
+					} elseif (is_file($tempfile)) {
 						// delete the optimized file
 						unlink($tempfile);
 					}
@@ -2107,8 +2139,10 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 					$converted = $filenum;
 				} else {
 					$converted = FALSE;
-					// otherwise delete the new JPG
-					unlink ($jpgfile);
+					if (is_file($jpgfile)) {
+						// otherwise delete the new JPG
+						unlink ($jpgfile);
+					}
 				}
 			// if conversion and optimization are both disabled we are done here
 			} elseif (!$optimize) {
@@ -2165,8 +2199,10 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 			} elseif ($converted) {
 				// unsuccessful conversion
 				$converted = FALSE;
-				// delete the resulting JPG
-				unlink($jpgfile);
+				if (is_file($jpgfile)) {
+					// delete the resulting JPG
+					unlink($jpgfile);
+				}
 			}
 			// if the new file (converted OR optimized) is smaller than the original
 			if ($orig_size > $new_size) {
@@ -2270,7 +2306,9 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 						$converted = $filenum;
 					} else {
 						$converted = FALSE;
-						unlink ($pngfile);
+						if (is_file($pngfile)) {
+							unlink ($pngfile);
+						}
 					}
 				}
 			// if conversion and optimization are both turned OFF, we are done here
@@ -2316,8 +2354,10 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 			} elseif ($converted) {
 				// unsuccessful conversion
 				$converted = FALSE;
-				// delete the resulting PNG
-				unlink($pngfile);
+				if (is_file($pngfile)) {
+					// delete the resulting PNG
+					unlink($pngfile);
+				}
 			}
 			// if the new file (converted or optimized) is smaller than the original
 			if ($orig_size > $new_size) {
