@@ -1610,7 +1610,6 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $r
 function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 	global $ewww_debug;
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer()</b><br>";
-	// TODO: use wp_image_editor (if available) to convert images.
 	// initialize the original filename 
 	$original = $file;
 	$msg = '';

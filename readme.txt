@@ -152,6 +152,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * these are possible future bugfixes and/or feature requests, if you see a feature you like here, go vote for it in the support forum
 * SunOS (Solaris/OpenIndiana) support
 * Bulk restoration of converted images
+* FlaGallery optimize on upload has been broken since they switched to plupload. This will be fixed in a future release, as the developer has already committed to re-implementing the necessary hooks.
 
 = 1.7.0 =
 * added: ability to optimize specified folders within your wordpress install
