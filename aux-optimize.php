@@ -231,6 +231,12 @@ function ewww_image_optimizer_aux_images_script($hook) {
 		// scan the 'avatars' and 'group-avatars' folders for images
 		$attachments = array_merge($attachments, ewww_image_optimizer_image_scan($upload_dir['basedir'] . '/avatars', true), ewww_image_optimizer_image_scan($upload_dir['basedir'] . '/group-avatars', true));
 	}
+	if (is_plugin_active('buddypress-activity-plus/bpfb.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('buddypress-activity-plus/bpfb.php'))) {
+		// get the value of the wordpress upload directory
+	        $upload_dir = wp_upload_dir();
+		// scan the 'avatars' and 'group-avatars' folders for images
+		$attachments = array_merge($attachments, ewww_image_optimizer_image_scan($upload_dir['basedir'] . '/bpfb', true));
+	}
 	if (is_plugin_active('wp-symposium/wp-symposium.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('wp-symposium/wp-symposium.php'))) {
 		$attachments = array_merge($attachments, ewww_image_optimizer_image_scan(get_option('symposium_img_path'), true));
 	}

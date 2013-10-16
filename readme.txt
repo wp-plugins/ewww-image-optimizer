@@ -1,7 +1,7 @@
 === EWWW Image Optimizer ===
 Contributors: nosilver4u
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=QFXCW38HE24NY
-Tags: images, image, attachments, attachment, optimize, nextgen, buddypress, flagallery, flash, gallery, lossless, photos, photo, picture, pictures, seo, compression, image-store, imstore
+Tags: images, image, attachments, attachment, optimize, nextgen, buddypress, flagallery, flash, gallery, lossless, photos, photo, picture, pictures, seo, compression, image-store, imstore, slider, image editor, gmagick
 Requires at least: 3.0
 Tested up to: 3.6.1
 Stable tag: 1.6.3
@@ -32,25 +32,29 @@ EWWW Image Optimizer calls optimization utilities directly which is well suited 
 
 In the Appearance menu, it is now possible to optimize all of the images within your current theme (you must have permissions to edit themes). If you are using a child theme, the images for the parent theme will also be optimized. If the theme is updated, you will need to re-optimize, so it is recommended that you contact the theme author if you find significant savings are possible.
 
-= NextGEN Integration =
+= NextGEN Gallery =
 
 Features optimization on upload capability, re-optimization, and bulk optimizing. The NextGEN Bulk Optimize function is located near the bottom of the NextGEN menu, and will optimize all images in all galleries. It is also possible to optimize groups of images in a gallery, or multiple galleries at once.
 NOTE: Does not optimize thumbnails on initial upload for legacy (1.9.x) versions of NextGEN, but instead provides a button to optimize thumbnails after uploading images.
 
-= GRAND Flash Album Gallery Integration =
+= GRAND Flash Album Gallery =
 
 Features optimization on upload capability, re-optimization, and bulk optimizing. The Bulk Optimize function is located near the bottom of the FlAGallery menu, and will optimize all images in all galleries. It is also possible to optimize groups of images in a gallery, or multiple galleries at once.
 
-= BuddyPress Integration =
+= BuddyPress =
 
 Located under Media, the BuddyPress Optimizer allows the user to optimize all avatars (group and individual). Stores a history of optimized images, so that you can optimize new images without re-optimizing old images.
 
-= Image Store Integration
+= Image Store =
 
 Uploads are automatically optimized. Look for Optimize under the Image Store (Galleries) menu to see status of optimization and for re-optimization and bulk-optimization options. Using the Bulk Optimization tool under Media Library automatically includes all Image Store uploads.
 
+= WP Image Editor = 
+
+All images created by the new WP_Image_Editor class in WP 3.5 will be automatically optimized. Current implementations are GD, Imagick, and Gmagick. Images optimized via this class include Meta Slider, BuddyPress Activity Plus (thumbs) and probably countless others. If you have a plugin that uses WP_Image_Editor and would like EWWW IO to be able to optimize previous uploads, post a thread in the support forums.
+
 = Optimize Almost Everything =
-As of version 1.7.0, site admins can specify any folder within their wordpress folder to be optimized. The 'Optimize More' option under Tools will optimize theme images, BuddyPress avatars, WP Symposium images, and any user-specified folders. The Wordpress 'uploads' folder cannot be specified, but sub-folders of the 'uploads' folder are permitted. Additionally, this tool can run on an hourly basis via wp_cron to keep newly uploaded images optimized. Any images optimized via this tool are stored in the database so that the optimizer does not attempt to re-optimize them unless they are modified (and so you can take a look at the table to see what exactly is being optimized).
+As of version 1.7.0, site admins can specify any folder within their wordpress folder to be optimized. The 'Optimize More' option under Tools will optimize theme images, BuddyPress avatars, BuddyPress Activity Plus images, Meta Slider slides, WP Symposium images, and any user-specified folders. The Wordpress 'uploads' folder cannot be specified, but sub-folders of the 'uploads' folder are permitted. Additionally, this tool can run on an hourly basis via wp_cron to keep newly uploaded images optimized. Any images optimized via this tool are stored in the database so that the optimizer does not attempt to re-optimize them unless they are modified (and so you can take a look at the table to see what exactly is being optimized).
 
 == Installation ==
 
@@ -150,14 +154,15 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * Bulk restoration of converted images
 
 = 1.7.0 =
-* added ability to optimize specified folders within your wordpress install
-* option to optimize on a schedule for images that cannot be automatically optimized on upload (buddypress, symposium, metaslider, user-specified folders)
-* WP Symposium support via 'Optimize More' in Tools menu
+* added: ability to optimize specified folders within your wordpress install
+* added: option to optimize on a schedule for images that cannot be automatically optimized on upload (buddypress, symposium, metaslider, user-specified folders)
+* added: WP Symposium support via 'Optimize More' in Tools menu
+* added: BuddyPress Activity Plus support via 'Optimize More'
 * fixed: unnecessary check for 'file' field in attachment metadata
 * fixed: blog-level settings not displayed when activated at the blog-level on multi-site
-* Any plugin that uses wp_image_editor (GD, Imagick, and Gmagick implementations) will be auto-optimized on upload
+* added: Any plugin that uses wp_image_editor (GD, Imagick, and Gmagick implementations) will be auto-optimized on upload
 * fixed: Optimize More will crash if one of the standard folders does not exist (e.g.: buddypress avatar folders)
-* filenames are escaped to prevent potential crashes and security risks
+* fixed: filenames are escaped to prevent potential crashes and security risks
 * fixed: temporary jpgs are checked to be sure they exist to avoid warnings
 * fixed: prevent warnings on bulk optimize due to empty arrays
 * fixed: don't check permissions until after we know file exists

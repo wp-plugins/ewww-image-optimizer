@@ -68,8 +68,6 @@ if ( $my_version < 3.5 ) {
 register_deactivation_hook(__FILE__, 'ewww_image_optimizer_network_deactivate');
 register_activation_hook(__FILE__, 'ewww_image_optimizer_install_table');
 
-// TODO: see if we can 'lazy load' this stuff later on
-
 // require the file that does the bulk processing
 require(dirname(__FILE__) . '/bulk.php');
 require(dirname(__FILE__) . '/aux-optimize.php');
@@ -1057,12 +1055,11 @@ function ewww_image_optimizer_admin_menu() {
 		$ewww_buddypress_optimize_page = add_media_page('Optimize BuddyPress Images', 'BuddyPress Optimize', 'edit_themes', 'ewww-image-optimizer-buddypress-images', 'ewww_image_optimizer_aux_images');
 		add_action('admin_footer-' . $ewww_buddypress_optimize_page, 'ewww_image_optimizer_debug');
 	}
-	// TODO: whenever the dude starts a new thread, see if we can move the optimizer into the Symposium menu - may have to make admin_menu action even lower priority
 	// if WP Symposium is active, add the Symposium Optimizer to the menu
-/*	if (is_plugin_active('wp-symposium/wp-symposium.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('wp-symposium/wp-symposium.php'))) {
+	if (is_plugin_active('wp-symposium/wp-symposium.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('wp-symposium/wp-symposium.php'))) {
 		$ewww_symposium_optimize_page = add_media_page('Optimize WP Symposium Images', 'WP Symposium Optimize', 'edit_themes', 'ewww-image-optimizer-symposium-images', 'ewww_image_optimizer_aux_images');
 		add_action('admin_footer-' . $ewww_symposium_optimize_page, 'ewww_image_optimizer_debug');
-	}*/
+	}
 	if (!function_exists('is_plugin_active_for_network') || !is_plugin_active_for_network('ewww-image-optimizer/ewww-image-optimizer.php')) { 
 		// add options page to the settings menu
 		$ewww_options_page = add_options_page(
