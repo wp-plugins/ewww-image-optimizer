@@ -1627,6 +1627,22 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 			$nice = '';
 		}
 	}
+	// check that the file exists
+	if (FALSE === file_exists($file)) {
+		// tell the user we couldn't find the file
+		$msg = sprintf(__("Could not find <span class='code'>%s</span>", EWWW_IMAGE_OPTIMIZER_DOMAIN), $file);
+		$ewww_debug = "$ewww_debug file doesn't appear to exist: $file <br>";
+		// send back the above message
+		return array($file, $msg, $converted, $original);
+	}
+	// check that the file is writable
+	if ( FALSE === is_writable($file) ) {
+		// tell the user we can't write to the file
+		$msg = sprintf(__("<span class='code'>%s</span> is not writable", EWWW_IMAGE_OPTIMIZER_DOMAIN), $file);
+		$ewww_debug = "$ewww_debug couldn't write to the file<br>";
+		// send back the above message
+		return array($file, $msg, $converted, $original);
+	}
 	if (function_exists('fileperms'))
 		$file_perms = substr(sprintf('%o', fileperms($file)), -4);
 	$file_owner = 'unknown';
@@ -1640,23 +1656,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 		$file_group = $file_group['name'];
 	}
 	$ewww_debug = "$ewww_debug permissions: $file_perms, owner: $file_owner, group: $file_group <br>";
-	// check that the file exists
-	if (FALSE === file_exists($file)) {
-		// tell the user we couldn't find the file
-		$msg = sprintf(__("Could not find <span class='code'>%s</span>", EWWW_IMAGE_OPTIMIZER_DOMAIN), $file);
-		$ewww_debug = "$ewww_debug file doesn't appear to exist: $file <br>";
-		// send back the above message
-		return array($file, $msg, $converted, $original);
-	}
-
-	// check that the file is writable
-	if ( FALSE === is_writable($file) ) {
-		// tell the user we can't write to the file
-		$msg = sprintf(__("<span class='code'>%s</span> is not writable", EWWW_IMAGE_OPTIMIZER_DOMAIN), $file);
-		$ewww_debug = "$ewww_debug couldn't write to the file<br>";
-		// send back the above message
-		return array($file, $msg, $converted, $original);
-	}
 	$type = ewww_image_optimizer_mimetype($file, 'i');
 	if (!$type) {
 		//otherwise we store an error message since we couldn't get the mime-type

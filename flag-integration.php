@@ -281,7 +281,8 @@ class ewwwflag {
 		// retrieve the list of attachments left to work on
 		$attachments = get_option('ewww_image_optimizer_bulk_flag_attachments');
 		// take the first image off the list
-		array_shift($attachments);
+		if (!empty($attachments))
+			array_shift($attachments);
 		// and send the list back to the db
 		update_option('ewww_image_optimizer_bulk_flag_attachments', $attachments);
 		die();

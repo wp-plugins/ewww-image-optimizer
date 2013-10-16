@@ -404,7 +404,8 @@ class ewwwngg {
 		// get the list of attachments remaining from the db
 		$attachments = get_option('ewww_image_optimizer_bulk_ngg_attachments');
 		// remove the first item
-		array_shift($attachments);
+		if (!empty($attachments))
+			array_shift($attachments);
 		// and store the list back in the db
 		update_option('ewww_image_optimizer_bulk_ngg_attachments', $attachments);
 		die();
