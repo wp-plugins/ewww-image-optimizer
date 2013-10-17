@@ -37,6 +37,8 @@ class EWWWIO_GD_Editor extends WP_Image_Editor_GD {
                 @ chmod( $filename, $perms );
 		ewww_image_optimizer_aux_images_loop($filename, true);
 		$ewww_debug = "$ewww_debug image editor (gd) saved: $filename <br>";
+		$image_size = filesize($filename);
+		$ewww_debug = "$ewww_debug image editor size: $image_size <br>";
 		ewww_image_optimizer_debug_log();
 		$ewww_debug = '';
                 return array(
@@ -81,6 +83,8 @@ class EWWWIO_Imagick_Editor extends WP_Image_Editor_Imagick {
                 @ chmod( $filename, $perms );
 		ewww_image_optimizer_aux_images_loop($filename, true);
 		$ewww_debug = "$ewww_debug image editor (imagick) saved: $filename <br>";
+		$image_size = filesize($filename);
+		$ewww_debug = "$ewww_debug image editor size: $image_size <br>";
 		ewww_image_optimizer_debug_log();
 		$ewww_debug = '';
                 return array(
@@ -125,6 +129,8 @@ if (class_exists('WP_Image_Editor_Gmagick')) {
 			@ chmod( $filename, $perms );
 			ewww_image_optimizer_aux_images_loop($filename, true);
 			$ewww_debug = "$ewww_debug image editor (gmagick) saved : $filename <br>";
+			$image_size = filesize($filename);
+			$ewww_debug = "$ewww_debug image editor size: $image_size <br>";
 			ewww_image_optimizer_debug_log();
 			$ewww_debug = '';
 

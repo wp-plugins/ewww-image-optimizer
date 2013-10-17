@@ -1843,56 +1843,57 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 						$new_size = filesize($tempfile);
 					}
 				} else {
-				// generate temporary file-names:
-				$tempfile = $file . ".tmp"; //non-progressive jpeg
-				$progfile = $file . ".prog"; // progressive jpeg
-				// check to see if we are supposed to strip metadata (badly named)
-				if(ewww_image_optimizer_get_option('ewww_image_optimizer_jpegtran_copy') == TRUE){
-					// don't copy metadata
-					$copy_opt = 'none';
-				} else {
-					// copy all the metadata
-					$copy_opt = 'all';
-				}
-				// run jpegtran - non-progressive
-				exec("$nice " . $tools['JPEGTRAN'] . " -copy $copy_opt -optimize -outfile " . escapeshellarg($tempfile) . " " . escapeshellarg($file));
-				// run jpegtran - progressive
-				exec("$nice " . $tools['JPEGTRAN'] . " -copy $copy_opt -optimize -progressive -outfile " . escapeshellarg($progfile) . " " . escapeshellarg($file));
-				if (is_file($tempfile)) {
-					// check the filesize of the non-progressive JPG
-					$non_size = filesize($tempfile);
-				} else {
-					$non_size = 0;
-				}
-				if (is_file($progfile)) {
-					// check the filesize of the progressive JPG
-					$prog_size = filesize($progfile);
-				} else {
-					$prog_size = 0;
-				}
-				$ewww_debug = "$ewww_debug optimized JPG (non-progresive) size: $non_size<br>";
-				$ewww_debug = "$ewww_debug optimized JPG (progresive) size: $prog_size<br>";
-				if ($non_size === false || $prog_size === false) {
-					$result = 'Unable to write file';
-				} elseif (!$non_size || !$prog_size) {
-					$result = 'Optimization failed';
-				}
-				// if the progressive file is bigger
-				if ($prog_size > $non_size) {
-					// store the size of the non-progessive JPG
-					$new_size = $non_size;
-					if (is_file($progfile)) {
-						// delete the progressive file
-						unlink($progfile);
+					// generate temporary file-names:
+					$tempfile = $file . ".tmp"; //non-progressive jpeg
+					$progfile = $file . ".prog"; // progressive jpeg
+					// check to see if we are supposed to strip metadata (badly named)
+					if(ewww_image_optimizer_get_option('ewww_image_optimizer_jpegtran_copy') == TRUE){
+						// don't copy metadata
+						$copy_opt = 'none';
+					} else {
+						// copy all the metadata
+						$copy_opt = 'all';
 					}
-				// if the progressive file is smaller or the same
-				} else {
-					// store the size of the progressive JPG
-					$new_size = $prog_size;
-					// replace the non-progressive with the progressive file
-					rename($progfile, $tempfile);
+					// run jpegtran - non-progressive
+					exec("$nice " . $tools['JPEGTRAN'] . " -copy $copy_opt -optimize -outfile " . escapeshellarg($tempfile) . " " . escapeshellarg($file));
+					// run jpegtran - progressive
+					exec("$nice " . $tools['JPEGTRAN'] . " -copy $copy_opt -optimize -progressive -outfile " . escapeshellarg($progfile) . " " . escapeshellarg($file));
+					if (is_file($tempfile)) {
+						// check the filesize of the non-progressive JPG
+						$non_size = filesize($tempfile);
+					} else {
+						$non_size = 0;
+					}
+					if (is_file($progfile)) {
+						// check the filesize of the progressive JPG
+						$prog_size = filesize($progfile);
+					} else {
+						$prog_size = 0;
+					}
+					$ewww_debug = "$ewww_debug optimized JPG (non-progresive) size: $non_size<br>";
+					$ewww_debug = "$ewww_debug optimized JPG (progresive) size: $prog_size<br>";
+					if ($non_size === false || $prog_size === false) {
+						$result = 'Unable to write file';
+					} elseif (!$non_size || !$prog_size) {
+						$result = 'Optimization failed';
+					}
+					// if the progressive file is bigger
+					if ($prog_size > $non_size) {
+						// store the size of the non-progessive JPG
+						$new_size = $non_size;
+						if (is_file($progfile)) {
+							// delete the progressive file
+							unlink($progfile);
+						}
+					// if the progressive file is smaller or the same
+					} else {
+						// store the size of the progressive JPG
+						$new_size = $prog_size;
+						// replace the non-progressive with the progressive file
+						rename($progfile, $tempfile);
+					}
 				}
-				}
+				$ewww_debug = "$ewww_debug optimized JPG size: $new_size<br>";
 				// if the best-optimized is smaller than the original JPG, and we didn't create an empty JPG
 				if ($orig_size > $new_size && $new_size != 0) {
 					// replace the original with the optimized file
@@ -2027,99 +2028,100 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 						$jpg_size = filesize($jpgfile);
 					}
 				} else {
-				// retrieve version info for ImageMagick
-				if (ewww_image_optimizer_tool_found('convert', 'i')) {
-					$convert_path = 'convert';
-				} elseif (ewww_image_optimizer_tool_found('/usr/bin/convert', 'i')) {
-					$convert_path = '/usr/bin/convert';
-				} elseif (ewww_image_optimizer_tool_found('/usr/local/bin/convert', 'i')) {
-					$convert_path = '/usr/local/bin/convert';
-				}
-				// convert the PNG to a JPG with all the proper options (try GD first, then 'convert')
-				if (ewww_image_optimizer_gd_support()) {
-					// retrieve the data from the PNG
-					$input = imagecreatefrompng($file);
-					// retrieve the dimensions of the PNG
-					list($width, $height) = getimagesize($file);
-					// create a new image with those dimensions
-					$output = imagecreatetruecolor($width, $height);
-					// if the red color is set
-					//if (!isset($r)) {
-						// allocate the background color
-						$rgb = imagecolorallocate($output, $r, $g, $b);
-						// fill the new image with the background color 
-						imagefilledrectangle($output, 0, 0, $width, $height, $rgb);
-					//}
-					// copy the original image to the new image
-					imagecopy($output, $input, 0, 0, 0, 0, $width, $height);
-					// output the JPG with the quality setting
-					imagejpeg($output, $jpgfile, $gquality);
-				} elseif (!empty($convert_path)) {
-					exec ("$convert_path $background -flatten $cquality " . escapeshellarg($file) . " " . escapeshellarg($jpgfile));
-				}
-				if (is_file($jpgfile)) {
-					// retrieve the filesize of the new JPG
-					$jpg_size = filesize($jpgfile);
-				} else {
-					$jpg_size = 0;
-				}
-				// next we need to optimize that JPG if jpegtran is enabled
-				if (!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_jpegtran') && file_exists($jpgfile)) {
-					// generate temporary file-names:
-					$tempfile = $jpgfile . ".tmp"; //non-progressive jpeg
-					$progfile = $jpgfile . ".prog"; // progressive jpeg
-					// check to see if we are supposed to strip metadata (badly named)
-					if(ewww_image_optimizer_get_option('ewww_image_optimizer_jpegtran_copy') == TRUE){
-						// don't copy metadata
-						$copy_opt = 'none';
-					} else {
-						// copy all the metadata
-						$copy_opt = 'all';
+					// retrieve version info for ImageMagick
+					if (ewww_image_optimizer_tool_found('convert', 'i')) {
+						$convert_path = 'convert';
+					} elseif (ewww_image_optimizer_tool_found('/usr/bin/convert', 'i')) {
+						$convert_path = '/usr/bin/convert';
+					} elseif (ewww_image_optimizer_tool_found('/usr/local/bin/convert', 'i')) {
+						$convert_path = '/usr/local/bin/convert';
 					}
-					// run jpegtran - non-progressive
-					exec("$nice " . $tools['JPEGTRAN'] . " -copy $copy_opt -optimize -outfile " . escapeshellarg($tempfile) . " " . escapeshellarg($jpgfile));
-					// run jpegtran - progressive
-					exec("$nice " . $tools['JPEGTRAN'] . " -copy $copy_opt -optimize -progressive -outfile " . escapeshellarg($progfile) . " " . escapeshellarg($jpgfile));
-					if (is_file($tempfile)) {
-						// check the filesize of the non-progressive JPG
-						$non_size = filesize($tempfile);
-					} else {
-						$non_size = 0;
+					// convert the PNG to a JPG with all the proper options (try GD first, then 'convert')
+					if (ewww_image_optimizer_gd_support()) {
+						// retrieve the data from the PNG
+						$input = imagecreatefrompng($file);
+						// retrieve the dimensions of the PNG
+						list($width, $height) = getimagesize($file);
+						// create a new image with those dimensions
+						$output = imagecreatetruecolor($width, $height);
+						// if the red color is set
+						//if (!isset($r)) {
+							// allocate the background color
+							$rgb = imagecolorallocate($output, $r, $g, $b);
+							// fill the new image with the background color 
+							imagefilledrectangle($output, 0, 0, $width, $height, $rgb);
+						//}
+						// copy the original image to the new image
+						imagecopy($output, $input, 0, 0, 0, 0, $width, $height);
+						// output the JPG with the quality setting
+						imagejpeg($output, $jpgfile, $gquality);
+					} elseif (!empty($convert_path)) {
+						exec ("$convert_path $background -flatten $cquality " . escapeshellarg($file) . " " . escapeshellarg($jpgfile));
 					}
-					if (is_file($progfile)) {
-						// check the filesize of the progressive JPG
-						$prog_size = filesize($progfile);
+					if (is_file($jpgfile)) {
+						// retrieve the filesize of the new JPG
+						$jpg_size = filesize($jpgfile);
 					} else {
-						$prog_size = 0;
+						$jpg_size = 0;
 					}
-					// if the progressive file is bigger
-					if ($prog_size > $non_size) {
-						// store the size of the non-progessive JPG
-						$opt_jpg_size = $non_size;
-						if (is_file($progfile)) {
-							// delete the progressive file
-							unlink($progfile);
+					// next we need to optimize that JPG if jpegtran is enabled
+					if (!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_jpegtran') && file_exists($jpgfile)) {
+						// generate temporary file-names:
+						$tempfile = $jpgfile . ".tmp"; //non-progressive jpeg
+						$progfile = $jpgfile . ".prog"; // progressive jpeg
+						// check to see if we are supposed to strip metadata (badly named)
+						if(ewww_image_optimizer_get_option('ewww_image_optimizer_jpegtran_copy') == TRUE){
+							// don't copy metadata
+							$copy_opt = 'none';
+						} else {
+							// copy all the metadata
+							$copy_opt = 'all';
 						}
-					// if the progressive file is smaller or the same
-					} else {
-						// store the size of the progressive JPG
-						$opt_jpg_size = $prog_size;
-						// replace the non-progressive with the progressive file
-						rename($progfile, $tempfile);
+						// run jpegtran - non-progressive
+						exec("$nice " . $tools['JPEGTRAN'] . " -copy $copy_opt -optimize -outfile " . escapeshellarg($tempfile) . " " . escapeshellarg($jpgfile));
+						// run jpegtran - progressive
+						exec("$nice " . $tools['JPEGTRAN'] . " -copy $copy_opt -optimize -progressive -outfile " . escapeshellarg($progfile) . " " . escapeshellarg($jpgfile));
+						if (is_file($tempfile)) {
+							// check the filesize of the non-progressive JPG
+							$non_size = filesize($tempfile);
+						} else {
+							$non_size = 0;
+						}
+						if (is_file($progfile)) {
+							// check the filesize of the progressive JPG
+							$prog_size = filesize($progfile);
+						} else {
+							$prog_size = 0;
+						}
+						// if the progressive file is bigger
+						if ($prog_size > $non_size) {
+							// store the size of the non-progessive JPG
+							$opt_jpg_size = $non_size;
+							if (is_file($progfile)) {
+								// delete the progressive file
+								unlink($progfile);
+							}
+						// if the progressive file is smaller or the same
+						} else {
+							// store the size of the progressive JPG
+							$opt_jpg_size = $prog_size;
+							// replace the non-progressive with the progressive file
+							rename($progfile, $tempfile);
+						}
+						// if the best-optimized is smaller than the original JPG, and we didn't create an empty JPG
+						if ($jpg_size > $opt_jpg_size && $opt_jpg_size != 0) {
+							// replace the original with the optimized file
+							rename($tempfile, $jpgfile);
+							// store the size of the optimized JPG
+							$jpg_size = $opt_jpg_size;
+						// if the optimization didn't produce a smaller JPG
+						} elseif (is_file($tempfile)) {
+							// delete the optimized file
+							unlink($tempfile);
+						}
 					}
-					// if the best-optimized is smaller than the original JPG, and we didn't create an empty JPG
-					if ($jpg_size > $opt_jpg_size && $opt_jpg_size != 0) {
-						// replace the original with the optimized file
-						rename($tempfile, $jpgfile);
-						// store the size of the optimized JPG
-						$jpg_size = $opt_jpg_size;
-					// if the optimization didn't produce a smaller JPG
-					} elseif (is_file($tempfile)) {
-						// delete the optimized file
-						unlink($tempfile);
-					}
-				}
 				} 
+				$ewww_debug = "$ewww_debug converted JPG size: $jpg_size<br>";
 				// if the new JPG is smaller than the original PNG
 				if ($orig_size > $jpg_size && $jpg_size != 0) {
 					// successful conversion (for now), so we store the increment
@@ -2514,7 +2516,7 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 					list($optimized_file, $results, $resize_conv, $original) = ewww_image_optimizer($resize_path, $gallery_type, $conv, true);
 				} else {
 					$optimized_file = $resize_path;
-					$results = $already_optimized[0]['results'];
+					$results = $already_optimized[0]['results'] . " - Previously Optimized";
 					$resize_conv = false;
 				}
 				// if the resize was converted, store the result and the original filename in the metadata for later recovery
@@ -3093,7 +3095,10 @@ function ewww_image_optimizer_options () {
 			<table class="form-table">
 				<tr><th><label for="ewww_image_optimizer_debug">Debugging</label></th><td><input type="checkbox" id="ewww_image_optimizer_debug" name="ewww_image_optimizer_debug" value="true" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_debug') == TRUE) { ?>checked="true"<?php } ?> /> Use this to provide information for support purposes, or if you feel comfortable digging around in the code to fix a problem you are experiencing.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_auto">Scheduled optimization</label></th><td><input type="checkbox" id="ewww_image_optimizer_auto" name="ewww_image_optimizer_auto" value="true" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_auto') == TRUE) { ?>checked="true"<?php } ?> /> This will enable scheduled optimization of images for your theme, buddypress, and any additional folders you have configured below. Runs hourly: wp_cron only runs when your site is visited, so it may be even longer between optimizations.</td></tr>
-				<tr><th><label for="ewww_image_optimizer_aux_paths">Folders to optimize</label></th><td>One path per line, must be within <?php echo ABSPATH; ?>, but cannot be the uploads/ folder (sub-directories are ok)<br /><textarea id="ewww_image_optimizer_aux_paths" name="ewww_image_optimizer_aux_paths" rows="3" cols="60"><?php if ($aux_paths = $aux_paths = ewww_image_optimizer_get_option('ewww_image_optimizer_aux_paths')) { foreach ($aux_paths as $path) echo "$path\n"; } ?></textarea><p class="description">Provide paths containing images to be optimized using scheduled optimization or 'Optimize More' in the Tools menu. <b>Please submit a <a href="http://wordpress.org/support/plugin/ewww-image-optimizer">support request in the forums</a> to have folders created by a particular plugin auto-included in the future.</b></p></td></tr>
+				<tr><th><label for="ewww_image_optimizer_aux_paths">Folders to optimize</label></th><td>One path per line, must be within <?php echo ABSPATH; ?>, but cannot be the uploads/ folder (sub-directories are ok)<br />
+					<textarea id="ewww_image_optimizer_aux_paths" name="ewww_image_optimizer_aux_paths" rows="3" cols="60"><?php if ($aux_paths = $aux_paths = ewww_image_optimizer_get_option('ewww_image_optimizer_aux_paths')) { foreach ($aux_paths as $path) echo "$path\n"; } ?></textarea>
+					<p class="description">Provide paths containing images to be optimized using scheduled optimization or 'Optimize More' in the Tools menu.<br>
+					<b>Please submit a <a href="http://wordpress.org/support/plugin/ewww-image-optimizer">support request in the forums</a> to have folders created by a particular plugin auto-included in the future.</b></p></td></tr>
 				<?php if (!EWWW_IMAGE_OPTIMIZER_CLOUD) { ?>
 				<tr><th><label for="ewww_image_optimizer_skip_bundle">Use system paths</label></th><td><input type="checkbox" id="ewww_image_optimizer_skip_bundle" name="ewww_image_optimizer_skip_bundle" value="true" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_skip_bundle') == TRUE) { ?>checked="true"<?php } ?> /> If you have already installed the utilities in a system location, such as /usr/local/bin or /usr/bin, use this to force the plugin to use those versions and skip the auto-installers.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_skip_check">Skip utils check</label></th><td><input type="checkbox" id="ewww_image_optimizer_skip_check" name="ewww_image_optimizer_skip_check" value="true" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_skip_check') == TRUE) { ?>checked="true"<?php } ?> /> <b>DEPRECATED</b> - please uncheck this and report any errors in the support forum.</td></tr>

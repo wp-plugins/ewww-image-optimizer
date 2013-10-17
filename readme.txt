@@ -455,6 +455,7 @@ Known good webhosts where things work out of the box.
 * [Hosterdam](http://www.hosterdam.com) (FreeBSD)
 * [OVH](http://www.ovh.co.uk)
 * [Hetzner Online](http://www.hetzner.de)
+* [Namecheap](http://www.namecheap.com)
 
 List of known bad webhosts where the plugin will only work in cloud mode or only some tools are installed locally.
 
