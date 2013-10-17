@@ -13,29 +13,13 @@ function ewww_image_optimizer_aux_images () {
 	} else {
 		$button_text = 'Resume previous optimization';
 	}
-	$theme_images = false;
-	$buddypress_images = false;
-	$symposium_images = false;
 	// find out if the auxiliary image table has anything in it
 	$table = $wpdb->prefix . 'ewwwio_images';
 	$query = "SELECT id FROM $table LIMIT 1";
 	$already_optimized = $wpdb->get_results($query);
 	// find out what kind of images we are optimizing
-	if (get_option('ewww_image_optimizer_aux_type') === 'theme') {
-		$theme_images = true;
-		$h2 = 'Theme';
-	} else if (get_option('ewww_image_optimizer_aux_type') === 'buddypress') {
-		$buddypress_images = true;
-		$h2 = 'BuddyPress';
-	} else if (get_option('ewww_image_optimizer_aux_type') === 'symposium') {
-		$symposium_images = true;
-		$h2 = 'WP Symposium';
-	} else {
-		$all_images = true;
-		$h2 = 'All';
-	} ?>
+	?>
 	<div class="wrap">
-<!--	<div id="icon-themes" class="icon32"><br /></div><h2>Optimize <?php echo $h2; ?> Images</h2>-->
 	<div id="icon-themes" class="icon32"><br /></div><h2>Optimize <i>Almost</i> Everything</h2>
 		<div id="bulk-loading"></div>
 		<div id="bulk-progressbar"></div>
@@ -69,36 +53,8 @@ function ewww_image_optimizer_aux_images () {
 				<button id="empty-table" type="submit" class="button-secondary action">Empty Table</button>
 			</form><br />
 			<form id="show-table" method="post" action="">
-				<?php if (empty($_POST['show'])) { ?>
-					<input id="table-button" type="submit" class="button-secondary action" value="Show Optimized Images Table" />
-				<?php } else { ?>
-					<input type="hidden" name="show" value="0">
-					<input id="hide-table" type="submit" class="button-secondary action" value="Hide Optimized Images Table" />
-				<?php } ?>
+				<input id="table-button" type="submit" class="button-secondary action" value="Show Optimized Images Table" />
 			</form>
-<?php		}
-		if (!empty($_POST['show'])) {
-			$query = "SELECT path,results,gallery FROM $table";
-			$already_optimized = $wpdb->get_results($query, ARRAY_N);
-		        $upload_info = wp_upload_dir();
-			$upload_path = $upload_info['basedir'];
-			echo '<br /><table class="wp-list-table widefat media" cellspacing="0"><thead><tr><th>&nbsp;</th><th>filename</th><th>Image Optimizer</th></tr></thead>';
-			$alternate = true;
-			foreach ($already_optimized as $optimized_image) {
-				$image_name = str_replace(ABSPATH, '', $optimized_image[0]);
-				$image_url = trailingslashit(get_site_url()) . $image_name;
-				$savings = $optimized_image[1];
-				if ($alternate) {
-					echo "<tr class='alternate'><td style='width:80px' class='column-icon'><img width='50' height='50' src='$image_url' /></td><td class='title'>...$image_name</td><td>$savings</td></tr>";
-				} else {
-					echo "<tr><td style='width:80px' class='column-icon'><img width='50' height='50' src='$image_url' /></td><td class='title'>...$image_name</td><td>$savings</td></tr>";
-				}
-				$alternate = !$alternate;
-			}
-			echo '</table>';
-		}
-?>
-		</div>
 			<div class="tablenav" style="display:none">
 			<div class="tablenav-pages">
 			<span class="displaying-num"></span>
@@ -114,6 +70,8 @@ function ewww_image_optimizer_aux_images () {
 			</div>
 			<div id="bulk-table"></div>
 			<span id="pointer" style="display:none">0</span>
+<?php		} ?>
+		</div>
 	</div>
 <?php
 }
@@ -125,27 +83,44 @@ function ewww_image_optimizer_aux_images_table() {
 	$already_optimized = $wpdb->get_results($query, ARRAY_N);
         $upload_info = wp_upload_dir();
 	$upload_path = $upload_info['basedir'];
-	echo '<br /><table class="wp-list-table widefat media" cellspacing="0"><thead><tr><th>&nbsp;</th><th>filename</th><th>Image Optimizer</th></tr></thead>';
+	echo '<br /><table class="wp-list-table widefat media" cellspacing="0"><thead><tr><th>&nbsp;</th><th>Filename</th><th>Image Type<th>Image Optimizer</th></tr></thead>';
 	$alternate = true;
 	foreach ($already_optimized as $optimized_image) {
 		$image_name = str_replace(ABSPATH, '', $optimized_image[0]);
 		$image_url = trailingslashit(get_site_url()) . $image_name;
 		$savings = $optimized_image[1];
-		if ($alternate) {
-			echo "<tr class='alternate'><td style='width:80px' class='column-icon'><img width='50' height='50' src='$image_url' /></td><td class='title'>...$image_name</td><td>$savings</td></tr>";
-		} else {
-			echo "<tr><td style='width:80px' class='column-icon'><img width='50' height='50' src='$image_url' /></td><td class='title'>...$image_name</td><td>$savings</td></tr>";
+		// if the path given is not the absolute path
+		if (file_exists($optimized_image[0])) {
+			// retrieve the mimetype of the attachment
+			$type = ewww_image_optimizer_mimetype($optimized_image[0], 'i');
+			// get a human readable filesize
+			$file_size = size_format(filesize($optimized_image[0]), 2);
+			$file_size = str_replace('B ', 'B', $file_size);
+			if ($alternate) { ?>
+				<tr class='alternate'>
+					<td style='width:80px' class='column-icon'><img width='50' height='50' src='<?php echo $image_url; ?>' /></td>
+					<td class='title'>...<?php echo $image_name; ?></td>
+					<td><?php echo $type; ?></td>
+					<td><?php echo "$savings <br>Image Size: $file_size"; ?></td>
+				</tr>
+<?php			} else { ?>
+				<tr>
+					<td style='width:80px' class='column-icon'><img width='50' height='50' src='<?php echo $image_url; ?>' /></td>
+					<td class='title'>...<?php echo $image_name; ?></td>
+					<td><?php echo $type; ?></td>
+					<td><?php echo "$savings <br>Image Size: $file_size"; ?></td>
+				</tr>
+<?php			}
+			$alternate = !$alternate;
 		}
-		$alternate = !$alternate;
 	}
 	echo '</table>';
-//	echo "<br>" . $_POST['offset'] . "<br>";
 	die();
 }
 
 // scan a folder for images and return them as an array, second parameter (optional) 
 // indicates if we should check the database for already optimized images
-function ewww_image_optimizer_image_scan($dir, $skip_previous = false) {
+function ewww_image_optimizer_image_scan($dir) {
 	global $ewww_debug;
 	global $wpdb;
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_image_scan()</b><br>";
@@ -175,33 +150,14 @@ function ewww_image_optimizer_image_scan($dir, $skip_previous = false) {
  
 // prepares the bulk operation and includes the javascript functions
 function ewww_image_optimizer_aux_images_script($hook) {
+	// make sure we are being called from the proper page
+	if ('appearance_page_ewww-image-optimizer-theme-images' !== $hook && 'media_page_ewww-image-optimizer-buddypress-images' !== $hook && 'media_page_ewww-image-optimizer-symposium-images' !== $hook && 'tools_page_ewww-image-optimizer-aux-images' !== $hook)
+		return;
 	global $ewww_debug;
 	global $wpdb;
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_aux_images_script()</b><br>";
 	// initialize the $attachments variable for auxiliary images
 	$attachments = null;
-	$theme_images = false;
-	$buddypress_images = false;
-	$symposium_images = false;
-	// find out what page we are being called from
-	if ('appearance_page_ewww-image-optimizer-theme-images' === $hook) {
-//		$theme_images = true;
-//		update_option('ewww_image_optimizer_aux_type', 'theme');
-		update_option('ewww_image_optimizer_aux_type', 'all');
-	} else if ('media_page_ewww-image-optimizer-buddypress-images' === $hook) {
-//		$buddypress_images = true;
-//		update_option('ewww_image_optimizer_aux_type', 'buddypress');
-		update_option('ewww_image_optimizer_aux_type', 'all');
-	} else if ('media_page_ewww-image-optimizer-symposium-images' === $hook) {
-//		$symposium_images = true;
-//		update_option('ewww_image_optimizer_aux_type', 'symposium');
-		update_option('ewww_image_optimizer_aux_type', 'all');
-	} else if ('tools_page_ewww-image-optimizer-aux-images' === $hook) {
-	//	$theme_images = true;
-		update_option('ewww_image_optimizer_aux_type', 'all');
-	} else {
-		return;
-	}
         // check to see if we are supposed to empty the auxiliary images table and verify we are authorized to do so
 	if (!empty($_REQUEST['empty']) && wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-aux-images' )) {
 		global $wpdb;
@@ -210,83 +166,6 @@ function ewww_image_optimizer_aux_images_script($hook) {
 		$sql = "TRUNCATE " . $table_name; 
     		$wpdb->query($sql); 
 	}
-	// collect a list of images from the current theme
-	$child_path = get_stylesheet_directory();
-	$parent_path = get_template_directory();
-	$attachments = ewww_image_optimizer_image_scan($child_path, true); 
-	if ($child_path !== $parent_path) {
-		$attachments = array_merge($attachments, ewww_image_optimizer_image_scan($parent_path, true));
-	}
-	// collect a list of images in auxiliary folders provided by user
-	if ($aux_paths = get_site_option('ewww_image_optimizer_aux_paths')) {
-		foreach ($aux_paths as $aux_path) {
-			$attachments = array_merge($attachments, ewww_image_optimizer_image_scan($aux_path));
-		}
-	}
-
-	// collect a list of images for buddypress
-	if (is_plugin_active('buddypress/bp-loader.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('buddypress/bp-loader.php'))) {
-		// get the value of the wordpress upload directory
-	        $upload_dir = wp_upload_dir();
-		// scan the 'avatars' and 'group-avatars' folders for images
-		$attachments = array_merge($attachments, ewww_image_optimizer_image_scan($upload_dir['basedir'] . '/avatars', true), ewww_image_optimizer_image_scan($upload_dir['basedir'] . '/group-avatars', true));
-	}
-	if (is_plugin_active('buddypress-activity-plus/bpfb.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('buddypress-activity-plus/bpfb.php'))) {
-		// get the value of the wordpress upload directory
-	        $upload_dir = wp_upload_dir();
-		// scan the 'avatars' and 'group-avatars' folders for images
-		$attachments = array_merge($attachments, ewww_image_optimizer_image_scan($upload_dir['basedir'] . '/bpfb', true));
-	}
-	if (is_plugin_active('wp-symposium/wp-symposium.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('wp-symposium/wp-symposium.php'))) {
-		$attachments = array_merge($attachments, ewww_image_optimizer_image_scan(get_option('symposium_img_path'), true));
-	}
-	if (is_plugin_active('ml-slider/ml-slider.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('ml-slider/ml-slider.php'))) {
-		$slide_paths = array();
-                $sliders = get_posts(array(
-                        'numberposts' => -1,
-                        'post_type' => 'ml-slider',
-			'post_status' => 'any',
-			'fields' => 'ids'
-                ));
-		foreach ($sliders as $slider) {
-			$slides = get_posts(array(
-                        	'numberposts' => -1,
-				'orderby' => 'menu_order',
-				'order' => 'ASC',
-				'post_type' => 'attachment',
-				'post_status' => 'inherit',
-				'fields' => 'ids',
-				'tax_query' => array(
-						array(
-							'taxonomy' => 'ml-slider',
-							'field' => 'slug',
-							'terms' => $slider
-						)
-					)
-				)
-			);
-			foreach ($slides as $slide) {
-				$backup_sizes = get_post_meta($slide, '_wp_attachment_backup_sizes', true);
-				$type = get_post_meta($slide, 'ml-slider_type', true);
-				$type = $type ? $type : 'image'; // backwards compatibility, fall back to 'image'
-				if ($type === 'image') {
-					foreach ($backup_sizes as $backup_size => $meta) {
-						if (preg_match('/resized-/', $backup_size)) {
-							$path = $meta['path'];
-							$image_md5 = md5_file($path);
-							$query = "SELECT id FROM " . $wpdb->prefix . 'ewwwio_images' . " WHERE path = '$path' AND image_md5 = '$image_md5'";
-							$already_optimized = $wpdb->get_results($query);
-							$mimetype = ewww_image_optimizer_mimetype($path, 'i');
-							if (preg_match('/^image\/(jpeg|png|gif)/', $mimetype) && empty($already_optimized)) {
-								$slide_paths[] = $path;
-							}
-						}
-					}
-				}
-			}
-		}
-		$attachments = array_merge($attachments, $slide_paths);
-	}
         // check to see if we are supposed to reset the bulk operation and verify we are authorized to do so
 	if (!empty($_REQUEST['reset']) && wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-aux-images' )) {
 		// set the 'bulk resume' option to an empty string to reset the bulk operation
@@ -294,16 +173,90 @@ function ewww_image_optimizer_aux_images_script($hook) {
 	}
 	// check the 'bulk resume' option
 	$resume = get_option('ewww_image_optimizer_aux_resume');
-	global $wp_version;
-	$my_version = $wp_version;
-	$my_version = substr($my_version, 0, 3);
-	// store the filenames we retrieved in the 'bulk_attachments' option so we can keep track of our progress in the database
-	update_option('ewww_image_optimizer_aux_attachments', $attachments);
-        // load the auxiliary optimization javascript and dependencies
-	// only re-register jquery on old versions of wordpress
-	if ($my_version < 3) {
-		wp_deregister_script('jquery');
-		wp_register_script('jquery', plugins_url('/jquery-1.9.1.min.js', __FILE__), false, '1.9.1');
+        // check if there is a previous bulk operation to resume
+        if (!empty($resume)) {
+		// retrieve the attachment IDs that have not been finished from the 'bulk attachments' option
+		$attachments = get_option('ewww_image_optimizer_aux_attachments');
+	} else {
+		// collect a list of images from the current theme
+		$child_path = get_stylesheet_directory();
+		$parent_path = get_template_directory();
+		$attachments = ewww_image_optimizer_image_scan($child_path); 
+		if ($child_path !== $parent_path) {
+			$attachments = array_merge($attachments, ewww_image_optimizer_image_scan($parent_path));
+		}
+		// collect a list of images in auxiliary folders provided by user
+		if ($aux_paths = get_site_option('ewww_image_optimizer_aux_paths')) {
+			foreach ($aux_paths as $aux_path) {
+				$attachments = array_merge($attachments, ewww_image_optimizer_image_scan($aux_path));
+			}
+		}
+	
+		// collect a list of images for buddypress
+		if (is_plugin_active('buddypress/bp-loader.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('buddypress/bp-loader.php'))) {
+			// get the value of the wordpress upload directory
+		        $upload_dir = wp_upload_dir();
+			// scan the 'avatars' and 'group-avatars' folders for images
+			$attachments = array_merge($attachments, ewww_image_optimizer_image_scan($upload_dir['basedir'] . '/avatars'), ewww_image_optimizer_image_scan($upload_dir['basedir'] . '/group-avatars'));
+		}
+		if (is_plugin_active('buddypress-activity-plus/bpfb.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('buddypress-activity-plus/bpfb.php'))) {
+			// get the value of the wordpress upload directory
+		        $upload_dir = wp_upload_dir();
+			// scan the 'avatars' and 'group-avatars' folders for images
+			$attachments = array_merge($attachments, ewww_image_optimizer_image_scan($upload_dir['basedir'] . '/bpfb'));
+		}
+		if (is_plugin_active('wp-symposium/wp-symposium.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('wp-symposium/wp-symposium.php'))) {
+			$attachments = array_merge($attachments, ewww_image_optimizer_image_scan(get_option('symposium_img_path')));
+		}
+		if (is_plugin_active('ml-slider/ml-slider.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('ml-slider/ml-slider.php'))) {
+			$slide_paths = array();
+	                $sliders = get_posts(array(
+	                        'numberposts' => -1,
+	                        'post_type' => 'ml-slider',
+				'post_status' => 'any',
+				'fields' => 'ids'
+	                ));
+			foreach ($sliders as $slider) {
+				$slides = get_posts(array(
+	                        	'numberposts' => -1,
+					'orderby' => 'menu_order',
+					'order' => 'ASC',
+					'post_type' => 'attachment',
+					'post_status' => 'inherit',
+					'fields' => 'ids',
+					'tax_query' => array(
+							array(
+								'taxonomy' => 'ml-slider',
+								'field' => 'slug',
+								'terms' => $slider
+							)
+						)
+					)
+				);
+				foreach ($slides as $slide) {
+					$backup_sizes = get_post_meta($slide, '_wp_attachment_backup_sizes', true);
+					$type = get_post_meta($slide, 'ml-slider_type', true);
+					$type = $type ? $type : 'image'; // backwards compatibility, fall back to 'image'
+					if ($type === 'image') {
+						foreach ($backup_sizes as $backup_size => $meta) {
+							if (preg_match('/resized-/', $backup_size)) {
+								$path = $meta['path'];
+								$image_md5 = md5_file($path);
+								$query = "SELECT id FROM " . $wpdb->prefix . 'ewwwio_images' . " WHERE path = '$path' AND image_md5 = '$image_md5'";
+								$already_optimized = $wpdb->get_results($query);
+								$mimetype = ewww_image_optimizer_mimetype($path, 'i');
+								if (preg_match('/^image\/(jpeg|png|gif)/', $mimetype) && empty($already_optimized)) {
+									$slide_paths[] = $path;
+								}
+							}
+						}
+					}
+				}
+			}
+			$attachments = array_merge($attachments, $slide_paths);
+		}
+		// store the filenames we retrieved in the 'bulk_attachments' option so we can keep track of our progress in the database
+		update_option('ewww_image_optimizer_aux_attachments', $attachments);
 	}
 	wp_enqueue_script('ewwwjuiscript', plugins_url('/jquery-ui-1.10.2.custom.min.js', __FILE__), false);
 	wp_enqueue_script('ewwwbulkscript', plugins_url('/eio.js', __FILE__), array('jquery'));
@@ -321,7 +274,6 @@ function ewww_image_optimizer_aux_images_script($hook) {
 	wp_enqueue_style('jquery-ui-progressbar', plugins_url('jquery-ui-1.10.1.custom.css', __FILE__));
 	wp_enqueue_style('colors-css');
 }
-add_action('admin_enqueue_scripts', 'ewww_image_optimizer_aux_images_script');
 
 // called by javascript to initialize some output
 function ewww_image_optimizer_aux_images_initialize($auto = false) {
@@ -358,7 +310,7 @@ function ewww_image_optimizer_aux_images_filename() {
 }
  
 // called by javascript to process each image in the loop
-function ewww_image_optimizer_aux_images_loop($attachment = null, $auto = false, $gallery = null) {
+function ewww_image_optimizer_aux_images_loop($attachment = null, $auto = false) {
 	global $wpdb;
 	global $ewww_debug;
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_aux_images_loop()</b><br>";
@@ -372,7 +324,6 @@ function ewww_image_optimizer_aux_images_loop($attachment = null, $auto = false,
 	set_time_limit (50);
 	// get the path of the current attachment
 	if (empty($attachment)) $attachment = $_POST['attachment'];
-	if (empty($gallery)) $gallery = get_option('ewww_image_optimizer_aux_type');
 	// get the 'aux attachments' with a list of attachments remaining
 	$attachments = get_option('ewww_image_optimizer_aux_attachments');
 	// do the optimization for the current image
@@ -385,7 +336,6 @@ function ewww_image_optimizer_aux_images_loop($attachment = null, $auto = false,
 				'path' => $attachment,
 				'image_md5' => md5_file($attachment),
 				'results' => $results[1],
-				'gallery' => $gallery,
 			));
 	} else {
 		// store info on the current image for future reference
@@ -430,18 +380,11 @@ function ewww_image_optimizer_aux_images_cleanup($auto = false) {
 	update_option('ewww_image_optimizer_aux_attachments', '');
 	if (!$auto) {
 		// and let the user know we are done
-		if (get_option('ewww_image_optimizer_aux_type') === 'theme') {
-			echo '<p><b>Finished</b> - <a href="themes.php">View Themes</a></p>';
-		} elseif (get_option('ewww_image_optimizer_aux_type') === 'buddypress') {
-			echo '<p><b>Finished</b> - <a href="admin.php?page=bp-groups">View Buddypress Groups</a></p>';
-		} elseif (get_option('ewww_image_optimizer_aux_type') === 'symposium') {
-			echo '<p><b>Finished</b> - <a href="admin.php?page=symposium_manage">Manage WP Symposium</a></p>';
-		} elseif (get_option('ewww_image_optimizer_aux_type') === 'all') {
-			echo '<p><b>Finished</b></p>';
-		}
+		echo '<p><b>Finished</b></p>';
 		die();
 	}
 }
+add_action('admin_enqueue_scripts', 'ewww_image_optimizer_aux_images_script');
 add_action('wp_ajax_bulk_aux_images_table', 'ewww_image_optimizer_aux_images_table');
 add_action('wp_ajax_bulk_aux_images_init', 'ewww_image_optimizer_aux_images_initialize');
 add_action('wp_ajax_bulk_aux_images_filename', 'ewww_image_optimizer_aux_images_filename');

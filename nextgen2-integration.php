@@ -51,20 +51,6 @@ class ewwwngg {
 		}
 	}
 
-	/* output a small html form so that the user can optimize thumbs for the $images just added */
-	function ewww_ngg_new_thumbs($gid, $images) {
-		// store the gallery id, seems to help avoid errors
-		$gallery = $gid;
-		// prepare the $images array for POSTing
-		$images = serialize($images); ?>
-                <div id="bulk-forms"><p>The thumbnails for your new images have not been optimized. If you would like this step to be automatic in the future, bug the NextGEN developers to add in a hook.</p>
-                <form id="thumb-optimize" method="post" action="admin.php?page=ewww-ngg-thumb-bulk">
-			<?php wp_nonce_field( 'ewww-image-optimizer-bulk', '_wpnonce'); ?>
-			<input type="hidden" name="attachments" value="<?php echo $images; ?>">
-                        <input type="submit" class="button-secondary action" value="Optimize Thumbs" />
-                </form> 
-<?php	}
-
 	/* optimize the thumbs of the images POSTed from the previous page */
 	function ewww_ngg_thumb_bulk() {
 		if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
@@ -321,14 +307,6 @@ class ewwwngg {
 		}
 		// store the image IDs to process in the db
 		update_option('ewww_image_optimizer_bulk_ngg_attachments', $images);
-		global $wp_version;
-		$my_version = $wp_version;
-		$my_version = substr($my_version, 0, 3);
-		if ($my_version < 3) {
-			// replace the default jquery script with an updated one
-			wp_deregister_script('jquery');
-			wp_register_script('jquery', plugins_url('/jquery-1.9.1.min.js', __FILE__), false, '1.9.1');
-		}
 		// add a custom jquery-ui script with progressbar functions
 		wp_enqueue_script('ewwwjuiscript', plugins_url('/jquery-ui-1.10.2.custom.min.js', __FILE__), false);
 		// add the EWWW IO script
@@ -343,8 +321,6 @@ class ewwwngg {
 		wp_localize_script('ewwwbulkscript', 'ewww_vars', array(
 				'_wpnonce' => wp_create_nonce('ewww-image-optimizer-bulk'),
 				'gallery' => 'nextgen',
-				'attachments' => $images
-			)
 		);
 	}
 
@@ -442,7 +418,6 @@ class ewwwngg {
 }
 // initialize the plugin and the class
 add_action('init', 'ewwwngg');
-//add_action('admin_print_scripts-tools_page_ewww-ngg-bulk', 'ewww_image_optimizer_scripts');
 
 function ewwwngg() {
 	global $ewwwngg;

@@ -102,6 +102,20 @@ function ewww_image_optimizer_init() {
 		define('EWWW_IMAGE_OPTIMIZER_CLOUD', FALSE);
 	}
 
+	load_plugin_textdomain(EWWW_IMAGE_OPTIMIZER_DOMAIN);
+}
+
+// Plugin initialization for admin area
+function ewww_image_optimizer_admin_init() {
+	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_admin_init()</b><br>";
+	// make sure the bundled tools are installed
+	if(!ewww_image_optimizer_get_option('ewww_image_optimizer_skip_bundle')) {
+		ewww_image_optimizer_install_tools ();
+	}
+
+	ewww_image_optimizer_init();
+
 	// Check if this is an unsupported OS (not Linux or Mac OSX or FreeBSD or Windows or SunOS)
 	if(EWWW_IMAGE_OPTIMIZER_CLOUD) {
 		define('EWWW_IMAGE_OPTIMIZER_PNGOUT', false);
@@ -123,14 +137,6 @@ function ewww_image_optimizer_init() {
 		add_action('admin_notices', 'ewww_image_optimizer_notice_utils');
 	} 
 
-	load_plugin_textdomain(EWWW_IMAGE_OPTIMIZER_DOMAIN);
-}
-
-// Plugin initialization for admin area
-function ewww_image_optimizer_admin_init() {
-	global $ewww_debug;
-	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_admin_init()</b><br>";
-	ewww_image_optimizer_init();
 	if (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('ewww-image-optimizer/ewww-image-optimizer.php')) {
 		// network version is simply incremented any time we need to make changes to this section for new defaults
 		if (get_site_option('ewww_image_optimizer_network_version') < 1) {
@@ -311,7 +317,7 @@ function ewww_image_optimizer_auto() {
 				ewww_image_optimizer_debug_log();
 				return;
 			}
-			ewww_image_optimizer_aux_images_loop($attachment, true, 'auto');
+			ewww_image_optimizer_aux_images_loop($attachment, true);
 		}	
 		ewww_image_optimizer_aux_images_cleanup(true);
 		ewww_image_optimizer_debug_log();
@@ -883,11 +889,6 @@ function ewww_image_optimizer_notice_utils() {
 	global $ewww_debug;
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_notice_utils()</b><br>";
 
-	// make sure the bundled tools are installed
-	if(!ewww_image_optimizer_get_option('ewww_image_optimizer_skip_bundle')) {
-		ewww_image_optimizer_install_tools ();
-	}
-
 	// Check if exec is disabled
 	$disabled = ini_get('disable_functions');
 	$ewww_debug = "$ewww_debug disable_functions = $disabled <br>";
@@ -1132,21 +1133,14 @@ $ims_columns = get_column_headers('ims_gallery');
 			$alternate = true;
 			foreach ($attachments as $ID) {
 				$meta = get_metadata('post', $ID);
-	//			$meta = $meta[0];
-			//	$orig_meta = $meta;
 				$meta = unserialize($meta['_wp_attachment_metadata'][0]);
-	//			$image_name = str_replace($upload_path, '', $optimized_image[0]);
-				//$image_name = basename($meta['file']);
 				$image_name = get_the_title($ID);
 				$gallery_name = get_the_title($gid);
-	//			$image_url = $upload_info['baseurl'] . $image_name;
 				$image_url = $meta['sizes']['mini']['url'];
 				$echo_meta = print_r($meta, true);
 				$echo_meta = preg_replace('/\n/', '<br>', $echo_meta);
 				$echo_meta = preg_replace('/ /', '&nbsp;', $echo_meta);
 				$echo_meta = '';
-//				$savings = $meta['ewww_image_optimizer'];
-//				$file_path = get_attached_file($ID);
 				if ($alternate) {
 					echo "<tr class='alternate'><td>$ID</td>";
 					echo "<td style='width:80px' class='column-icon'><img src='$image_url' /></td>";
@@ -1471,7 +1465,6 @@ function ewww_image_optimizer_update_saved_file ($meta, $ID) {
 	global $ewww_debug;
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_update_saved_file()</b><br>";
 	$meta = ewww_image_optimizer_resize_from_meta_data($meta, $ID);
-//	ewww_image_optimizer_debug_log();
 	$ewww_debug = '';
 	return $meta;
 }
@@ -1660,7 +1653,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 	if (!EWWW_IMAGE_OPTIMIZER_CLOUD) {
 		// get the utility paths
 		$tools = ewww_image_optimizer_path_check();
-//		list ($jpegtran_path, $optipng_path, $gifsicle_path, $pngout_path) = ewww_image_optimizer_path_check();
 	}
 	// if the user has disabled the utility checks
 	if (ewww_image_optimizer_get_option('ewww_image_optimizer_skip_check') == TRUE || EWWW_IMAGE_OPTIMIZER_CLOUD) {
@@ -2675,7 +2667,6 @@ function ewww_image_optimizer_columns($defaults) {
 function ewww_image_optimizer_custom_column($column_name, $id) {
 	global $ewww_debug;
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_custom_column()</b><br>";
-//	echo "$column_name - $id <br>";
 	// once we get to the EWWW IO custom column
 	if ($column_name == 'ewww-image-optimizer') {
 		// retrieve the metadata
@@ -2697,13 +2688,13 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 		$upload_dir = wp_upload_dir();
 		// retrieve the wordpress upload folder path
 		$upload_path = trailingslashit( $upload_dir['basedir'] );
-		// if the path given is not the absolute path
-		if (FALSE === file_exists($file_path)) {
-			echo 'Could not retrieve file path.';
-			//print __('Unsupported file type', EWWW_IMAGE_OPTIMIZER_DOMAIN) . $msg;
+		// if the file does not exist
+		if (FALSE === is_file($file_path)) {
+			print __('Could not retrieve file path.', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 			return;
 		}
 		$msg = '';
+		// retrieve the mimetype of the attachment
 		$type = ewww_image_optimizer_mimetype($file_path, 'i');
 		// get a human readable filesize
 		$file_size = size_format(filesize($file_path), 2);
@@ -2834,9 +2825,7 @@ function ewww_image_optimizer_bulk_action_handler() {
 	check_admin_referer( 'bulk-media' ); 
 	// prep the attachment IDs for optimization
 	$ids = implode( ',', array_map( 'intval', $_REQUEST['media'] ) ); 
-	// Can't use wp_nonce_url() as it escapes HTML entities, call the optimizer with the $ids selected
 	wp_redirect(add_query_arg(array('page' => 'ewww-image-optimizer-bulk', '_wpnonce' => wp_create_nonce('ewww-image-optimizer-bulk'), 'goback' => 1, 'ids' => $ids), admin_url('upload.php'))); 
-	//wp_redirect( add_query_arg(array('page' => 'ewww-image-optimizer-bulk', '_wpnonce' => wp_create_nonce( 'ewww-image-optimizer-bulk', 'goback' => 1, 'ids' => $ids)), admin_url( 'upload.php?page=ewww-image-optimizer-bulk&goback=1&ids=' . $ids ) ) ); 
 	exit(); 
 }
 

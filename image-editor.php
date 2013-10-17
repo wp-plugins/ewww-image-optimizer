@@ -35,7 +35,7 @@ class EWWWIO_GD_Editor extends WP_Image_Editor_GD {
                 $stat = stat( dirname( $filename ) );
                 $perms = $stat['mode'] & 0000666; //same permissions as parent folder, strip off the executable bits
                 @ chmod( $filename, $perms );
-		ewww_image_optimizer_aux_images_loop($filename, true, 'image_editor');
+		ewww_image_optimizer_aux_images_loop($filename, true);
 		$ewww_debug = "$ewww_debug image editor (gd) saved: $filename <br>";
 		ewww_image_optimizer_debug_log();
 		$ewww_debug = '';
@@ -79,7 +79,7 @@ class EWWWIO_Imagick_Editor extends WP_Image_Editor_Imagick {
                 $stat = stat( dirname( $filename ) );
                 $perms = $stat['mode'] & 0000666; //same permissions as parent folder, strip off the executable bits
                 @ chmod( $filename, $perms );
-		ewww_image_optimizer_aux_images_loop($filename, true, 'image_editor');
+		ewww_image_optimizer_aux_images_loop($filename, true);
 		$ewww_debug = "$ewww_debug image editor (imagick) saved: $filename <br>";
 		ewww_image_optimizer_debug_log();
 		$ewww_debug = '';
@@ -123,7 +123,7 @@ if (class_exists('WP_Image_Editor_Gmagick')) {
 			$stat = stat( dirname( $filename ) );
 			$perms = $stat['mode'] & 0000666; //same permissions as parent folder, strip off the executable bits
 			@ chmod( $filename, $perms );
-			ewww_image_optimizer_aux_images_loop($filename, true, 'image_editor');
+			ewww_image_optimizer_aux_images_loop($filename, true);
 			$ewww_debug = "$ewww_debug image editor (gmagick) saved : $filename <br>";
 			ewww_image_optimizer_debug_log();
 			$ewww_debug = '';

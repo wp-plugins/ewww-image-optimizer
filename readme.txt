@@ -62,7 +62,8 @@ As of version 1.7.0, site admins can specify any folder within their wordpress f
 1. Activate the plugin through the 'Plugins' menu in WordPress.
 1. Ensure jpegtran, optipng, pngout and gifsicle are installed on your Linux server (basic installation instructions are below if they are not). You will receive a warning when you activate the plugin if they are not present. This message will go away once you have them installed.
 1. The plugin will attempt to install jpegtran, optipng, and gifsicle automatically for you. This requires that the wp-content folder is writable by the user running the web server.
-1. If the automatic install did not work, find the appropriate binaries for your system in the ewww-image-optimizer plugin folder, copy them to wp-content/ewww/ and remove the OS 'tag' (like -linux or -fbsd). No renaming is necessary on Windows, just copy the .exe files to the wp-content/ewww folder. IMPORTANT: Do not symlink or modify the binaries in any way, or they will not pass the security checks.
+1. If the automatic install did not work, find the appropriate binaries for your system in the ewww-image-optimizer plugin folder, copy them to wp-content/ewww/ and remove the OS 'tag' (like -linux or -fbsd). No renaming is necessary on Windows, just copy the .exe files to the wp-content/ewww folder. IMPORTANT: Do not symlink or modify the binaries in any way, or they will not pass the security checks. If you transfer files via FTP, be sure to transfer in binary mode, not ascii or text.
+1. If the binaries don't run locally, you can sign up for the EWWW IO cloud service to run them via a third-party server: http://www.exactlywww.com/cloud/
 1. *Optional* Visit the settings page to enable/disable specific tools and turn on advanced optimization features.
 1. Done!
 
@@ -118,7 +119,7 @@ First, upgrade to the latest version. Since version 1.0.8, each image is given 5
 
 = What are the supported operating systems? =
 
-I've tested it on Windows (with Apache), Linux, Mac OSX, and FreeBSD.
+I've tested it on Windows (with Apache), Linux, Mac OSX, and FreeBSD. The cloud service will run on any OS.
 
 = How are JPGs optimized? =
 
