@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate image optimizers into WordPress.
- * @version 1.6.3
+ * @version 1.6.4
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -9,7 +9,7 @@ Plugin Name: EWWW Image Optimizer
 Plugin URI: http://www.shanebishop.net/ewww-image-optimizer/
 Description: Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
 Author: Shane Bishop
-Version: 1.6.3
+Version: 1.6.4
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
@@ -2044,13 +2044,10 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 						list($width, $height) = getimagesize($file);
 						// create a new image with those dimensions
 						$output = imagecreatetruecolor($width, $height);
-						// if the red color is set
-						//if (!isset($r)) {
-							// allocate the background color
-							$rgb = imagecolorallocate($output, $r, $g, $b);
-							// fill the new image with the background color 
-							imagefilledrectangle($output, 0, 0, $width, $height, $rgb);
-						//}
+						// allocate the background color
+						$rgb = imagecolorallocate($output, $r, $g, $b);
+						// fill the new image with the background color 
+						imagefilledrectangle($output, 0, 0, $width, $height, $rgb);
 						// copy the original image to the new image
 						imagecopy($output, $input, 0, 0, 0, 0, $width, $height);
 						// output the JPG with the quality setting
