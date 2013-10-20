@@ -1,13 +1,13 @@
 === EWWW Image Optimizer ===
 Contributors: nosilver4u
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=QFXCW38HE24NY
-Tags: images, image, attachments, attachment, optimize, nextgen, buddypress, flagallery, flash, gallery, lossless, photos, photo, picture, pictures, seo, compression, image-store, imstore, slider, image editor, gmagick
+Tags: images, image, attachments, attachment, optimize, optimization, nextgen, buddypress, flagallery, flash-gallery, lossless, photos, photo, picture, pictures, seo, compression, image-store, imstore, slider, image editor, gmagick, wp-symposium, meta-slider, metaslider
 Requires at least: 3.0
 Tested up to: 3.6.1
 Stable tag: 1.6.3
 License: GPLv3
 
-Reduce file sizes for images within WordPress including NextGEN, GRAND FlAGallery and BuddyPress. Uses jpegtran, optipng/pngout, and gifsicle.
+Reduce file sizes for images within WordPress including NextGEN, GRAND FlAGallery and more. Uses jpegtran, optipng, pngout, and gifsicle.
 
 == Description ==
 
@@ -161,6 +161,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * added: WP Symposium support via 'Optimize More' in Tools menu
 * added: BuddyPress Activity Plus support via 'Optimize More'
 * fixed: unnecessary check for 'file' field in attachment metadata
+* fixed: network-level settings are not reset on deactivation and reactivation
 * fixed: blog-level settings not displayed when activated at the blog-level on multi-site
 * added: Any plugin that uses wp_image_editor (GD, Imagick, and Gmagick implementations) will be auto-optimized on upload
 * fixed: Optimize More will crash if one of the standard folders does not exist (e.g.: buddypress avatar folders)
