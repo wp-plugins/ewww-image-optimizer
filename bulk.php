@@ -2,7 +2,7 @@
 // presents the bulk optimize form with the number of images, and runs it once they submit the button
 function ewww_image_optimizer_bulk_preview() {
 	global $ewww_debug;
-	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_bulk_preview()</b><br>";
+	$ewww_debug .= "<b>ewww_image_optimizer_bulk_preview()</b><br>";
 	// retrieve the attachment IDs that were pre-loaded in the database
 	$attachments = get_option('ewww_image_optimizer_bulk_attachments');
 	// make sure there are some attachments to optimize
@@ -64,12 +64,12 @@ function ewww_image_optimizer_bulk_script($hook) {
 	// see if we were given attachment IDs to work with via GET/POST
         if (!empty($_REQUEST['ids'])) {
 		$ids = explode(',', $_REQUEST['ids']);
-		$ewww_debug = "$ewww_debug gallery ids: " . print_r($ids, true) . "<br>";
-		$ewww_debug = "$ewww_debug post_type: " . get_post_type($ids[0]) . "<br>";
+		$ewww_debug .= "gallery ids: " . print_r($ids, true) . "<br>";
+		$ewww_debug .= "post_type: " . get_post_type($ids[0]) . "<br>";
 		if ('ims_gallery' == get_post_type($ids[0])) {
 			$attachments = array();
 			foreach ($ids as $gid) {
-				$ewww_debug = "$ewww_debug gallery id: $gid<br>";
+				$ewww_debug .= "gallery id: $gid<br>";
 		                $ims_images = get_posts(array(
 		                        'numberposts' => -1,
 		                        'post_type' => 'ims_image',
@@ -79,7 +79,7 @@ function ewww_image_optimizer_bulk_script($hook) {
 					'fields' => 'ids'
 		                ));
 				$attachments = array_merge($attachments, $ims_images);
-				$ewww_debug = "$ewww_debug attachment ids: " . print_r($attachments, true) . "<br>";
+				$ewww_debug .= "attachment ids: " . print_r($attachments, true) . "<br>";
 			}
 		} else {
 	                // retrieve post IDs correlating to the IDs submitted to make sure they are all valid
