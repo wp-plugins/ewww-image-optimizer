@@ -856,18 +856,28 @@ function ewww_image_optimizer_install_tools () {
 		echo "<div id='ewww-image-optimizer-warning-tool-install' class='error'><p><strong>EWWW Image Optimizer attempted to move your custom-built binaries to " . htmlentities(EWWW_IMAGE_OPTIMIZER_TOOL_PATH) . " but the operation was unsuccessful.</strong> Please adjust permissions or create the folder.</p></div>";
 	}
 }
-		
-// we check for safe mode and exec, then also direct the user where to go if they don't have the tools installed
-function ewww_image_optimizer_notice_utils() {
-	global $ewww_debug;
-	$ewww_debug .= "<b>ewww_image_optimizer_notice_utils()</b><br>";
 
-	// Check if exec is disabled
+// function to check if exec() is disabled
+function ewww_image_optimizer_exec_check() {
+	global $ewww_debug;
+	$ewww_debug .= "<b>ewww_image_optimizer_exec_check()</b><br>";
 	$disabled = ini_get('disable_functions');
 	$ewww_debug .= "disable_functions = $disabled <br>";
 	$suhosin_disabled = ini_get('suhosin.executor.func.blacklist');
 	$ewww_debug .= "suhosin_blacklist = $suhosin_disabled <br>";
 	if(preg_match('/([\s,]+exec|^exec)/', $disabled) || preg_match('/([\s,]+exec|^exec)/', $suhosin_disabled)) {
+		return true;
+	} else {
+		return false;
+	}
+}
+	
+// we check for safe mode and exec, then also direct the user where to go if they don't have the tools installed
+function ewww_image_optimizer_notice_utils() {
+	global $ewww_debug;
+	$ewww_debug .= "<b>ewww_image_optimizer_notice_utils()</b><br>";
+	// Check if exec is disabled
+	if(ewww_image_optimizer_exec_check()) {
 		//display a warning if exec() is disabled, can't run much of anything without it
 		echo "<div id='ewww-image-optimizer-warning-opt-png' class='error'><p><strong>EWWW Image Optimizer requires exec().</strong> Your system administrator has disabled this function.</p></div>";
 		define('EWWW_IMAGE_OPTIMIZER_NOEXEC', true);
@@ -2903,9 +2913,7 @@ function ewww_image_optimizer_options () {
 				} else {
 					echo 'safe mode: <span style="color: green; font-weight: bolder">Off</span>&emsp;&emsp;';
 				}
-				$disabled = ini_get('disable_functions');
-				$ewww_debug .= "disabled functions: $disabled<br />";
-				if (preg_match('/^[^_]*exec/', $disabled)) {
+				if (ewww_image_optimizer_exec_check()) {
 					echo 'exec(): <span style="color: red; font-weight: bolder">DISABLED</span>&emsp;&emsp;';
 				} else {
 					echo 'exec(): <span style="color: green; font-weight: bolder">OK</span>&emsp;&emsp;';
@@ -2952,10 +2960,9 @@ function ewww_image_optimizer_options () {
 			<?php settings_fields('ewww_image_optimizer_options'); 
 		} ?>
 			<h3>Cloud Settings</h3>
-			<p><a href="http://www.exactlywww.com/cloud/">Purchase an API key here</a>. <br />
-			If exec() is disabled for security reasons (and enabling it is not an option), or you would like to offload image optimization to a third-party server, you can purchase an API key for our cloud optimization service. The API key should be entered below, and cloud optimization must be enabled for each image format individually.</p>
+			<p>If exec() is disabled for security reasons (and enabling it is not an option), or you would like to offload image optimization to a third-party server, you may purchase an API key for our cloud optimization service. The API key should be entered below, and cloud optimization must be enabled for each image format individually. <a href="http://www.exactlywww.com/cloud/">Purchase an API key</a>.</p>
 			<table class="form-table">
-				<tr><th><label for="ewww_image_optimizer_cloud_key">Cloud optimization API Key</label></th><td><input type="text" id="ewww_image_optimizer_cloud_key" name="ewww_image_optimizer_cloud_key" value="<?php echo ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_key'); ?>" size="32" /> API Key will be validated when you save your settings. <a href="http://www.exactlywww.com/cloud/">Purchase a key now</a>.</td></tr>
+				<tr><th><label for="ewww_image_optimizer_cloud_key">Cloud optimization API Key</label></th><td><input type="text" id="ewww_image_optimizer_cloud_key" name="ewww_image_optimizer_cloud_key" value="<?php echo ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_key'); ?>" size="32" /> API Key will be validated when you save your settings. <a href="http://www.exactlywww.com/cloud/">Purchase a key</a>.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_cloud_jpg">JPG cloud optimization</label></th><td><input type="checkbox" id="ewww_image_optimizer_cloud_jpg" name="ewww_image_optimizer_cloud_jpg" value="true" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_jpg') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
 				<tr><th><label for="ewww_image_optimizer_cloud_png">PNG cloud optimization</label></th><td><input type="checkbox" id="ewww_image_optimizer_cloud_png" name="ewww_image_optimizer_cloud_png" value="true" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_png') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
 				<tr><th><label for="ewww_image_optimizer_cloud_gif">GIF cloud optimization</label></th><td><input type="checkbox" id="ewww_image_optimizer_cloud_gif" name="ewww_image_optimizer_cloud_gif" value="true" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_gif') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
