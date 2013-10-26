@@ -1283,14 +1283,15 @@ function ewww_image_optimizer_manual() {
 function ewww_image_optimizer_restore_from_meta_data($meta, $id) {
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_restore_from_meta_data()</b><br>";
-	// get the filepath from the metadata
+	// get the filepath
+	list($file_path, $upload_path) = ewww_image_optimizer_attachment_path($meta, $id);
 	$file_path = get_attached_file($id);
 	// don't store absolute paths
-	$store_absolute_path = false;
+//	$store_absolute_path = false;
 	// retrieve the location of the wordpress upload folder
-	$upload_dir = wp_upload_dir();
+//	$upload_dir = wp_upload_dir();
 	// retrieve the path of the upload folder
-	$upload_path = trailingslashit( $upload_dir['basedir'] );
+//	$upload_path = trailingslashit( $upload_dir['basedir'] );
 	if (!empty($meta['converted'])) {
 		if (file_exists($meta['orig_file'])) {
 			// update the filename in the metadata
@@ -1375,7 +1376,8 @@ function ewww_image_optimizer_delete ($id) {
 		// if the full-size didn't have an original image, so $file_path isn't set
 		if(empty($file_path)) {
 			// get the filepath
-			$file_path = get_attached_file($id);
+			list($file_path, $upload_path) = ewww_image_optimizer_attachment_path($meta, $id);
+			//$file_path = get_attached_file($id);
 		}
 		// one way or another, $file_path is now set, and we can get the base folder name
 		$base_dir = dirname($file_path) . '/';
@@ -2264,46 +2266,21 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 	global $ewww_debug;
 	global $wpdb;
 	$ewww_debug .= "<b>ewww_image_optimizer_resize_from_meta_data()</b><br>";
-	// don't do anything else if the attachment has no metadata
-	if (empty($meta)) {
-		$ewww_debug .= "file has no meta<br>";
-		return $meta;
-	}
 	if (FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_saved_file')) {
 		$gallery_type = 1;
 	} else {
 		$gallery_type = 5;
 	}
 	$ewww_debug .= "attachment id: $ID<br>";
-	// get the filepath
-	$file_path = get_attached_file($ID);
-	$ewww_debug .= "WP thinks the file is at: $file_path<br>";
-	// retrieve the location of the wordpress upload folder
-	$upload_dir = wp_upload_dir();
-	// retrieve the path of the upload folder
-	$upload_path = trailingslashit($upload_dir['basedir']);
+	list($file_path, $upload_path) = ewww_image_optimizer_attachment_path($meta, $ID);
 	// if the attachment has been uploaded via the image store plugin
-	if ('ims_image' == get_post_type($ID) && !empty($meta['file'])) {
+	if ('ims_image' == get_post_type($ID)) {
 		$gallery_type = 6;
-		$ims_options = ewww_image_optimizer_get_option('ims_front_options');
-		$ims_path = $ims_options['galleriespath'];
-		if (is_dir($file_path)) {
-			$ewww_debug .= "Image Store Options: $ims_options<br>";
-			$upload_path = $file_path;
-			$file_path = $meta['file'];
-			// generate the absolute path
-			$file_path =  $upload_path . $file_path;
-		} elseif (is_file($meta['file'])) {
-			$file_path = $meta['file'];
-			$upload_path = '';
-		} else {
-			$upload_path = WP_CONTENT_DIR;
-			if (strpos($meta['file'], $ims_path) === false) {
-				$upload_path = trailingslashit(WP_CONTENT_DIR);
-			}
-			$file_path = $upload_path . $meta['file'];
-		}
-			
+	}
+	// don't do anything else if the attachment path can't be retrieved
+	if (!is_file($file_path)) {
+		$ewww_debug .= "could not retrieve path<br>";
+		return $meta;
 	}
 	$ewww_debug .= "retrieved file path: $file_path<br>";
 	// run the image optimizer on the file, and store the results
@@ -2469,6 +2446,49 @@ function ewww_image_optimizer_update_attachment($meta, $ID) {
 	return $meta;
 }
 
+// retrieves path of an attachment via the $id and the $meta
+// returns a $file_path and $upload_path
+function ewww_image_optimizer_attachment_path($meta, $ID) {
+	global $ewww_debug;
+	$ewww_debug .= "<b>ewww_image_optimizer_attachment_path()</b><br>";
+	// retrieve the location of the wordpress upload folder
+	$upload_dir = wp_upload_dir();
+	// retrieve the path of the upload folder
+	$upload_path = trailingslashit($upload_dir['basedir']);
+	// get the filepath
+	$file_path = get_attached_file($ID);
+	$ewww_debug .= "WP thinks the file is at: $file_path<br>";
+	if (is_file($file_path))
+		return array($file_path, $upload_path);
+	if ('ims_image' == get_post_type($ID) && !empty($meta['file'])) {
+		$ims_options = ewww_image_optimizer_get_option('ims_front_options');
+		$ims_path = $ims_options['galleriespath'];
+		if (is_dir($file_path)) {
+			$upload_path = $file_path;
+			$file_path = $meta['file'];
+			// generate the absolute path
+			$file_path =  $upload_path . $file_path;
+		} elseif (is_file($meta['file'])) {
+			$file_path = $meta['file'];
+			$upload_path = '';
+		} else {
+			$upload_path = WP_CONTENT_DIR;
+			if (strpos($meta['file'], $ims_path) === false) {
+				$upload_path = trailingslashit(WP_CONTENT_DIR);
+			}
+			$file_path = $upload_path . $meta['file'];
+		}
+		return array($file_path, $upload_path);
+	}
+	$file_path = $meta['file'];
+	if (is_file($file_path))
+		return array($file_path, $upload_path);
+	$file_path = $upload_path . $file_path;
+	if (is_file($file_path))
+		return array($file_path, $upload_path);
+	return array('', $upload_path);
+}
+
 // searches system paths for the given $binary and passes along the $switch
 function ewww_image_optimizer_find_binary ($binary, $switch) {
 	if (ewww_image_optimizer_tool_found($binary, $switch)) {
@@ -2568,14 +2588,15 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 				wp_update_attachment_metadata($id, $meta);
 			}
 		}
+	list($file_path, $upload_path) = ewww_image_optimizer_attachment_path($meta, $id);
 		// retrieve the filepath
-		$file_path = get_attached_file($id);
+	//	$file_path = get_attached_file($id);
 		// retrieve the wordpress upload folder
-		$upload_dir = wp_upload_dir();
+	//	$upload_dir = wp_upload_dir();
 		// retrieve the wordpress upload folder path
-		$upload_path = trailingslashit( $upload_dir['basedir'] );
+	//	$upload_path = trailingslashit( $upload_dir['basedir'] );
 		// if the file does not exist
-		if (FALSE === is_file($file_path)) {
+		if (empty($file_path)) {
 			print __('Could not retrieve file path.', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 			return;
 		}

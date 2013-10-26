@@ -17,7 +17,7 @@ By default, EWWW Image Optimizer uses lossless optimization techniques, so your 
 
 Images are optimized using the [jpegtran](http://jpegclub.org/jpegtran/), [optipng](http://optipng.sourceforge.net/), [pngout](advsys.net/ken/utils.htm), and [gifsicle](http://www.lcdf.org/gifsicle/) image tools (available for free). For PNG files, either optipng or pngout can be used. If you want the best optimization, install both, set optipng to level 3 (beyond that is just crazy and rarely yields significant gains) and pngout to level 0. Images are converted using the above tools and GD or 'convert' (ImageMagick).
 
-EWWW Image Optimizer calls optimization utilities directly which is well suited to shared hosting situations where these utilities may already be installed. Pre-compiled binaries/executables are provided for optipng, gifsicle, and jpegtran. Pngout can be installed with one-click from the settings page. If none of that works, there is a new cloud option (currently in BETA) that will work for those who cannot run the optimizers on their own server.
+EWWW Image Optimizer calls optimization utilities directly which is well suited to shared hosting situations where these utilities may already be installed. Pre-compiled binaries/executables are provided for optipng, gifsicle, and jpegtran. Pngout can be installed with one-click from the settings page. If none of that works, there is a cloud option that will work for those who cannot run the optimizers on their own server.
 
 **Why use EWWW Image Optimizer?**
 
@@ -30,7 +30,7 @@ EWWW Image Optimizer calls optimization utilities directly which is well suited 
 
 = Theme Images =
 
-In the Appearance menu, it is now possible to optimize all of the images within your current theme (you must have permissions to edit themes). If you are using a child theme, the images for the parent theme will also be optimized. If the theme is updated, you will need to re-optimize, so it is recommended that you contact the theme author if you find significant savings are possible.
+Use the Optimize option in the Appearance to optimize all of the images within your current theme (and the parent theme if you are using a child theme).
 
 = NextGEN Gallery =
 
@@ -169,6 +169,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * fixed: temporary jpgs are checked to be sure they exist to avoid warnings
 * fixed: prevent warnings on bulk optimize due to empty arrays
 * fixed: don't check permissions until after we know file exists
+* fixed: WP get_attached_file() doesn't always work, try other methods to get attachment path
 
 = 1.6.3 =
 * plugin will failover gracefully if one of the cloud optimization servers is offline
