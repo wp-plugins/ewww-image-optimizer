@@ -1819,23 +1819,26 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				$ewww_debug .= "optimized JPG (progresive) size: $prog_size<br>";
 				if ($non_size === false || $prog_size === false) {
 					$result = 'Unable to write file';
+					$new_size = 0;
 				} elseif (!$non_size || !$prog_size) {
 					$result = 'Optimization failed';
-				}
-				// if the progressive file is bigger
-				if ($prog_size > $non_size) {
-					// store the size of the non-progessive JPG
-					$new_size = $non_size;
-					if (is_file($progfile)) {
-						// delete the progressive file
-						unlink($progfile);
-					}
-				// if the progressive file is smaller or the same
+					$new_size = 0;
 				} else {
-					// store the size of the progressive JPG
-					$new_size = $prog_size;
-					// replace the non-progressive with the progressive file
-					rename($progfile, $tempfile);
+					// if the progressive file is bigger
+					if ($prog_size > $non_size) {
+						// store the size of the non-progessive JPG
+						$new_size = $non_size;
+						if (is_file($progfile)) {
+							// delete the progressive file
+							unlink($progfile);
+						}
+					// if the progressive file is smaller or the same
+					} else {
+						// store the size of the progressive JPG
+						$new_size = $prog_size;
+						// replace the non-progressive with the progressive file
+						rename($progfile, $tempfile);
+					}
 				}
 				$ewww_debug .= "optimized JPG size: $new_size<br>";
 				// if the best-optimized is smaller than the original JPG, and we didn't create an empty JPG

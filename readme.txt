@@ -172,6 +172,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * fixed: WP get_attached_file() doesn't always work, try other methods to get attachment path
 * removed: deprecated setting to skip utility verification
 * fixed: init not firing for plugins with front-end functionality
+* fixed: suppress warnings if corrupt jpg crashes jpegtran
 
 = 1.6.3 =
 * plugin will failover gracefully if one of the cloud optimization servers is offline
