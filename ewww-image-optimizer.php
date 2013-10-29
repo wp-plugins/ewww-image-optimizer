@@ -101,7 +101,6 @@ function ewww_image_optimizer_init() {
 	} elseif (!defined('EWWW_IMAGE_OPTIMIZER_CLOUD')) {
 		define('EWWW_IMAGE_OPTIMIZER_CLOUD', FALSE);
 	}
-
 	load_plugin_textdomain(EWWW_IMAGE_OPTIMIZER_DOMAIN);
 }
 
@@ -113,9 +112,7 @@ function ewww_image_optimizer_admin_init() {
 	if(!ewww_image_optimizer_get_option('ewww_image_optimizer_skip_bundle')) {
 		ewww_image_optimizer_install_tools ();
 	}
-
 	ewww_image_optimizer_init();
-
 	// Check if this is an unsupported OS (not Linux or Mac OSX or FreeBSD or Windows or SunOS)
 	if(EWWW_IMAGE_OPTIMIZER_CLOUD) {
 		ewww_image_optimizer_disable_tools();
@@ -284,6 +281,7 @@ function ewww_image_optimizer_disable_tools() {
 	define('EWWW_IMAGE_OPTIMIZER_PNGOUT', false);
 	define('EWWW_IMAGE_OPTIMIZER_GIFSICLE', false);
 }
+
 // lets the user know their network settings have been saved
 function ewww_image_optimizer_network_settings_saved() {
 	global $ewww_debug;
@@ -528,7 +526,7 @@ function ewww_image_optimizer_path_check() {
 	$optipng = false;
 	$gifsicle = false;
 	$pngout = false;
-	// for Windows, everything must be in the wp-content/ewww folder, so that is all we check (unless some bright spark figures out how to put them in their system path on Windows...)
+	// for Windows, everything must be in the wp-content/ewww folder, so that is all we check
 	if ('WINNT' == PHP_OS) {
 		if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran.exe')) {
 			$jpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran.exe';
@@ -897,19 +895,19 @@ function ewww_image_optimizer_notice_utils() {
 	// attempt to retrieve values for utility paths, and store them in the appropriate variables
 	$required = ewww_image_optimizer_path_check();
 	// if the user has disabled the utility checks
-	if(ewww_image_optimizer_get_option('ewww_image_optimizer_skip_check') == TRUE){
+/*	if(ewww_image_optimizer_get_option('ewww_image_optimizer_skip_check') == TRUE){
 		// set a variable for each tool
 		$skip_jpegtran_check = true;
 		$skip_optipng_check = true;
 		$skip_gifsicle_check = true;
 		$skip_pngout_check = true;
-	} else {
+	} else {*/
 		// set the variables false otherwise
 		$skip_jpegtran_check = false;
 		$skip_optipng_check = false;
 		$skip_gifsicle_check = false;
 		$skip_pngout_check = false;
-	}
+//	}
 	// if the user has disabled a variable, we aren't going to bother checking to see if it is there
 	if (ewww_image_optimizer_get_option('ewww_image_optimizer_disable_jpegtran')) {
 		$skip_jpegtran_check = true;
@@ -1286,12 +1284,6 @@ function ewww_image_optimizer_restore_from_meta_data($meta, $id) {
 	// get the filepath
 	list($file_path, $upload_path) = ewww_image_optimizer_attachment_path($meta, $id);
 	$file_path = get_attached_file($id);
-	// don't store absolute paths
-//	$store_absolute_path = false;
-	// retrieve the location of the wordpress upload folder
-//	$upload_dir = wp_upload_dir();
-	// retrieve the path of the upload folder
-//	$upload_path = trailingslashit( $upload_dir['basedir'] );
 	if (!empty($meta['converted'])) {
 		if (file_exists($meta['orig_file'])) {
 			// update the filename in the metadata
@@ -1377,7 +1369,6 @@ function ewww_image_optimizer_delete ($id) {
 		if(empty($file_path)) {
 			// get the filepath
 			list($file_path, $upload_path) = ewww_image_optimizer_attachment_path($meta, $id);
-			//$file_path = get_attached_file($id);
 		}
 		// one way or another, $file_path is now set, and we can get the base folder name
 		$base_dir = dirname($file_path) . '/';
@@ -1601,6 +1592,10 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $n
 function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer()</b><br>";
+	// if the plugin gets here without initializing, we need to run through some things first
+	if (!defined('EWWW_IMAGE_OPTIMIZER_CLOUD')) {
+		ewww_image_optimizer_init();
+	}
 	// initialize the original filename 
 	$original = $file;
 	// check that the file exists
@@ -2589,12 +2584,6 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 			}
 		}
 	list($file_path, $upload_path) = ewww_image_optimizer_attachment_path($meta, $id);
-		// retrieve the filepath
-	//	$file_path = get_attached_file($id);
-		// retrieve the wordpress upload folder
-	//	$upload_dir = wp_upload_dir();
-		// retrieve the wordpress upload folder path
-	//	$upload_path = trailingslashit( $upload_dir['basedir'] );
 		// if the file does not exist
 		if (empty($file_path)) {
 			print __('Could not retrieve file path.', EWWW_IMAGE_OPTIMIZER_DOMAIN);
@@ -3001,7 +2990,7 @@ function ewww_image_optimizer_options () {
 					<b>Please submit a <a href="http://wordpress.org/support/plugin/ewww-image-optimizer">support request in the forums</a> to have folders created by a particular plugin auto-included in the future.</b></p></td></tr>
 				<?php if (!EWWW_IMAGE_OPTIMIZER_CLOUD) { ?>
 				<tr><th><label for="ewww_image_optimizer_skip_bundle">Use system paths</label></th><td><input type="checkbox" id="ewww_image_optimizer_skip_bundle" name="ewww_image_optimizer_skip_bundle" value="true" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_skip_bundle') == TRUE) { ?>checked="true"<?php } ?> /> If you have already installed the utilities in a system location, such as /usr/local/bin or /usr/bin, use this to force the plugin to use those versions and skip the auto-installers.</td></tr>
-				<tr><th><label for="ewww_image_optimizer_skip_check">Skip utils check</label></th><td><input type="checkbox" id="ewww_image_optimizer_skip_check" name="ewww_image_optimizer_skip_check" value="true" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_skip_check') == TRUE) { ?>checked="true"<?php } ?> /> <b>DEPRECATED</b> - please uncheck this and report any errors in the support forum.</td></tr>
+			<!--	<tr><th><label for="ewww_image_optimizer_skip_check">Skip utils check</label></th><td><input type="checkbox" id="ewww_image_optimizer_skip_check" name="ewww_image_optimizer_skip_check" value="true" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_skip_check') == TRUE) { ?>checked="true"<?php } ?> /> <b>DEPRECATED</b> - please uncheck this and report any errors in the support forum.</td></tr>-->
 				<tr><th><label for="ewww_image_optimizer_disable_jpegtran">disable jpegtran</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_jpegtran" name="ewww_image_optimizer_disable_jpegtran" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_disable_jpegtran') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
 				<tr><th><label for="ewww_image_optimizer_disable_optipng">disable optipng</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_optipng" name="ewww_image_optimizer_disable_optipng" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_disable_optipng') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
 				<tr><th><label for="ewww_image_optimizer_disable_pngout">disable pngout</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_pngout" name="ewww_image_optimizer_disable_pngout" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_disable_pngout') == TRUE) { ?>checked="true"<?php } ?> /></td><tr>
