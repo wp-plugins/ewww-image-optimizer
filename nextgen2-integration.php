@@ -321,6 +321,7 @@ class ewwwngg {
 		wp_localize_script('ewwwbulkscript', 'ewww_vars', array(
 				'_wpnonce' => wp_create_nonce('ewww-image-optimizer-bulk'),
 				'gallery' => 'nextgen',
+			)
 		);
 	}
 
