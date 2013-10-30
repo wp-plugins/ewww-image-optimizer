@@ -46,12 +46,12 @@ function ewww_image_optimizer_aux_images () {
 			<form id="bulk-start" method="post" action="">
 				<input type="submit" class="button-secondary action" value="<?php echo $button_text; ?>" />
 			</form>
-			<?php if ($upload_import) { ?>
+			<?php //if ($upload_import) { ?>
 			<p>You should import Media Library images into the table (to prevent duplicate optimization).</p>
 			<form id="import-start" method="post" action="">
 				<input type="submit" class="button-secondary action" value="Import Images" />
 			</form>
-<?php			}
+<?php		//	}
 		}
 		// if the 'bulk resume' option was not empty, offer to reset it so the user can start back from the beginning
 		if (!empty($resume)) {
@@ -178,9 +178,9 @@ function ewww_image_optimizer_aux_images_import() {
 			$ewww_debug .= "processing resizes<br>";
 			// meta sizes don't contain a path, so we calculate one
 			if ($gallery_type === 6) {
-				$base_dir = dirname($file_path) . '/_resized/';
+				$base_dir = dirname($attachment) . '/_resized/';
 			} else {
-				$base_dir = dirname($file_path) . '/';
+				$base_dir = dirname($attachment) . '/';
 			}
 			foreach($meta['sizes'] as $size => $data) {
 				$already_optimized = '';

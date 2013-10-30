@@ -39,15 +39,15 @@ jQuery(document).ready(function($) {
 //			$('#bulk-progressbar').progressbar({ max: attachments.length });
 //			$('#bulk-counter').html('Optimized 0/' + attachments.length);
 //			processImage();
+		        var import_data = {
+		                action: import_action,
+				_wpnonce: ewww_vars._wpnonce,
+		        };
+		        $.post(ajaxurl, import_data, function(response) {
+		                $('#bulk-status').html(response);
+		        	$('#bulk-loading').html('');
+		        });
 	        });
-	        var import_data = {
-	                action: import_action,
-			_wpnonce: ewww_vars._wpnonce,
-	        };
-	        $.post(ajaxurl, import_data, function(response) {
-	                $('#bulk-status').html(response);
-	        });
-	        $('#bulk-loading').html('');
 		return false;
 	});	
 	$('#show-table').submit(function() {
