@@ -160,21 +160,21 @@ class ewwwngg {
 	                switch($type) {
         	                case 'image/jpeg':
 					// if jpegtran is missing, tell the user
-                	                if(EWWW_IMAGE_OPTIMIZER_JPEGTRAN == false) {
+                	                if(!EWWW_IMAGE_OPTIMIZER_JPEGTRAN && !EWWW_IMAGE_OPTIMIZER_CLOUD) {
                         	                $valid = false;
 	     	                                $msg = '<br>' . __('<em>jpegtran</em> is missing');
 	                                }
 					break;
 				case 'image/png':
 					// if the PNG tools are missing, tell the user
-					if(EWWW_IMAGE_OPTIMIZER_PNGOUT == false && EWWW_IMAGE_OPTIMIZER_OPTIPNG == false) {
+					if(!EWWW_IMAGE_OPTIMIZER_PNGOUT && !EWWW_IMAGE_OPTIMIZER_OPTIPNG && !EWWW_IMAGE_OPTIMIZER_CLOUD) {
 						$valid = false;
 						$msg = '<br>' . __('<em>optipng/pngout</em> is missing');
 					}
 					break;
 				case 'image/gif':
 					// if gifsicle is missing, tell the user
-					if(EWWW_IMAGE_OPTIMIZER_GIFSICLE == false) {
+					if(!EWWW_IMAGE_OPTIMIZER_GIFSICLE && !EWWW_IMAGE_OPTIMIZER_CLOUD) {
 						$valid = false;
 						$msg = '<br>' . __('<em>gifsicle</em> is missing');
 					}
@@ -404,7 +404,8 @@ class ewwwngg {
 		// get the list of attachments remaining from the db
 		$attachments = get_option('ewww_image_optimizer_bulk_ngg_attachments');
 		// remove the first item
-		array_shift($attachments);
+		if (!empty($attachments))
+			array_shift($attachments);
 		// and store the list back in the db
 		update_option('ewww_image_optimizer_bulk_ngg_attachments', $attachments);
 		die();
