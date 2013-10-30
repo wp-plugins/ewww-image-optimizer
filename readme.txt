@@ -3,7 +3,7 @@ Contributors: nosilver4u
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=QFXCW38HE24NY
 Tags: images, image, attachments, attachment, optimize, optimization, nextgen, buddypress, flagallery, flash-gallery, lossless, photos, photo, picture, pictures, seo, compression, image-store, imstore, slider, image editor, gmagick, wp-symposium, meta-slider, metaslider
 Requires at least: 3.0
-Tested up to: 3.6.1
+Tested up to: 3.7.1
 Stable tag: 1.7.0
 License: GPLv3
 
