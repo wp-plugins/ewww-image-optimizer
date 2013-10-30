@@ -13,6 +13,19 @@ function ewww_image_optimizer_aux_images () {
 	} else {
 		$button_text = 'Resume previous optimization';
 	}
+	$paths = ewww_image_optimizer_get_option('ewww_image_optimizer_aux_paths');
+	foreach ($paths as $path) {
+		// retrieve the location of the wordpress upload folder
+		$upload_dir = wp_upload_dir();
+		// retrieve the path of the upload folder
+		$upload_path = str_replace($upload_dir['basedir'], '', $path);
+		$upload_path_t = str_replace(trailingslashit($upload_dir['basedir']), '', $path);
+		if (empty($upload_path) || empty($upload_path_t)) {
+			$upload_import = true;
+		} else {
+			$upload_import = false;
+		}
+	}
 	// find out if the auxiliary image table has anything in it
 	$table = $wpdb->prefix . 'ewwwio_images';
 	$query = "SELECT id FROM $table LIMIT 1";
@@ -33,7 +46,13 @@ function ewww_image_optimizer_aux_images () {
 			<form id="bulk-start" method="post" action="">
 				<input type="submit" class="button-secondary action" value="<?php echo $button_text; ?>" />
 			</form>
-<?php		}
+			<?php if ($upload_import) { ?>
+			<p>You should import Media Library images into the table (to prevent duplicate optimization).</p>
+			<form id="import-start" method="post" action="">
+				<input type="submit" class="button-secondary action" value="Import Images" />
+			</form>
+<?php			}
+		}
 		// if the 'bulk resume' option was not empty, offer to reset it so the user can start back from the beginning
 		if (!empty($resume)) {
 ?>
@@ -76,7 +95,141 @@ function ewww_image_optimizer_aux_images () {
 <?php
 }
 
+/*function ewww_image_optimizer_aux_images_import() {
+	echo "bleh";
+	die();
+}*/
+// lets the user know something is happening via javascript
+function ewww_image_optimizer_aux_images_loading() {
+	global $ewww_debug;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_aux_images_loading()</b><br>";
+	// generate the WP spinner image for display
+	$loading_image = plugins_url('/wpspin.gif', __FILE__);
+	// let the user know that we are beginning
+	echo "<p>Importing&nbsp;<img src='$loading_image' alt='loading'/></p>";
+	die();
+}
+
+function ewww_image_optimizer_aux_images_import() {
+	// verify that an authorized user has started the optimizer
+	if (!wp_verify_nonce($_REQUEST['_wpnonce'], 'ewww-image-optimizer-aux-images')) {
+		wp_die(__('Cheatin&#8217; eh?'));
+	} 
+	global $wpdb;
+	global $ewww_debug;
+        // load up all the image attachments we can find
+        $attachments = get_posts( array(
+		'numberposts' => -1,
+		'post_type' => array('attachment', 'ims_image'),
+		'post_status' => 'any',
+		'post_mime_type' => 'image',
+		'fields' => 'ids'
+	));
+	if (empty($attachments)) {
+		echo "Nothing to import";
+		die;
+	}
+	$ewww_debug .= "importing " . count($attachments) . " attachments<br>";
+	foreach ($attachments as $id) {
+		// allow 50 seconds for each import
+		set_time_limit (50);
+		$already_optimized = '';
+		$gallery_type = 0;
+		$meta = wp_get_attachment_metadata($id);
+		list($attachment, $upload_path) = ewww_image_optimizer_attachment_path($meta, $id);
+		if (empty($attachment)) continue;
+		if ('ims_image' == get_post_type($id)) {
+			$gallery_type = 6;
+		}
+		if (!empty($meta['ewww_image_optimizer']) ) {
+			$results = $meta['ewww_image_optimizer'];
+		} else {
+			$results = '';
+		}
+		$query = "SELECT id,image_md5 FROM " . $wpdb->prefix . "ewwwio_images WHERE path = '$attachment'";
+		$already_optimized = $wpdb->get_row($query, ARRAY_A);
+		$image_md5 = md5_file($attachment);
+		$ewww_debug .= "current attachment: $attachment<br>";
+		$ewww_debug .= "current md5: $image_md5<br>";
+		if (!empty($already_optimized))
+			$ewww_debug .= "stored md5:  " . $already_optimized['image_md5'] . "<br>";
+		if (empty($already_optimized)) {
+			$ewww_debug .= "creating record<br>";
+			// store info on the current image for future reference
+			$wpdb->insert( $wpdb->prefix . "ewwwio_images", array(
+					'path' => $attachment,
+					'image_md5' => $image_md5,
+					'results' => $results,
+				));
+		} elseif ($image_md5 != $already_optimized['image_md5']) {
+			$ewww_debug .= "updating record<br>";
+			// store info on the current image for future reference
+			$wpdb->update( $wpdb->prefix . "ewwwio_images",
+				array(
+					'image_md5' => $image_md5,
+					'results' => $results,
+				),
+				array(
+					'id' => $already_optimized->id
+				));
+		}
+		// resized versions, so we can continue
+		if (isset($meta['sizes']) ) {
+			$ewww_debug .= "processing resizes<br>";
+			// meta sizes don't contain a path, so we calculate one
+			if ($gallery_type === 6) {
+				$base_dir = dirname($file_path) . '/_resized/';
+			} else {
+				$base_dir = dirname($file_path) . '/';
+			}
+			foreach($meta['sizes'] as $size => $data) {
+				$already_optimized = '';
+				$resize_path = $base_dir . $data['file'];
+				$ewww_debug .= "current resize: $resize_path<br>";
+				if (!empty($meta['ewww_image_optimizer']) ) {
+					$results = $data['ewww_image_optimizer'];
+				} else {
+					$results = '';
+				}
+				$query = "SELECT id,image_md5 FROM " . $wpdb->prefix . "ewwwio_images WHERE path = '$resize_path'";
+				$already_optimized = $wpdb->get_row($query, ARRAY_A);
+				$image_md5 = md5_file($resize_path);
+				$ewww_debug .= "current md5: $image_md5<br>";
+				if (!empty($already_optimized))
+					$ewww_debug .= "stored md5:  " . $already_optimized['image_md5'] . "<br>";
+				if (empty($already_optimized)) {
+					$ewww_debug .= "creating record<br>";
+					// store info on the current image for future reference
+					$wpdb->insert( $wpdb->prefix . "ewwwio_images", array(
+							'path' => $resize_path,
+							'image_md5' => $image_md5,
+							'results' => $results,
+						));
+				} elseif ($image_md5 != $already_optimized['image_md5']) {
+					$ewww_debug .= "updating record<br>";
+					// store info on the current image for future reference
+					$wpdb->update( $wpdb->prefix . "ewwwio_images",
+						array(
+							'image_md5' => $image_md5,
+							'results' => $results,
+						),
+						array(
+							'id' => $already_optimized->id
+						));
+				}
+			}
+		}
+		ewww_image_optimizer_debug_log();
+	}
+	echo "<b>Finished importing</b>";
+	die();
+}
+
 function ewww_image_optimizer_aux_images_table() {
+	// verify that an authorized user has started the optimizer
+	if (!wp_verify_nonce($_REQUEST['_wpnonce'], 'ewww-image-optimizer-aux-images')) {
+		wp_die(__('Cheatin&#8217; eh?'));
+	} 
 	global $wpdb;
 	$offset = 50 * $_POST['offset'];
 	$query = "SELECT path,results,gallery FROM " . $wpdb->prefix . "ewwwio_images ORDER BY id DESC LIMIT $offset,50";
@@ -155,6 +308,8 @@ function ewww_image_optimizer_aux_images_script($hook) {
 		return;
 	global $ewww_debug;
 	global $wpdb;
+	// allow 150 seconds for import
+	set_time_limit (150);
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_aux_images_script()</b><br>";
 	// initialize the $attachments variable for auxiliary images
 	$attachments = null;
@@ -386,6 +541,8 @@ function ewww_image_optimizer_aux_images_cleanup($auto = false) {
 }
 add_action('admin_enqueue_scripts', 'ewww_image_optimizer_aux_images_script');
 add_action('wp_ajax_bulk_aux_images_table', 'ewww_image_optimizer_aux_images_table');
+add_action('wp_ajax_bulk_aux_images_import', 'ewww_image_optimizer_aux_images_import');
+add_action('wp_ajax_bulk_aux_images_loading', 'ewww_image_optimizer_aux_images_loading');
 add_action('wp_ajax_bulk_aux_images_init', 'ewww_image_optimizer_aux_images_initialize');
 add_action('wp_ajax_bulk_aux_images_filename', 'ewww_image_optimizer_aux_images_filename');
 add_action('wp_ajax_bulk_aux_images_loop', 'ewww_image_optimizer_aux_images_loop');

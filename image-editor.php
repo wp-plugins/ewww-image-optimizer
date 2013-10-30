@@ -40,7 +40,6 @@ class EWWWIO_GD_Editor extends WP_Image_Editor_GD {
 		$image_size = filesize($filename);
 		$ewww_debug = "$ewww_debug image editor size: $image_size <br>";
 		ewww_image_optimizer_debug_log();
-		$ewww_debug = '';
                 return array(
                         'path' => $filename,
                         'file' => wp_basename( apply_filters( 'image_make_intermediate_size', $filename ) ),

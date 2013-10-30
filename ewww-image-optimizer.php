@@ -231,6 +231,7 @@ function ewww_image_optimizer_admin_init() {
 		$ewww_debug .= "un-scheduling auto-optimization<br>";
 		wp_clear_scheduled_hook('ewww_image_optimizer_auto');
 		if (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('ewww-image-optimizer/ewww-image-optimizer.php')) {
+			// TODO: use wp_get_sites() in wp 3.7
 			global $wpdb;
 			$query = "SELECT blog_id FROM {$wpdb->blogs} WHERE site_id = '{$wpdb->siteid}' ";
 			$blogs = $wpdb->get_results($query, ARRAY_A);
@@ -1140,6 +1141,7 @@ function ewww_image_optimizer_debug_log() {
 		$timestamp = date('y-m-d h:i:s.u') . "  ";
 		$ewww_debug_log = preg_replace('/<br>/', "\n", $ewww_debug);
 		file_put_contents(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'debug.log', $timestamp . $ewww_debug_log, FILE_APPEND);
+		$ewww_debug = '';
 	}
 }
 
@@ -1195,7 +1197,8 @@ function ewww_image_optimizer_aux_paths_sanitize ($input) {
 		// retrieve the path of the upload folder
 		$upload_path = str_replace($upload_dir['basedir'], '', $path);
 		$upload_path_t = str_replace(trailingslashit($upload_dir['basedir']), '', $path);
-		if (is_dir($path) && strpos($path, trailingslashit(ABSPATH)) === 0 && !empty($upload_path) && !empty($upload_path_t)) {
+		if (is_dir($path) && strpos($path, trailingslashit(ABSPATH)) === 0) {
+//		if (is_dir($path) && strpos($path, trailingslashit(ABSPATH)) === 0 && !empty($upload_path) && !empty($upload_path_t)) {
 			$path_array[] = $path;
 		}
 	}
@@ -2988,7 +2991,7 @@ function ewww_image_optimizer_options () {
 				<tr><th><label for="ewww_image_optimizer_debug">Debugging</label></th><td><input type="checkbox" id="ewww_image_optimizer_debug" name="ewww_image_optimizer_debug" value="true" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_debug') == TRUE) { ?>checked="true"<?php } ?> /> Use this to provide information for support purposes, or if you feel comfortable digging around in the code to fix a problem you are experiencing.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_auto">Scheduled optimization</label></th><td><input type="checkbox" id="ewww_image_optimizer_auto" name="ewww_image_optimizer_auto" value="true" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_auto') == TRUE) { ?>checked="true"<?php } ?> /> This will enable scheduled optimization of images for your theme, buddypress, and any additional folders you have configured below. Runs hourly: wp_cron only runs when your site is visited, so it may be even longer between optimizations.</td></tr>
 				<tr><th><label for="ewww_image_optimizer_aux_paths">Folders to optimize</label></th><td>One path per line, must be within <?php echo ABSPATH; ?>, but cannot be the uploads/ folder (sub-directories are ok)<br />
-					<textarea id="ewww_image_optimizer_aux_paths" name="ewww_image_optimizer_aux_paths" rows="3" cols="60"><?php if ($aux_paths = $aux_paths = ewww_image_optimizer_get_option('ewww_image_optimizer_aux_paths')) { foreach ($aux_paths as $path) echo "$path\n"; } ?></textarea>
+					<textarea id="ewww_image_optimizer_aux_paths" name="ewww_image_optimizer_aux_paths" rows="3" cols="60"><?php if ($aux_paths = ewww_image_optimizer_get_option('ewww_image_optimizer_aux_paths')) { foreach ($aux_paths as $path) echo "$path\n"; } ?></textarea>
 					<p class="description">Provide paths containing images to be optimized using scheduled optimization or 'Optimize More' in the Tools menu.<br>
 					<b>Please submit a <a href="http://wordpress.org/support/plugin/ewww-image-optimizer">support request in the forums</a> to have folders created by a particular plugin auto-included in the future.</b></p></td></tr>
 				<?php if (!EWWW_IMAGE_OPTIMIZER_CLOUD) { ?>
