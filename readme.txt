@@ -27,6 +27,7 @@ EWWW Image Optimizer calls optimization utilities directly which is well suited 
 1. **Super fast.** The plugin can run on your own server, so you don’t have to wait for a third party service to receive, process, and return your images. You can optimize hundreds of images in just a few minutes. PNG files take the longest, but you can adjust the settings for your situation.
 1. **Better PNG optimization.** You can use pngout and optipng in conjunction.
 1. **Root access not needed** Pre-compiled binaries are made available to install directly within the Wordpress folder, and cloud optimization is provided for those who cannot run the binaries locally.
+1. **Optimize almost anything** Using the Optimize More tool, and the wp_image_editor class extension, nearly any image in Wordpress can be optimized.
 
 = Theme Images =
 
@@ -71,7 +72,7 @@ EWWW IO Settings explained:
 [youtube http://youtu.be/uEU4DbDm3r0]
 
 Using EWWW IO:
-[youtube http://youtu.be/uDkZ4Vwciq0]
+[youtube http://youtu.be/6NKBfmE00vM]
 
 = Installing pngout =
 
@@ -159,7 +160,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * these are possible future bugfixes and/or feature requests, if you see a feature you like here, go vote for it in the support forum
 * SunOS (Solaris/OpenIndiana) support
 * Bulk restoration of converted images
-* FlaGallery optimize on upload has been broken since they switched to plupload. This will be fixed in a future release, as the developer has already committed to re-implementing the necessary hooks.
+* FlaGallery optimize on upload does not work with plupload (only the browser-based method works properly). This will be fixed in a future release, as the developer has already committed to implementing the necessary hooks.
 
 = 1.7.0 =
 * added: ability to optimize specified folders within your wordpress install
@@ -179,6 +180,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * removed: deprecated setting to skip utility verification
 * fixed: init not firing for plugins with front-end functionality
 * fixed: suppress warnings if corrupt jpg crashes jpegtran
+* added: screencasts on plugin Installation page
 
 = 1.6.3 =
 * plugin will failover gracefully if one of the cloud optimization servers is offline
@@ -404,6 +406,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * First release (forked from CW Image Optimizer)
 
 == Upgrade Notice ==
+
+= 1.7.0 =
+* More third-party plugins supported via custom paths, and the Optimize More tool (which can also run via cron now). Also check out new screencasts on the Installation page.
 
 = 1.6.2 =
 * All Cloud users should upgrade immediately to avoid extended page load times

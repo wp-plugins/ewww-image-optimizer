@@ -72,7 +72,7 @@ function ewww_image_optimizer_aux_images () {
 				<button id="empty-table" type="submit" class="button-secondary action">Empty Table</button>
 			</form><br />
 			<form id="show-table" method="post" action="">
-				<input id="table-button" type="submit" class="button-secondary action" value="Show Optimized Images Table" />
+				<input id="table-button" type="submit" class="button-secondary action" value="Show Optimized Images" />
 			</form>
 			<div class="tablenav" style="display:none">
 			<div class="tablenav-pages">
