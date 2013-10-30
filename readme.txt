@@ -67,6 +67,12 @@ As of version 1.7.0, site admins can specify any folder within their wordpress f
 1. *Optional* Visit the settings page to enable/disable specific tools and turn on advanced optimization features.
 1. Done!
 
+EWWW IO Settings explained:
+[youtube http://youtu.be/uEU4DbDm3r0]
+
+Using EWWW IO:
+[youtube http://youtu.be/uDkZ4Vwciq0]
+
 = Installing pngout =
 
 Pngout is new in version 1.1.0 and is not enabled by default because it is resource intensive. Optipng is the preferred PNG optimizer if you have resource (CPU) constraints. Pngout is also not open-source for those who care about such things, but the command-line version is free.

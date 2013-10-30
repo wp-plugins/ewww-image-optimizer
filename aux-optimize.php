@@ -46,12 +46,12 @@ function ewww_image_optimizer_aux_images () {
 			<form id="bulk-start" method="post" action="">
 				<input type="submit" class="button-secondary action" value="<?php echo $button_text; ?>" />
 			</form>
-			<?php //if ($upload_import) { ?>
+			<?php if ($upload_import) { ?>
 			<p>You should import Media Library images into the table (to prevent duplicate optimization).</p>
 			<form id="import-start" method="post" action="">
 				<input type="submit" class="button-secondary action" value="Import Images" />
 			</form>
-<?php		//	}
+<?php			}
 		}
 		// if the 'bulk resume' option was not empty, offer to reset it so the user can start back from the beginning
 		if (!empty($resume)) {

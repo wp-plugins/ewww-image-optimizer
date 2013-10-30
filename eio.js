@@ -29,6 +29,7 @@ jQuery(document).ready(function($) {
 		var cleanup_action = 'bulk_cleanup';
 	}
 	$('#import-start').submit(function() {
+		document.getElementById('bulk-forms').style.display='none';
 	        var loading_data = {
 	                action: loading_action,
 //			_wpnonce: ewww_vars._wpnonce,
