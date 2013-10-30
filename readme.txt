@@ -65,10 +65,10 @@ As of version 1.7.0, site admins can specify any folder within their wordpress f
 1. Done!
 
 EWWW IO Installation and Configuration:
-[youtube http://youtu.be/uEU4DbDm3r0]
+[youtube http://www.youtube.com/watch?v=uEU4DbDm3r0]
 
 Using EWWW IO:
-[youtube http://youtu.be/6NKBfmE00vM]
+[youtube http://www.youtube.com/watch?v=6NKBfmE00vM]
 
 = Installing pngout =
 
