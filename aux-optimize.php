@@ -77,7 +77,7 @@ function ewww_image_optimizer_aux_images () {
 				<button id="empty-table" type="submit" class="button-secondary action">Empty Table</button>
 			</form><br />
 			<form id="show-table" method="post" action="">
-				<input id="table-button" type="submit" class="button-secondary action" value="Show Optimized Images" />
+				<input id="table-button" type="submit" class="button-secondary action" value="<?php _e('Show Optimized Images', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?>" />
 			</form>
 			<div class="tablenav" style="display:none">
 			<div class="tablenav-pages">
