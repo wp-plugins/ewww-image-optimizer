@@ -166,6 +166,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * Bulk restoration of converted images
 * FlaGallery optimize on upload does not work with plupload (only the browser-based method works properly). This will be fixed in a future release, as the developer has already committed to implementing the necessary hooks.
 
+= 1.7.2 =
+* fixed: Import button not shown on Optimize More in some cases
+
 = 1.7.1 =
 * fixed: syntax error causing white screen of death for Nextgen v2
 

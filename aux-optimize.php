@@ -14,17 +14,22 @@ function ewww_image_optimizer_aux_images () {
 		$button_text = 'Resume previous optimization';
 	}
 	$paths = ewww_image_optimizer_get_option('ewww_image_optimizer_aux_paths');
-	foreach ($paths as $path) {
-		// retrieve the location of the wordpress upload folder
-		$upload_dir = wp_upload_dir();
-		// retrieve the path of the upload folder
-		$upload_path = str_replace($upload_dir['basedir'], '', $path);
-		$upload_path_t = str_replace(trailingslashit($upload_dir['basedir']), '', $path);
-		if (empty($upload_path) || empty($upload_path_t)) {
-			$upload_import = true;
-		} else {
-			$upload_import = false;
+	if (!empty($paths)) {
+		foreach ($paths as $path) {
+			// retrieve the location of the wordpress upload folder
+			$upload_dir = wp_upload_dir();
+			// retrieve the path of the upload folder
+			$upload_path = str_replace($upload_dir['basedir'], '', $path);
+			$upload_path_t = str_replace(trailingslashit($upload_dir['basedir']), '', $path);
+			if (empty($upload_path) || empty($upload_path_t)) {
+				$upload_import = true;
+				break;
+			} else {
+				$upload_import = false;
+			}
 		}
+	} else {
+		$upload_import = false;
 	}
 	// find out if the auxiliary image table has anything in it
 	$table = $wpdb->prefix . 'ewwwio_images';
