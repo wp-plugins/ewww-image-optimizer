@@ -168,6 +168,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 = 1.7.2 =
 * fixed: Import button not shown on Optimize More in some cases
+* fixed: Bulk Optimize for Nextgen was broken
 
 = 1.7.1 =
 * fixed: syntax error causing white screen of death for Nextgen v2

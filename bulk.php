@@ -7,19 +7,19 @@ function ewww_image_optimizer_bulk_preview() {
 	$attachments = get_option('ewww_image_optimizer_bulk_attachments');
 	// make sure there are some attachments to optimize
 	if (count($attachments) < 1) {
-		echo '<p>You don’t appear to have uploaded any images yet.</p>';
+		echo '<p>' . __('You do not appear to have uploaded any images yet.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</p>';
 		return;
 	}
 ?>
 	<div class="wrap"> 
-	<div id="icon-upload" class="icon32"><br /></div><h2>Bulk EWWW Image Optimize </h2>
+	<div id="icon-upload" class="icon32"><br /></div><h2><?php _e('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></h2>
 <?php 
 	// Retrieve the value of the 'bulk resume' option and set the button text for the form to use
 	$resume = get_option('ewww_image_optimizer_bulk_resume');
 	if (empty($resume)) {
-		$button_text = 'Start optimizing';
+		$button_text = __('Start optimizing', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 	} else {
-		$button_text = 'Resume previous bulk operation';
+		$button_text = __('Resume previous bulk operation', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 	}
 	// create the html for the bulk optimize form and status divs
 ?>
@@ -27,8 +27,8 @@ function ewww_image_optimizer_bulk_preview() {
 		<div id="bulk-progressbar"></div>
 		<div id="bulk-counter"></div>
 		<div id="bulk-status"></div>
-		<div id="bulk-forms"><p>This tool can optimize large batches (or all) of images from your media library.</p>
-		<p>We have <?php echo count($attachments); ?> images to optimize.</p>
+		<div id="bulk-forms"><p><?php _e('This tool can optimize large batches of images from your media library.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
+		<p><?php printf(__('We have %d images to optimize.', EWWW_IMAGE_OPTIMIZER_DOMAIN), count($attachments)); ?></p>
 		<form id="bulk-start" method="post" action="">
 			<input type="submit" class="button-secondary action" value="<?php echo $button_text; ?>" />
 		</form>
@@ -36,11 +36,11 @@ function ewww_image_optimizer_bulk_preview() {
 		// if the 'bulk resume' option was not empty, offer to reset it so the user can start back from the beginning
 		if (!empty($resume)): 
 ?>
-			<p>If you would like to start over again, press the <b>Reset Status</b> button to reset the bulk operation status.</p>
+			<p><?php _e('If you would like to start over again, press the Reset Status button to reset the bulk operation status.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
 			<form method="post" action="">
 				<?php wp_nonce_field( 'ewww-image-optimizer-bulk', '_wpnonce'); ?>
 				<input type="hidden" name="reset" value="1">
-				<button id="bulk-reset" type="submit" class="button-secondary action">Reset Status</button>
+				<button id="bulk-reset" type="submit" class="button-secondary action"><?php _e('Reset Status', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></button>
 			</form>
 <?php		endif;
 	echo '</div></div>';
@@ -149,7 +149,7 @@ function ewww_image_optimizer_bulk_initialize() {
 	// generate the WP spinner image for display
 	$loading_image = plugins_url('/wpspin.gif', __FILE__);
 	// let the user know that we are beginning
-	echo "<p>Optimizing&nbsp;<img src='$loading_image' alt='loading'/></p>";
+	echo "<p>" . __('Optimizing', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "&nbsp;<img src='$loading_image' alt='loading'/></p>";
 	die();
 }
 
@@ -166,7 +166,7 @@ function ewww_image_optimizer_bulk_filename() {
 	$loading_image = plugins_url('/wpspin.gif', __FILE__);
 	if(!empty($meta['file']))
 		// let the user know the file we are currently optimizing
-		echo "<p>Optimizing <b>" . $meta['file'] . "</b>&nbsp;<img src='$loading_image' alt='loading'/></p>";
+		echo "<p>" . __('Optimizing', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <b>" . $meta['file'] . "</b>&nbsp;<img src='$loading_image' alt='loading'/></p>";
 	die();
 }
  
@@ -190,13 +190,13 @@ function ewww_image_optimizer_bulk_loop() {
 	$meta = ewww_image_optimizer_resize_from_meta_data (wp_get_attachment_metadata( $attachment, true ), $attachment);
 	if(!empty($meta['file'])) {
 		// output the filename (and path relative to 'uploads' folder)
-		printf( "<p>Optimized image: <strong>%s</strong><br>", esc_html($meta['file']) );
+		printf( "<p>" . __('Optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", esc_html($meta['file']) );
 	} else {
-		printf("<p>Skipped image, ID = <strong>%s</strong><br>", $attachment );
+		printf("<p>" . __('Skipped image, ID:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", $attachment );
 	}
 	if(!empty($meta['ewww_image_optimizer']))
 		// tell the user what the results were for the original image
-		printf("Full size – %s<br>", $meta['ewww_image_optimizer']);
+		printf(__('Full size – %s', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "<br>", $meta['ewww_image_optimizer']);
 	// check to see if there are resized version of the image
 	if (isset($meta['sizes']) && is_array($meta['sizes'])) {
 		// cycle through each resize
@@ -208,7 +208,7 @@ function ewww_image_optimizer_bulk_loop() {
 	// calculate how much time has elapsed since we started
 	$elapsed = microtime(true) - $started;
 	// output how much time has elapsed since we started
-	echo "Elapsed: " . round($elapsed, 3) . " seconds</p>";
+	printf(__('Elapsed: %.3f seconds', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</p>", $elapsed);
 	// update the metadata for the current attachment
 	wp_update_attachment_metadata( $attachment, $meta );
 	// remove the first element fromt the $attachments array
@@ -230,7 +230,7 @@ function ewww_image_optimizer_bulk_cleanup() {
 	update_option('ewww_image_optimizer_bulk_resume', '');
 	update_option('ewww_image_optimizer_bulk_attachments', '');
 	// and let the user know we are done
-	echo '<p><b>Finished</b> - <a href="upload.php">Return to Media Library</a></p>';
+	echo '<p><b>' . __('Finished', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</b> - <a href="upload.php">' . __('Return to Media Library', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</a></p>';
 	die();
 }
 add_action('admin_enqueue_scripts', 'ewww_image_optimizer_bulk_script');

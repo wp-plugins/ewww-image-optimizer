@@ -9,9 +9,9 @@ function ewww_image_optimizer_aux_images () {
 	// Retrieve the value of the 'aux resume' option and set the button text for the form to use
 	$resume = get_option('ewww_image_optimizer_aux_resume');
 	if (empty($resume)) {
-		$button_text = 'Start optimizing';
+		$button_text = __('Start optimizing', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 	} else {
-		$button_text = 'Resume previous optimization';
+		$button_text = __('Resume previous optimization', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 	}
 	$paths = ewww_image_optimizer_get_option('ewww_image_optimizer_aux_paths');
 	if (!empty($paths)) {
@@ -38,43 +38,43 @@ function ewww_image_optimizer_aux_images () {
 	// find out what kind of images we are optimizing
 	?>
 	<div class="wrap">
-	<div id="icon-themes" class="icon32"><br /></div><h2>Optimize <i>Almost</i> Everything</h2>
+	<div id="icon-themes" class="icon32"><br /></div><h2><?php _e('Optimize <i>Almost</i> Everything', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></h2>
 		<div id="bulk-loading"></div>
 		<div id="bulk-progressbar"></div>
 		<div id="bulk-counter"></div>
 		<div id="bulk-status"></div>
-		<div id="bulk-forms"><p>This tool will optimize large batches of images from your wordpress install. This does not include the Media Library or galleries where we have full integration. This tool is for images in your theme, BuddyPress, WP Symposium, and other folders that you have specified on the settings page.</p>
+		<div id="bulk-forms"><p><?php _e('This tool will optimize large batches of images from your wordpress install. This does not include the Media Library or galleries where we have full integration. This tool is for images in your theme, BuddyPress, WP Symposium, and other folders that you have specified on the settings page.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
 		<?php if (empty($attachments)) { ?>
-			<p>There are no images to optimize</p>
+			<p><?php _e('There are no images to optimize.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
 		<?php } else { ?>
-			<p>We have <?php echo count($attachments); ?> images to optimize.</p>
+			<p><?php printf(__('We have %d images to optimize.', EWWW_IMAGE_OPTIMIZER_DOMAIN), count($attachments)); ?></p>
 			<form id="bulk-start" method="post" action="">
 				<input type="submit" class="button-secondary action" value="<?php echo $button_text; ?>" />
 			</form>
 			<?php if ($upload_import) { ?>
-			<p>You should import Media Library images into the table (to prevent duplicate optimization).</p>
-			<form id="import-start" method="post" action="">
-				<input type="submit" class="button-secondary action" value="Import Images" />
-			</form>
+				<p><?php _e('You should import Media Library images into the table to prevent duplicate optimization.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
+				<form id="import-start" method="post" action="">
+					<input type="submit" class="button-secondary action" value="<?php _e('Import Images', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?>" />
+				</form>
 <?php			}
 		}
 		// if the 'bulk resume' option was not empty, offer to reset it so the user can start back from the beginning
 		if (!empty($resume)) {
 ?>
-			<p>If you would like to start over again, press the <b>Reset Status</b> button to reset the bulk operation status.</p>
+			<p><?php _e('If you would like to start over again, press the Reset Status button to reset the bulk operation status.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
 			<form method="post" action="">
 				<?php wp_nonce_field( 'ewww-image-optimizer-aux-images', '_wpnonce'); ?>
 				<input type="hidden" name="reset" value="1">
-				<button id="bulk-reset" type="submit" class="button-secondary action">Reset Status</button>
+				<button id="bulk-reset" type="submit" class="button-secondary action"><?php _e('Reset Status', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></button>
 			</form>
 <?php		} 
 		if (!empty($already_optimized)) {
 ?>
-			<p>The plugin keeps track of already optimized images to prevent re-optimization. If you would like to re-optimize images, or flush the table for some reason, press the <b>Empty Table</b> button to reset the bulk operation status.</p>
+			<p><?php _e('The plugin keeps track of already optimized images to prevent re-optimization. If you would like to re-optimize images, or flush the table for some reason, press the Empty Table button to reset the bulk operation status.'); ?></p>
 			<form method="post" action="">
 				<?php wp_nonce_field( 'ewww-image-optimizer-aux-images', '_wpnonce'); ?>
 				<input type="hidden" name="empty" value="1">
-				<button id="empty-table" type="submit" class="button-secondary action">Empty Table</button>
+				<button id="empty-table" type="submit" class="button-secondary action"><?php _e('Empty Table', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></button>
 			</form><br />
 			<form id="show-table" method="post" action="">
 				<input id="table-button" type="submit" class="button-secondary action" value="<?php _e('Show Optimized Images', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?>" />
@@ -85,7 +85,7 @@ function ewww_image_optimizer_aux_images () {
 			<span id="paginator" class="pagination-links">
 				<a id="first-images" class="first-page" style="display:none">&laquo;</a>
 				<a id="prev-images" class="prev-page" style="display:none">&lsaquo;</a>
-				page <span class="current-page"></span> of 
+				<?php _e('page', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?> <span class="current-page"></span> <?php _e('of', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?> 
 				<span class="total-pages"></span>
 				<a id="next-images" class="next-page" style="display:none">&rsaquo;</a>
 				<a id="last-images" class="last-page" style="display:none">&raquo;</a>
@@ -100,10 +100,6 @@ function ewww_image_optimizer_aux_images () {
 <?php
 }
 
-/*function ewww_image_optimizer_aux_images_import() {
-	echo "bleh";
-	die();
-}*/
 // lets the user know something is happening via javascript
 function ewww_image_optimizer_aux_images_loading() {
 	global $ewww_debug;
@@ -111,7 +107,7 @@ function ewww_image_optimizer_aux_images_loading() {
 	// generate the WP spinner image for display
 	$loading_image = plugins_url('/wpspin.gif', __FILE__);
 	// let the user know that we are beginning
-	echo "<p>Importing&nbsp;<img src='$loading_image' alt='loading'/></p>";
+	echo "<p>" . __('Importing', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "&nbsp;<img src='$loading_image' alt='loading'/></p>";
 	die();
 }
 
@@ -131,7 +127,7 @@ function ewww_image_optimizer_aux_images_import() {
 		'fields' => 'ids'
 	));
 	if (empty($attachments)) {
-		echo "Nothing to import";
+		_e('Nothing to import', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 		die;
 	}
 	$ewww_debug .= "importing " . count($attachments) . " attachments<br>";
@@ -226,7 +222,7 @@ function ewww_image_optimizer_aux_images_import() {
 		}
 		ewww_image_optimizer_debug_log();
 	}
-	echo "<b>Finished importing</b>";
+	echo "<b>" . __('Finished importing', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</b>";
 	die();
 }
 
@@ -241,7 +237,7 @@ function ewww_image_optimizer_aux_images_table() {
 	$already_optimized = $wpdb->get_results($query, ARRAY_N);
         $upload_info = wp_upload_dir();
 	$upload_path = $upload_info['basedir'];
-	echo '<br /><table class="wp-list-table widefat media" cellspacing="0"><thead><tr><th>&nbsp;</th><th>Filename</th><th>Image Type<th>Image Optimizer</th></tr></thead>';
+	echo '<br /><table class="wp-list-table widefat media" cellspacing="0"><thead><tr><th>&nbsp;</th><th>' . __('Filename', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</th><th>' . __('Image Type', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</th><th>' . __('Image Optimizer', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</th></tr></thead>';
 	$alternate = true;
 	foreach ($already_optimized as $optimized_image) {
 		$image_name = str_replace(ABSPATH, '', $optimized_image[0]);
@@ -254,22 +250,13 @@ function ewww_image_optimizer_aux_images_table() {
 			// get a human readable filesize
 			$file_size = size_format(filesize($optimized_image[0]), 2);
 			$file_size = str_replace('B ', 'B', $file_size);
-			if ($alternate) { ?>
-				<tr class='alternate'>
-					<td style='width:80px' class='column-icon'><img width='50' height='50' src='<?php echo $image_url; ?>' /></td>
-					<td class='title'>...<?php echo $image_name; ?></td>
-					<td><?php echo $type; ?></td>
-					<td><?php echo "$savings <br>Image Size: $file_size"; ?></td>
-				</tr>
-<?php			} else { ?>
-				<tr>
-					<td style='width:80px' class='column-icon'><img width='50' height='50' src='<?php echo $image_url; ?>' /></td>
-					<td class='title'>...<?php echo $image_name; ?></td>
-					<td><?php echo $type; ?></td>
-					<td><?php echo "$savings <br>Image Size: $file_size"; ?></td>
-				</tr>
-<?php			}
-			$alternate = !$alternate;
+?>			<tr <?php if($alternate) echo "class='alternate'"; ?>>
+				<td style='width:80px' class='column-icon'><img width='50' height='50' src='<?php echo $image_url; ?>' /></td>
+				<td class='title'>...<?php echo $image_name; ?></td>
+				<td><?php echo $type; ?></td>
+				<td><?php echo "$savings <br>" . __('Image Size:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " $file_size"; ?></td>
+			</tr>
+<?php			$alternate = !$alternate;
 		}
 	}
 	echo '</table>';
@@ -286,7 +273,6 @@ function ewww_image_optimizer_image_scan($dir) {
 	if (!is_dir($dir))
 		return $images;
 	$iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir), RecursiveIteratorIterator::CHILD_FIRST);
-	$start = microtime(true);
 	foreach ($iterator as $path) {
 		if ($path->isDir()) {
 			continue;
@@ -301,8 +287,6 @@ function ewww_image_optimizer_image_scan($dir) {
 			}
 		}
 	}
-	$end = microtime(true) - $start;
-	$ewww_debug = "$ewww_debug query time (seconds): $end <br>";
 	return $images;
 }
  
@@ -445,11 +429,11 @@ function ewww_image_optimizer_aux_images_initialize($auto = false) {
 	} 
 	// update the 'aux resume' option to show that an operation is in progress
 	update_option('ewww_image_optimizer_aux_resume', 'true');
-	// generate the WP spinner image for display
-	$loading_image = plugins_url('/wpspin.gif', __FILE__);
 	// let the user know that we are beginning
 	if (!$auto) {
-		echo "<p>Optimizing&nbsp;<img src='$loading_image' alt='loading'/></p>";
+		// generate the WP spinner image for display
+		$loading_image = plugins_url('/wpspin.gif', __FILE__);
+		echo "<p>" . __('Optimizing', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "&nbsp;<img src='$loading_image' alt='loading'/></p>";
 		die();
 	}
 }
@@ -460,12 +444,12 @@ function ewww_image_optimizer_aux_images_filename() {
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_aux_images_filename()</b><br>";
 	// verify that an authorized user has started the optimizer
 	if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-aux-images' ) || !current_user_can( 'edit_themes' ) ) {
-		wp_die( __( 'Cheatin&#8217; eh?' ) );
+		wp_die(__('Cheatin&#8217; eh?'));
 	}
 	// generate the WP spinner image for display
 	$loading_image = plugins_url('/wpspin.gif', __FILE__);
 	// let the user know that we are beginning
-	echo "<p>Optimizing <b>" . $_POST['attachment'] . "</b>&nbsp;<img src='$loading_image' alt='loading'/></p>";
+	echo "<p>" . __('Optimizing', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <b>" . $_POST['attachment'] . "</b>&nbsp;<img src='$loading_image' alt='loading'/></p>";
 	die();
 }
  
@@ -476,7 +460,7 @@ function ewww_image_optimizer_aux_images_loop($attachment = null, $auto = false)
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_aux_images_loop()</b><br>";
 	// verify that an authorized user has started the optimizer
 	if (!$auto && (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-aux-images' ) || !current_user_can( 'edit_themes' ))) {
-		wp_die( __( 'Cheatin&#8217; eh?' ) );
+		wp_die(__('Cheatin&#8217; eh?'));
 	} 
 	// retrieve the time when the optimizer starts
 	$started = microtime(true);
@@ -515,13 +499,13 @@ function ewww_image_optimizer_aux_images_loop($attachment = null, $auto = false)
 	update_option('ewww_image_optimizer_aux_attachments', $attachments);
 	if (!$auto) {
 		// output the path
-		printf( "<p>Optimized image: <strong>%s</strong><br>", esc_html($attachment) );
+		printf( "<p>" . __('Optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", esc_html($attachment) );
 		// tell the user what the results were for the original image
 		printf( "%s<br>", $results[1] );
 		// calculate how much time has elapsed since we started
 		$elapsed = microtime(true) - $started;
 		// output how much time has elapsed since we started
-		echo "Elapsed: " . round($elapsed, 3) . " seconds</p>";
+		printf(__('Elapsed: %.3f seconds', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</p>", $elapsed);
 		if (get_site_option('ewww_image_optimizer_debug')) echo '<div style="background-color:#ffff99;">' . $ewww_debug . '</div>';
 		die();
 	}
@@ -540,7 +524,7 @@ function ewww_image_optimizer_aux_images_cleanup($auto = false) {
 	update_option('ewww_image_optimizer_aux_attachments', '');
 	if (!$auto) {
 		// and let the user know we are done
-		echo '<p><b>Finished</b></p>';
+		echo '<p><b>' . __('Finished', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</b></p>';
 		die();
 	}
 }

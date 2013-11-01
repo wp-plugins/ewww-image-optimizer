@@ -980,7 +980,6 @@ function ewww_image_optimizer_notice_utils() {
 	}
 }
 
-// TODO: internationalize plugin - this marks the furthest spot this has been implemented
 // removes the network settings when the plugin is deactivated
 function ewww_image_optimizer_network_deactivate($network_wide) {
 	global $wpdb;
@@ -1023,12 +1022,12 @@ function ewww_image_optimizer_admin_menu() {
 	add_action('admin_footer-' . $ewww_aux_optimize_page, 'ewww_image_optimizer_debug');
 	// if buddypress is active, add the BuddyPress Optimizer to the menu
 	if (is_plugin_active('buddypress/bp-loader.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('buddypress/bp-loader.php'))) {
-		$ewww_buddypress_optimize_page = add_media_page('Optimize BuddyPress Images', 'BuddyPress Optimize', 'edit_themes', 'ewww-image-optimizer-buddypress-images', 'ewww_image_optimizer_aux_images');
+		$ewww_buddypress_optimize_page = add_media_page(__('Optimize BuddyPress Images', EWWW_IMAGE_OPTIMIZER_DOMAIN), __('BuddyPress Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), 'edit_themes', 'ewww-image-optimizer-buddypress-images', 'ewww_image_optimizer_aux_images');
 		add_action('admin_footer-' . $ewww_buddypress_optimize_page, 'ewww_image_optimizer_debug');
 	}
 	// if WP Symposium is active, add the Symposium Optimizer to the menu
 	if (is_plugin_active('wp-symposium/wp-symposium.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('wp-symposium/wp-symposium.php'))) {
-		$ewww_symposium_optimize_page = add_media_page('Optimize WP Symposium Images', 'WP Symposium Optimize', 'edit_themes', 'ewww-image-optimizer-symposium-images', 'ewww_image_optimizer_aux_images');
+		$ewww_symposium_optimize_page = add_media_page(__('Optimize WP Symposium Images', EWWW_IMAGE_OPTIMIZER_DOMAIN), __('WP Symposium Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), 'edit_themes', 'ewww-image-optimizer-symposium-images', 'ewww_image_optimizer_aux_images');
 		add_action('admin_footer-' . $ewww_symposium_optimize_page, 'ewww_image_optimizer_debug');
 	}
 	if (!function_exists('is_plugin_active_for_network') || !is_plugin_active_for_network('ewww-image-optimizer/ewww-image-optimizer.php')) { 
@@ -1044,27 +1043,27 @@ function ewww_image_optimizer_admin_menu() {
 	}
 	if(is_plugin_active('image-store/ImStore.php') || is_plugin_active_for_network('image-store/ImStore.php')) {
 		$ims_menu ='edit.php?post_type=ims_gallery';
-		$ewww_ims_page = add_submenu_page($ims_menu, 'Image Store Optimize', 'Optimize', 'ims_change_settings', 'ewww-ims-optimize', 'ewww_image_optimizer_ims');
+		$ewww_ims_page = add_submenu_page($ims_menu, __('Image Store Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), __('Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), 'ims_change_settings', 'ewww-ims-optimize', 'ewww_image_optimizer_ims');
 		add_action('admin_footer-' . $ewww_ims_page, 'ewww_image_optimizer_debug');
 	}
 }
 
-
+// TODO: internationalize plugin - this marks the furthest spot this has been implemented
 // list IMS images and optimization status
 function ewww_image_optimizer_ims() {
-$ims_columns = get_column_headers('ims_gallery');
-		echo "<h3>Image Store Optimization</h3>";
-		if (empty($_REQUEST['gid'])) {
-	                $galleries = get_posts( array(
-	                        'numberposts' => -1,
-	                        'post_type' => 'ims_gallery',
-				'post_status' => 'any',
-				'fields' => 'ids'
-	                ));
-			sort($galleries, SORT_NUMERIC);
-			$gallery_string = implode(',', $galleries);
-			echo "<p>Choose a gallery or <a href='upload.php?page=ewww-image-optimizer-bulk&ids=$gallery_string'>optimize all galleries</a></p>";
-			echo '<table class="wp-list-table widefat media" cellspacing="0"><thead><tr><th>Gallery ID</th><th>Gallery Name</th><th>Images</th><th>Image Optimizer</th></tr></thead>';
+	$ims_columns = get_column_headers('ims_gallery');
+	echo "<h3>Image Store Optimization</h3>";
+	if (empty($_REQUEST['gid'])) {
+		$galleries = get_posts( array(
+	                'numberposts' => -1,
+	                'post_type' => 'ims_gallery',
+			'post_status' => 'any',
+			'fields' => 'ids'
+	        ));
+		sort($galleries, SORT_NUMERIC);
+		$gallery_string = implode(',', $galleries);
+		echo "<p>Choose a gallery or <a href='upload.php?page=ewww-image-optimizer-bulk&ids=$gallery_string'>optimize all galleries</a></p>";
+		echo '<table class="wp-list-table widefat media" cellspacing="0"><thead><tr><th>Gallery ID</th><th>Gallery Name</th><th>Images</th><th>Image Optimizer</th></tr></thead>';
 			foreach ($galleries as $gid) {
 		                $attachments = get_posts( array(
 		                        'numberposts' => -1,
