@@ -142,7 +142,7 @@ function ewww_image_optimizer_bulk_script($hook) {
 function ewww_image_optimizer_bulk_initialize() {
 	// verify that an authorized user has started the optimizer
 	if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
-		wp_die( __( 'Cheatin&#8217; eh?' ) );
+		wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 	} 
 	// update the 'bulk resume' option to show that an operation is in progress
 	update_option('ewww_image_optimizer_bulk_resume', 'true');
@@ -157,7 +157,7 @@ function ewww_image_optimizer_bulk_initialize() {
 function ewww_image_optimizer_bulk_filename() {
 	// verify that an authorized user has started the optimizer
 	if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
-		wp_die( __( 'Cheatin&#8217; eh?' ) );
+		wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 	}
 	// get the attachment ID of the current attachment
 	$attachment_ID = $_POST['attachment'];
@@ -176,7 +176,7 @@ function ewww_image_optimizer_bulk_loop() {
 	global $ewww_debug;
 	// verify that an authorized user has started the optimizer
 	if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
-		wp_die( __( 'Cheatin&#8217; eh?' ) );
+		wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 	} 
 	// retrieve the time when the optimizer starts
 	$started = microtime(true);
@@ -224,7 +224,7 @@ function ewww_image_optimizer_bulk_loop() {
 function ewww_image_optimizer_bulk_cleanup() {
 	// verify that an authorized user has started the optimizer
 	if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
-		wp_die( __( 'Cheatin&#8217; eh?' ) );
+		wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 	} 
 	// all done, so we can update the bulk options with empty values
 	update_option('ewww_image_optimizer_bulk_resume', '');

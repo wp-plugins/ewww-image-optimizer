@@ -213,7 +213,7 @@ class ewwwflag {
 	/* initialize bulk operation */
 	function ewww_flag_bulk_init() {
 		if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
-			wp_die( __( 'Cheatin&#8217; eh?' ) );
+			wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 		}
 		// set the resume flag to indicate the bulk operation is in progress
 		update_option('ewww_image_optimizer_bulk_flag_resume', 'true');
@@ -226,7 +226,7 @@ class ewwwflag {
 	/* output the filename of the currently optimizing image */
 	function ewww_flag_bulk_filename() {
 		if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
-			wp_die( __( 'Cheatin&#8217; eh?' ) );
+			wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 		}
 		// need this file to work with flag meta
 		require_once(WP_CONTENT_DIR . '/plugins/flash-album-gallery/lib/meta.php');
@@ -244,7 +244,7 @@ class ewwwflag {
 	/* process each image and it's thumbnail during the bulk operation */
 	function ewww_flag_bulk_loop() {
 		if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
-			wp_die( __( 'Cheatin&#8217; eh?' ) );
+			wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 		}
 		// need this file to work with flag meta
 		require_once(WP_CONTENT_DIR . '/plugins/flash-album-gallery/lib/meta.php');
@@ -283,7 +283,7 @@ class ewwwflag {
 	/* finish the bulk operation, and clear out the bulk_flag options */
 	function ewww_flag_bulk_cleanup() {
 		if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
-			wp_die( __( 'Cheatin&#8217; eh?' ) );
+			wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 		}
 		// reset the bulk flags in the db
 		update_option('ewww_image_optimizer_bulk_flag_resume', '');

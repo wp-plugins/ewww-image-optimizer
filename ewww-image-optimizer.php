@@ -62,8 +62,10 @@ add_action('ewww_image_optimizer_auto', 'ewww_image_optimizer_auto');
 $my_version = substr($wp_version, 0, 3);
 if ($my_version < 3.5) {
 	add_filter('wp_save_image_editor_file', 'ewww_image_optimizer_save_image_editor_file', 60, 5);
+	$ewww_debug .= "old version of wp <br>";
 } else {
 	add_filter('wp_image_editors', 'ewww_image_optimizer_load_editor', 60);
+	$ewww_debug .= "new version of wp <br>";
 }
 register_deactivation_hook(__FILE__, 'ewww_image_optimizer_network_deactivate');
 register_activation_hook(__FILE__, 'ewww_image_optimizer_install_table');

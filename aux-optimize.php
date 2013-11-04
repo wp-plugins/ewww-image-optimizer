@@ -114,7 +114,7 @@ function ewww_image_optimizer_aux_images_loading() {
 function ewww_image_optimizer_aux_images_import() {
 	// verify that an authorized user has started the optimizer
 	if (!wp_verify_nonce($_REQUEST['_wpnonce'], 'ewww-image-optimizer-aux-images')) {
-		wp_die(__('Cheatin&#8217; eh?'));
+		wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 	} 
 	global $wpdb;
 	global $ewww_debug;
@@ -229,7 +229,7 @@ function ewww_image_optimizer_aux_images_import() {
 function ewww_image_optimizer_aux_images_table() {
 	// verify that an authorized user has started the optimizer
 	if (!wp_verify_nonce($_REQUEST['_wpnonce'], 'ewww-image-optimizer-aux-images')) {
-		wp_die(__('Cheatin&#8217; eh?'));
+		wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 	} 
 	global $wpdb;
 	$offset = 50 * $_POST['offset'];
@@ -268,25 +268,35 @@ function ewww_image_optimizer_aux_images_table() {
 function ewww_image_optimizer_image_scan($dir) {
 	global $ewww_debug;
 	global $wpdb;
-	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_image_scan()</b><br>";
+	$ewww_debug .= "<b>ewww_image_optimizer_image_scan()</b><br>";
 	$images = Array();
 	if (!is_dir($dir))
 		return $images;
 	$iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir), RecursiveIteratorIterator::CHILD_FIRST);
+	$start = microtime(true);
+	$query = 'SELECT path,image_md5 FROM ' . $wpdb->prefix . 'ewwwio_images';
+	$already_optimized = $wpdb->get_results($query, ARRAY_A);
+	$ewww_debug .= "memory before: " . memory_get_usage() . "<br>";
 	foreach ($iterator as $path) {
+		set_time_limit (150);
 		if ($path->isDir()) {
 			continue;
 		} else {
 			$path = $path->getPathname();
 			$image_md5 = md5_file($path);
-			$query = "SELECT id FROM " . $wpdb->prefix . 'ewwwio_images' . " WHERE path = '$path' AND image_md5 = '$image_md5'";
-			$already_optimized = $wpdb->get_results($query);
 			$mimetype = ewww_image_optimizer_mimetype($path, 'i');
-			if (preg_match('/^image\/(jpeg|png|gif)/', $mimetype) && empty($already_optimized)) {
+			foreach($already_optimized as $optimized) {
+				if ($optimized['path'] === $path && $optimized['image_md5'] === $image_md5)
+					$skip_optimized = true;
+			}
+			if (preg_match('/^image\/(jpeg|png|gif)/', $mimetype) && empty($skip_optimized)) {
 				$images[] = $path;
 			}
 		}
 	}
+	$ewww_debug .= "memory after: " . memory_get_usage() . "<br>";
+	$end = microtime(true) - $start;
+        $ewww_debug .= "query time (seconds): $end <br>";
 	return $images;
 }
  
@@ -298,7 +308,7 @@ function ewww_image_optimizer_aux_images_script($hook) {
 	global $ewww_debug;
 	global $wpdb;
 	// allow 150 seconds for import
-	set_time_limit (150);
+//	set_time_limit (150);
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_aux_images_script()</b><br>";
 	// initialize the $attachments variable for auxiliary images
 	$attachments = null;
@@ -425,7 +435,7 @@ function ewww_image_optimizer_aux_images_initialize($auto = false) {
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_aux_images_initialize()</b><br>";
 	// verify that an authorized user has started the optimizer
 	if (!$auto && (!wp_verify_nonce($_REQUEST['_wpnonce'], 'ewww-image-optimizer-aux-images') || !current_user_can('edit_themes'))) {
-		wp_die(__('Cheatin&#8217; eh?'));
+		wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 	} 
 	// update the 'aux resume' option to show that an operation is in progress
 	update_option('ewww_image_optimizer_aux_resume', 'true');
@@ -444,7 +454,7 @@ function ewww_image_optimizer_aux_images_filename() {
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_aux_images_filename()</b><br>";
 	// verify that an authorized user has started the optimizer
 	if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-aux-images' ) || !current_user_can( 'edit_themes' ) ) {
-		wp_die(__('Cheatin&#8217; eh?'));
+		wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 	}
 	// generate the WP spinner image for display
 	$loading_image = plugins_url('/wpspin.gif', __FILE__);
@@ -460,7 +470,7 @@ function ewww_image_optimizer_aux_images_loop($attachment = null, $auto = false)
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_aux_images_loop()</b><br>";
 	// verify that an authorized user has started the optimizer
 	if (!$auto && (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-aux-images' ) || !current_user_can( 'edit_themes' ))) {
-		wp_die(__('Cheatin&#8217; eh?'));
+		wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 	} 
 	// retrieve the time when the optimizer starts
 	$started = microtime(true);
@@ -517,7 +527,7 @@ function ewww_image_optimizer_aux_images_cleanup($auto = false) {
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_aux_images_cleanup()</b><br>";
 	// verify that an authorized user has started the optimizer
 	if (!$auto && (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-aux-images' ) || !current_user_can( 'edit_themes' ))) {
-		wp_die( __( 'Cheatin&#8217; eh?' ) );
+		wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 	} 
 	// all done, so we can update the bulk options with empty values
 	update_option('ewww_image_optimizer_aux_resume', '');

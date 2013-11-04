@@ -61,7 +61,7 @@ class ewwwngg {
 	/* optimize the thumbs of the images POSTed from the previous page */
 	function ewww_ngg_thumb_bulk() {
 		if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
-			wp_die( __( 'Cheatin&#8217; eh?' ) );
+			wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 		}?> 
 		<div class="wrap">
                 <div id="icon-upload" class="icon32"></div><h2>Bulk Thumbnail Optimize</h2>
@@ -344,7 +344,7 @@ class ewwwngg {
 	/* start the bulk operation */
 	function ewww_ngg_bulk_init() {
                 if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
-                        wp_die( __( 'Cheatin&#8217; eh?' ) );
+                        wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
                 }
 		// toggle the resume flag to indicate an operation is in progress
                 update_option('ewww_image_optimizer_bulk_ngg_resume', 'true');
@@ -357,7 +357,7 @@ class ewwwngg {
 	/* output the filename of the image being optimized */
 	function ewww_ngg_bulk_filename() {
                 if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
-                        wp_die( __( 'Cheatin&#8217; eh?' ) );
+                        wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
                 }
 		// need this file to work with metadata
 		require_once(WP_CONTENT_DIR . '/plugins/nextgen-gallery/lib/meta.php');
@@ -374,7 +374,7 @@ class ewwwngg {
 	/* process each image in the bulk loop */
 	function ewww_ngg_bulk_loop() {
                 if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
-                        wp_die( __( 'Cheatin&#8217; eh?' ) );
+                        wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
                 }
 		// need this file to work with metadata
 		require_once(WP_CONTENT_DIR . '/plugins/nextgen-gallery/lib/meta.php');
@@ -414,7 +414,7 @@ class ewwwngg {
 	/* finish the bulk operation */
 	function ewww_ngg_bulk_cleanup() {
                 if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
-                        wp_die( __( 'Cheatin&#8217; eh?' ) );
+                        wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
                 }
 		// reset all the bulk options in the db
 		update_option('ewww_image_optimizer_bulk_ngg_resume', '');
