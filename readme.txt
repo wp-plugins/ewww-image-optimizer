@@ -165,10 +165,13 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * SunOS (Solaris/OpenIndiana) support
 * Bulk restoration of converted images
 * FlaGallery optimize on upload does not work with plupload (only the browser-based method works properly). This will be fixed in a future release, as the developer has already committed to implementing the necessary hooks.
+* internationalization (will need help translating strings once this is completed)
 
 = 1.7.2 =
 * fixed: Import button not shown on Optimize More in some cases
 * fixed: Bulk Optimize for Nextgen was broken
+* changed: file comparison from md5sum to filesize for Optimize More to improve load time
+* added: quota information for cloud users on settings page
 
 = 1.7.1 =
 * fixed: syntax error causing white screen of death for Nextgen v2
@@ -417,6 +420,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * First release (forked from CW Image Optimizer)
 
 == Upgrade Notice ==
+
+= 1.7.2 =
+* Optimize More table format has changed, make sure to visit Optimize More and Convert your table immediately after upgrade if you are running it in scheduled mode.
 
 = 1.7.0 =
 * More third-party plugins supported via custom paths, and the Optimize More tool (which can also run via cron now). Also check out new screencasts on the Installation page.

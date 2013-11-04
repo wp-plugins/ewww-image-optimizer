@@ -277,9 +277,10 @@ function ewww_image_optimizer_install_table() {
 	$sql = "CREATE TABLE $table_name (
 		id mediumint(9) NOT NULL AUTO_INCREMENT,
 		path text NOT NULL,
-		image_md5 VARCHAR(55) NOT NULL,
+		image_md5 VARCHAR(55),
 		results VARCHAR(55) NOT NULL,
 		gallery VARCHAR(30),
+		image_size mediumint(20),
 		UNIQUE KEY id (id)
 	);";
 
@@ -1478,6 +1479,27 @@ function ewww_image_optimizer_cloud_verify() {
 		return FALSE;
 	} else {
 		return $verified;
+	}
+}
+
+// checks the provided api key for quota information
+function ewww_image_optimizer_cloud_quota() {
+	global $ewww_debug;
+	$ewww_debug .= "<b>ewww_image_optimizer_cloud_quota()</b><br>";
+	$api_key = ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_key');
+	$url = "http://" . EWWW_IMAGE_OPTIMIZER_CLOUD_IP . "/quota.php";
+	$result = wp_remote_post($url, array(
+		'timeout' => 10,
+		'body' => array('api_key' => $api_key)
+	));
+	if (is_wp_error($result)) {
+		$error_message = $result->get_error_message();
+		$ewww_debug .= "quota request failed: $error_message <br>";
+		return '';
+	} elseif (!empty($result['body'])) {
+		$ewww_debug .= "quota data retrieved: " . $result['body'] . "<br>";
+		$quota = explode(' ', $result['body']);
+		return sprintf(_n('used %1$d of %2$d, usage will reset in %3$d day.', 'used %1$d of %2$d, usage will reset in %3$d days.', $quota[2], EWWW_IMAGE_OPTIMIZER_DOMAIN), $quota[1], $quota[0], $quota[2]); 
 	}
 }
 
@@ -2856,9 +2878,11 @@ function ewww_image_optimizer_options () {
 				echo '<p><b>Cloud API Key:</b> ';
 				$verify_cloud = ewww_image_optimizer_cloud_verify(); 
 				if (preg_match('/great/', $verify_cloud)) {
-					 echo '<span style="color: green">Verified</span>'; 
+					echo '<span style="color: green">' . __('Verified,', EWWW_IMAGE_OPTIMIZER_DOMAIN) . ' </span>';
+					echo ewww_image_optimizer_cloud_quota();
 				} elseif (preg_match('/exceeded/', $verify_cloud)) { 
-					echo '<span style="color: orange">Verified, but license exceeded </span>'; 
+					echo '<span style="color: orange">' . __('Verified,', EWWW_IMAGE_OPTIMIZER_DOMAIN) . ' </span>'; 
+					echo ewww_image_optimizer_cloud_quota();
 				} else { 
 					echo '<span style="color: red">NOT Verified</span>'; 
 				}

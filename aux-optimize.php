@@ -35,6 +35,9 @@ function ewww_image_optimizer_aux_images () {
 	$table = $wpdb->prefix . 'ewwwio_images';
 	$query = "SELECT id FROM $table LIMIT 1";
 	$already_optimized = $wpdb->get_results($query);
+	$convert_query = "SELECT image_md5 FROM $table WHERE image_md5 <> ''";
+	$db_convert = $wpdb->get_results($convert_query, ARRAY_N);
+//	print_r($db_convert);
 	// find out what kind of images we are optimizing
 	?>
 	<div class="wrap">
@@ -44,6 +47,14 @@ function ewww_image_optimizer_aux_images () {
 		<div id="bulk-counter"></div>
 		<div id="bulk-status"></div>
 		<div id="bulk-forms"><p><?php _e('This tool will optimize large batches of images from your wordpress install. This does not include the Media Library or galleries where we have full integration. This tool is for images in your theme, BuddyPress, WP Symposium, and other folders that you have specified on the settings page.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
+		<?php if (!empty($db_convert)) { ?>
+			<p><?php _e('The database schema has changed, you need to convert to the new format.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
+			<form method="post" action="">
+				<?php wp_nonce_field( 'ewww-image-optimizer-aux-images', '_wpnonce'); ?>
+				<input type="hidden" name="convert" value="1">
+				<button id="table-convert" type="submit" class="button-secondary action"><?php _e('Convert Table', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></button>
+			</form>
+		<?php } ?>	
 		<?php if (empty($attachments)) { ?>
 			<p><?php _e('There are no images to optimize.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
 		<?php } else { ?>
@@ -147,27 +158,28 @@ function ewww_image_optimizer_aux_images_import() {
 		} else {
 			$results = '';
 		}
-		$query = "SELECT id,image_md5 FROM " . $wpdb->prefix . "ewwwio_images WHERE path = '$attachment'";
+		$query = "SELECT id,image_size FROM " . $wpdb->prefix . "ewwwio_images WHERE path = '$attachment'";
 		$already_optimized = $wpdb->get_row($query, ARRAY_A);
-		$image_md5 = md5_file($attachment);
+//		$image_md5 = md5_file($attachment);
+		$image_size = filesize($attachment);
 		$ewww_debug .= "current attachment: $attachment<br>";
-		$ewww_debug .= "current md5: $image_md5<br>";
+		$ewww_debug .= "current size: $image_size<br>";
 		if (!empty($already_optimized))
-			$ewww_debug .= "stored md5:  " . $already_optimized['image_md5'] . "<br>";
+			$ewww_debug .= "stored size:  " . $already_optimized['image_size'] . "<br>";
 		if (empty($already_optimized)) {
 			$ewww_debug .= "creating record<br>";
 			// store info on the current image for future reference
 			$wpdb->insert( $wpdb->prefix . "ewwwio_images", array(
 					'path' => $attachment,
-					'image_md5' => $image_md5,
+					'image_size' => $image_size,
 					'results' => $results,
 				));
-		} elseif ($image_md5 != $already_optimized['image_md5']) {
+		} elseif ($image_size != $already_optimized['image_size']) {
 			$ewww_debug .= "updating record<br>";
 			// store info on the current image for future reference
 			$wpdb->update( $wpdb->prefix . "ewwwio_images",
 				array(
-					'image_md5' => $image_md5,
+					'image_size' => $image_size,
 					'results' => $results,
 				),
 				array(
@@ -192,26 +204,26 @@ function ewww_image_optimizer_aux_images_import() {
 				} else {
 					$results = '';
 				}
-				$query = "SELECT id,image_md5 FROM " . $wpdb->prefix . "ewwwio_images WHERE path = '$resize_path'";
+				$query = "SELECT id,image_size FROM " . $wpdb->prefix . "ewwwio_images WHERE path = '$resize_path'";
 				$already_optimized = $wpdb->get_row($query, ARRAY_A);
-				$image_md5 = md5_file($resize_path);
-				$ewww_debug .= "current md5: $image_md5<br>";
+				$image_size = filesize($resize_path);
+				$ewww_debug .= "current size: $image_size<br>";
 				if (!empty($already_optimized))
-					$ewww_debug .= "stored md5:  " . $already_optimized['image_md5'] . "<br>";
+					$ewww_debug .= "stored size:  " . $already_optimized['image_size'] . "<br>";
 				if (empty($already_optimized)) {
 					$ewww_debug .= "creating record<br>";
 					// store info on the current image for future reference
 					$wpdb->insert( $wpdb->prefix . "ewwwio_images", array(
 							'path' => $resize_path,
-							'image_md5' => $image_md5,
+							'image_size' => $image_size,
 							'results' => $results,
 						));
-				} elseif ($image_md5 != $already_optimized['image_md5']) {
+				} elseif ($image_size != $already_optimized['image_size']) {
 					$ewww_debug .= "updating record<br>";
 					// store info on the current image for future reference
 					$wpdb->update( $wpdb->prefix . "ewwwio_images",
 						array(
-							'image_md5' => $image_md5,
+							'image_size' => $image_size,
 							'results' => $results,
 						),
 						array(
@@ -274,30 +286,69 @@ function ewww_image_optimizer_image_scan($dir) {
 		return $images;
 	$iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir), RecursiveIteratorIterator::CHILD_FIRST);
 	$start = microtime(true);
-	$query = 'SELECT path,image_md5 FROM ' . $wpdb->prefix . 'ewwwio_images';
-	$already_optimized = $wpdb->get_results($query, ARRAY_A);
-	$ewww_debug .= "memory before: " . memory_get_usage() . "<br>";
+//	$query = 'SELECT path,image_size FROM ' . $wpdb->prefix . 'ewwwio_images';
+//	$already_optimized = $wpdb->get_results($query, ARRAY_A);
+//	$ewww_debug .= "memory before: " . memory_get_usage() . "<br>";
 	foreach ($iterator as $path) {
 		set_time_limit (150);
 		if ($path->isDir()) {
 			continue;
 		} else {
 			$path = $path->getPathname();
-			$image_md5 = md5_file($path);
+			$image_size = filesize($path);
+			$query = "SELECT id FROM " . $wpdb->prefix . 'ewwwio_images' . " WHERE path LIKE '$path' AND image_size LIKE '$image_size'";
+			$already_optimized = $wpdb->get_results($query);
+//			foreach($already_optimized as $optimized) {
+//				if ($optimized['path'] === $path) {
+//					$ewww_debug .= 'stored size is ' . $optimized['image_size'] . " vs. $image_size <br>";
+//					if ($optimized['image_size'] == $image_size) {
+//						$skip_optimized = true;
+//						break;
+//					}
+//				}
+//			}
 			$mimetype = ewww_image_optimizer_mimetype($path, 'i');
-			foreach($already_optimized as $optimized) {
-				if ($optimized['path'] === $path && $optimized['image_md5'] === $image_md5)
-					$skip_optimized = true;
-			}
-			if (preg_match('/^image\/(jpeg|png|gif)/', $mimetype) && empty($skip_optimized)) {
+			if (preg_match('/^image\/(jpeg|png|gif)/', $mimetype) && empty($already_optimized)) {
 				$images[] = $path;
 			}
 		}
 	}
-	$ewww_debug .= "memory after: " . memory_get_usage() . "<br>";
+//	$ewww_debug .= "memory after: " . memory_get_usage() . "<br>";
 	$end = microtime(true) - $start;
         $ewww_debug .= "query time (seconds): $end <br>";
 	return $images;
+}
+
+// convert all records in table to use filesize rather than md5sum
+function ewww_image_optimizer_aux_images_convert() {
+	global $ewww_debug;
+	global $wpdb;
+	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_aux_images_convert()</b><br>";
+	$query = 'SELECT id,path,image_md5 FROM ' . $wpdb->prefix . 'ewwwio_images';
+	$old_records = $wpdb->get_results($query, ARRAY_A);
+	foreach ($old_records as $record) {
+		if (empty($record['image_md5'])) continue;
+		$image_md5 = md5_file($record['path']);
+		if ($image_md5 === $record['image_md5']) {
+			$ewww_debug .= 'converting record for: ' . $record['path'] . '<br>';
+			$filesize = filesize($record['path']);
+			$ewww_debug .= 'using size: ' . $filesize . '<br>';
+			$wpdb->update($wpdb->prefix . "ewwwio_images",
+				array(
+					'image_md5' => null,
+					'image_size' => $filesize,
+				),
+				array(
+					'id' => $record['id'],
+				));
+		} else {
+			$ewww_debug .= 'deleting record for: ' . $record['path'] . '<br>';
+			$wpdb->delete($wpdb->prefix . "ewwwio_images",
+				array(
+					'id' => $record['id'],
+				));
+		}
+	}
 }
  
 // prepares the bulk operation and includes the javascript functions
@@ -312,6 +363,10 @@ function ewww_image_optimizer_aux_images_script($hook) {
 	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_aux_images_script()</b><br>";
 	// initialize the $attachments variable for auxiliary images
 	$attachments = null;
+        // check to see if we are supposed to convert the auxiliary images table and verify we are authorized to do so
+	if (!empty($_REQUEST['convert']) && wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-aux-images' )) {
+		ewww_image_optimizer_aux_images_convert();
+	}
         // check to see if we are supposed to empty the auxiliary images table and verify we are authorized to do so
 	if (!empty($_REQUEST['empty']) && wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-aux-images' )) {
 		global $wpdb;
@@ -395,8 +450,8 @@ function ewww_image_optimizer_aux_images_script($hook) {
 						foreach ($backup_sizes as $backup_size => $meta) {
 							if (preg_match('/resized-/', $backup_size)) {
 								$path = $meta['path'];
-								$image_md5 = md5_file($path);
-								$query = "SELECT id FROM " . $wpdb->prefix . 'ewwwio_images' . " WHERE path = '$path' AND image_md5 = '$image_md5'";
+								$image_size = filesize($path);
+								$query = "SELECT id FROM " . $wpdb->prefix . 'ewwwio_images' . " WHERE path = '$path' AND image_size = '$image_size'";
 								$already_optimized = $wpdb->get_results($query);
 								$mimetype = ewww_image_optimizer_mimetype($path, 'i');
 								if (preg_match('/^image\/(jpeg|png|gif)/', $mimetype) && empty($already_optimized)) {
@@ -488,14 +543,14 @@ function ewww_image_optimizer_aux_images_loop($attachment = null, $auto = false)
 		// store info on the current image for future reference
 		$wpdb->insert( $wpdb->prefix . "ewwwio_images", array(
 				'path' => $attachment,
-				'image_md5' => md5_file($attachment),
+				'image_size' => filesize($attachment),
 				'results' => $results[1],
 			));
 	} else {
 		// store info on the current image for future reference
 		$wpdb->update( $wpdb->prefix . "ewwwio_images",
 			array(
-				'image_md5' => md5_file($attachment),
+				'image_size' => filesize($attachment),
 				'results' => $results[1],
 			),
 			array(
