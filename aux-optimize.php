@@ -286,29 +286,34 @@ function ewww_image_optimizer_image_scan($dir) {
 		return $images;
 	$iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir), RecursiveIteratorIterator::CHILD_FIRST);
 	$start = microtime(true);
-//	$query = 'SELECT path,image_size FROM ' . $wpdb->prefix . 'ewwwio_images';
-//	$already_optimized = $wpdb->get_results($query, ARRAY_A);
-//	$ewww_debug .= "memory before: " . memory_get_usage() . "<br>";
+	$query = 'SELECT path,image_size FROM ' . $wpdb->prefix . 'ewwwio_images';
+	$already_optimized = $wpdb->get_results($query, ARRAY_A);
+//	ewww_debug .= "memory before: " . memory_get_usage() . "<br>";
 	foreach ($iterator as $path) {
-		set_time_limit (150);
+		set_time_limit (50);
+		$skip_optimized = false;
+		$mimetype = '';
 		if ($path->isDir()) {
 			continue;
 		} else {
 			$path = $path->getPathname();
-			$image_size = filesize($path);
-			$query = "SELECT id FROM " . $wpdb->prefix . 'ewwwio_images' . " WHERE path LIKE '$path' AND image_size LIKE '$image_size'";
-			$already_optimized = $wpdb->get_results($query);
-//			foreach($already_optimized as $optimized) {
-//				if ($optimized['path'] === $path) {
-//					$ewww_debug .= 'stored size is ' . $optimized['image_size'] . " vs. $image_size <br>";
-//					if ($optimized['image_size'] == $image_size) {
-//						$skip_optimized = true;
-//						break;
-//					}
-//				}
-//			}
-			$mimetype = ewww_image_optimizer_mimetype($path, 'i');
-			if (preg_match('/^image\/(jpeg|png|gif)/', $mimetype) && empty($already_optimized)) {
+//			$image_size = filesize($path);
+//			$query = "SELECT id FROM " . $wpdb->prefix . 'ewwwio_images' . " WHERE path LIKE '$path' AND image_size LIKE '$image_size'";
+//			$already_optimized = $wpdb->get_results($query);
+			foreach($already_optimized as $optimized) {
+				if ($optimized['path'] === $path) {
+					$image_size = filesize($path);
+					$ewww_debug .= "$path - stored size is " . $optimized['image_size'] . " vs. $image_size <br>";
+					if ($optimized['image_size'] == $image_size) {
+						$skip_optimized = true;
+						break;
+					} else {
+						$mimetype = ewww_image_optimizer_mimetype($path, 'i');
+					}
+				}
+			}
+//			$mimetype = ewww_image_optimizer_mimetype($path, 'i');
+			if (empty($skip_optimized) && preg_match('/^image\/(jpeg|png|gif)/', $mimetype)) {
 				$images[] = $path;
 			}
 		}
@@ -451,7 +456,7 @@ function ewww_image_optimizer_aux_images_script($hook) {
 							if (preg_match('/resized-/', $backup_size)) {
 								$path = $meta['path'];
 								$image_size = filesize($path);
-								$query = "SELECT id FROM " . $wpdb->prefix . 'ewwwio_images' . " WHERE path = '$path' AND image_size = '$image_size'";
+								$query = "SELECT id FROM " . $wpdb->prefix . 'ewwwio_images' . " WHERE path LIKE '$path' AND image_size LIKE '$image_size'";
 								$already_optimized = $wpdb->get_results($query);
 								$mimetype = ewww_image_optimizer_mimetype($path, 'i');
 								if (preg_match('/^image\/(jpeg|png|gif)/', $mimetype) && empty($already_optimized)) {
