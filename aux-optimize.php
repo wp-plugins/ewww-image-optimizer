@@ -37,7 +37,6 @@ function ewww_image_optimizer_aux_images () {
 	$already_optimized = $wpdb->get_results($query);
 	$convert_query = "SELECT image_md5 FROM $table WHERE image_md5 <> ''";
 	$db_convert = $wpdb->get_results($convert_query, ARRAY_N);
-//	print_r($db_convert);
 	// find out what kind of images we are optimizing
 	?>
 	<div class="wrap">
@@ -288,22 +287,25 @@ function ewww_image_optimizer_image_scan($dir) {
 	$start = microtime(true);
 	$query = 'SELECT path,image_size FROM ' . $wpdb->prefix . 'ewwwio_images';
 	$already_optimized = $wpdb->get_results($query, ARRAY_A);
-//	ewww_debug .= "memory before: " . memory_get_usage() . "<br>";
+	$file_counter = 0;
 	foreach ($iterator as $path) {
 		set_time_limit (50);
+		$file_counter++;
 		$skip_optimized = false;
-		$mimetype = '';
+		//$mimetype = '';
 		if ($path->isDir()) {
 			continue;
 		} else {
 			$path = $path->getPathname();
-//			$image_size = filesize($path);
-//			$query = "SELECT id FROM " . $wpdb->prefix . 'ewwwio_images' . " WHERE path LIKE '$path' AND image_size LIKE '$image_size'";
-//			$already_optimized = $wpdb->get_results($query);
+			$mimetype = ewww_image_optimizer_mimetype($path, 'i');
+			if (empty($mimetype) || !preg_match('/^image\/(jpeg|png|gif)/', $mimetype)) {
+//				$skip_optimized = true;
+				$ewww_debug .= "not a usable mimetype: $path<br>";
+				continue;
+			}
 			foreach($already_optimized as $optimized) {
 				if ($optimized['path'] === $path) {
 					$image_size = filesize($path);
-//					$ewww_debug .= "$path - stored size is " . $optimized['image_size'] . " vs. $image_size <br>";
 					if ($optimized['image_size'] == $image_size) {
 						$ewww_debug .= "match found for $path<br>";
 						$skip_optimized = true;
@@ -311,19 +313,16 @@ function ewww_image_optimizer_image_scan($dir) {
 					}
 				}
 			}
-			if (empty($skip_optimized))
-				$mimetype = ewww_image_optimizer_mimetype($path, 'i');
-			if (!empty($mimetype) && preg_match('/^image\/(jpeg|png|gif)/', $mimetype)) {
+			if (empty($skip_optimized)) {
 				$ewww_debug .= "queued $path<br>";
 				$images[] = $path;
-			} else {
-				$ewww_debug .= "not queueing $path<br>";
+//			} else {
+//				$ewww_debug .= "not queueing $path<br>";
 			}
 		}
 	}
-//	$ewww_debug .= "memory after: " . memory_get_usage() . "<br>";
 	$end = microtime(true) - $start;
-        $ewww_debug .= "query time (seconds): $end <br>";
+        $ewww_debug .= "query time for $file_counter files (seconds): $end <br>";
 	return $images;
 }
 
