@@ -303,18 +303,21 @@ function ewww_image_optimizer_image_scan($dir) {
 			foreach($already_optimized as $optimized) {
 				if ($optimized['path'] === $path) {
 					$image_size = filesize($path);
-					$ewww_debug .= "$path - stored size is " . $optimized['image_size'] . " vs. $image_size <br>";
+//					$ewww_debug .= "$path - stored size is " . $optimized['image_size'] . " vs. $image_size <br>";
 					if ($optimized['image_size'] == $image_size) {
+						$ewww_debug .= "match found for $path<br>";
 						$skip_optimized = true;
 						break;
-					} else {
-						$mimetype = ewww_image_optimizer_mimetype($path, 'i');
 					}
 				}
 			}
-//			$mimetype = ewww_image_optimizer_mimetype($path, 'i');
-			if (empty($skip_optimized) && preg_match('/^image\/(jpeg|png|gif)/', $mimetype)) {
+			if (empty($skip_optimized))
+				$mimetype = ewww_image_optimizer_mimetype($path, 'i');
+			if (!empty($mimetype) && preg_match('/^image\/(jpeg|png|gif)/', $mimetype)) {
+				$ewww_debug .= "queued $path<br>";
 				$images[] = $path;
+			} else {
+				$ewww_debug .= "not queueing $path<br>";
 			}
 		}
 	}
