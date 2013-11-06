@@ -3,7 +3,7 @@
 function ewww_image_optimizer_aux_images () {
 	global $ewww_debug;
 	global $wpdb;
-	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_aux_images()</b><br>";
+	$ewww_debug .= "<b>ewww_image_optimizer_aux_images()</b><br>";
 	// retrieve the attachment IDs that were pre-loaded in the database
 	$attachments = get_option('ewww_image_optimizer_aux_attachments');
 	// Retrieve the value of the 'aux resume' option and set the button text for the form to use
@@ -113,7 +113,7 @@ function ewww_image_optimizer_aux_images () {
 // lets the user know something is happening via javascript
 function ewww_image_optimizer_aux_images_loading() {
 	global $ewww_debug;
-	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_aux_images_loading()</b><br>";
+	$ewww_debug .= "<b>ewww_image_optimizer_aux_images_loading()</b><br>";
 	// generate the WP spinner image for display
 	$loading_image = plugins_url('/wpspin.gif', __FILE__);
 	// let the user know that we are beginning
@@ -261,11 +261,11 @@ function ewww_image_optimizer_aux_images_table() {
 			// get a human readable filesize
 			$file_size = size_format(filesize($optimized_image[0]), 2);
 			$file_size = str_replace('B ', 'B', $file_size);
-?>			<tr <?php if($alternate) echo "class='alternate'"; ?>>
+?>			<tr<?php if($alternate) echo " class='alternate'"; ?>>
 				<td style='width:80px' class='column-icon'><img width='50' height='50' src='<?php echo $image_url; ?>' /></td>
 				<td class='title'>...<?php echo $image_name; ?></td>
 				<td><?php echo $type; ?></td>
-				<td><?php echo "$savings <br>" . __('Image Size:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " $file_size"; ?></td>
+				<td><?php echo "$savings <br>" . sprintf(__('Image Size: %s', EWWW_IMAGE_OPTIMIZER_DOMAIN), $file_size); ?></td>
 			</tr>
 <?php			$alternate = !$alternate;
 		}
@@ -330,7 +330,7 @@ function ewww_image_optimizer_image_scan($dir) {
 function ewww_image_optimizer_aux_images_convert() {
 	global $ewww_debug;
 	global $wpdb;
-	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_aux_images_convert()</b><br>";
+	$ewww_debug .= "<b>ewww_image_optimizer_aux_images_convert()</b><br>";
 	$query = 'SELECT id,path,image_md5 FROM ' . $wpdb->prefix . 'ewwwio_images';
 	$old_records = $wpdb->get_results($query, ARRAY_A);
 	foreach ($old_records as $record) {
@@ -367,7 +367,7 @@ function ewww_image_optimizer_aux_images_script($hook) {
 	global $wpdb;
 	// allow 150 seconds for import
 //	set_time_limit (150);
-	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_aux_images_script()</b><br>";
+	$ewww_debug .= "<b>ewww_image_optimizer_aux_images_script()</b><br>";
 	// initialize the $attachments variable for auxiliary images
 	$attachments = null;
         // check to see if we are supposed to convert the auxiliary images table and verify we are authorized to do so
@@ -494,7 +494,7 @@ function ewww_image_optimizer_aux_images_script($hook) {
 // called by javascript to initialize some output
 function ewww_image_optimizer_aux_images_initialize($auto = false) {
 	global $ewww_debug;
-	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_aux_images_initialize()</b><br>";
+	$ewww_debug .= "<b>ewww_image_optimizer_aux_images_initialize()</b><br>";
 	// verify that an authorized user has started the optimizer
 	if (!$auto && (!wp_verify_nonce($_REQUEST['_wpnonce'], 'ewww-image-optimizer-aux-images') || !current_user_can('edit_themes'))) {
 		wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
@@ -513,7 +513,7 @@ function ewww_image_optimizer_aux_images_initialize($auto = false) {
 // called by javascript to output filename of attachment in progress
 function ewww_image_optimizer_aux_images_filename() {
 	global $ewww_debug;
-	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_aux_images_filename()</b><br>";
+	$ewww_debug .= "<b>ewww_image_optimizer_aux_images_filename()</b><br>";
 	// verify that an authorized user has started the optimizer
 	if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-aux-images' ) || !current_user_can( 'edit_themes' ) ) {
 		wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
@@ -529,7 +529,7 @@ function ewww_image_optimizer_aux_images_filename() {
 function ewww_image_optimizer_aux_images_loop($attachment = null, $auto = false) {
 	global $wpdb;
 	global $ewww_debug;
-	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_aux_images_loop()</b><br>";
+	$ewww_debug .= "<b>ewww_image_optimizer_aux_images_loop()</b><br>";
 	// verify that an authorized user has started the optimizer
 	if (!$auto && (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-aux-images' ) || !current_user_can( 'edit_themes' ))) {
 		wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
@@ -586,7 +586,7 @@ function ewww_image_optimizer_aux_images_loop($attachment = null, $auto = false)
 // called by javascript to cleanup after ourselves
 function ewww_image_optimizer_aux_images_cleanup($auto = false) {
 	global $ewww_debug;
-	$ewww_debug = "$ewww_debug <b>ewww_image_optimizer_aux_images_cleanup()</b><br>";
+	$ewww_debug .= "<b>ewww_image_optimizer_aux_images_cleanup()</b><br>";
 	// verify that an authorized user has started the optimizer
 	if (!$auto && (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-aux-images' ) || !current_user_can( 'edit_themes' ))) {
 		wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
