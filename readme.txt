@@ -172,7 +172,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * fixed: Bulk Optimize for Nextgen was broken
 * changed: file comparison from md5sum to filesize for Optimize More to improve load time
 * added: quota information for cloud users on settings page
-* fixed: sub-folders of uploads directory not allowed if /uploads is outside of wp folder
+* fixed: sub-folders of uploads directory were not allowed if /uploads is outside of wp folder
 
 = 1.7.1 =
 * fixed: syntax error causing white screen of death for Nextgen v2

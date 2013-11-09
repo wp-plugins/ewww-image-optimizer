@@ -1,4 +1,5 @@
 <?php 
+// TODO: i18n, this marks the spot
 class ewwwflag {
 	/* initializes the flagallery integration functions */
 	function ewwwflag() {
