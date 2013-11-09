@@ -165,7 +165,6 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * SunOS (Solaris/OpenIndiana) support
 * Bulk restoration of converted images
 * FlaGallery optimize on upload does not work with plupload (only the browser-based method works properly). This will be fixed in a future release, as the developer has already committed to implementing the necessary hooks.
-* internationalization (will need help translating strings once this is completed)
 
 = 1.7.2 =
 * fixed: Import button not shown on Optimize More in some cases
@@ -173,6 +172,8 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * changed: file comparison from md5sum to filesize for Optimize More to improve load time
 * added: quota information for cloud users on settings page
 * fixed: sub-folders of uploads directory were not allowed if /uploads is outside of wp folder
+* added: internationalization - need volunteers to provide translations. If interested, post a support thread with the language you would like to help with.
+* changed: increased cloud_verify timeout to avoid false results
 
 = 1.7.1 =
 * fixed: syntax error causing white screen of death for Nextgen v2

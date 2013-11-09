@@ -24,17 +24,17 @@ class ewwwflag {
 
 	/* adds the Bulk Optimize page to the menu */
 	function ewww_flag_bulk_menu () {
-		add_submenu_page('flag-overview', 'FlAG Bulk Optimize', 'Bulk Optimize', 'FlAG Manage gallery', 'flag-bulk-optimize', array (&$this, 'ewww_flag_bulk'));
+		add_submenu_page('flag-overview', __('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), __('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), 'FlAG Manage gallery', 'flag-bulk-optimize', array (&$this, 'ewww_flag_bulk'));
 	}
 
 	/* add bulk optimize action to image management page */
 	function ewww_manage_images_bulkaction () {
-		echo '<option value="bulk_optimize_images">Bulk Optimize</option>';
+		echo '<option value="bulk_optimize_images">' . __('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</option>';
 	}
 
 	/* add bulk optimize action to gallery management page */
 	function ewww_manage_galleries_bulkaction () {
-		echo '<option value="bulk_optimize_galleries">Bulk Optimize</option>';
+		echo '<option value="bulk_optimize_galleries">' . __('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</option>';
 	}
 
 	// Handles the bulk html output
@@ -54,26 +54,26 @@ class ewwwflag {
 		$attachments = get_option('ewww_image_optimizer_bulk_flag_attachments');
 		// bail-out if there aren't any images to optimize
 		if (count($attachments) < 1) {
-			echo '<p>You don’t appear to have uploaded any images yet.</p>';
+			echo '<p>' . __('You do not appear to have uploaded any images yet.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</p>';
 			return;
 		}
 		?>
-		<div class="wrap"><div id="icon-upload" class="icon32"></div><h2>GRAND FlAGallery Bulk Optimize</h2>
+		<div class="wrap"><div id="icon-upload" class="icon32"></div><h2>GRAND FlAGallery <?php _e('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></h2>
 		<?php
 		// Retrieve the value of the 'bulk resume' option and set the button text for the form to use
 		$resume = get_option('ewww_image_optimizer_bulk_flag_resume');
 		if (empty($resume)) {
-			$button_text = 'Start optimizing';
+			$button_text = __('Start optimizing', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 		} else {
-			$button_text = 'Resume previous bulk operation';
+			$button_text = __('Resume previous bulk operation', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 		}
 		?>
 		<div id="bulk-loading"></div>
 		<div id="bulk-progressbar"></div>
 		<div id="bulk-counter"></div>
 		<div id="bulk-status"></div>
-		<div id="bulk-forms"><p>This tool can optimize large batches (or all) of images from your media library.</p>
-		<p>We have <?php echo count($attachments); ?> images to optimize.</p>
+		<div id="bulk-forms">
+		<p><?php printf(__('We have %d images to optimize.', EWWW_IMAGE_OPTIMIZER_DOMAIN), count($attachments)); ?></p>
 		<form id="bulk-start" method="post" action="">
 			<input type="submit" class="button-secondary action" value="<?php echo $button_text; ?>" />
 		</form>
@@ -81,11 +81,11 @@ class ewwwflag {
 		// if there was a previous operation, offer the option to reset the option in the db
 		if (!empty($resume)):
 		?>
-			<p>If you would like to start over again, press the <b>Reset Status</b> button to reset the bulk operation status.</p>
+			<p><?php _e('If you would like to start over again, press the Reset Status button to reset the bulk operation status.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
 			<form method="post" action="">
 				<?php wp_nonce_field( 'ewww-image-optimizer-bulk', '_wpnonce'); ?>
 				<input type="hidden" name="reset" value="1">
-				<button id="bulk-reset" type="submit" class="button-secondary action">Reset Status</button>
+				<button id="bulk-reset" type="submit" class="button-secondary action"><?php _e('Reset Status', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></button>
 			</form>
 		<?php
 		endif;
@@ -220,7 +220,7 @@ class ewwwflag {
 		update_option('ewww_image_optimizer_bulk_flag_resume', 'true');
 		$loading_image = plugins_url('/wpspin.gif', __FILE__);
 		// output the initial message letting the user know we are starting
-		echo "<p>Optimizing&nbsp;<img src='$loading_image' alt='loading'/></p>";
+		echo "<p>" . __('Optimizing', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "&nbsp;<img src='$loading_image' alt='loading'/></p>";
 		die();
 	}
 
@@ -238,7 +238,7 @@ class ewwwflag {
 		// retrieve the filename for the current image ID
 		$file_name = esc_html($meta->image->filename);
 		// and let the user know which image we are working on currently
-		echo "<p>Optimizing... <b>" . $file_name . "</b>&nbsp;<img src='$loading_image' alt='loading'/></p>";
+		echo "<p>" . __('Optimizing', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <b>" . $file_name . "</b>&nbsp;<img src='$loading_image' alt='loading'/></p>";
 		die();
 	}
 		
@@ -260,17 +260,17 @@ class ewwwflag {
 		// and store the results in the metadata
 		flagdb::update_image_meta($id, array('ewww_image_optimizer' => $fres[1]));
 		// let the user know what happened
-		printf( "<p>Optimized image: <strong>%s</strong><br>", esc_html($meta->image->filename) );
-		printf( "Full size – %s<br>", $fres[1] );
+		printf( "<p>" . __('Optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", esc_html($meta->image->filename) );
+		printf(__('Full size – %s', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "<br>", $fres[1]);
 		$thumb_path = $meta->image->thumbPath;
 		// optimize the thumbnail
 		$tres = ewww_image_optimizer($thumb_path, 3, false, true);
 		// and let the user know the results
-		printf( "Thumbnail – %s<br>", $tres[1] );
+		printf(__('Thumbnail – %s', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "<br>", $tres[1]);
 		// determine how much time the image took to process
 		$elapsed = microtime(true) - $started;
 		// and output it to the user
-		echo "Elapsed: " . round($elapsed, 3) . " seconds</p>";
+		printf(__('Elapsed: %.3f seconds', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</p>", $elapsed);
 		// retrieve the list of attachments left to work on
 		$attachments = get_option('ewww_image_optimizer_bulk_flag_attachments');
 		// take the first image off the list
@@ -290,22 +290,22 @@ class ewwwflag {
 		update_option('ewww_image_optimizer_bulk_flag_resume', '');
 		update_option('ewww_image_optimizer_bulk_flag_attachments', '');
 		// and let the user know we are done
-		echo '<p><b>Finished Optimization!</b></p>';
+		echo '<p><b>' . __('Finished Optimization!', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</b></p>';
 		die();
 	}
 
 	/* flag_manage_images_columns hook - add a column on the gallery display */
 	function ewww_manage_images_columns( $columns ) {
-		$columns['ewww_image_optimizer'] = 'Image Optimizer';
+		$columns['ewww_image_optimizer'] = __('Image Optimizer', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 		return $columns;
 	}
 
 	/* flag_manage_image_custom_column hook - output the EWWW IO information on the gallery display */
 	function ewww_manage_image_custom_column( $column_name, $id ) {
 		// check to make sure we're outputing our custom column
-		if( $column_name == 'ewww_image_optimizer' ) {
+		if($column_name == 'ewww_image_optimizer') {
 			// get the metadata
-			$meta = new flagMeta( $id );
+			$meta = new flagMeta($id);
 			// grab the image status from the meta
 			$status = $meta->get_META('ewww_image_optimizer');
 			$msg = '';
@@ -316,26 +316,25 @@ class ewwwflag {
 			// get the file size
 			$file_size = size_format(filesize($file_path), 2);
 			$file_size = str_replace('B ', 'B', $file_size);
-			//$file_size = ewww_image_optimizer_format_bytes(filesize($file_path));
 			$valid = true;
 			// if we don't have a valid tool for the image type, output the appropriate message
 	                switch($type) {
         	                case 'image/jpeg':
                 	                if(!EWWW_IMAGE_OPTIMIZER_JPEGTRAN && !EWWW_IMAGE_OPTIMIZER_CLOUD) {
                         	                $valid = false;
-	     	                                $msg = '<br>' . __('<em>jpegtran</em> is missing');
+	     	                                $msg = '<br>' . sprintf(__('%s is missing', EWWW_IMAGE_OPTIMIZER_DOMAIN), '<em>jpegtran</em>');
 	                                }
 					break;
 				case 'image/png':
 					if(!EWWW_IMAGE_OPTIMIZER_PNGOUT && !EWWW_IMAGE_OPTIMIZER_OPTIPNG && !EWWW_IMAGE_OPTIMIZER_CLOUD) {
 						$valid = false;
-						$msg = '<br>' . __('<em>optipng/pngout</em> is missing');
+						$msg = '<br>' . sprintf(__('%s is missing', EWWW_IMAGE_OPTIMIZER_DOMAIN), '<em>optipng/pngout</em>');
 					}
 					break;
 				case 'image/gif':
 					if(!EWWW_IMAGE_OPTIMIZER_GIFSICLE && !EWWW_IMAGE_OPTIMIZER_CLOUD) {
 						$valid = false;
-						$msg = '<br>' . __('<em>gifsicle</em> is missing');
+						$msg = '<br>' . sprintf(__('%s is missing', EWWW_IMAGE_OPTIMIZER_DOMAIN), '<em>gifsicle</em>');
 					}
 					break;
 				default:
@@ -343,20 +342,20 @@ class ewwwflag {
 			}
 			// let user know if the file type is unsupported
 			if($valid == false) {
-				print __('Unsupported file type', EWWW_IMAGE_OPTIMIZER_DOMAIN) . $msg;
+				_e('Unsupported file type', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 				return;
 			}
 			// output the image status if we know it
 			if (!empty($status)) {
 				echo $status;
-				print "<br>Image Size: $file_size";
+				echo "<br>" . sprintf(__('Image Size: %s', EWWW_IMAGE_OPTIMIZER_DOMAIN), $file_size);
 				printf("<br><a href=\"admin.php?action=ewww_flag_manual&amp;attachment_ID=%d\">%s</a>",
 				$id,
 				__('Re-optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 			// otherwise, tell the user that they can optimize the image now
 			} else {
-				print __('Not processed', EWWW_IMAGE_OPTIMIZER_DOMAIN);
-				print "<br>Image Size: $file_size";
+				_e('Not processed', EWWW_IMAGE_OPTIMIZER_DOMAIN);
+				echo "<br>" . sprintf(__('Image Size: %s', EWWW_IMAGE_OPTIMIZER_DOMAIN), $file_size);
 				printf("<br><a href=\"admin.php?action=ewww_flag_manual&amp;attachment_ID=%d\">%s</a>",
 				$id,
 				__('Optimize now!', EWWW_IMAGE_OPTIMIZER_DOMAIN));
