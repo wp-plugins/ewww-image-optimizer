@@ -2,9 +2,9 @@
 Contributors: nosilver4u
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=QFXCW38HE24NY
 Tags: images, image, attachments, attachment, optimize, optimization, nextgen, buddypress, flagallery, flash-gallery, lossless, photos, photo, picture, pictures, seo, compression, image-store, imstore, slider, image editor, gmagick, wp-symposium, meta-slider, metaslider
-Requires at least: 3.0
+Requires at least: 3.1
 Tested up to: 3.7.1
-Stable tag: 1.7.1
+Stable tag: 1.7.2
 License: GPLv3
 
 Reduce file sizes for images within WordPress including NextGEN, GRAND FlAGallery and more. Uses jpegtran, optipng, pngout, and gifsicle.
@@ -164,15 +164,18 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * these are possible future bugfixes and/or feature requests, if you see a feature you like here, go vote for it in the support forum
 * SunOS (Solaris/OpenIndiana) support
 * Bulk restoration of converted images
-* FlaGallery optimize on upload does not work with plupload (only the browser-based method works properly). This will be fixed in a future release, as the developer has already committed to implementing the necessary hooks.
-* internationalization (will need help translating strings once this is completed)
+* FlaGallery optimize on upload does not work with plupload (only the browser-based method works properly). This will be implemented in a future release.
 
 = 1.7.2 =
+* added: internationalization - need volunteers to provide translations. If interested, post a support thread with the language you would like to help with.
 * fixed: Import button not shown on Optimize More in some cases
 * fixed: Bulk Optimize for Nextgen was broken
 * changed: file comparison from md5sum to filesize for Optimize More to improve load time
 * added: quota information for cloud users on settings page
-* fixed: sub-folders of uploads directory not allowed if /uploads is outside of wp folder
+* fixed: sub-folders of uploads directory were not allowed if /uploads is outside of wp folder
+* changed: increased cloud_verify timeout to avoid false results
+* added: link to status page for cloud service on settings page
+* fixed: debug log created if it does not exist already
 
 = 1.7.1 =
 * fixed: syntax error causing white screen of death for Nextgen v2
