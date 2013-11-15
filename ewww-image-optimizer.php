@@ -25,6 +25,7 @@ if (preg_match('/get_current_user/', $disabled)) {
  * Constants
  */
 define('EWWW_IMAGE_OPTIMIZER_DOMAIN', 'ewww-image-optimizer');
+define('EWWW_IMAGE_OPTIMIZER_VERSION', '172.92');
 // this is just the name of the plugin folder
 //define('EWWW_IMAGE_OPTIMIZER_PLUGIN_DIR', dirname(plugin_basename(__FILE__)));
 if (function_exists('plugin_dir_path')) {
@@ -68,7 +69,6 @@ if ($my_version < 3.5) {
 	$ewww_debug .= "new version of wp <br>";
 }
 register_deactivation_hook(__FILE__, 'ewww_image_optimizer_network_deactivate');
-register_activation_hook(__FILE__, 'ewww_image_optimizer_install_table');
 
 // require the file that does the bulk processing
 require(dirname(__FILE__) . '/bulk.php');
@@ -97,6 +97,10 @@ require( dirname(__FILE__) . '/flag-integration.php' );
 function ewww_image_optimizer_init() {
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_init()</b><br>";
+	if (get_option('ewww_image_optimizer_version') < EWWW_IMAGE_OPTIMIZER_VERSION) {
+		ewww_image_optimizer_install_table();
+		update_option('ewww_image_optimizer_version', EWWW_IMAGE_OPTIMIZER_VERSION);
+	}
 	ewww_image_optimizer_cloud_verify();
 	if (!defined('EWWW_IMAGE_OPTIMIZER_CLOUD') && ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_jpg') && ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_png') && ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_gif')) {
 		define('EWWW_IMAGE_OPTIMIZER_CLOUD', TRUE);
@@ -219,10 +223,6 @@ function ewww_image_optimizer_admin_init() {
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_cloud_gif');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_auto');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_aux_paths', 'ewww_image_optimizer_aux_paths_sanitize');
-	// set a few defaults
-	add_option('ewww_image_optimizer_disable_pngout', TRUE);
-	add_option('ewww_image_optimizer_optipng_level', 2);
-	add_option('ewww_image_optimizer_pngout_level', 2);
 	// setup scheduled optimization if the user has enabled it, and it isn't already scheduled
 	if (ewww_image_optimizer_get_option('ewww_image_optimizer_auto') == TRUE && !wp_next_scheduled('ewww_image_optimizer_auto')) {
 		$ewww_debug .= "scheduling auto-optimization<br>";
@@ -272,7 +272,7 @@ function ewww_image_optimizer_install_table() {
 	$ewww_debug .= "<b>ewww_image_optimizer_install_table()</b><br>";
 	global $wpdb;
 	$table_name = $wpdb->prefix . "ewwwio_images";
-      
+	
 	// create a table with 4 columns: an id, the file path, the md5sum, and the optimization results
 	$sql = "CREATE TABLE $table_name (
 		id mediumint(9) NOT NULL AUTO_INCREMENT,
@@ -287,6 +287,24 @@ function ewww_image_optimizer_install_table() {
 	// include the upgrade library to initialize a table
 	require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 	dbDelta($sql);
+	
+	// make sure some of our options are not autoloaded (since they can be huge)
+	$bulk_attachments = get_option('ewww_image_optimizer_bulk_attachments', '');
+	delete_option('ewww_image_optimizer_bulk_attachments');
+	add_option('ewww_image_optimizer_bulk_attachments', $bulk_attachments, '', 'no');
+	$bulk_attachments = get_option('ewww_image_optimizer_flag_attachments', '');
+	delete_option('ewww_image_optimizer_flag_attachments');
+	add_option('ewww_image_optimizer_flag_attachments', $bulk_attachments, '', 'no');
+	$bulk_attachments = get_option('ewww_image_optimizer_ngg_attachments', '');
+	delete_option('ewww_image_optimizer_ngg_attachments');
+	add_option('ewww_image_optimizer_ngg_attachments', $bulk_attachments, '', 'no');
+	$bulk_attachments = get_option('ewww_image_optimizer_aux_attachments', '');
+	delete_option('ewww_image_optimizer_aux_attachments');
+	add_option('ewww_image_optimizer_aux_attachments', $bulk_attachments, '', 'no');
+	// set a few defaults
+	add_option('ewww_image_optimizer_disable_pngout', TRUE);
+	add_option('ewww_image_optimizer_optipng_level', 2);
+	add_option('ewww_image_optimizer_pngout_level', 2);
 }
 
 // sets all the tool constants to false
@@ -911,20 +929,11 @@ function ewww_image_optimizer_notice_utils() {
 
 	// attempt to retrieve values for utility paths, and store them in the appropriate variables
 	$required = ewww_image_optimizer_path_check();
-	// if the user has disabled the utility checks
-/*	if(ewww_image_optimizer_get_option('ewww_image_optimizer_skip_check') == TRUE){
-		// set a variable for each tool
-		$skip_jpegtran_check = true;
-		$skip_optipng_check = true;
-		$skip_gifsicle_check = true;
-		$skip_pngout_check = true;
-	} else {*/
-		// set the variables false otherwise
-		$skip_jpegtran_check = false;
-		$skip_optipng_check = false;
-		$skip_gifsicle_check = false;
-		$skip_pngout_check = false;
-//	}
+	// set the variables false otherwise
+	$skip_jpegtran_check = false;
+	$skip_optipng_check = false;
+	$skip_gifsicle_check = false;
+	$skip_pngout_check = false;
 	// if the user has disabled a variable, we aren't going to bother checking to see if it is there
 	if (ewww_image_optimizer_get_option('ewww_image_optimizer_disable_jpegtran')) {
 		$skip_jpegtran_check = true;
@@ -978,7 +987,6 @@ function ewww_image_optimizer_notice_utils() {
 	$msg = implode(', ', $missing);
 	// if there is a message, display the warning
 	if(!empty($msg)){
-//		echo "<div id='ewww-image-optimizer-warning-opt-png' class='updated'><p>EWWW Image Optimizer requires <a href='http://jpegclub.org/jpegtran/'>jpegtran</a>, <a href='http://optipng.sourceforge.net/'>optipng</a> or <a href='http://advsys.net/ken/utils.htm'>pngout</a>, and <a href='http://www.lcdf.org/gifsicle/'>gifsicle</a>. You are missing: $msg. Please install via the <a href='options-general.php?page=ewww-image-optimizer/ewww-image-optimizer.php'>Settings Page</a> or the <a href='http://wordpress.org/extend/plugins/ewww-image-optimizer/installation/'>Installation Instructions</a>.</p></div>";
 		echo "<div id='ewww-image-optimizer-warning-opt-png' class='error'><p>" . sprintf(__('EWWW Image Optimizer requires %1$s, %2$s or %3$s, and %4$s. You are missing: %5$s. Please install via the %6$s or the %7$s.', EWWW_IMAGE_OPTIMIZER_DOMAIN), "<a href='http://jpegclub.org/jpegtran/'>jpegtran</a>", "<a href='http://optipng.sourceforge.net/'>optipng</a>", "<a href='http://advsys.net/ken/utils.htm'>pngout</a>", "<a href='http://www.lcdf.org/gifsicle/'>gifsicle</a>", $msg, "<a href='options-general.php?page=ewww-image-optimizer/ewww-image-optimizer.php'>" . __('Settings Page', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a>", "<a href='http://wordpress.org/extend/plugins/ewww-image-optimizer/installation/'>" . __('Installation Instructions', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a>") . "</p></div>";
 	}
 }
@@ -1062,6 +1070,8 @@ function ewww_image_optimizer_ims() {
 			'post_status' => 'any',
 			'fields' => 'ids'
 	        ));
+		// we need to strip the excess data since we only want IDs
+		$galleries = ewww_image_optimizer_clean_attachments($galleries);
 		sort($galleries, SORT_NUMERIC);
 		$gallery_string = implode(',', $galleries);
 		echo "<p>" . __('Choose a gallery or', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <a href='upload.php?page=ewww-image-optimizer-bulk&ids=$gallery_string'>" . __('optimize all galleries', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a></p>";
@@ -1075,6 +1085,8 @@ function ewww_image_optimizer_ims() {
 					'post_parent' => $gid,
 					'fields' => 'ids'
 		                ));
+				// we need to strip the excess data from attachments, since we only want the attachment IDs
+				$attachments = ewww_image_optimizer_clean_attachments($attachments);
 				$image_count = sizeof($attachments);
 				$image_string = implode(',', $attachments);
 				$gallery_name = get_the_title($gid);
@@ -1094,6 +1106,8 @@ function ewww_image_optimizer_ims() {
 				'post_parent' => $gid,
 				'fields' => 'ids'
 	                ));
+			// we need to strip the excess data from attachments, since we only want the attachment IDs
+			$attachments = ewww_image_optimizer_clean_attachments($attachments);
 			sort($attachments, SORT_NUMERIC);
 			$image_string = implode(',', $attachments);
 			echo "<p><a href='upload.php?page=ewww-image-optimizer-bulk&ids=$image_string'>" . __('Optimize Gallery', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a></p>";
@@ -1109,21 +1123,12 @@ function ewww_image_optimizer_ims() {
 				$echo_meta = preg_replace('/\n/', '<br>', $echo_meta);
 				$echo_meta = preg_replace('/ /', '&nbsp;', $echo_meta);
 				$echo_meta = '';
-//				if ($alternate) {
-?>					<tr<?php if($alternate) echo " class='alternate'"; ?>><td><?php echo $ID; ?></td>
-<?php					echo "<td style='width:80px' class='column-icon'><img src='$image_url' /></td>";
-					echo "<td class='title'>$image_name</td>";
-					echo "<td>$gallery_name</td><td>";
-					ewww_image_optimizer_custom_column('ewww-image-optimizer', $ID);
-					echo "</td></tr>";
-/*				} else {
-					echo "<tr><td>$ID</td>";
-					echo "<td style='width:80px' class='column-icon'><img src='$image_url' /></td>";
-					echo "<td class='title'>$image_name</td>";
-					echo "<td>$gallery_name</td><td>";
-					ewww_image_optimizer_custom_column('ewww-image-optimizer', $ID);
-					echo "</td></tr>";
-				}*/
+?>				<tr<?php if($alternate) echo " class='alternate'"; ?>><td><?php echo $ID; ?></td>
+<?php				echo "<td style='width:80px' class='column-icon'><img src='$image_url' /></td>";
+				echo "<td class='title'>$image_name</td>";
+				echo "<td>$gallery_name</td><td>";
+				ewww_image_optimizer_custom_column('ewww-image-optimizer', $ID);
+				echo "</td></tr>";
 				$alternate = !$alternate;
 			}
 			echo '</table>';
@@ -1138,9 +1143,7 @@ function ewww_image_optimizer_media_scripts($hook) {
 		global $wp_version;
 		$my_version = $wp_version;
 		$my_version = substr($my_version, 0, 3);
-//		if ($my_version < 3.6) {
 			wp_enqueue_style('jquery-ui-tooltip-custom', plugins_url('jquery-ui-1.10.1.custom.css', __FILE__));
-//		}
 	}
 }
 
@@ -1216,7 +1219,6 @@ function ewww_image_optimizer_aux_paths_sanitize ($input) {
 		$upload_path = str_replace($upload_dir['basedir'], '', $path);
 		$upload_path_t = str_replace(trailingslashit($upload_dir['basedir']), '', $path);
 		if (is_dir($path) && (strpos($path, trailingslashit(ABSPATH)) === 0 || strpos($path, $upload_path) === 0)) {
-//		if (is_dir($path) && strpos($path, trailingslashit(ABSPATH)) === 0 && !empty($upload_path) && !empty($upload_path_t)) {
 			$path_array[] = $path;
 		}
 	}
@@ -2544,6 +2546,24 @@ function ewww_image_optimizer_find_binary ($binary, $switch) {
 	}
 }
 
+// takes an array of attachment info and strips out extra fields
+function ewww_image_optimizer_clean_attachments ($attachments) {
+	// the 'fields' option was added in 3.1, so (in older versions) we need to strip 
+	// the excess data from attachments, since we only want the attachment IDs
+	global $wp_version;
+	$my_version = $wp_version;
+	$my_version = substr($my_version, 0, 3);
+	if ( $my_version < 3.1 ) {
+		$i = 0;
+		foreach( $attachments as $attachment ) {
+			$new_attachments[$i] = $attachment->ID;
+			$i++;
+		}
+		$attachments = $new_attachments;
+	}
+	return $attachments;
+}
+
 // generate a unique filename for a converted image
 function ewww_image_optimizer_unique_filename ($file, $fileext) {
 	// strip the file extension
@@ -3031,7 +3051,6 @@ function ewww_image_optimizer_options () {
 					<b><a href="http://wordpress.org/support/plugin/ewww-image-optimizer"><?php _e('Please submit a support request in the forums to have folders created by a particular plugin auto-included in the future.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></a></b></p></td></tr>
 				<?php if (!EWWW_IMAGE_OPTIMIZER_CLOUD) { ?>
 				<tr><th><label for="ewww_image_optimizer_skip_bundle"><?php _e('Use System Paths', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label></th><td><input type="checkbox" id="ewww_image_optimizer_skip_bundle" name="ewww_image_optimizer_skip_bundle" value="true" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_skip_bundle') == TRUE) { ?>checked="true"<?php } ?> /> <?php printf(__('If you have already installed the utilities in a system location, such as %s or %s, use this to force the plugin to use those versions and skip the auto-installers.', EWWW_IMAGE_OPTIMIZER_DOMAIN), '/usr/local/bin', '/usr/bin'); ?></td></tr>
-			<!--	<tr><th><label for="ewww_image_optimizer_skip_check">Skip utils check</label></th><td><input type="checkbox" id="ewww_image_optimizer_skip_check" name="ewww_image_optimizer_skip_check" value="true" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_skip_check') == TRUE) { ?>checked="true"<?php } ?> /> <b>DEPRECATED</b> - please uncheck this and report any errors in the support forum.</td></tr>-->
 				<tr><th><label for="ewww_image_optimizer_disable_jpegtran"><?php _e('disable', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?> jpegtran</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_jpegtran" name="ewww_image_optimizer_disable_jpegtran" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_disable_jpegtran') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
 				<tr><th><label for="ewww_image_optimizer_disable_optipng"><?php _e('disable', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?> optipng</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_optipng" name="ewww_image_optimizer_disable_optipng" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_disable_optipng') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
 				<tr><th><label for="ewww_image_optimizer_disable_pngout"><?php _e('disable', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?> pngout</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_pngout" name="ewww_image_optimizer_disable_pngout" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_disable_pngout') == TRUE) { ?>checked="true"<?php } ?> /></td><tr>

@@ -168,6 +168,8 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 = 1.7.3 =
 * fixed: some security plugins disable Optimize More - use install_themes permission instead of edit_themes
+* fixed: table schema changes not firing on upgrade
+* changed: bulk_attachment variables are not autoloaded to improve performance
 
 = 1.7.2 =
 * added: internationalization - need volunteers to provide translations. If interested, post a support thread with the language you would like to help with.
