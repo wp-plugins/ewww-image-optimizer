@@ -28,12 +28,12 @@ define('EWWW_IMAGE_OPTIMIZER_DOMAIN', 'ewww-image-optimizer');
 define('EWWW_IMAGE_OPTIMIZER_VERSION', '172.92');
 // this is just the name of the plugin folder
 //define('EWWW_IMAGE_OPTIMIZER_PLUGIN_DIR', dirname(plugin_basename(__FILE__)));
-if (function_exists('plugin_dir_path')) {
+//if (function_exists('plugin_dir_path')) {
 	// this is the full system path to the plugin folder
 	define('EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH', plugin_dir_path(__FILE__) );
-} else {
-	define('EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH', trailingslashit(dirname(__FILE__)));
-}
+//} else {
+//	define('EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH', trailingslashit(dirname(__FILE__)));
+//}
 // the folder where we install optimization tools
 define('EWWW_IMAGE_OPTIMIZER_TOOL_PATH', WP_CONTENT_DIR . '/ewww/');
 
@@ -107,7 +107,7 @@ function ewww_image_optimizer_init() {
 	} elseif (!defined('EWWW_IMAGE_OPTIMIZER_CLOUD')) {
 		define('EWWW_IMAGE_OPTIMIZER_CLOUD', FALSE);
 	}
-	load_plugin_textdomain(EWWW_IMAGE_OPTIMIZER_DOMAIN, EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH);
+	load_plugin_textdomain(EWWW_IMAGE_OPTIMIZER_DOMAIN, EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'languages/');
 }
 
 // Plugin initialization for admin area

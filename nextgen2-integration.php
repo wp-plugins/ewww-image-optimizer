@@ -57,49 +57,6 @@ class ewwwngg {
 		}
 		ewww_image_optimizer_debug_log();
 	}
-	// TODO: do we need this anymore?
-	/* optimize the thumbs of the images POSTed from the previous page */
-/*	function ewww_ngg_thumb_bulk() {
-		if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
-			wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
-		}?> 
-		<div class="wrap">
-                <div id="icon-upload" class="icon32"></div><h2><?php _e('Bulk Thumbnail Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></h2>
-<?php		$images = unserialize ($_POST['attachments']);
-		// initialize $current, and $started time
-		$started = time();
-		$current = 0;
-		// find out how many images we have
-		$total = sizeof($images);
-		// flush the output buffers
-		ob_implicit_flush(true);
-		ob_end_flush();
-		// process each image
-		foreach ($images as $id) {
-			// give each image 50 seconds (php only, doesn't include any commands issued by exec()
-			set_time_limit (50);
-			$current++;
-			echo "<p>Processing $current/$total: ";
-			// get the metadata
-			$meta = new nggMeta( $id );
-			// output the current image name
-			printf( "<strong>%s</strong>&hellip;<br>", esc_html($meta->image->filename) );
-			// get the filepath of the thumbnail image
-			$thumb_path = $meta->image->thumbPath;
-			// run the optimization on the thumbnail
-			$tres = ewww_image_optimizer($thumb_path, 2, false, true);
-			// output the results of the thumb optimization
-			printf( "Thumbnail – %s<br>", $tres[1] );
-			// outupt how much time we've spent optimizing so far
-			$elapsed = time() - $started;
-			echo "Elapsed: $elapsed seconds</p>";
-			// flush the HTML output buffers
-			@ob_flush();
-			flush();
-		}
-		// all done here
-		echo '<p><b>Finished</b></p></div>';	
-	}*/
 
 	/* Manually process an image from the NextGEN Gallery */
 	function ewww_ngg_manual() {
