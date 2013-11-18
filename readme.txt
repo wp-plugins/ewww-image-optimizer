@@ -508,6 +508,7 @@ List of known bad webhosts where the plugin will only work in cloud mode or only
 == Translations ==
 
 Translators: 
+
 1. Please post in the support forums announcing your intent to translate the plugin into a particular language. 
 1. Download ewww-image-optimizer.pot from the plugin /languages/ folder.
 1. Fill in the message strings and header information and save it as a .po file.
