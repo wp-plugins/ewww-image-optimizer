@@ -166,6 +166,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * Bulk restoration of converted images
 * FlaGallery optimize on upload does not work with plupload (only the browser-based method works properly). This will be implemented in a future release.
 
+= 1.7.4 =
+* fixed: some settings were set to incorrect defaults after enabling and disabling cloud features
+
 = 1.7.3 =
 * fixed: some security plugins disable Optimize More - use install_themes permission instead of edit_themes
 * fixed: table schema changes not firing on upgrade
