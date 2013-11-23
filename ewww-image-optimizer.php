@@ -382,11 +382,13 @@ function ewww_image_optimizer_md5check($path) {
 		'9d482b93d4129f7e87ce36c5e650de0c',
 		'1c251658834162b01913702db0013c08',
 		'dabf8173725e15d866f192f77d9e3883',
+		'e4f7809c84a0722abe2b1d003c98a181',
 		//optipng
 		'4eb91937291ce5038d0c68f5f2edbcfd',
 		'899e3c569080a55bcc5de06a01c8e23a',
 		'0467bd0c73473221d21afbc5275503e4',
 		'293e26924a274c6185a06226619d8e02',
+		'bcb27d22377f8abf3e9fe88a60030885',
 		//gifsicle
 		'2384f770d307c42b9c1e53cdc8dd662d',
 		'24fc5f33b33c0d11fb2e88f5a93949d0',
@@ -396,6 +398,8 @@ function ewww_image_optimizer_md5check($path) {
 		'46360c01622ccb514e9e7ef1ac5398f0',
 		'44273fad7b3fd1145bfcf35189648f66',
 		'4568ef450ec9cd73bab55d661fb167ec',
+		'f8d8baa175977a23108c84603dbfcc78',
+		'3b592b6398dd7f379740c0b63e83825c',
 		//pngout
 		'2b62778559e31bc750dc2dcfd249be32', 
 		'ea8655d1a1ef98833b294fb74f349c3e',
@@ -529,6 +533,8 @@ function ewww_image_optimizer_tool_found($path, $tool) {
 			exec("$path -v 2>&1", $file_version);
 			if (!empty($file_version[1])) $ewww_debug .= "$path: $file_version[1]<br>";
 			if (!empty($file_version[1]) && preg_match('/magic/', $file_version[1])) {
+				return $file_version[0];
+			} elseif (!empty($file_version[1]) && preg_match('/usage: file/', $file_version[1])) {
 				return $file_version[0];
 			}
 			break;
@@ -705,6 +711,19 @@ function ewww_image_optimizer_install_paths () {
 		$gifsicle_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'gifsicle-mac';
 		$optipng_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'optipng-mac';
 		$jpegtran_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'jpegtran-mac';
+		$gifsicle_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle';
+		$optipng_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng';
+		$jpegtran_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran';
+	}
+	if (PHP_OS == 'SunOS') {
+//		$arch_type = php_uname('m');
+		$gifsicle_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'gifsicle-sol';
+		$optipng_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'optipng-sol';
+//		if ($arch_type == 'amd64') {
+//			$jpegtran_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'jpegtran-fbsd64';
+//		} else {
+			$jpegtran_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'jpegtran-sol';
+//		}
 		$gifsicle_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle';
 		$optipng_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng';
 		$jpegtran_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran';
@@ -2542,6 +2561,8 @@ function ewww_image_optimizer_find_binary ($binary, $switch) {
 		return '/usr/bin/' . $binary;
 	} elseif (ewww_image_optimizer_tool_found('/usr/local/bin/' . $binary, $switch)) {
 		return '/usr/local/bin/' . $binary;
+	} elseif (ewww_image_optimizer_tool_found('/usr/gnu/bin/' . $binary, $switch)) {
+		return '/usr/gnu/bin/' . $binary;
 	} else {
 		return '';
 	}
@@ -3019,7 +3040,7 @@ function ewww_image_optimizer_options () {
 				if (!ewww_image_optimizer_find_binary('nice', 'n')) {
 					echo '<span style="color: orange; font-weight: bolder">nice ' . __('command not found on your system', EWWW_IMAGE_OPTIMIZER_DOMAIN) . ' (' . __('not required', EWWW_IMAGE_OPTIMIZER_DOMAIN) . ')</span><br>';
 				}
-				if (!ewww_image_optimizer_tool_found('tar', 't')) {
+				if (!ewww_image_optimizer_find_binary('tar', 't')) {
 					echo '<span style="color: red; font-weight: bolder">tar ' . __('command not found on your system', EWWW_IMAGE_OPTIMIZER_DOMAIN) . ' (' . __('required for automatic pngout installer', EWWW_IMAGE_OPTIMIZER_DOMAIN) . ')</span><br>';
 				}
 			}

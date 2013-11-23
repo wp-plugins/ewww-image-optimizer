@@ -168,6 +168,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 = 1.7.4 =
 * fixed: some settings were set to incorrect defaults after enabling and disabling cloud features
+* fixed: invalid status on some systems for 'tar' command
 
 = 1.7.3 =
 * fixed: some security plugins disable Optimize More - use install_themes permission instead of edit_themes
