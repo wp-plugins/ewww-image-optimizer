@@ -162,13 +162,13 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 = future =
 * these are possible future bugfixes and/or feature requests, if you see a feature you like here, go vote for it in the support forum
-* SunOS (Solaris/OpenIndiana) support
-* Bulk restoration of converted images
 * FlaGallery optimize on upload does not work with plupload (only the browser-based method works properly). This will be implemented in a future release.
 
 = 1.7.4 =
 * fixed: some settings were set to incorrect defaults after enabling and disabling cloud features
 * fixed: invalid status on some systems for 'tar' command
+* updated: new version of gifsicle (1.7.7), for more detail, see http://www.lcdf.org/gifsicle/changes.html
+* new: SunOS support - OpenIndiana and Solaris
 
 = 1.7.3 =
 * fixed: some security plugins disable Optimize More - use install_themes permission instead of edit_themes

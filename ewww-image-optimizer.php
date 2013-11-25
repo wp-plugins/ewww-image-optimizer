@@ -61,12 +61,11 @@ add_action('admin_enqueue_scripts', 'ewww_image_optimizer_media_scripts');
 add_action('ewww_image_optimizer_auto', 'ewww_image_optimizer_auto');
 //global $wp_version;
 $my_version = substr($wp_version, 0, 3);
+$ewww_debug .= "version of wp: $wp_version<br>";
 if ($my_version < 3.5) {
 	add_filter('wp_save_image_editor_file', 'ewww_image_optimizer_save_image_editor_file', 60, 5);
-	$ewww_debug .= "old version of wp <br>";
 } else {
 	add_filter('wp_image_editors', 'ewww_image_optimizer_load_editor', 60);
-	$ewww_debug .= "new version of wp <br>";
 }
 register_deactivation_hook(__FILE__, 'ewww_image_optimizer_network_deactivate');
 
@@ -80,6 +79,7 @@ require_once(ABSPATH . 'wp-admin/includes/plugin.php');
 if (is_plugin_active('nextgen-gallery/nggallery.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('nextgen-gallery/nggallery.php'))) {
 	$plugin_dir = str_replace('ewww-image-optimizer', '', dirname(__FILE__));
 	$nextgen_data = get_plugin_data($plugin_dir . 'nextgen-gallery/nggallery.php', false, false);
+		$ewww_debug .= 'Nextgen version ' . $nextgen_data['Version'] . ' detected<br>';
 	if (preg_match('/^2\./', $nextgen_data['Version'])) { // for Nextgen 2
 		require(dirname(__FILE__) . '/nextgen2-integration.php');
 	} else {
@@ -3040,7 +3040,7 @@ function ewww_image_optimizer_options () {
 				if (!ewww_image_optimizer_find_binary('nice', 'n')) {
 					echo '<span style="color: orange; font-weight: bolder">nice ' . __('command not found on your system', EWWW_IMAGE_OPTIMIZER_DOMAIN) . ' (' . __('not required', EWWW_IMAGE_OPTIMIZER_DOMAIN) . ')</span><br>';
 				}
-				if (!ewww_image_optimizer_find_binary('tar', 't')) {
+				if (PHP_OS != 'SunOS' && !ewww_image_optimizer_find_binary('tar', 't')) {
 					echo '<span style="color: red; font-weight: bolder">tar ' . __('command not found on your system', EWWW_IMAGE_OPTIMIZER_DOMAIN) . ' (' . __('required for automatic pngout installer', EWWW_IMAGE_OPTIMIZER_DOMAIN) . ')</span><br>';
 				}
 			}
