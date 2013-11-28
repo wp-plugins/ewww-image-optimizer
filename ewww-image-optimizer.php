@@ -1492,6 +1492,8 @@ function ewww_image_optimizer_cloud_verify() {
 			}
 			$ewww_debug .= "verification success via: $ip <br>";
 			break;
+		} else {
+			$ewww_debug .= "verification failed via: $ip <br>" . print_r($result, true) . "<br>";
 		}
 	}
 	if (empty($verified)) {
@@ -1503,6 +1505,7 @@ function ewww_image_optimizer_cloud_verify() {
 		update_option('ewww_image_optimizer_cloud_gif', '');
 		return FALSE;
 	} else {
+		$ewww_debug .= "verification body contents: " . $result['body'] . "<br>";
 		return $verified;
 	}
 }
