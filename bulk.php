@@ -27,7 +27,7 @@ function ewww_image_optimizer_bulk_preview() {
 		<div id="bulk-progressbar"></div>
 		<div id="bulk-counter"></div>
 		<div id="bulk-status"></div>
-		<div id="bulk-forms"><p><?php _e('This tool can optimize large batches of images from your media library.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
+		<div id="bulk-forms">
 		<p><?php printf(__('We have %d images to optimize.', EWWW_IMAGE_OPTIMIZER_DOMAIN), count($attachments)); ?></p>
 		<form id="bulk-start" method="post" action="">
 			<input type="submit" class="button-secondary action" value="<?php echo $button_text; ?>" />
@@ -111,17 +111,7 @@ function ewww_image_optimizer_bulk_script($hook) {
         }
 	// the 'fields' option was added in 3.1, so (in older versions) we need to strip 
 	// the excess data from attachments, since we only want the attachment IDs
-	global $wp_version;
-	$my_version = $wp_version;
-	$my_version = substr($my_version, 0, 3);
-	if ( $my_version < 3.1 ) {
-		$i = 0;
-		foreach( $attachments as $attachment ) {
-			$new_attachments[$i] = $attachment->ID;
-			$i++;
-		}
-		$attachments = $new_attachments;
-	}
+	$attachments = ewww_image_optimizer_clean_attachments($attachments);
 	// store the attachment IDs we retrieved in the 'bulk_attachments' option so we can keep track of our progress in the database
 	update_option('ewww_image_optimizer_bulk_attachments', $attachments);
 	wp_enqueue_script('ewwwjuiscript', plugins_url('/jquery-ui-1.10.2.custom.min.js', __FILE__), false);
