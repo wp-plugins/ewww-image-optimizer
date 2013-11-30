@@ -169,7 +169,6 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * fixed: invalid status on some systems for 'tar' command
 * new: SunOS support - OpenIndiana and Solaris
 * fixed: resizes not properly checking for re-optimization prevention
-* updated: new version of gifsicle (1.7.7), for more detail, see http://www.lcdf.org/gifsicle/changes.html
 
 = 1.7.3 =
 * fixed: some security plugins disable Optimize More - use install_themes permission instead of edit_themes
