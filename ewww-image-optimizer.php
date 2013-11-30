@@ -2409,8 +2409,8 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 			if (!$dup_size) {
 				$resize_path = $base_dir . $data['file'];
 				// check the database to make sure it wasn't already optimized via wp_image_editor and friends
-				$image_md5 = md5_file($resize_path);
-				$query = "SELECT id,results FROM " . $wpdb->prefix . 'ewwwio_images' . " WHERE path = '$resize_path' AND image_md5 = '$image_md5'";
+				$image_size = filesize($resize_path);
+				$query = "SELECT id,results FROM " . $wpdb->prefix . 'ewwwio_images' . " WHERE path = '$resize_path' AND image_size = '$image_size'";
 				$already_optimized = $wpdb->get_results($query, ARRAY_A);
 				if (!empty($_GET['convert']) || ewww_image_optimizer_get_option('ewww_image_optimizer_jpg_to_png') || ewww_image_optimizer_get_option('ewww_image_optimizer_png_to_jpg') || ewww_image_optimizer_get_option('ewww_image_optimizer_gif_to_png'))
 					$already_optimized = '';
