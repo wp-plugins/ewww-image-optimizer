@@ -2,7 +2,7 @@
 # This file is distributed under the same license as the EWWW Image Optimizer package.
 msgid ""
 msgstr ""
-"Project-Id-Version: EWWW Image Optimizer 1.7.4\n"
+"Project-Id-Version: EWWW Image Optimizer 1.7.5\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/ewww-image-optimizer\n"
 "POT-Creation-Date: 2013-11-14 00:05:24+00:00\n"
 "MIME-Version: 1.0\n"
@@ -39,7 +39,7 @@ msgstr ""
 
 #: aux-optimize.php:50
 msgid "The database schema has changed, you need to convert to the new format."
-msgstr "De structuur van de database is gewijzigd. U dient te converteren naar het nieuwe formaat."
+msgstr "De structuur van de database is gewijzigd. U dient ze aan te passen aan het nieuwe formaat."
 
 #: aux-optimize.php:54
 msgid "Convert Table"
@@ -120,7 +120,7 @@ msgstr "Importeren"
 #: nextgen2-integration.php:352 nextgen2-integration.php:369
 #: nextgen2-integration.php:409
 msgid "Cheatin&#8217; eh?"
-msgstr ""
+msgstr "Toegang Geweigerd"
 
 #: aux-optimize.php:140
 msgid "Nothing to import"
@@ -615,7 +615,7 @@ msgstr "%s behoeft er maar één, gebruikt voor conversie, niet voor optimalisat
 
 #: ewww-image-optimizer.php:2949
 msgid "Graphics libraries"
-msgstr ""
+msgstr "Grafische Bibliotheek"
 
 #: ewww-image-optimizer.php:2974
 msgid "Only need one of these:"
@@ -692,7 +692,7 @@ msgstr ""
 
 #: ewww-image-optimizer.php:3026
 msgid "Debugging"
-msgstr ""
+msgstr "Foutopsporing"
 
 #: ewww-image-optimizer.php:3026
 msgid ""
