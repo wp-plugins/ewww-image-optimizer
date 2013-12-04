@@ -167,7 +167,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 = 1.7.5 =
 * new version of gifsicle (1.7.7), for more detail, see http://www.lcdf.org/gifsicle/changes.html
-* added: proper detection of Cloudinary images instead of error message
+* proper detection of Cloudinary images instead of error message
 * Dutch translation
 * Spanish translation
 
