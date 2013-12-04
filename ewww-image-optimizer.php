@@ -2670,7 +2670,7 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 	if ($column_name == 'ewww-image-optimizer') {
 		// retrieve the metadata
 		$meta = wp_get_attachment_metadata($id);
-		print_r ($meta);
+//		print_r ($meta);
 		if(!empty($meta['cloudinary'])) {
 			echo "Cloudinary image";
 			return;
