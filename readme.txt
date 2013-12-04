@@ -118,11 +118,11 @@ Yes, but only if the optimized version is smaller. The plugin should NEVER creat
 
 = Can I resize my images with this plugin? =
 
-No, that would be a lossy operation, and we try to avoid that.
+No, that would be a lossy operation, and we try to avoid that. Use Imsanity.
 
 = Can I lower the compression setting for JPGs to save more space? =
 
-Again, that would be a lossy operation, and we try to avoid that.
+Again, that would be a lossy operation, and we try to avoid that. Use Imsanity.
 
 = The bulk optimizer doesn't seem to be working, what can I do? =
 
@@ -130,7 +130,7 @@ Each image is given 50 seconds to complete (which actually doesn't include time 
 
 = What are the supported operating systems? =
 
-I've tested it on Windows (with Apache), Linux, Mac OSX, and FreeBSD. The cloud service will run on any OS.
+I've tested it on Windows (with Apache), Linux, Mac OSX, FreeBSD, and Solaris (v10). The cloud service will run on any OS.
 
 = How are JPGs optimized? =
 
@@ -167,6 +167,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 = 1.7.5 =
 * new version of gifsicle (1.7.7), for more detail, see http://www.lcdf.org/gifsicle/changes.html
+* added: proper detection of Cloudinary images instead of error message
+* Dutch translation
+* Spanish translation
 
 = 1.7.4 =
 * fixed: some settings were set to incorrect defaults after enabling and disabling cloud features
@@ -501,11 +504,12 @@ Known good webhosts where things work out of the box.
 * [Bluehost](http://www.bluehost.com)
 * [Dreamhost](http://www.dreamhost.com)
 * [GoDaddy](http://www.godaddy.com) (only with PHP 5.3)
-* [WebFaction](http://www.webfaction.com)
-* [Hosterdam](http://www.hosterdam.com) (FreeBSD)
-* [OVH](http://www.ovh.co.uk)
+* [HostGator](http://www.hostgator.com)
 * [Hetzner Online](http://www.hetzner.de)
+* [Hosterdam](http://www.hosterdam.com) (FreeBSD)
 * [Namecheap](http://www.namecheap.com)
+* [OVH](http://www.ovh.co.uk)
+* [WebFaction](http://www.webfaction.com)
 
 List of known bad webhosts where the plugin will only work in cloud mode or only some tools are installed locally.
 
