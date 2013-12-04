@@ -190,7 +190,7 @@ msgstr "No parece haber subido ninguna imagen todavía."
 #: nextgen-integration.php:229 nextgen2-integration.php:26
 #: nextgen2-integration.php:229
 msgid "Bulk Optimize"
-msgstr "Bulk Optimize"
+msgstr "Optimización de Volumen"
 
 #: bulk.php:22 flag-integration.php:68 nextgen-integration.php:236
 #: nextgen2-integration.php:236
@@ -390,8 +390,8 @@ msgstr "Restaurado el Original"
 #: ewww-image-optimizer.php:1503
 msgid "used %1$d of %2$d, usage will reset in %3$d day."
 msgid_plural "used %1$d of %2$d, usage will reset in %3$d days."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "usado %1$d de %2$d, el uso se reseterá en %3$d dia."
+msgstr[1] "usado %1$d de %2$d, el uso se reseterá en %3$d dias."
 
 #: ewww-image-optimizer.php:1646
 msgid "Could not find <span class='code'>%s</span>"
@@ -650,7 +650,7 @@ msgstr "necesario para el instalador pngout automático"
 
 #: ewww-image-optimizer.php:3013
 msgid "Cloud Settings"
-msgstr "Configuración de la nube"
+msgstr "Ajustes de la Nube"
 
 #: ewww-image-optimizer.php:3014
 msgid ""
