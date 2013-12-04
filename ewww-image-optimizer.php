@@ -405,6 +405,7 @@ function ewww_image_optimizer_md5check($path) {
 		'00f9ae219957541e092c4b409ceb24d5',
 		'65988d4c3f63aee9bc51b4f1836c868d',
 		'5be991e0c7eb422d502be9f60011a099',
+		'ae1b9506607f64e196a7571d6075d925',
 		//pngout
 		'2b62778559e31bc750dc2dcfd249be32', 
 		'ea8655d1a1ef98833b294fb74f349c3e',
