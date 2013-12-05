@@ -190,6 +190,8 @@ function ewww_image_optimizer_admin_init() {
 			update_site_option('ewww_image_optimizer_auto', $_POST['ewww_image_optimizer_auto']);
 			if (empty($_POST['ewww_image_optimizer_aux_paths'])) $_POST['ewww_image_optimizer_aux_paths'] = '';
 			update_site_option('ewww_image_optimizer_aux_paths', ewww_image_optimizer_aux_paths_sanitize($_POST['ewww_image_optimizer_aux_paths']));
+			if (empty($_POST['ewww_image_optimizer_enable_cloudinary'])) $_POST['ewww_image_optimizer_enable_cloudinary'] = '';
+			update_site_option('ewww_image_optimizer_enable_cloudinary', $_POST['ewww_image_optimizer_enable_cloudinary']);
 			add_action('network_admin_notices', 'ewww_image_optimizer_network_settings_saved');
 		}
 	}
@@ -225,6 +227,7 @@ function ewww_image_optimizer_admin_init() {
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_cloud_gif');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_auto');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_aux_paths', 'ewww_image_optimizer_aux_paths_sanitize');
+	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_enable_cloudinary');
 	// setup scheduled optimization if the user has enabled it, and it isn't already scheduled
 	if (ewww_image_optimizer_get_option('ewww_image_optimizer_auto') == TRUE && !wp_next_scheduled('ewww_image_optimizer_auto')) {
 		$ewww_debug .= "scheduling auto-optimization<br>";
@@ -1176,7 +1179,7 @@ function ewww_image_optimizer_media_scripts($hook) {
 // used to output any debug messages available
 function ewww_image_optimizer_debug() {
 	global $ewww_debug;
-	if (ewww_image_optimizer_get_option('ewww_image_optimizer_debug')) echo '<div style="background-color:#ffff99;position:relative;bottom:60px;padding:5px 20px 10px;margin:0 0 15px 146px"><h3>Debug Log</h3>' . $ewww_debug . '</div>';
+	if (ewww_image_optimizer_get_option('ewww_image_optimizer_debug')) echo '<div style="background-color:#ffff99;position:relative;bottom:60px;padding:5px 20px 10px;margin:0 0 15px 150px"><h3>Debug Log</h3>' . $ewww_debug . '</div>';
 }
 
 // used to output debug messages to a logfile in the plugin folder in cases where output to the screen is a bad idea
@@ -2446,10 +2449,56 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 			$processed[$size]['height'] = $data['height'];
 		}
 	}
+	
+	if (class_exists('Cloudinary') && Cloudinary::config_get("api_secret") && ewww_image_optimizer_get_option('ewww_image_optimizer_enable_cloudinary') && !wp_get_attachment_metadata($ID)) {
+	//	add_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_send_to_cloudinary', 20, 2);
+		try {
+			$result = CloudinaryUploader::upload($file,array('use_filename'=>True));
+		} catch(Exception $e) {
+			$error = $e->getMessage();
+		}
+		if (!empty($error)) {
+			$ewww_debug .= "Cloudinary error: $error<br>";
+		} else {
+			$ewww_debug .= "successfully uploaded to Cloudinary<br>";
+			// register the attachment in the database as a cloudinary attachment
+//			$post_id = NULL;
+//			$attachment = get_post($ID);
+			$old_url = wp_get_attachment_url($ID);
+//			$post_id = $attachment->post_parent;
+//			CloudinaryPlugin::register_image($result['url'], $post_parent, $ID, $attachment, $result['width'], $result['height']);
+//			$info = pathinfo($result['url']);
+//			$public_id = $info['filename'];
+			wp_update_post(array('ID' => $ID,
+				'guid' => $result['url']));
+			update_attached_file($ID, $result['url']);
+			$meta['cloudinary'] = TRUE;
+			$errors = array();
+			CloudinaryPlugin::update_image_src_all($ID, $result, $old_url, $result["url"], TRUE, $errors);
+			if (count($errors) > 0) {
+				$ewww_debug .= "Cannot migrate the following posts:<br>" . implode("<br>", $errors);
+			}
+		}
+	}
+
 	ewww_image_optimizer_debug_log();
 	// send back the updated metadata
 	return $meta;
 }
+
+/*function ewww_image_optimizer_send_to_cloudinary($meta, $ID) {
+	global $ewww_debug;
+	$error = CloudinaryPlugin::upload_to_cloudinary($ID, TRUE);
+	if (!empty($error)) {
+		$ewww_debug .= "Cloudinary error: $error<br>";
+	} else {
+		$ewww_debug .= "successfully uploaded to Cloudinary<br>";
+	}
+//	$md = wp_get_attachment_metadata($attachment_id);
+//	$meta = $md["image_meta"];
+	ewww_image_optimizer_debug_log();
+	return $meta;
+}*/
 
 /**
  * Update the attachment's meta data after being converted 
@@ -2789,7 +2838,8 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 
 // Borrowed from http://www.viper007bond.com/wordpress-plugins/regenerate-thumbnails/
 // adds a bulk optimize action to the drop-down on the media library page
-function ewww_image_optimizer_add_bulk_actions_via_javascript() { 
+function ewww_image_optimizer_add_bulk_actions_via_javascript() {
+	// TODO: there may be a more elegant way of doing this, see the cloudinary plugin
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_add_bulk_actions_via_javascript()</b><br>";
 ?>
@@ -3088,6 +3138,9 @@ function ewww_image_optimizer_options () {
 				<tr class="nocloud"><th><label for="ewww_image_optimizer_disable_optipng"><?php _e('disable', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?> optipng</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_optipng" name="ewww_image_optimizer_disable_optipng" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_disable_optipng') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
 				<tr class="nocloud"><th><label for="ewww_image_optimizer_disable_pngout"><?php _e('disable', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?> pngout</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_pngout" name="ewww_image_optimizer_disable_pngout" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_disable_pngout') == TRUE) { ?>checked="true"<?php } ?> /></td><tr>
 				<tr class="nocloud"><th><label for="ewww_image_optimizer_disable_gifsicle"><?php _e('disable', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?> gifsicle</label></th><td><input type="checkbox" id="ewww_image_optimizer_disable_gifsicle" name="ewww_image_optimizer_disable_gifsicle" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_disable_gifsicle') == TRUE) { ?>checked="true"<?php } ?> /></td></tr>
+<?php	if (class_exists('Cloudinary') && Cloudinary::config_get("api_secret")) { ?>
+				<tr><th><label for="ewww_image_optimizer_enable_cloudinary"><?php _e('Automatic Cloudinary upload', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label></th><td><input type="checkbox" id="ewww_image_optimizer_enable_cloudinary" name="ewww_image_optimizer_enable_cloudinary" value="true" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_enable_cloudinary') == TRUE) { ?>checked="true"<?php } ?> /> <?php _e('When enabled, uploads to the Media Library will be transferred to Cloudinary after optimization. Cloudinary generates resizes, so only the full-size image is uploaded.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></td></tr>
+<?php	} ?>
 			</table>
 			<h3><?php _e('Optimization Settings', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></h3>
 			<table class="form-table">
