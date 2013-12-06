@@ -953,6 +953,24 @@ msgid ""
 msgstr ""
 "PNG is meestal beter dan GIF, maar bewegende afbeeldingen kunnen niet omgezet worden."
 
+#: ewww-image-optimizer.php:3142
+msgid "Automatic Cloudinary upload"
+msgstr "Automatisch opladen naar Cloudinary"
+
+#: ewww-image-optimizer.php:3142
+msgid ""
+"When enabled, uploads to the Media Library will be transferred to Cloudinary "
+"after optimization. Cloudinary generates resizes, so only the full-size "
+"image is uploaded."
+msgstr ""
+"Als deze functie is ingeschakeld, wordt een upload naar de Mediabibliotheek na "
+"optimalisatie overgebracht naar Cloudinary. Cloudinary genereert de afbeeldingen "
+"in alle nodige afmetingen, zodat alleen de afbeelding op volle grootte moet "
+"worden opgeladen."
+
+msgid "Cloudinary image"
+msgstr "Cloudinary afbeelding"
+
 #: ewww-image-optimizer.php:3085
 msgid "Save Changes"
 msgstr "Sla veranderingen op"

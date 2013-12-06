@@ -2360,8 +2360,35 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 		return $meta;
 	}
 	$ewww_debug .= "retrieved file path: $file_path<br>";
-	// run the image optimizer on the file, and store the results
-	list($file, $msg, $conv, $original) = ewww_image_optimizer($file_path, $gallery_type, false, false);
+	// see if this is a new image and Imsanity resized it (which means it could be already optimized)
+	if (!wp_get_attachment_metadata($ID) && function_exists('imsanity_get_max_width_height')) {
+		$new_image = true;
+		list($maxW,$maxH) = imsanity_get_max_width_height(IMSANITY_SOURCE_LIBRARY);
+		list($oldW, $oldH) = getimagesize($file_path);
+		list($newW, $newH) = wp_constrain_dimensions($oldW, $oldH, $maxW, $maxH);
+		$path_parts = pathinfo($file_path);
+		$imsanity_path = trailingslashit($path_parts['dirname']) . $path_parts['filename'] . '-' . $newW . 'x' . $newH . '.' . $path_parts['extension'];
+		$ewww_debug .= "imsanity path: $imsanity_path<br>";
+	} else {
+		$new_image = false;
+	}
+	// check the database to make sure it wasn't already optimized via wp_image_editor (because of Imsanity)
+	$image_size = filesize($file_path);
+	$query = "SELECT id,results FROM " . $wpdb->prefix . 'ewwwio_images' . " WHERE path = '$imsanity_path' AND image_size = '$image_size'";
+	$already_optimized = $wpdb->get_results($query, ARRAY_A);
+	// if converting, we don't care that it was already optimized
+	if (!empty($_GET['convert']) || ewww_image_optimizer_get_option('ewww_image_optimizer_jpg_to_png') || ewww_image_optimizer_get_option('ewww_image_optimizer_png_to_jpg') || ewww_image_optimizer_get_option('ewww_image_optimizer_gif_to_png'))
+		$already_optimized = '';
+	// if the image wasn't optimized already OR this isn't a newly uploaded image
+	if (empty($already_optimized) || !$new_image) {
+		// run the image optimizer on the file, and store the results
+		list($file, $msg, $conv, $original) = ewww_image_optimizer($file_path, $gallery_type, false, false);
+	// So... only if this is a newly uploaded image that was resized by Imsanity, we skip optimization and just copy the results from the database
+	} else {
+		$file = $file_path;
+		$msg = $already_optimized[0]['results'];
+		$conv = false;
+	}
 	// update the optimization results in the metadata
 	$meta['ewww_image_optimizer'] = $msg;
 	if ($file === false) {
@@ -2722,7 +2749,7 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 		$meta = wp_get_attachment_metadata($id);
 //		print_r ($meta);
 		if(!empty($meta['cloudinary'])) {
-			echo "Cloudinary image";
+			_e('Cloudinary image', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 			return;
 		}
 		// if the filepath isn't set in the metadata
