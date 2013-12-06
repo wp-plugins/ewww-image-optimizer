@@ -2349,6 +2349,8 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 		$gallery_type = 5;
 	}
 	$ewww_debug .= "attachment id: $ID<br>";
+	if (!wp_get_attachment_metadata($ID))
+		$new_image = true;
 	list($file_path, $upload_path) = ewww_image_optimizer_attachment_path($meta, $ID);
 	// if the attachment has been uploaded via the image store plugin
 	if ('ims_image' == get_post_type($ID)) {
@@ -2361,26 +2363,22 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 	}
 	$ewww_debug .= "retrieved file path: $file_path<br>";
 	// see if this is a new image and Imsanity resized it (which means it could be already optimized)
-	if (!wp_get_attachment_metadata($ID) && function_exists('imsanity_get_max_width_height')) {
-		$new_image = true;
+	if (!empty($new_image) && function_exists('imsanity_get_max_width_height')) {
 		list($maxW,$maxH) = imsanity_get_max_width_height(IMSANITY_SOURCE_LIBRARY);
 		list($oldW, $oldH) = getimagesize($file_path);
 		list($newW, $newH) = wp_constrain_dimensions($oldW, $oldH, $maxW, $maxH);
 		$path_parts = pathinfo($file_path);
 		$imsanity_path = trailingslashit($path_parts['dirname']) . $path_parts['filename'] . '-' . $newW . 'x' . $newH . '.' . $path_parts['extension'];
 		$ewww_debug .= "imsanity path: $imsanity_path<br>";
-	} else {
-		$new_image = false;
+		$image_size = filesize($file_path);
+		$query = "SELECT id,results FROM " . $wpdb->prefix . 'ewwwio_images' . " WHERE path = '$imsanity_path' AND image_size = '$image_size'";
+		$already_optimized = $wpdb->get_results($query, ARRAY_A);
 	}
-	// check the database to make sure it wasn't already optimized via wp_image_editor (because of Imsanity)
-	$image_size = filesize($file_path);
-	$query = "SELECT id,results FROM " . $wpdb->prefix . 'ewwwio_images' . " WHERE path = '$imsanity_path' AND image_size = '$image_size'";
-	$already_optimized = $wpdb->get_results($query, ARRAY_A);
 	// if converting, we don't care that it was already optimized
 	if (!empty($_GET['convert']) || ewww_image_optimizer_get_option('ewww_image_optimizer_jpg_to_png') || ewww_image_optimizer_get_option('ewww_image_optimizer_png_to_jpg') || ewww_image_optimizer_get_option('ewww_image_optimizer_gif_to_png'))
 		$already_optimized = '';
 	// if the image wasn't optimized already OR this isn't a newly uploaded image
-	if (empty($already_optimized) || !$new_image) {
+	if (empty($already_optimized) || empty($new_image)) {
 		// run the image optimizer on the file, and store the results
 		list($file, $msg, $conv, $original) = ewww_image_optimizer($file_path, $gallery_type, false, false);
 	// So... only if this is a newly uploaded image that was resized by Imsanity, we skip optimization and just copy the results from the database
@@ -2477,7 +2475,7 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 		}
 	}
 	
-	if (class_exists('Cloudinary') && Cloudinary::config_get("api_secret") && ewww_image_optimizer_get_option('ewww_image_optimizer_enable_cloudinary') && !wp_get_attachment_metadata($ID)) {
+	if (class_exists('Cloudinary') && Cloudinary::config_get("api_secret") && ewww_image_optimizer_get_option('ewww_image_optimizer_enable_cloudinary') && !empty($new_image)) {
 	//	add_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_send_to_cloudinary', 20, 2);
 		try {
 			$result = CloudinaryUploader::upload($file,array('use_filename'=>True));
