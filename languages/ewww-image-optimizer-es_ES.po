@@ -978,6 +978,10 @@ msgstr ""
 "PNG es generalmente mejor que GIF, pero las imágenes animadas no se puede "
 "convertir."
 
+#: ewww-image-optimizer.php:2750
+msgid "Cloudinary image"
+msgstr "imagen Cloudinary"
+
 #: ewww-image-optimizer.php:3085
 msgid "Save Changes"
 msgstr "Salvar Cambios"
