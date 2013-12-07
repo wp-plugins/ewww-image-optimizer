@@ -275,10 +275,6 @@ class ewwwngg {
 		wp_enqueue_script('ewwwjuiscript', plugins_url('/jquery-ui-1.10.2.custom.min.js', __FILE__), false);
 		// add the EWWW IO script
 		wp_enqueue_script('ewwwbulkscript', plugins_url('/eio.js', __FILE__), array('jquery'));
-		// replacing the built-in nextgen styling rules for progressbar
-		wp_register_style( 'ngg-jqueryui', plugins_url('jquery-ui-1.10.1.custom.css', __FILE__));
-		// enqueue the progressbar styling
-		wp_enqueue_style('ngg-jqueryui'); //, plugins_url('jquery-ui-1.10.1.custom.css', __FILE__));
 		// prep the $images for use by javascript
 		$images = json_encode($images);
 		// include all the vars we need for javascript

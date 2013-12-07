@@ -27,14 +27,8 @@ if (preg_match('/get_current_user/', $disabled)) {
 define('EWWW_IMAGE_OPTIMIZER_DOMAIN', 'ewww-image-optimizer');
 define('EWWW_IMAGE_OPTIMIZER_VERSION', '174');
 $ewww_debug .= 'EWWW IO version: ' . EWWW_IMAGE_OPTIMIZER_VERSION . '<br>';
-// this is just the name of the plugin folder
-//define('EWWW_IMAGE_OPTIMIZER_PLUGIN_DIR', dirname(plugin_basename(__FILE__)));
-//if (function_exists('plugin_dir_path')) {
-	// this is the full system path to the plugin folder
-	define('EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH', plugin_dir_path(__FILE__) );
-//} else {
-//	define('EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH', trailingslashit(dirname(__FILE__)));
-//}
+// this is the full system path to the plugin folder
+define('EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH', plugin_dir_path(__FILE__) );
 // the folder where we install optimization tools
 define('EWWW_IMAGE_OPTIMIZER_TOOL_PATH', WP_CONTENT_DIR . '/ewww/');
 
@@ -76,6 +70,7 @@ require(dirname(__FILE__) . '/aux-optimize.php');
 
 // need to include the plugin library for the is_plugin_active function (even though it isn't supposed to be necessary in the admin)
 require_once(ABSPATH . 'wp-admin/includes/plugin.php');
+
 // include the file that loads the nextgen gallery optimization functions
 if (is_plugin_active('nextgen-gallery/nggallery.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('nextgen-gallery/nggallery.php'))) {
 	$plugin_dir = str_replace('ewww-image-optimizer', '', dirname(__FILE__));
@@ -90,7 +85,7 @@ if (is_plugin_active('nextgen-gallery/nggallery.php') || (function_exists('is_pl
 
 // include the file that loads the grand flagallery optimization functions
 if (is_plugin_active('flash-album-gallery/flag.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('flash-album-gallery/flag.php')))
-require( dirname(__FILE__) . '/flag-integration.php' );
+	require( dirname(__FILE__) . '/flag-integration.php' );
 
 /**
  * Plugin initialization function
@@ -256,6 +251,28 @@ function ewww_image_optimizer_admin_init() {
 			}
 			restore_current_blog();
 		}
+	}
+	add_action('admin_enqueue_scripts', 'ewww_image_optimizer_progressbar_style');
+}
+
+// determines the proper color to use for progressbars, then includes css inline
+function ewww_image_optimizer_progressbar_style() {
+	if (function_exists('wp_add_inline_style')) {
+		$user_info = wp_get_current_user();
+		switch($user_info->admin_color) {
+			case 'midnight':
+				$fill_style = ".ui-widget-header { background-color: #e14d43; }";
+				break;
+			case 'blue':
+				$fill_style = ".ui-widget-header { background-color: #096484; }";
+				break;
+			case 'light':
+				$fill_style = ".ui-widget-header { background-color: #04a4cc; }";
+				break;
+			default:
+				$fill_style = ".ui-widget-header { background-color: #0074a2; }";
+		}
+		wp_add_inline_style('jquery-ui-progressbar', $fill_style);
 	}
 }
 
@@ -725,14 +742,9 @@ function ewww_image_optimizer_install_paths () {
 		$jpegtran_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran';
 	}
 	if (PHP_OS == 'SunOS') {
-//		$arch_type = php_uname('m');
 		$gifsicle_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'gifsicle-sol';
 		$optipng_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'optipng-sol';
-//		if ($arch_type == 'amd64') {
-//			$jpegtran_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'jpegtran-fbsd64';
-//		} else {
-			$jpegtran_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'jpegtran-sol';
-//		}
+		$jpegtran_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'jpegtran-sol';
 		$gifsicle_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle';
 		$optipng_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng';
 		$jpegtran_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran';
@@ -2000,6 +2012,10 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				// turn the conversion process OFF
 				$convert = false;
 				$jpgfile = '';
+				$r = null;
+				$g = null;
+				$b = null;
+				$gquality = null;
 			}
 			// if pngout and optipng are disabled
 			if (ewww_image_optimizer_get_option('ewww_image_optimizer_disable_optipng') && ewww_image_optimizer_get_option('ewww_image_optimizer_disable_pngout')) {
@@ -2476,7 +2492,6 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 	}
 	
 	if (class_exists('Cloudinary') && Cloudinary::config_get("api_secret") && ewww_image_optimizer_get_option('ewww_image_optimizer_enable_cloudinary') && !empty($new_image)) {
-	//	add_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_send_to_cloudinary', 20, 2);
 		try {
 			$result = CloudinaryUploader::upload($file,array('use_filename'=>True));
 		} catch(Exception $e) {
@@ -2487,18 +2502,13 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 		} else {
 			$ewww_debug .= "successfully uploaded to Cloudinary<br>";
 			// register the attachment in the database as a cloudinary attachment
-//			$post_id = NULL;
-//			$attachment = get_post($ID);
 			$old_url = wp_get_attachment_url($ID);
-//			$post_id = $attachment->post_parent;
-//			CloudinaryPlugin::register_image($result['url'], $post_parent, $ID, $attachment, $result['width'], $result['height']);
-//			$info = pathinfo($result['url']);
-//			$public_id = $info['filename'];
 			wp_update_post(array('ID' => $ID,
 				'guid' => $result['url']));
 			update_attached_file($ID, $result['url']);
 			$meta['cloudinary'] = TRUE;
 			$errors = array();
+			// update the image location for the attachment
 			CloudinaryPlugin::update_image_src_all($ID, $result, $old_url, $result["url"], TRUE, $errors);
 			if (count($errors) > 0) {
 				$ewww_debug .= "Cannot migrate the following posts:<br>" . implode("<br>", $errors);
@@ -2510,20 +2520,6 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 	// send back the updated metadata
 	return $meta;
 }
-
-/*function ewww_image_optimizer_send_to_cloudinary($meta, $ID) {
-	global $ewww_debug;
-	$error = CloudinaryPlugin::upload_to_cloudinary($ID, TRUE);
-	if (!empty($error)) {
-		$ewww_debug .= "Cloudinary error: $error<br>";
-	} else {
-		$ewww_debug .= "successfully uploaded to Cloudinary<br>";
-	}
-//	$md = wp_get_attachment_metadata($attachment_id);
-//	$meta = $md["image_meta"];
-	ewww_image_optimizer_debug_log();
-	return $meta;
-}*/
 
 /**
  * Update the attachment's meta data after being converted 
@@ -2745,7 +2741,12 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 	if ($column_name == 'ewww-image-optimizer') {
 		// retrieve the metadata
 		$meta = wp_get_attachment_metadata($id);
-//		print_r ($meta);
+		if (ewww_image_optimizer_get_option('ewww_image_optimizer_debug')) {
+			$print_meta = print_r($meta, TRUE);
+			$print_meta = preg_replace(array('/ /', '/\n+/'), array('&nbsp;', '<br />'), $print_meta);
+//			$print_meta = preg_replace('/\n/', '<br />', $print_meta);
+			echo '<div style="background-color:#ffff99;font-size: 10px;padding: 10px;margin:-10px -10px 10px;line-height: 1.1em">' . $print_meta . '</div>';
+		}
 		if(!empty($meta['cloudinary'])) {
 			_e('Cloudinary image', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 			return;

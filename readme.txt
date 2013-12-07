@@ -168,9 +168,12 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * new version of gifsicle (1.7.7), for more detail, see http://www.lcdf.org/gifsicle/changes.html
 * proper detection of Cloudinary images instead of error message
 * plays nicer with Imsanity, detect when a newly uploaded image has been modified and optimized already (instead of re-optimizing)
-* Dutch translation
-* Spanish translation
+* Dutch translation - nl_NL
+* Romanian translation - ro_RO
+* Spanish translation - es_ES
 * Cloudinary integration: auto-upload after optimization when uploading to Media Library, must be enabled in settings
+* debugging output for Media Library (let's you see resizes)
+* visual tweaking for upcoming WP 3.8
 
 = 1.7.4 =
 * fixed: some settings were set to incorrect defaults after enabling and disabling cloud features
@@ -441,6 +444,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * First release (forked from CW Image Optimizer)
 
 == Upgrade Notice ==
+
+= 1.7.5 =
+* New version of gifsicle that has quite a few improvements. If you have restricted permissions on the wp-content/ewww/ folder, you may need to temporarily change them to allow the plugin to perform the gifsicle upgrade automatically.
 
 = 1.7.2 =
 * Optimize More table format has changed, make sure to visit Optimize More and Convert your table immediately after upgrade if you are running it in scheduled mode.
