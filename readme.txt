@@ -165,7 +165,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * FlaGallery optimize on upload does not work with plupload (only the browser-based method works properly). This will be implemented in a future release.
 
 = 1.7.5 =
-* new version of gifsicle (1.7.7), for more detail, see http://www.lcdf.org/gifsicle/changes.html
+* new version of gifsicle (1.7.8), for more detail, see http://www.lcdf.org/gifsicle/changes.html
 * proper detection of Cloudinary images instead of error message
 * plays nicer with Imsanity, detect when a newly uploaded image has been modified and optimized already (instead of re-optimizing)
 * Dutch translation - nl_NL

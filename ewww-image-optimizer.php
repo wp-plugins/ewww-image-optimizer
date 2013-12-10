@@ -421,11 +421,11 @@ function ewww_image_optimizer_md5check($path) {
 		'4568ef450ec9cd73bab55d661fb167ec',
 		'f8d8baa175977a23108c84603dbfcc78',
 		'3b592b6398dd7f379740c0b63e83825c',
-		'ebbefb13d9ded270b5ae823bf65e50a6',
-		'00f9ae219957541e092c4b409ceb24d5',
-		'65988d4c3f63aee9bc51b4f1836c868d',
-		'5be991e0c7eb422d502be9f60011a099',
-		'ae1b9506607f64e196a7571d6075d925',
+		'ce935b38b1fd7b3c47d5de57f05c8cd2',
+		'fe94420e6c49c29861b95ad93a3a4805',
+		'151e395e2efa0e7845b18984d0f092af',
+		'7ae972062cf3f99218057b055a4e1e9c',
+		'c0bf45a291b93fd0a52318eddeaf5791',
 		//pngout
 		'2b62778559e31bc750dc2dcfd249be32', 
 		'ea8655d1a1ef98833b294fb74f349c3e',
@@ -945,7 +945,23 @@ function ewww_image_optimizer_exec_check() {
 		return false;
 	}
 }
-	
+
+// function to check if safe mode is on
+function ewww_image_optimizer_safemode_check() {
+	global $ewww_debug;
+	$ewww_debug .= "<b>ewww_image_optimizer_safemode_check()</b><br>";
+	$safe_mode = ini_get('safe_mode');
+	$ewww_debug .= "safe_mode = $safe_mode<br>";
+	switch (strtolower($safe_mode)) {
+		case 'on':
+		case 'yes':
+		case 'true':
+			return true;
+		default:
+			return false;
+	}
+}
+
 // we check for safe mode and exec, then also direct the user where to go if they don't have the tools installed
 function ewww_image_optimizer_notice_utils() {
 	global $ewww_debug;
@@ -958,7 +974,7 @@ function ewww_image_optimizer_notice_utils() {
 		ewww_image_optimizer_disable_tools();
 		return;
 		// otherwise, query the php settings for safe mode
-	} elseif (ini_get('safe_mode')) {
+	} elseif (ewww_image_optimizer_safemode_check()) {
 		// display a warning to the user
 		echo "<div id='ewww-image-optimizer-warning-opt-png' class='error'><p>" . __('Safe Mode is turned on for PHP. This plugin cannot operate in Safe Mode.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</p></div>";
 		define('EWWW_IMAGE_OPTIMIZER_NOEXEC', true);
@@ -3091,7 +3107,7 @@ function ewww_image_optimizer_options () {
 					echo '<span style="color: red; font-weight: bolder">MISSING</span>'; 
 				}
 				echo "<br />\n";
-				if (ini_get('safe_mode')) {
+				if (ewww_image_optimizer_safemode_check()) {
 					echo 'safe mode: <span style="color: red; font-weight: bolder">On</span>&emsp;&emsp;';
 				} else {
 					echo 'safe mode: <span style="color: green; font-weight: bolder">Off</span>&emsp;&emsp;';

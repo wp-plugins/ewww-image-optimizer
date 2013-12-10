@@ -1,0 +1,1069 @@
+# Copyright (C) 2013 EWWW Image Optimizer
+# This file is distributed under the same license as the EWWW Image Optimizer package.
+msgid ""
+msgstr ""
+"Project-Id-Version: EWWW Image Optimizer 1.7.5\n"
+"Report-Msgid-Bugs-To: http://wordpress.org/tag/ewww-image-optimizer\n"
+"POT-Creation-Date: 2013-11-14 00:05:24+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2013-12-08 07:59+0200\n"
+"Last-Translator: <redactia@mediasinfo.ro>\n"
+"2:1));\n"
+"Language: ro\n"
+"X-Generator: Poedit 1.6.1\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+
+#: aux-optimize.php:12 bulk.php:20 flag-integration.php:66
+#: nextgen-integration.php:234 nextgen2-integration.php:234
+msgid "Start optimizing"
+msgstr "Pornește optimizarea"
+
+#: aux-optimize.php:14
+msgid "Resume previous optimization"
+msgstr "Continuă optiminzarea anterioară"
+
+#: aux-optimize.php:43
+msgid "Optimize <i>Almost</i> Everything"
+msgstr "Optimizează <i> aproape </i> tot"
+
+#: aux-optimize.php:48
+msgid ""
+"This tool will optimize large batches of images from your wordpress install. "
+"This does not include the Media Library or galleries where we have full "
+"integration. This tool is for images in your theme, BuddyPress, WP "
+"Symposium, and other folders that you have specified on the settings page."
+msgstr ""
+"Această funcție va optimiza grupuri mari de imagini din arhivele de "
+"instalare a Wordpress. Nu sunt incluse Librăria Media sau galeriile unde "
+"pluginul nostru este complet integrat. Această funcție va optimiza imaginile "
+"din teme, BuddyPress, WP Symposium sau alte directoare specificate în pagina "
+"de setări. "
+
+#: aux-optimize.php:50
+msgid "The database schema has changed, you need to convert to the new format."
+msgstr ""
+"Schema bazei de date a fost modificată, trebuie să faci conversia la noul "
+"format. "
+
+#: aux-optimize.php:54
+msgid "Convert Table"
+msgstr "Tabel Conversii"
+
+#: aux-optimize.php:58
+msgid "There are no images to optimize."
+msgstr "Nu există imagini care să poată fi optimizate."
+
+#: aux-optimize.php:60 bulk.php:31 flag-integration.php:76
+#: nextgen-integration.php:244 nextgen2-integration.php:244
+msgid "We have %d images to optimize."
+msgstr "Se pot optimiza %d imagini."
+
+#: aux-optimize.php:65
+msgid ""
+"You should import Media Library images into the table to prevent duplicate "
+"optimization."
+msgstr ""
+"Este necesar să imporți imaginile din Librăria Media în tabel, pentru a "
+"preveni duplicarea."
+
+#: aux-optimize.php:67
+msgid "Import Images"
+msgstr "Importă Imagini"
+
+#: aux-optimize.php:74 bulk.php:39 flag-integration.php:84
+#: nextgen-integration.php:251 nextgen2-integration.php:251
+msgid ""
+"If you would like to start over again, press the Reset Status button to "
+"reset the bulk operation status."
+msgstr ""
+"Dacă vrei să reiei operațiunea, apasă butonul Resetează Statusul, pentru a "
+"reseta starea operațiunii de import."
+
+#: aux-optimize.php:78 bulk.php:43 flag-integration.php:88
+#: nextgen-integration.php:255 nextgen2-integration.php:255
+msgid "Reset Status"
+msgstr "Resetează Statusul"
+
+#: aux-optimize.php:83
+msgid ""
+"The plugin keeps track of already optimized images to prevent re-"
+"optimization. If you would like to re-optimize images, or flush the table "
+"for some reason, press the Empty Table button to reset the bulk operation "
+"status."
+msgstr ""
+"Acest plugin urmărește imaginile care au fost deja optimizate, pentru a "
+"preveni re-optimizarea. Dacă vrei să reoptimizezi anumite imagini sau să "
+"golești acest tabel, indiferent de motiv, apasă butonul Golește Tabelul. "
+
+#: aux-optimize.php:87
+msgid "Empty Table"
+msgstr "Golește Tabelul"
+
+#: aux-optimize.php:90
+msgid "Show Optimized Images"
+msgstr "Arată Imaginile Optimizate"
+
+#: aux-optimize.php:98
+msgid "page"
+msgstr "pagina"
+
+#: aux-optimize.php:98
+msgid "of"
+msgstr "din"
+
+#: aux-optimize.php:120
+msgid "Importing"
+msgstr "Se importă"
+
+#: aux-optimize.php:127 aux-optimize.php:243 aux-optimize.php:500
+#: aux-optimize.php:519 aux-optimize.php:535 aux-optimize.php:592 bulk.php:145
+#: bulk.php:160 bulk.php:179 bulk.php:227 flag-integration.php:217
+#: flag-integration.php:230 flag-integration.php:248 flag-integration.php:287
+#: nextgen-integration.php:64 nextgen-integration.php:347
+#: nextgen-integration.php:360 nextgen-integration.php:377
+#: nextgen-integration.php:417 nextgen2-integration.php:339
+#: nextgen2-integration.php:352 nextgen2-integration.php:369
+#: nextgen2-integration.php:409
+msgid "Cheatin&#8217; eh?"
+msgstr "Trișezi :) ?"
+
+#: aux-optimize.php:140
+msgid "Nothing to import"
+msgstr "Nimic de importat"
+
+#: aux-optimize.php:236
+msgid "Finished importing"
+msgstr "Import finalizat"
+
+#: aux-optimize.php:251
+msgid "Filename"
+msgstr "Nume fișier"
+
+#: aux-optimize.php:251
+msgid "Image Type"
+msgstr "Tip imagine"
+
+#: aux-optimize.php:251 ewww-image-optimizer.php:1068
+#: ewww-image-optimizer.php:1100 flag-integration.php:299
+#: nextgen-integration.php:137 nextgen2-integration.php:137
+msgid "Image Optimizer"
+msgstr "Optimizare Imagini"
+
+#: aux-optimize.php:268 ewww-image-optimizer.php:2690
+#: ewww-image-optimizer.php:2723 flag-integration.php:351
+#: flag-integration.php:358 nextgen-integration.php:193
+#: nextgen-integration.php:200 nextgen2-integration.php:193
+#: nextgen2-integration.php:200
+msgid "Image Size: %s"
+msgstr "Dimensiunie imagine: %s"
+
+#: aux-optimize.php:508 aux-optimize.php:524 bulk.php:152 bulk.php:169
+#: flag-integration.php:223 flag-integration.php:241
+#: nextgen-integration.php:353 nextgen-integration.php:370
+#: nextgen2-integration.php:362
+msgid "Optimizing"
+msgstr "Se optimizează"
+
+#: aux-optimize.php:574 bulk.php:193 flag-integration.php:263
+#: nextgen-integration.php:393 nextgen2-integration.php:385
+msgid "Optimized image:"
+msgstr "Imagine optimizată:"
+
+#: aux-optimize.php:580 bulk.php:211 flag-integration.php:273
+#: nextgen-integration.php:95 nextgen-integration.php:403
+#: nextgen2-integration.php:395
+msgid "Elapsed: %.3f seconds"
+msgstr "Au trecut: %.3f secunde"
+
+#: aux-optimize.php:599 bulk.php:233 nextgen-integration.php:101
+msgid "Finished"
+msgstr "Finalizat"
+
+#: bulk.php:10 flag-integration.php:57 nextgen-integration.php:224
+#: nextgen2-integration.php:224
+msgid "You do not appear to have uploaded any images yet."
+msgstr "Se pare că nu ai încărcat nicio imagine."
+
+#: bulk.php:15 ewww-image-optimizer.php:1020 ewww-image-optimizer.php:2742
+#: flag-integration.php:27 flag-integration.php:32 flag-integration.php:37
+#: flag-integration.php:61 nextgen-integration.php:26
+#: nextgen-integration.php:229 nextgen2-integration.php:26
+#: nextgen2-integration.php:229
+msgid "Bulk Optimize"
+msgstr "Optimizare Bulk"
+
+#: bulk.php:22 flag-integration.php:68 nextgen-integration.php:236
+#: nextgen2-integration.php:236
+msgid "Resume previous bulk operation"
+msgstr "Reia operațiunea anterioară de optimizare bulk"
+
+#: bulk.php:195
+msgid "Skipped image, ID:"
+msgstr "Imagine omisă, ID:"
+
+#: bulk.php:199 flag-integration.php:264
+msgid "Full size – %s"
+msgstr "Dimensiune integrală - %s"
+
+#: bulk.php:233
+msgid "Return to Media Library"
+msgstr "Înapoi la Librăria Media"
+
+#: ewww-image-optimizer.php:266
+msgid ""
+"EWWW Image Optimizer is supported on Linux, FreeBSD, Mac OSX, and Windows"
+msgstr ""
+"EWWW Optimizare Imagini este suportat pe Linux, FreeBSD, Mac OSX și Windows"
+
+#: ewww-image-optimizer.php:266
+msgid "Unfortunately, the EWWW Image Optimizer plugin does not work with %s"
+msgstr "Din păcate, EWWW Optimizare Imagini nu funcționează împreună cu %s"
+
+#: ewww-image-optimizer.php:306
+msgid "Settings saved"
+msgstr "Setări salvate"
+
+#: ewww-image-optimizer.php:732
+msgid "EWWW Image Optimizer could not create the tool folder"
+msgstr "EWWW Optimizare Imagini nu a putut crea directorul de unelte"
+
+#: ewww-image-optimizer.php:732
+msgid "Please adjust permissions or create the folder"
+msgstr "Te rugăm să actualizezi permisiunile sau să creezi directorul"
+
+#: ewww-image-optimizer.php:828
+msgid "EWWW Image Optimizer could not install tools in %s"
+msgstr "EWWW Optimizare Imagini nu a putut instala uneltele în %s"
+
+#: ewww-image-optimizer.php:828
+msgid ""
+"Please adjust permissions or create the folder. If you have installed the "
+"tools elsewhere on your system, check the option to %s."
+msgstr ""
+"Modifică permisiunile sau creează directorul. Dacă ai instalat uneltele în "
+"alt director din sistem, bifează opțiunea %s."
+
+#: ewww-image-optimizer.php:828 ewww-image-optimizer.php:3033
+msgid "Use System Paths"
+msgstr "Folosește URL-urile de Sistem"
+
+#: ewww-image-optimizer.php:828
+msgid "For more details, visit the %1$s or the %2$s."
+msgstr "Pentru mai multe detalii, vizitează %1$s sau %2$s."
+
+#: ewww-image-optimizer.php:828 ewww-image-optimizer.php:982
+msgid "Settings Page"
+msgstr "Pagină Setări"
+
+#: ewww-image-optimizer.php:828 ewww-image-optimizer.php:982
+#: ewww-image-optimizer.php:2868
+msgid "Installation Instructions"
+msgstr "Instrucțiuni Instalare"
+
+#: ewww-image-optimizer.php:871
+msgid ""
+"EWWW Image Optimizer attempted to move your custom-built binaries to %s but "
+"the operation was unsuccessful"
+msgstr ""
+"EWWW Image Optimizer a încercat să mute binarele proprii în %s dar "
+"operațiunea a eșuat."
+
+#: ewww-image-optimizer.php:871
+msgid "Please adjust permissions the permissions on this folder"
+msgstr "Modifică permisiunile acestui director"
+
+#: ewww-image-optimizer.php:897
+msgid ""
+"EWWW Image Optimizer requires exec(). Your system administrator has disabled "
+"this function."
+msgstr ""
+"EWWW Image Optimizer funcționează doar cu exec(). Administratorul sistemul "
+"tău a dezactivat această funcție. "
+
+#: ewww-image-optimizer.php:904
+msgid ""
+"Safe Mode is turned on for PHP. This plugin cannot operate in Safe Mode."
+msgstr ""
+"Safe Mode este activat pentru PHP. Pluginul nu funcționează în Safe Mode. "
+
+#: ewww-image-optimizer.php:982
+msgid ""
+"EWWW Image Optimizer requires %1$s, %2$s or %3$s, and %4$s. You are missing: "
+"%5$s. Please install via the %6$s or the %7$s."
+msgstr ""
+"EWWW Image Optimizer are nevoie de %1$s, %2$s sau %3$s si %4$s. Lipsește / "
+"lipsesc:  %5$s. Instalează via %6$s sau %7$s."
+
+#: ewww-image-optimizer.php:1022
+msgid "Optimize Theme Images"
+msgstr "Optimizează imaginile temei"
+
+#: ewww-image-optimizer.php:1022 ewww-image-optimizer.php:1049
+msgid "Optimize"
+msgstr "Optimizează"
+
+#: ewww-image-optimizer.php:1024
+msgid "Optimize More Images"
+msgstr "Optimizează mai multe imagini"
+
+#: ewww-image-optimizer.php:1024
+msgid "Optimize More"
+msgstr "Optimizează mai mult"
+
+#: ewww-image-optimizer.php:1028
+msgid "Optimize BuddyPress Images"
+msgstr "Optimizează imaginile BuddyPress"
+
+#: ewww-image-optimizer.php:1028
+msgid "BuddyPress Optimize"
+msgstr "Optimizare BuddyPress"
+
+#: ewww-image-optimizer.php:1033
+msgid "Optimize WP Symposium Images"
+msgstr "Optimizează imaginile WP Symposium"
+
+#: ewww-image-optimizer.php:1033
+msgid "WP Symposium Optimize"
+msgstr "Optimizare WP Symposium"
+
+#: ewww-image-optimizer.php:1049
+msgid "Image Store Optimize"
+msgstr "Optimizează Imaginile Magazinului"
+
+#: ewww-image-optimizer.php:1057
+msgid "Image Store Optimization"
+msgstr "Optimizare Imagini Magazin"
+
+#: ewww-image-optimizer.php:1067
+msgid "Choose a gallery or"
+msgstr "Alege o galerie sau"
+
+#: ewww-image-optimizer.php:1067
+msgid "optimize all galleries"
+msgstr "optimizează toate galeriile"
+
+#: ewww-image-optimizer.php:1068
+msgid "Gallery ID"
+msgstr "ID Galerie"
+
+#: ewww-image-optimizer.php:1068
+msgid "Gallery Name"
+msgstr "Nume Galerie"
+
+#: ewww-image-optimizer.php:1068
+msgid "Images"
+msgstr "Imagini"
+
+#: ewww-image-optimizer.php:1084 ewww-image-optimizer.php:1099
+msgid "Optimize Gallery"
+msgstr "Optimizează Galerie"
+
+#: ewww-image-optimizer.php:1100
+msgid "Title"
+msgstr "Titlu"
+
+#: ewww-image-optimizer.php:1100 nextgen-integration.php:10
+#: nextgen-integration.php:264 nextgen2-integration.php:10
+#: nextgen2-integration.php:264
+msgid "Gallery"
+msgstr "Galerie"
+
+#: ewww-image-optimizer.php:1169
+msgid "Settings"
+msgstr "Setări"
+
+#: ewww-image-optimizer.php:1269 flag-integration.php:188
+#: nextgen-integration.php:108 nextgen2-integration.php:108
+msgid "You don't have permission to work with uploaded files."
+msgstr "Nu ai drepturile necesare pentru a administra fișierele încărcate."
+
+#: ewww-image-optimizer.php:1274 flag-integration.php:192
+#: nextgen-integration.php:112 nextgen2-integration.php:112
+msgid "No attachment ID was provided."
+msgstr "Nu există ID pentru acest fișier."
+
+#: ewww-image-optimizer.php:1313 ewww-image-optimizer.php:1346
+msgid "Original Restored"
+msgstr "S-a restaurat originalul"
+
+#: ewww-image-optimizer.php:1503
+msgid "used %1$d of %2$d, usage will reset in %3$d day."
+msgid_plural "used %1$d of %2$d, usage will reset in %3$d days."
+msgstr[0] "%1$d din %2$d utilizate. Rata de utilizare se resetează în %3$d zi."
+msgstr[1] "%1$d din %2$d utilizate. Datele se resetează în %3$d zile."
+msgstr[2] "%1$d din %2$d utilizate. Datele se resetează în %3$d zile."
+
+#: ewww-image-optimizer.php:1646
+msgid "Could not find <span class='code'>%s</span>"
+msgstr "Nu am găsit  <span class='code'>%s</span>"
+
+#: ewww-image-optimizer.php:1654
+msgid "<span class='code'>%s</span> is not writable"
+msgstr " <span class='code'>%s</span> nu poate fi rescris"
+
+#: ewww-image-optimizer.php:1675
+msgid ""
+"Missing finfo_file(), getimagesize() and mime_content_type() PHP functions"
+msgstr ""
+"Lipsesc funcțiile PHP: finfo_file(), getimagesize() și mime_content_type()"
+
+#: ewww-image-optimizer.php:1760 ewww-image-optimizer.php:2167
+msgid "%s is disabled"
+msgstr "%s este dezactivat."
+
+#: ewww-image-optimizer.php:1764 ewww-image-optimizer.php:1976
+#: ewww-image-optimizer.php:1980 ewww-image-optimizer.php:2171
+#: ewww-image-optimizer.php:2651 ewww-image-optimizer.php:2662
+#: ewww-image-optimizer.php:2673 flag-integration.php:325
+#: flag-integration.php:331 flag-integration.php:337
+#: nextgen-integration.php:172 nextgen-integration.php:179
+#: nextgen2-integration.php:165 nextgen2-integration.php:172
+#: nextgen2-integration.php:179
+msgid "%s is missing"
+msgstr "lipsește %s"
+
+#: ewww-image-optimizer.php:1865
+msgid "Unable to write file"
+msgstr "Nu se poate scrie fișierul"
+
+#: ewww-image-optimizer.php:1868
+msgid "Optimization failed"
+msgstr "Optimizare eșuată"
+
+#: ewww-image-optimizer.php:1972
+msgid "png tools are disabled"
+msgstr "uneltele png sunt dezactivate"
+
+#: ewww-image-optimizer.php:2267
+msgid "License exceeded"
+msgstr "Licență expirată"
+
+#: ewww-image-optimizer.php:2272 ewww-image-optimizer.php:2378
+msgid "No savings"
+msgstr "Nicio salvare"
+
+#: ewww-image-optimizer.php:2288
+msgid "Reduced by %01.1f%% (%s)"
+msgstr "Redus cu %01.1f%% (%s)"
+
+#: ewww-image-optimizer.php:2395
+msgid "Previously Optimized"
+msgstr "Optimizat anterior"
+
+#: ewww-image-optimizer.php:2636
+msgid "Could not retrieve file path."
+msgstr "Nu se poate prelua URL-ul fișierului."
+
+#: ewww-image-optimizer.php:2653
+msgid "JPG to PNG"
+msgstr "JPG în PNG"
+
+#: ewww-image-optimizer.php:2655
+msgid ""
+"WARNING: Removes metadata. Requires GD or ImageMagick. PNG is generally much "
+"better than JPG for logos and other images with a limited range of colors."
+msgstr ""
+"ATENȚIE: Înlătură metadatele. Folosește GD sau ImageMagick. PNG este în "
+"general un format mai bun decât JPG pentru logo-uri și alte imagini cu o "
+"gamă restrânsă de culori."
+
+#: ewww-image-optimizer.php:2664
+msgid "PNG to JPG"
+msgstr "PNG în JPG"
+
+#: ewww-image-optimizer.php:2666
+msgid ""
+"WARNING: This is not a lossless conversion and requires GD or ImageMagick. "
+"JPG is much better than PNG for photographic use because it compresses the "
+"image and discards data. Transparent images will only be converted if a "
+"background color has been set."
+msgstr ""
+"AVERTISMENT: Această conversie nu va duce la reducerea calității și necesită "
+"GD sau ImageMagick. JPG este un format mult mai bun pentru fotografii decât "
+"PNG, pentru că utilizează compresia imaginii și elimină metadatele. "
+"Imaginile transparente vor fi convertite numai dacă se definește culoarea de "
+"fundal. "
+
+#: ewww-image-optimizer.php:2675
+msgid "GIF to PNG"
+msgstr "GIF în PNG"
+
+#: ewww-image-optimizer.php:2677
+msgid ""
+"PNG is generally better than GIF, but does not support animation. Animated "
+"images will not be converted."
+msgstr ""
+"PNG este, în general, un format mai bun decât GIF, dar nu suportă animații. "
+"Imaginile animate nu vor fi convertite."
+
+#: ewww-image-optimizer.php:2682 flag-integration.php:345
+#: nextgen-integration.php:187 nextgen2-integration.php:187
+msgid "Unsupported file type"
+msgstr "Tip de fișier nesuportat"
+
+#: ewww-image-optimizer.php:2694 flag-integration.php:354
+#: nextgen-integration.php:196 nextgen2-integration.php:196
+msgid "Re-optimize"
+msgstr "Re-optimizează"
+
+#: ewww-image-optimizer.php:2717
+msgid "Restore original"
+msgstr "Înlocuiește cu fișierul original"
+
+#: ewww-image-optimizer.php:2721 flag-integration.php:357
+#: nextgen-integration.php:199 nextgen2-integration.php:199
+msgid "Not processed"
+msgstr "Nu a fost procesat"
+
+#: ewww-image-optimizer.php:2727 flag-integration.php:361
+#: nextgen-integration.php:203 nextgen2-integration.php:203
+msgid "Optimize now!"
+msgstr "Optimizează acum!"
+
+#: ewww-image-optimizer.php:2750
+msgid "Cloudinary image"
+msgstr "Imagine din Cloudinary"
+
+#: ewww-image-optimizer.php:2773
+msgid "You don't have permission to install image optimizer utilities."
+msgstr ""
+"Nu ai drepturile necesare pentru a instala fișierele pentru optimizarea "
+"imaginilor"
+
+#: ewww-image-optimizer.php:2778
+msgid "tar command not found"
+msgstr "comanda tar nu a fost găsită"
+
+#: ewww-image-optimizer.php:2795 ewww-image-optimizer.php:2808
+#: ewww-image-optimizer.php:2821
+msgid "could not move pngout"
+msgstr "nu am putut muta pngout"
+
+#: ewww-image-optimizer.php:2797 ewww-image-optimizer.php:2810
+msgid "could not set permissions"
+msgstr "nu am putut seta drepturile"
+
+#: ewww-image-optimizer.php:2852
+msgid ""
+"Pngout was successfully installed, check the Plugin Status area for version "
+"information."
+msgstr ""
+"Am instalat cu succes Pngout, vezi informațiile despre versiune în secțiunea "
+"Status Plugin"
+
+#: ewww-image-optimizer.php:2857
+msgid "Pngout was not installed: %1$s. Make sure this folder is writable: %2$s"
+msgstr ""
+"Pngout nu a fost instalat: %1$s. Asigură-te că există drepturi de scriere "
+"pentru directorul: %2$s"
+
+#: ewww-image-optimizer.php:2866
+msgid "Image Optimizer Settings"
+msgstr "Preferințe Optimizare Imagini"
+
+#: ewww-image-optimizer.php:2867
+msgid "Plugin Home Page"
+msgstr "Pagina Pluginului"
+
+#: ewww-image-optimizer.php:2869
+msgid "Plugin Support"
+msgstr "Suport Plugin"
+
+#: ewww-image-optimizer.php:2870
+msgid "Cloud Status"
+msgstr "Status Cloud"
+
+#: ewww-image-optimizer.php:2879 ewww-image-optimizer.php:2882
+msgid "Verified,"
+msgstr "Verificat,"
+
+#: ewww-image-optimizer.php:2885
+msgid "Not Verified"
+msgstr "Neverificat"
+
+#: ewww-image-optimizer.php:2890
+msgid ""
+"If updated versions are available below you may either download the newer "
+"versions and install them yourself, or uncheck \"Use System Paths\" and use "
+"the bundled tools."
+msgstr ""
+"Dacă sunt disponibile versiuni mai noi, poți să le descarci și să le "
+"instalezi chiar tu. În caz contract, debifează  \"Folosește Căile de Sistem"
+"\" și utilizează uneltele predefinite."
+
+#: ewww-image-optimizer.php:2891 ewww-image-optimizer.php:2894
+msgid ""
+"Updates are optional, but may contain increased optimization or security "
+"patches"
+msgstr ""
+"Actualizările sunt opționale, dar pot conține mai multe optimizări sau "
+"corecții de securitate."
+
+#: ewww-image-optimizer.php:2893
+msgid ""
+"If updated versions are available below, you may need to enable write "
+"permission on the %s folder to use the automatic installs."
+msgstr ""
+"Dacă există versiuni mai noi, ar putea fi nevoie să acorzi drepturi de "
+"scriere pe directorul %s pentru a putea folosi instalările automate."
+
+#: ewww-image-optimizer.php:2944
+msgid "Install"
+msgstr "Instalează"
+
+#: ewww-image-optimizer.php:2944
+msgid "automatically"
+msgstr "automat"
+
+#: ewww-image-optimizer.php:2944
+msgid "manually"
+msgstr "manual"
+
+#: ewww-image-optimizer.php:2944
+msgid ""
+"Pngout is free closed-source software that can produce drastically reduced "
+"filesizes for PNGs, but can be very time consuming to process images"
+msgstr ""
+"Pngout este un software gratuit, de tip closed-source și care ajută la "
+"diminuarea drastică a dimensiunii fișierelor PNG, însă optimizarea poate "
+"dura foarte mult. "
+
+#: ewww-image-optimizer.php:2949
+msgid "%s only need one, used for conversion, not optimization: "
+msgstr ""
+"Ai nevoie doar de unul dintre acestea %s , folosite pentru conversie, nu și "
+"pentru optimizare: "
+
+#: ewww-image-optimizer.php:2949
+msgid "Graphics libraries"
+msgstr "Librării grafice"
+
+#: ewww-image-optimizer.php:2974
+msgid "Only need one of these:"
+msgstr "Doar una dintre cele de mai jos:"
+
+#: ewww-image-optimizer.php:2996 ewww-image-optimizer.php:2999
+#: ewww-image-optimizer.php:3002
+msgid "command not found on your system"
+msgstr "comanda nu a fost găsită în sistemul tău"
+
+#: ewww-image-optimizer.php:2999
+msgid "not required"
+msgstr "nu este obligatoriu"
+
+#: ewww-image-optimizer.php:3002
+msgid "required for automatic pngout installer"
+msgstr "obligatoriu pentru instalarea automată a pngout"
+
+#: ewww-image-optimizer.php:3013
+msgid "Cloud Settings"
+msgstr "Setări Cloud"
+
+#: ewww-image-optimizer.php:3014
+msgid ""
+"If exec() is disabled for security reasons (and enabling it is not an "
+"option), or you would like to offload image optimization to a third-party "
+"server, you may purchase an API key for our cloud optimization service. The "
+"API key should be entered below, and cloud optimization must be enabled for "
+"each image format individually."
+msgstr ""
+"Dacă exec() este dezactivat pentru motive de securitate (și nu poți să îl "
+"reactivezi) sau dacă vrei să transferi load-ul optimizării imaginilor către "
+"un server secundar, poți obține o cheie API pentru servicii de optimizare în "
+"cloud. Cheia API se introduce mai jos, iar optimizarea în cloud se activează "
+"pentru fiecare format de imagine, individual."
+
+#: ewww-image-optimizer.php:3014
+msgid "Purchase an API key."
+msgstr "Obține o cheie API."
+
+#: ewww-image-optimizer.php:3016
+msgid "Cloud optimization API Key"
+msgstr "Cheie API pentru optimizare în Cloud"
+
+#: ewww-image-optimizer.php:3016
+msgid "API Key will be validated when you save your settings."
+msgstr "Cheia API va fi validată atunci când salvezi setările."
+
+#: ewww-image-optimizer.php:3016
+msgid "Purchase a key."
+msgstr "Obține o cheie"
+
+#: ewww-image-optimizer.php:3017 ewww-image-optimizer.php:3018
+#: ewww-image-optimizer.php:3019
+msgid "cloud optimization"
+msgstr "optimizare în cloud"
+
+#: ewww-image-optimizer.php:3021
+msgid "General Settings"
+msgstr "Setări generale"
+
+#: ewww-image-optimizer.php:3023
+msgid ""
+"The plugin performs a check to make sure your system has the programs we use "
+"for optimization: jpegtran, optipng, pngout, and gifsicle. In some rare "
+"cases, these checks may falsely report that you are missing the required "
+"utilities even though you have them installed."
+msgstr ""
+"Pluginul face o verificare pentru a se asigura că sistemul are instalate "
+"programele utilizate pentru optimizare:  jpegtran, optipng, pngout și "
+"gifsicle. Rareori, aceste verificări ar putea să raporteze în mod greșit că "
+"lipsește vreun program, chiar dacă el este deja instalat."
+
+#: ewww-image-optimizer.php:3026
+msgid "Debugging"
+msgstr "Debugging"
+
+#: ewww-image-optimizer.php:3026
+msgid ""
+"Use this to provide information for support purposes, or if you feel "
+"comfortable digging around in the code to fix a problem you are experiencing."
+msgstr ""
+"Activează dacă vrei să trimiți informații pentru suport sau dacă ești "
+"obișnuit să verifici coduri și să repari problemele pe care le-ai găsit. "
+
+#: ewww-image-optimizer.php:3027
+msgid "Scheduled optimization"
+msgstr "Optimizare programată"
+
+#: ewww-image-optimizer.php:3027
+msgid ""
+"This will enable scheduled optimization of images for your theme, "
+"buddypress, and any additional folders you have configured below. Runs "
+"hourly: wp_cron only runs when your site is visited, so it may be even "
+"longer between optimizations."
+msgstr ""
+"Activează optimizarea programată pentru temă, buddypress și orice alte "
+"directoare pe care le-ai configurat mai jos. Rulează în fiecare oră: wp_cron "
+"rulează doar atunci când site-ul este vizitat, deci este posibil să dureze "
+"mai multe între optimizări."
+
+#: ewww-image-optimizer.php:3028
+msgid "Folders to optimize"
+msgstr "Directoare de optimizat"
+
+#: ewww-image-optimizer.php:3028
+msgid ""
+"One path per line, must be within %s. Use full paths, not relative paths."
+msgstr ""
+"Introdu o singură cale de sistem pe linie, încadrată de %s. Scrie toată "
+"calea de sistem, nu folosi căi relative. "
+
+#: ewww-image-optimizer.php:3031
+msgid ""
+"Please submit a support request in the forums to have folders created by a "
+"particular plugin auto-included in the future."
+msgstr ""
+"Adaugă o cerere de suport în forum dacă vrei ca și folderele create de un "
+"anumit plugin să fie incluse automat pe viitor."
+
+#: ewww-image-optimizer.php:3033
+msgid ""
+"If you have already installed the utilities in a system location, such as %s "
+"or %s, use this to force the plugin to use those versions and skip the auto-"
+"installers."
+msgstr ""
+"Dacă ai instalat deja utilele într-o locație de sistem, ca %s sau %s, "
+"folosește această funcție pentru a forța pluginul să utilizele acele "
+"versiuni și să sară peste fișierele de auto-install."
+
+#: ewww-image-optimizer.php:3035 ewww-image-optimizer.php:3036
+#: ewww-image-optimizer.php:3037 ewww-image-optimizer.php:3038
+msgid "disable"
+msgstr "dezactivează"
+
+#: ewww-image-optimizer.php:3041
+msgid "Optimization Settings"
+msgstr "Setări Optimizare"
+
+#: ewww-image-optimizer.php:3043
+msgid "Remove JPG metadata"
+msgstr "Șterge metadatele JPG"
+
+#: ewww-image-optimizer.php:3044
+msgid "This wil remove ALL metadata: EXIF and comments."
+msgstr "TOATE datele meta vor fi șterse: EXIF și comentariile."
+
+#: ewww-image-optimizer.php:3046 ewww-image-optimizer.php:3057
+msgid "optimization level"
+msgstr "nivel de optimizare"
+
+#: ewww-image-optimizer.php:3048 ewww-image-optimizer.php:3049
+#: ewww-image-optimizer.php:3050 ewww-image-optimizer.php:3051
+#: ewww-image-optimizer.php:3052 ewww-image-optimizer.php:3053
+#: ewww-image-optimizer.php:3054 ewww-image-optimizer.php:3059
+#: ewww-image-optimizer.php:3060 ewww-image-optimizer.php:3061
+#: ewww-image-optimizer.php:3062
+msgid "Level %d"
+msgstr "Nivel %d"
+
+#: ewww-image-optimizer.php:3048
+msgid "%d trial"
+msgstr "%d încercare"
+
+#: ewww-image-optimizer.php:3049 ewww-image-optimizer.php:3050
+#: ewww-image-optimizer.php:3051 ewww-image-optimizer.php:3052
+#: ewww-image-optimizer.php:3053 ewww-image-optimizer.php:3054
+msgid "%d trials"
+msgstr "%d încercări"
+
+#: ewww-image-optimizer.php:3055 ewww-image-optimizer.php:3063
+msgid "default"
+msgstr "implicit"
+
+#: ewww-image-optimizer.php:3056
+msgid ""
+"According to the author of optipng, 10 trials should satisfy most people, 30 "
+"trials should satisfy everyone."
+msgstr ""
+"Potrivit autorului optipng, 10 încercări vor mulțumi majoritatea "
+"utilizatorilor, 30 de încercări îi vor mulțumi pe toți. "
+
+#: ewww-image-optimizer.php:3059
+msgid "Xtreme! (Slowest)"
+msgstr "Xtreme! (Cel mai încet)"
+
+#: ewww-image-optimizer.php:3060
+msgid "Intense (Slow)"
+msgstr "Intens (Încet)"
+
+#: ewww-image-optimizer.php:3061
+msgid "Longest Match (Fast)"
+msgstr "Cea mai bună potrivire (Rapid)"
+
+#: ewww-image-optimizer.php:3062
+msgid "Huffman Only (Faster)"
+msgstr "Doar Huffman (Mai rapid)"
+
+#: ewww-image-optimizer.php:3064
+msgid "If you have CPU cycles to spare, go with level %d"
+msgstr "Dacă ai CPU de rezervă, alege nivelul %d"
+
+#: ewww-image-optimizer.php:3067
+msgid "Conversion Settings"
+msgstr "Setări pentru Conversie"
+
+#: ewww-image-optimizer.php:3068
+msgid ""
+"Conversion is only available for images in the Media Library. By default, "
+"all images have a link available in the Media Library for one-time "
+"conversion. Turning on individual conversion operations below will enable "
+"conversion filters any time an image is uploaded or modified."
+msgstr ""
+"Conversia poate fi aplicată numai imaginilor din Librăria Media. Implicit, "
+"toate imaginile din Librăria Media au un link care permite conversia per "
+"imagine. Dacă optezi pentru conversia individuală, mai jos, atunci filtrele "
+"de conversie vor fi active ori de câte ori încarci sau modifici o imagine."
+
+#: ewww-image-optimizer.php:3069
+msgid "NOTE:"
+msgstr "NOTĂ:"
+
+#: ewww-image-optimizer.php:3069
+msgid ""
+"The plugin will attempt to update image locations for any posts that contain "
+"the images. You may still need to manually update locations/urls for "
+"converted images."
+msgstr ""
+"Pluginul va încerca să actualizeze adresele URL ale imaginilor pentru orice "
+"articol care conține imagini. Este posibil să fie nevoie să actualizezi și "
+"manual URL-urile imaginilor convertite."
+
+#: ewww-image-optimizer.php:3072
+msgid "Hide Conversion Links"
+msgstr "Ascunde Linkurile de Conversie"
+
+#: ewww-image-optimizer.php:3072
+msgid ""
+"Site or Network admins can use this to prevent other users from using the "
+"conversion links in the Media Library which bypass the settings below."
+msgstr ""
+"Administratorul Site-ului sau al Rețelei poate folosi această funcție pentru "
+"a interzice altor utilizator să folosească linkurile de conversie din "
+"Librăria Media, suprascriind astfel setările de mai jos. "
+
+#: ewww-image-optimizer.php:3073
+msgid "Delete originals"
+msgstr "Șterge imaginile originale"
+
+#: ewww-image-optimizer.php:3073
+msgid ""
+"This will remove the original image from the server after a successful "
+"conversion."
+msgstr "Șterge definitiv imaginea de pe server după o conversie reușită."
+
+#: ewww-image-optimizer.php:3167
+msgid "Automatic Cloudinary upload"
+msgstr "Încarcă automat în Cloudinary"
+
+#: ewww-image-optimizer.php:3167
+msgid ""
+"When enabled, uploads to the Media Library will be transferred to Cloudinary "
+"after optimization. Cloudinary generates resizes, so only the full-size "
+"image is uploaded."
+msgstr ""
+"Dacă este activată opțiunea, fișierele încărcate în Librăria Media vor fi "
+"transferate în Cloudinary după optimizare. Cloudinary va genera versiunile "
+"redimensionate ale imaginii, așa că nu se va transfera decât fișierul "
+"original în format integral."
+
+#: ewww-image-optimizer.php:3074 ewww-image-optimizer.php:3076
+#: ewww-image-optimizer.php:3082
+msgid "enable %s to %s conversion"
+msgstr "activează conversia din %s în %s"
+
+#: ewww-image-optimizer.php:3074 ewww-image-optimizer.php:3076
+msgid "WARNING:"
+msgstr "AVERTISMENT:"
+
+#: ewww-image-optimizer.php:3074
+msgid "Removes metadata and increases cpu usage dramatically."
+msgstr ""
+"Înlătură metadatele din fișiere și crește foarte mult utilizarea resurselor "
+"(CPU)."
+
+#: ewww-image-optimizer.php:3075
+msgid ""
+"PNG is generally much better than JPG for logos and other images with a "
+"limited range of colors. Checking this option will slow down JPG processing "
+"significantly, and you may want to enable it only temporarily."
+msgstr ""
+"PNG este un format mult mai bun pentru logo-uri și alte imagini cu o gamă "
+"redusă de culori, decât JPG. Dacă bifezi această opțiune vei încetini "
+"considerabil procesarea imaginilor JPG. Activarea opțiunii poate fi făcută "
+"temporar, de exemplu. "
+
+#: ewww-image-optimizer.php:3076
+msgid "This is not a lossless conversion."
+msgstr "Această conversie nu va duce la pierderea calității imaginilor. "
+
+#: ewww-image-optimizer.php:3077
+msgid ""
+"JPG is generally much better than PNG for photographic use because it "
+"compresses the image and discards data. PNGs with transparency are not "
+"converted by default."
+msgstr ""
+"JPG este, în general, un format mult mai bun pentru imagini decât PNG, "
+"fiincă elimină informațiile suplimentare și comprimă imaginea. PNG-urile "
+"transparente nu se optimizează."
+
+#: ewww-image-optimizer.php:3078
+msgid "JPG background color:"
+msgstr "Culoare fundal JPG:"
+
+#: ewww-image-optimizer.php:3078
+msgid "HEX format (#123def)"
+msgstr "Format HEX (#123def)"
+
+#: ewww-image-optimizer.php:3079
+msgid ""
+"Background color is used only if the PNG has transparency. Leave this value "
+"blank to skip PNGs with transparency."
+msgstr ""
+"Culoare de fundal este folosită numai dacă PNG-ul este transparent. Nu "
+"completa această valoare dacă vrei să nu optimizezi PNG-urile transparente. "
+
+#: ewww-image-optimizer.php:3080
+msgid "JPG quality level:"
+msgstr "Calitate JPG:"
+
+#: ewww-image-optimizer.php:3080
+msgid "Valid values are 1-100."
+msgstr "Valori valide, între 1 și 100."
+
+#: ewww-image-optimizer.php:3081
+msgid ""
+"If JPG quality is blank, the plugin will attempt to set the optimal quality "
+"level or default to 92. Remember, this is a lossy conversion, so you are "
+"losing pixels, and it is not recommended to actually set the level here "
+"unless you want noticable loss of image quality."
+msgstr ""
+"Dacă nu ai completat o valoare la calitatea JPG-ul, atunci pluginul va seta "
+"valoarea implicit la 92. Nu uita că asta înseamnă că vei pierde din "
+"calitatea imaginilor și nu este recomandat să setezi această calitate decât "
+"dacă vrei așa ceva în mod expres. "
+
+#: ewww-image-optimizer.php:3082
+msgid "No warnings here, just do it."
+msgstr "Niciun avertisment aici, poți porni procesul."
+
+#: ewww-image-optimizer.php:3083
+msgid ""
+"PNG is generally better than GIF, but animated images cannot be converted."
+msgstr ""
+"PNG este, de obicei, un format mai bun, dar imaginile animate nu pot fi "
+"convertite în acest format."
+
+#: ewww-image-optimizer.php:3085
+msgid "Save Changes"
+msgstr "Salvează modificările"
+
+#: flag-integration.php:269 nextgen-integration.php:92
+msgid "Thumbnail – %s"
+msgstr "Miniatură - %s"
+
+#: flag-integration.php:293 nextgen-integration.php:423
+#: nextgen2-integration.php:415
+msgid "Finished Optimization!"
+msgstr "Optimizare finalizată!"
+
+#: image-editor.php:16 image-editor.php:24 image-editor.php:28
+#: image-editor.php:31
+msgid "Image Editor Save Failed"
+msgstr "Salvarea editorului de imagine a eșuat."
+
+#: nextgen-integration.php:27 nextgen-integration.php:67
+#: nextgen2-integration.php:27
+msgid "Bulk Thumbnail Optimize"
+msgstr "Optimizează miniaturile în grup"
+
+#: nextgen-integration.php:53
+msgid "The thumbnails for your new images have not been optimized."
+msgstr "Miniaturile imaginilor noi nu au fost optimizate"
+
+#: nextgen-integration.php:57
+msgid "Optimize Thumbs"
+msgstr "Optimizează miniaturile"
+
+#: nextgen-integration.php:82
+msgid "Processing"
+msgstr "În curs de procesare"
+
+#: nextgen-integration.php:165
+msgid "% is missing"
+msgstr "lipsește % "
+
+#: nextgen-integration.php:394 nextgen2-integration.php:386
+msgid "Full size - %s"
+msgstr "Format integral - %s"
+
+#: nextgen-integration.php:400 nextgen2-integration.php:392
+msgid "Thumbnail - %s"
+msgstr "Miniatură - %s"
+
+#. Plugin Name of the plugin/theme
+msgid "EWWW Image Optimizer"
+msgstr "EWWW Image Optimizer"
+
+#. Plugin URI of the plugin/theme
+msgid "http://www.shanebishop.net/ewww-image-optimizer/"
+msgstr "http://www.shanebishop.net/ewww-image-optimizer/"
+
+#. Description of the plugin/theme
+msgid ""
+"Reduce file sizes for images within WordPress including NextGEN Gallery and "
+"GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle."
+msgstr ""
+"Optimizează (reduce) dimensiunea fișierelor din WordPress, inclusiv din "
+"NextGEN Gallery și GRAND FlAGallery. Se utilizează jpegtran, optipng/pngout "
+"și gifsicle."
+
+#. Author of the plugin/theme
+msgid "Shane Bishop"
+msgstr "Shane Bishop"
+
+#. Author URI of the plugin/theme
+msgid "http://www.shanebishop.net/"
+msgstr "http://www.shanebishop.net/"
