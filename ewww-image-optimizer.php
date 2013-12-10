@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate image optimizers into WordPress.
- * @version 1.7.4.9
+ * @version 1.7.5
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -10,7 +10,7 @@ Plugin URI: http://www.shanebishop.net/ewww-image-optimizer/
 Description: Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
 Author: Shane Bishop
 Text Domain: ewww-image-optimizer
-Version: 1.7.4.9
+Version: 1.7.5
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
@@ -25,7 +25,7 @@ if (preg_match('/get_current_user/', $disabled)) {
  * Constants
  */
 define('EWWW_IMAGE_OPTIMIZER_DOMAIN', 'ewww-image-optimizer');
-define('EWWW_IMAGE_OPTIMIZER_VERSION', '174');
+define('EWWW_IMAGE_OPTIMIZER_VERSION', '175');
 $ewww_debug .= 'EWWW IO version: ' . EWWW_IMAGE_OPTIMIZER_VERSION . '<br>';
 // this is the full system path to the plugin folder
 define('EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH', plugin_dir_path(__FILE__) );
@@ -953,8 +953,9 @@ function ewww_image_optimizer_safemode_check() {
 	$safe_mode = ini_get('safe_mode');
 	$ewww_debug .= "safe_mode = $safe_mode<br>";
 	switch (strtolower($safe_mode)) {
+		case 'off':
+			return false;
 		case 'on':
-		case 'yes':
 		case true:
 			return true;
 		default:
@@ -1207,7 +1208,7 @@ function ewww_image_optimizer_media_scripts($hook) {
 // used to output any debug messages available
 function ewww_image_optimizer_debug() {
 	global $ewww_debug;
-	if (ewww_image_optimizer_get_option('ewww_image_optimizer_debug')) echo '<div style="background-color:#ffff99;position:relative;bottom:60px;padding:5px 20px 10px;margin:0 0 15px 150px"><h3>Debug Log</h3>' . $ewww_debug . '</div>';
+	if (ewww_image_optimizer_get_option('ewww_image_optimizer_debug')) echo '<div style="background-color:#ffff99;position:relative;bottom:60px;padding:5px 20px 10px;margin:0 0 15px 160px"><h3>Debug Log</h3>' . $ewww_debug . '</div>';
 }
 
 // used to output debug messages to a logfile in the plugin folder in cases where output to the screen is a bad idea
