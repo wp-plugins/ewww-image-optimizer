@@ -29,6 +29,14 @@ EWWW Image Optimizer calls optimization utilities directly which is well suited 
 1. **Root access not needed** Pre-compiled binaries are made available to install directly within the Wordpress folder, and cloud optimization is provided for those who cannot run the binaries locally.
 1. **Optimize almost anything** Using the Optimize More tool, and the wp_image_editor class extension, nearly any image in Wordpress can be optimized.
 
+= WP Image Editor = 
+
+All images created by the new WP_Image_Editor class in WP 3.5 will be automatically optimized. Current implementations are GD, Imagick, and Gmagick. Images optimized via this class include Meta Slider, BuddyPress Activity Plus (thumbs), WP Retina 2x, Imsanity, Simple Image Sizes and probably countless others. If you have a plugin that uses WP_Image_Editor and would like EWWW IO to be able to optimize previous uploads, post a thread in the support forums.
+
+= Optimize Almost Everything =
+
+As of version 1.7.0, site admins can specify any folder within their wordpress folder to be optimized. The 'Optimize More' option under Tools will optimize theme images, BuddyPress avatars, BuddyPress Activity Plus images, Meta Slider slides, WP Symposium images, GD bbPress attachments, and any user-specified folders. Additionally, this tool can run on an hourly basis via wp_cron to keep newly uploaded images optimized. Any images optimized via this tool are stored in the database so that the optimizer does not attempt to re-optimize them unless they are modified (and so you can take a look at the table to see what exactly is being optimized).
+
 = NextGEN Gallery =
 
 Features optimization on upload capability, re-optimization, and bulk optimizing. The NextGEN Bulk Optimize function is located near the bottom of the NextGEN menu, and will optimize all images in all galleries. It is also possible to optimize groups of images in a gallery, or multiple galleries at once.
@@ -45,13 +53,6 @@ Located under Media, the BuddyPress Optimizer allows the user to optimize all av
 = Image Store =
 
 Uploads are automatically optimized. Look for Optimize under the Image Store (Galleries) menu to see status of optimization and for re-optimization and bulk-optimization options. Using the Bulk Optimization tool under Media Library automatically includes all Image Store uploads.
-
-= WP Image Editor = 
-
-All images created by the new WP_Image_Editor class in WP 3.5 will be automatically optimized. Current implementations are GD, Imagick, and Gmagick. Images optimized via this class include Meta Slider, BuddyPress Activity Plus (thumbs) and probably countless others. If you have a plugin that uses WP_Image_Editor and would like EWWW IO to be able to optimize previous uploads, post a thread in the support forums.
-
-= Optimize Almost Everything =
-As of version 1.7.0, site admins can specify any folder within their wordpress folder to be optimized. The 'Optimize More' option under Tools will optimize theme images, BuddyPress avatars, BuddyPress Activity Plus images, Meta Slider slides, WP Symposium images, GD bbPress attachments, and any user-specified folders. Additionally, this tool can run on an hourly basis via wp_cron to keep newly uploaded images optimized. Any images optimized via this tool are stored in the database so that the optimizer does not attempt to re-optimize them unless they are modified (and so you can take a look at the table to see what exactly is being optimized).
 
 == Installation ==
 
@@ -512,6 +513,7 @@ Known good webhosts where things work out of the box.
 * [Bluehost](http://www.bluehost.com)
 * [Dreamhost](http://www.dreamhost.com)
 * [GoDaddy](http://www.godaddy.com) (only with PHP 5.3)
+* [gPowerHost](https://gpowerhost.com/)
 * [HostGator](http://www.hostgator.com)
 * [Hetzner Online](http://www.hetzner.de)
 * [Hosterdam](http://www.hosterdam.com) (FreeBSD)
