@@ -955,7 +955,7 @@ function ewww_image_optimizer_safemode_check() {
 	switch (strtolower($safe_mode)) {
 		case 'on':
 		case 'yes':
-		case 'true':
+		case true:
 			return true;
 		default:
 			return false;
