@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate image optimizers into WordPress.
- * @version 1.7.5
+ * @version 1.7.5.9
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -10,7 +10,7 @@ Plugin URI: http://www.shanebishop.net/ewww-image-optimizer/
 Description: Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
 Author: Shane Bishop
 Text Domain: ewww-image-optimizer
-Version: 1.7.5
+Version: 1.7.5.9
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
@@ -268,6 +268,18 @@ function ewww_image_optimizer_progressbar_style() {
 				break;
 			case 'light':
 				$fill_style = ".ui-widget-header { background-color: #04a4cc; }";
+				break;
+			case 'ectoplasm':
+				$fill_style = ".ui-widget-header { background-color: #a3b745; }";
+				break;
+			case 'coffee':
+				$fill_style = ".ui-widget-header { background-color: #c7a589; }";
+				break;
+			case 'ocean':
+				$fill_style = ".ui-widget-header { background-color: #9ebaa0; }";
+				break;
+			case 'sunrise':
+				$fill_style = ".ui-widget-header { background-color: #dd823b; }";
 				break;
 			default:
 				$fill_style = ".ui-widget-header { background-color: #0074a2; }";
@@ -1584,6 +1596,7 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $n
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_cloud_optimizer()</b><br>";
 	if(ewww_image_optimizer_get_option('ewww_image_optimizer_jpegtran_copy') == TRUE){
+	//TODO: make this apply to PNG images also
         	// don't copy metadata
                 $metadata = 0;
         } else {
@@ -2055,7 +2068,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 			if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_png')) {
 				list($file, $converted, $result) = ewww_image_optimizer_cloud_optimizer($file, $type, $convert, $jpgfile, 'image/jpeg', array('r' => $r, 'g' => $g, 'b' => $b, 'quality' => $gquality));
 				if ($converted) $converted = $filenum;
-				break;
+					break;
 			}
 			// if conversion is on and the PNG doesn't have transparency or the user set a background color to replace transparency, or this is a resize and the full-size image was converted
 			if ($convert) {
@@ -2173,8 +2186,13 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 				if(!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_optipng')) {
 					// retrieve the optimization level for optipng
 					$optipng_level = ewww_image_optimizer_get_option('ewww_image_optimizer_optipng_level');
+					if (ewww_image_optimizer_get_option('ewww_image_optimizer_jpegtran_copy') && preg_match('/0.7/', ewww_image_optimizer_tool_found($tools['OPTIPNG'], 'o'))) {
+						$strip = '-strip all ';
+					} else {
+						$strip = '';
+					}
 					// run optipng on the PNG file
-					exec("$nice " . $tools['OPTIPNG'] . " -o$optipng_level -quiet " . escapeshellarg($file));
+					exec("$nice " . $tools['OPTIPNG'] . " -o$optipng_level -quiet $strip" . escapeshellarg($file));
 				}
 				//}
 			}
@@ -3187,7 +3205,7 @@ function ewww_image_optimizer_options () {
 			</table>
 			<h3><?php _e('Optimization Settings', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></h3>
 			<table class="form-table">
-				<tr><th><label for="ewww_image_optimizer_jpegtran_copy"><?php _e('Remove JPG metadata', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label></th>
+				<tr><th><label for="ewww_image_optimizer_jpegtran_copy"><?php _e('Remove metadata', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label></th>
 				<td><input type="checkbox" id="ewww_image_optimizer_jpegtran_copy" name="ewww_image_optimizer_jpegtran_copy" value="true" <?php if (ewww_image_optimizer_get_option('ewww_image_optimizer_jpegtran_copy') == TRUE) { ?>checked="true"<?php } ?> /> <?php _e('This wil remove ALL metadata: EXIF and comments.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></td></tr>
 				<tr class="nocloud"><th><label for="ewww_image_optimizer_optipng_level">optipng <?php _e('optimization level', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label></th>
 				<td><span><select id="ewww_image_optimizer_optipng_level" name="ewww_image_optimizer_optipng_level">

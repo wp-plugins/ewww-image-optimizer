@@ -163,7 +163,12 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 = future =
 * these are possible future bugfixes and/or feature requests, if you see a feature you like here, go vote for it in the support forum
+* throttling: ability to specify number of images to optimize in a batch via bulk optimize, and seconds between batches
 * FlaGallery optimize on upload does not work with plupload (only the browser-based method works properly). This will be implemented in a future release.
+
+= 1.7.6 =
+* fixed: color of progressbar for 4 more admin themes in WP 3.8
+* changed: metadata stripping now applies to PNG images, but only if using optipng 0.7.x
 
 = 1.7.5 =
 * new version of gifsicle (1.7.8), for more detail, see http://www.lcdf.org/gifsicle/changes.html
@@ -446,6 +451,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * First release (forked from CW Image Optimizer)
 
 == Upgrade Notice ==
+
+= 1.7.6 =
+* metadata stripping now applies to PNG images, but only if using optipng 0.7.x, you may want to run a bulk optimize on all your PNG images to make sure you have the best possible optimization
 
 = 1.7.5 =
 * New version of gifsicle that has quite a few improvements. If you have restricted permissions on the wp-content/ewww/ folder, you may need to temporarily change them to allow the plugin to perform the gifsicle upgrade automatically.
