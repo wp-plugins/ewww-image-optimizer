@@ -239,13 +239,13 @@ function ewww_image_optimizer_aux_images_import() {
 }
 
 function ewww_image_optimizer_aux_images_table() {
-	// verify that an authorized user has started the optimizer
+	// verify that an authorized user has called function
 	if (!wp_verify_nonce($_REQUEST['_wpnonce'], 'ewww-image-optimizer-aux-images')) {
 		wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 	} 
 	global $wpdb;
 	$offset = 50 * $_POST['offset'];
-	$query = "SELECT path,results,gallery FROM " . $wpdb->prefix . "ewwwio_images ORDER BY id DESC LIMIT $offset,50";
+	$query = "SELECT path,results,gallery,id FROM " . $wpdb->prefix . "ewwwio_images ORDER BY id DESC LIMIT $offset,50";
 	$already_optimized = $wpdb->get_results($query, ARRAY_N);
         $upload_info = wp_upload_dir();
 	$upload_path = $upload_info['basedir'];
@@ -262,16 +262,28 @@ function ewww_image_optimizer_aux_images_table() {
 			// get a human readable filesize
 			$file_size = size_format(filesize($optimized_image[0]), 2);
 			$file_size = str_replace('B ', 'B', $file_size);
-?>			<tr<?php if($alternate) echo " class='alternate'"; ?>>
+?>			<tr<?php if($alternate) echo " class='alternate'"; ?> id="image-<?php echo $optimized_image[3]; ?>">
 				<td style='width:80px' class='column-icon'><img width='50' height='50' src='<?php echo $image_url; ?>' /></td>
 				<td class='title'>...<?php echo $image_name; ?></td>
 				<td><?php echo $type; ?></td>
-				<td><?php echo "$savings <br>" . sprintf(__('Image Size: %s', EWWW_IMAGE_OPTIMIZER_DOMAIN), $file_size); ?></td>
+				<td><?php echo "$savings <br>" . sprintf(__('Image Size: %s', EWWW_IMAGE_OPTIMIZER_DOMAIN), $file_size); ?><br><a class="removeimage" onclick="ewwwRemoveImage(<?php echo $optimized_image[3]; ?>)"><?php _e('Remove from table', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></a></td>
 			</tr>
 <?php			$alternate = !$alternate;
 		}
 	}
 	echo '</table>';
+	die();
+}
+
+function ewww_image_optimizer_aux_images_remove() {
+	// verify that an authorized user has called function
+	if (!wp_verify_nonce($_REQUEST['_wpnonce'], 'ewww-image-optimizer-aux-images')) {
+		wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+	} 
+	global $wpdb;
+	if ($wpdb->query($wpdb->prepare("DELETE FROM " . $wpdb->prefix . "ewwwio_images WHERE id = " . $_POST['image_id']))) {
+		echo "1";
+	}
 	die();
 }
 
@@ -602,6 +614,7 @@ function ewww_image_optimizer_aux_images_cleanup($auto = false) {
 }
 add_action('admin_enqueue_scripts', 'ewww_image_optimizer_aux_images_script');
 add_action('wp_ajax_bulk_aux_images_table', 'ewww_image_optimizer_aux_images_table');
+add_action('wp_ajax_bulk_aux_images_remove', 'ewww_image_optimizer_aux_images_remove');
 add_action('wp_ajax_bulk_aux_images_import', 'ewww_image_optimizer_aux_images_import');
 add_action('wp_ajax_bulk_aux_images_loading', 'ewww_image_optimizer_aux_images_loading');
 add_action('wp_ajax_bulk_aux_images_init', 'ewww_image_optimizer_aux_images_initialize');

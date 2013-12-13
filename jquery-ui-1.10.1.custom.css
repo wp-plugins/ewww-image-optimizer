@@ -131,3 +131,6 @@ body .ui-tooltip {
         top: auto;
 }
 
+a.removeimage {
+	cursor: pointer;
+}

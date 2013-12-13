@@ -207,3 +207,18 @@ jQuery(document).ready(function($) {
 		return false;
 	});
 });
+function ewwwRemoveImage(imageID) {
+	var image_removal = {
+		action: 'bulk_aux_images_remove',
+		_wpnonce: ewww_vars._wpnonce,
+		image_id: imageID,
+	};
+//	alert("going to remove image: " + imageID);
+	jQuery.post(ajaxurl, image_removal, function(response) {
+		if(response) {
+			jQuery('#image-' + imageID).remove();
+		} else {
+			alert("could not remove image from table");
+		}
+	});
+}

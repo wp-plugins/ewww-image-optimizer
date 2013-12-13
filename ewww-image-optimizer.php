@@ -1596,7 +1596,6 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $n
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_cloud_optimizer()</b><br>";
 	if(ewww_image_optimizer_get_option('ewww_image_optimizer_jpegtran_copy') == TRUE){
-	//TODO: make this apply to PNG images also
         	// don't copy metadata
                 $metadata = 0;
         } else {
