@@ -25,7 +25,7 @@ if (preg_match('/get_current_user/', $disabled)) {
  * Constants
  */
 define('EWWW_IMAGE_OPTIMIZER_DOMAIN', 'ewww-image-optimizer');
-define('EWWW_IMAGE_OPTIMIZER_VERSION', '175');
+define('EWWW_IMAGE_OPTIMIZER_VERSION', '175.1');
 $ewww_debug .= 'EWWW IO version: ' . EWWW_IMAGE_OPTIMIZER_VERSION . '<br>';
 // this is the full system path to the plugin folder
 define('EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH', plugin_dir_path(__FILE__) );
