@@ -321,6 +321,8 @@ function ewww_image_optimizer_image_scan($dir) {
 						$ewww_debug .= "match found for $path<br>";
 						$skip_optimized = true;
 						break;
+					} else {
+						$ewww_debug .= "mismatch found for $path, db says " . $optimized['image_size'] . " vs. current $image_size<br>";
 					}
 				}
 			}

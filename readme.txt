@@ -172,7 +172,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * added: ability to remove individual images from the Optimize More table
 
 = 1.7.5 =
-* new version of gifsicle (1.7.8), for more detail, see http://www.lcdf.org/gifsicle/changes.html
+* new version of gifsicle (1.78), for more detail, see http://www.lcdf.org/gifsicle/changes.html
 * proper detection of Cloudinary images instead of error message
 * plays nicer with Imsanity, detect when a newly uploaded image has been modified and optimized already (instead of re-optimizing)
 * Dutch translation - nl_NL
@@ -510,8 +510,8 @@ Improved performance for PNGs by specifying proper optimization level
 == Contact and Credits ==
 
 Written by [Shane Bishop](http://www.shanebishop.net). Based upon CW Image Optimizer, which was written by [Jacob Allred](http://www.jacoballred.com/) at [Corban Works, LLC](http://www.corbanworks.com/). CW Image Optimizer was based on WP Smush.it.
-[Hammer](http://thenounproject.com/noun/hammer/#icon-No1306) designed by [John Caserta](http://thenounproject.com/johncaserta) from The Noun Project
-[Images](http://thenounproject.com/noun/images/#icon-No22772) designed by [Simon Henrotte](http://thenounproject.com/Gizmodesbois) from The Noun Project
+[Hammer](http://thenounproject.com/noun/hammer/#icon-No1306) designed by [John Caserta](http://thenounproject.com/johncaserta) from The Noun Project.
+[Images](http://thenounproject.com/noun/images/#icon-No22772) designed by [Simon Henrotte](http://thenounproject.com/Gizmodesbois) from The Noun Project.
 
 == Webhosts ==
 
@@ -539,8 +539,12 @@ List of known bad webhosts where the plugin will only work in cloud mode or only
 == Translations ==
 
 Translators: 
+Romanian translation by MediasInfo.ro.
+Spanish translation by Andrew Kurtis of WebHostingHub.
+Dutch translation by Ludo Rubben.
 
 1. Please post in the support forums announcing your intent to translate the plugin into a particular language. 
 1. Download ewww-image-optimizer.pot from the plugin /languages/ folder.
-1. Fill in the message strings and header information and save it as a .po file.
+1. Fill in the msgstr for each msgid and complete the header information as best as you can.
+1. Save it as a .po file.
 1. Submit it via the form at http://www.shanebishop.net/contact-me/
