@@ -314,14 +314,6 @@ class ewwwngg {
 		}
 		// store the image IDs to process in the db
 		update_option('ewww_image_optimizer_bulk_ngg_attachments', $images);
-		global $wp_version;
-		$my_version = $wp_version;
-		$my_version = substr($my_version, 0, 3);
-		if ($my_version < 3) {
-			// replace the default jquery script with an updated one
-			wp_deregister_script('jquery');
-			wp_register_script('jquery', plugins_url('/jquery-1.9.1.min.js', __FILE__), false, '1.9.1');
-		}
 		// add a custom jquery-ui script with progressbar functions
 		wp_enqueue_script('ewwwjuiscript', plugins_url('/jquery-ui-1.10.2.custom.min.js', __FILE__), false);
 		// add the EWWW IO script

@@ -2,7 +2,7 @@
 Contributors: nosilver4u
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MKMQKCBFFG3WW
 Tags: images, image, attachments, attachment, optimize, optimization, nextgen, buddypress, flagallery, flash-gallery, lossless, photos, photo, picture, pictures, seo, compression, image-store, imstore, slider, image editor, gmagick, wp-symposium, meta-slider, metaslider
-Requires at least: 3.1
+Requires at least: 3.3
 Tested up to: 3.8
 Stable tag: 1.7.5
 License: GPLv3
@@ -28,6 +28,8 @@ EWWW Image Optimizer calls optimization utilities directly which is well suited 
 1. **Better PNG optimization.** You can use pngout and optipng in conjunction.
 1. **Root access not needed** Pre-compiled binaries are made available to install directly within the Wordpress folder, and cloud optimization is provided for those who cannot run the binaries locally.
 1. **Optimize almost anything** Using the Optimize More tool, and the wp_image_editor class extension, nearly any image in Wordpress can be optimized.
+
+If you need a version of this plugin for cloud use only, see [EWWW Image Optimizer Cloud](http://wordpress.org/plugins/ewww-image-optimizer-cloud/). It is much more compact as it does not contain any binaries or any mention of the exec() function.
 
 = WP Image Editor = 
 
@@ -172,6 +174,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * added: ability to remove individual images from the Optimize More table
 * fixed: Optimize More was using case-insensitive queries for matching paths
 * fixed: Optimize More was unable to record image sizes over 8388607 bytes
+* removed: obsolete jquery 1.9.1 file used for maintaining backwards compatiblity with really old versions of WP
 
 = 1.7.5 =
 * new version of gifsicle (1.78), for more detail, see http://www.lcdf.org/gifsicle/changes.html
