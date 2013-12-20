@@ -25,7 +25,7 @@ if (preg_match('/get_current_user/', $disabled)) {
  * Constants
  */
 define('EWWW_IMAGE_OPTIMIZER_DOMAIN', 'ewww-image-optimizer');
-define('EWWW_IMAGE_OPTIMIZER_VERSION', '175.1');
+define('EWWW_IMAGE_OPTIMIZER_VERSION', '175.2');
 $ewww_debug .= 'EWWW IO version: ' . EWWW_IMAGE_OPTIMIZER_VERSION . '<br>';
 // this is the full system path to the plugin folder
 define('EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH', plugin_dir_path(__FILE__) );
@@ -54,7 +54,7 @@ add_action('admin_action_-1', 'ewww_image_optimizer_bulk_action_handler');
 add_action('admin_action_ewww_image_optimizer_install_pngout', 'ewww_image_optimizer_install_pngout');
 add_action('admin_enqueue_scripts', 'ewww_image_optimizer_media_scripts');
 add_action('ewww_image_optimizer_auto', 'ewww_image_optimizer_auto');
-//global $wp_version;
+global $wp_version;
 $my_version = substr($wp_version, 0, 3);
 $ewww_debug .= "WP version: $wp_version<br>";
 if ($my_version < 3.5) {
@@ -314,7 +314,7 @@ function ewww_image_optimizer_install_table() {
 		image_md5 VARCHAR(55),
 		results VARCHAR(55) NOT NULL,
 		gallery VARCHAR(30),
-		image_size mediumint(20),
+		image_size int UNSIGNED,
 		UNIQUE KEY id (id)
 	);";
 

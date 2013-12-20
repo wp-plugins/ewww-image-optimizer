@@ -170,6 +170,8 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * fixed: color of progressbar for 4 more admin themes in WP 3.8
 * changed: metadata stripping now applies to PNG images, but only if using optipng 0.7.x
 * added: ability to remove individual images from the Optimize More table
+* fixed: Optimize More was using case-insensitive queries for matching paths
+* fixed: Optimize More was unable to record image sizes over 8388607 bytes
 
 = 1.7.5 =
 * new version of gifsicle (1.78), for more detail, see http://www.lcdf.org/gifsicle/changes.html

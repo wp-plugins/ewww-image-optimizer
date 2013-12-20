@@ -159,7 +159,7 @@ function ewww_image_optimizer_aux_images_import() {
 		} else {
 			$results = '';
 		}
-		$query = "SELECT id,image_size FROM " . $wpdb->prefix . "ewwwio_images WHERE path = '$attachment'";
+		$query = "SELECT id,image_size FROM " . $wpdb->prefix . "ewwwio_images WHERE BINARY path = '$attachment'";
 		$already_optimized = $wpdb->get_row($query, ARRAY_A);
 		$image_size = filesize($attachment);
 		$ewww_debug .= "current attachment: $attachment<br>";
@@ -204,7 +204,7 @@ function ewww_image_optimizer_aux_images_import() {
 				} else {
 					$results = '';
 				}
-				$query = "SELECT id,image_size FROM " . $wpdb->prefix . "ewwwio_images WHERE path = '$resize_path'";
+				$query = "SELECT id,image_size FROM " . $wpdb->prefix . "ewwwio_images WHERE BINARY path = '$resize_path'";
 				$already_optimized = $wpdb->get_row($query, ARRAY_A);
 				$image_size = filesize($resize_path);
 				$ewww_debug .= "current size: $image_size<br>";
@@ -472,7 +472,7 @@ function ewww_image_optimizer_aux_images_script($hook) {
 							if (preg_match('/resized-/', $backup_size)) {
 								$path = $meta['path'];
 								$image_size = filesize($path);
-								$query = "SELECT id FROM " . $wpdb->prefix . 'ewwwio_images' . " WHERE path LIKE '$path' AND image_size LIKE '$image_size'";
+								$query = "SELECT id FROM " . $wpdb->prefix . 'ewwwio_images' . " WHERE BINARY path LIKE '$path' AND image_size LIKE '$image_size'";
 								$already_optimized = $wpdb->get_results($query);
 								$mimetype = ewww_image_optimizer_mimetype($path, 'i');
 								if (preg_match('/^image\/(jpeg|png|gif)/', $mimetype) && empty($already_optimized)) {
@@ -558,9 +558,10 @@ function ewww_image_optimizer_aux_images_loop($attachment = null, $auto = false)
 	$attachments = get_option('ewww_image_optimizer_aux_attachments');
 	// do the optimization for the current image
 	$results = ewww_image_optimizer($attachment, 4, false, false);
-	$query = "SELECT id FROM " . $wpdb->prefix . "ewwwio_images WHERE path = '$attachment'";
+	$query = "SELECT id FROM " . $wpdb->prefix . "ewwwio_images WHERE BINARY path = '$attachment'";
 	$already_optimized = $wpdb->get_row($query);
 	if (empty($already_optimized)) {
+		$ewww_debug .= "creating new record, path: $attachment, size: " . filesize($attachment) . "<br>";
 		// store info on the current image for future reference
 		$wpdb->insert( $wpdb->prefix . "ewwwio_images", array(
 				'path' => $attachment,
@@ -568,6 +569,7 @@ function ewww_image_optimizer_aux_images_loop($attachment = null, $auto = false)
 				'results' => $results[1],
 			));
 	} else {
+		$ewww_debug .= "updating existing record, path: $attachment, size: " . filesize($attachment) . "<br>";
 		// store info on the current image for future reference
 		$wpdb->update( $wpdb->prefix . "ewwwio_images",
 			array(
