@@ -779,8 +779,8 @@ msgid "Optimization Settings"
 msgstr "Setări Optimizare"
 
 #: ewww-image-optimizer.php:3043
-msgid "Remove JPG metadata"
-msgstr "Șterge metadatele JPG"
+msgid "Remove metadata"
+msgstr "Șterge metadatele"
 
 #: ewww-image-optimizer.php:3044
 msgid "This wil remove ALL metadata: EXIF and comments."
@@ -1043,14 +1043,6 @@ msgstr "Format integral - %s"
 msgid "Thumbnail - %s"
 msgstr "Miniatură - %s"
 
-#. Plugin Name of the plugin/theme
-msgid "EWWW Image Optimizer"
-msgstr "EWWW Image Optimizer"
-
-#. Plugin URI of the plugin/theme
-msgid "http://www.shanebishop.net/ewww-image-optimizer/"
-msgstr "http://www.shanebishop.net/ewww-image-optimizer/"
-
 #. Description of the plugin/theme
 msgid ""
 "Reduce file sizes for images within WordPress including NextGEN Gallery and "
@@ -1059,11 +1051,3 @@ msgstr ""
 "Optimizează (reduce) dimensiunea fișierelor din WordPress, inclusiv din "
 "NextGEN Gallery și GRAND FlAGallery. Se utilizează jpegtran, optipng/pngout "
 "și gifsicle."
-
-#. Author of the plugin/theme
-msgid "Shane Bishop"
-msgstr "Shane Bishop"
-
-#. Author URI of the plugin/theme
-msgid "http://www.shanebishop.net/"
-msgstr "http://www.shanebishop.net/"

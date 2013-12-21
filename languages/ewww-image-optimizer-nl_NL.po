@@ -1022,14 +1022,6 @@ msgstr "Volledige grootte - %s"
 msgid "Thumbnail - %s"
 msgstr "Miniatuur - %s"
 
-#. Plugin Name of the plugin/theme
-msgid "EWWW Image Optimizer"
-msgstr ""
-
-#. Plugin URI of the plugin/theme
-msgid "http://www.shanebishop.net/ewww-image-optimizer/"
-msgstr ""
-
 #. Description of the plugin/theme
 msgid ""
 "Reduce file sizes for images within WordPress including NextGEN Gallery and "
@@ -1037,10 +1029,3 @@ msgid ""
 msgstr ""
 "Verminder bestandsgrootte van afbeeldingen in WordPress, NextGEN Galerij inbegrepen en "
 "GRAND FlAGallery. Gebruikt jpegtran, optipng/pngout, en gifsicle."
-#. Author of the plugin/theme
-msgid "Shane Bishop"
-msgstr ""
-
-#. Author URI of the plugin/theme
-msgid "http://www.shanebishop.net/"
-msgstr ""

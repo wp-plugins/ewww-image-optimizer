@@ -935,24 +935,8 @@ msgstr ""
 msgid "Thumbnail - %s"
 msgstr ""
 
-#. Plugin Name of the plugin/theme
-msgid "EWWW Image Optimizer"
-msgstr ""
-
-#. Plugin URI of the plugin/theme
-msgid "http://wordpress.org/extend/plugins/ewww-image-optimizer/"
-msgstr ""
-
 #. Description of the plugin/theme
 msgid ""
 "Reduce file sizes for images within WordPress including NextGEN Gallery and "
 "GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle."
-msgstr ""
-
-#. Author of the plugin/theme
-msgid "Shane Bishop"
-msgstr ""
-
-#. Author URI of the plugin/theme
-msgid "http://www.shanebishop.net/"
 msgstr ""
