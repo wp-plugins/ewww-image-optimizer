@@ -111,7 +111,7 @@ function ewww_image_optimizer_bulk_script($hook) {
         }
 	// the 'fields' option was added in 3.1, so (in older versions) we need to strip 
 	// the excess data from attachments, since we only want the attachment IDs
-	$attachments = ewww_image_optimizer_clean_attachments($attachments);
+//	$attachments = ewww_image_optimizer_clean_attachments($attachments);
 	// store the attachment IDs we retrieved in the 'bulk_attachments' option so we can keep track of our progress in the database
 	update_option('ewww_image_optimizer_bulk_attachments', $attachments);
 	wp_enqueue_script('ewwwjuiscript', plugins_url('/jquery-ui-1.10.2.custom.min.js', __FILE__), false);

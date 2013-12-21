@@ -138,6 +138,10 @@ msgstr "Bestandsnaam"
 msgid "Image Type"
 msgstr "Afbeelding Type"
 
+#: aux-optimize.php:269
+msgid "Remove from table"
+msgstr "Verwijderen uit tabel"
+
 #: aux-optimize.php:251 ewww-image-optimizer.php:1068
 #: ewww-image-optimizer.php:1100 flag-integration.php:299
 #: nextgen-integration.php:137 nextgen2-integration.php:137
@@ -753,9 +757,9 @@ msgstr "uitschakelen"
 msgid "Optimization Settings"
 msgstr "Optimalisatie Instellingen"
 
-#: ewww-image-optimizer.php:3043
-msgid "Remove JPG metadata"
-msgstr "Verwijder JPG metadata"
+#: ewww-image-optimizer.php:3207
+msgid "Remove metadata"
+msgstr "Verwijder metadata"
 
 #: ewww-image-optimizer.php:3044
 msgid "This wil remove ALL metadata: EXIF and comments."

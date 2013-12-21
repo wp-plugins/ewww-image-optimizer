@@ -141,7 +141,7 @@ function ewww_image_optimizer_aux_images_import() {
 		die;
 	}
 	// we need to strip the excess data from attachments, since we only want the attachment IDs
-	$attachments = ewww_image_optimizer_clean_attachments($attachments);
+//	$attachments = ewww_image_optimizer_clean_attachments($attachments);
 	$ewww_debug .= "importing " . count($attachments) . " attachments<br>";
 	foreach ($attachments as $id) {
 		// allow 50 seconds for each import
@@ -443,7 +443,7 @@ function ewww_image_optimizer_aux_images_script($hook) {
 				'fields' => 'ids'
 	                ));
 			// we need to strip the excess data from attachments, since we only want the attachment IDs
-			$sliders = ewww_image_optimizer_clean_attachments($sliders);
+//			$sliders = ewww_image_optimizer_clean_attachments($sliders);
 			foreach ($sliders as $slider) {
 				$slides = get_posts(array(
 	                        	'numberposts' => -1,
@@ -462,7 +462,7 @@ function ewww_image_optimizer_aux_images_script($hook) {
 					)
 				);
 				// we need to strip the excess data from attachments, since we only want the attachment IDs
-				$slides = ewww_image_optimizer_clean_attachments($slides);
+//				$slides = ewww_image_optimizer_clean_attachments($slides);
 				foreach ($slides as $slide) {
 					$backup_sizes = get_post_meta($slide, '_wp_attachment_backup_sizes', true);
 					$type = get_post_meta($slide, 'ml-slider_type', true);
