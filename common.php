@@ -8,6 +8,12 @@ if (preg_match('/get_current_user/', $disabled)) {
 } else {
 	$ewww_debug = get_current_user() . '<br>';
 }
+
+// check the WP version (mostly for debugging purposes
+global $wp_version;
+$my_version = substr($wp_version, 0, 3);
+$ewww_debug .= "WP version: $wp_version<br>";
+
 /**
  * Constants
  */
@@ -37,14 +43,7 @@ add_action('admin_action_bulk_optimize', 'ewww_image_optimizer_bulk_action_handl
 add_action('admin_action_-1', 'ewww_image_optimizer_bulk_action_handler'); 
 add_action('admin_enqueue_scripts', 'ewww_image_optimizer_media_scripts');
 add_action('ewww_image_optimizer_auto', 'ewww_image_optimizer_auto');
-global $wp_version;
-$my_version = substr($wp_version, 0, 3);
-$ewww_debug .= "WP version: $wp_version<br>";
-if ($my_version < 3.5) {
-	add_filter('wp_save_image_editor_file', 'ewww_image_optimizer_save_image_editor_file', 60, 5);
-} else {
-	add_filter('wp_image_editors', 'ewww_image_optimizer_load_editor', 60);
-}
+add_filter('wp_image_editors', 'ewww_image_optimizer_load_editor', 60);
 register_deactivation_hook(__FILE__, 'ewww_image_optimizer_network_deactivate');
 
 // require the files that does the bulk processing
@@ -629,7 +628,7 @@ function ewww_image_optimizer_delete ($id) {
 /**
  * Re-optimize image after an edit. The metadata hasn't been updated yet, so we add a filter to be fired when it is.
  */
-function ewww_image_optimizer_save_image_editor_file ($nothing, $file, $image, $mime_type, $post_id) {
+/*function ewww_image_optimizer_save_image_editor_file ($nothing, $file, $image, $mime_type, $post_id) {
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_save_image_editor_file()</b><br>";
 	// if we don't already have this update attachment filter
@@ -637,16 +636,16 @@ function ewww_image_optimizer_save_image_editor_file ($nothing, $file, $image, $
 		// add the update saved file filter
 		add_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_saved_file', 60, 2);
 	return;
-}
+}*/
 
 // This is added as a filter on the metadata, only when an image is saved via the image editor
-function ewww_image_optimizer_update_saved_file ($meta, $ID) {
+/*function ewww_image_optimizer_update_saved_file ($meta, $ID) {
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_update_saved_file()</b><br>";
 	$meta = ewww_image_optimizer_resize_from_meta_data($meta, $ID);
 	$ewww_debug = '';
 	return $meta;
-}
+}*/
 
 // submits the api key for verification
 function ewww_image_optimizer_cloud_verify() {
@@ -848,11 +847,11 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 	global $ewww_debug;
 	global $wpdb;
 	$ewww_debug .= "<b>ewww_image_optimizer_resize_from_meta_data()</b><br>";
-	if (FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_saved_file')) {
+//	if (FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_saved_file')) {
 		$gallery_type = 1;
-	} else {
-		$gallery_type = 5;
-	}
+//	} else {
+//		$gallery_type = 5;
+//	}
 	$ewww_debug .= "attachment id: $ID<br>";
 	if (!wp_get_attachment_metadata($ID))
 		$new_image = true;
