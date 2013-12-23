@@ -108,10 +108,10 @@ Pngout is not enabled by default because it is resource intensive. Optipng is th
 1. Gifsicle is now bundled with the plugin. If it isn't working for you, keep going...
 1. If you have root access to your server, you can install gifsicle from the standard repositories (yum/rpm or apt/deb). If you are on shared hosting, read on... These steps can/should generally all be done via the command line
 1. Download the latest version of [gifsicle](http://www.lcdf.org/gifsicle/) to your home directory
-1. Uncompress gifsicle: *tar xvzf gifsicle-1.70.tar.gz && cd gifsicle-1.70*
+1. Uncompress gifsicle: *tar xvzf gifsicle-1.78.tar.gz && cd gifsicle-1.78*
 1. Configure and compile gifsicle (we disable gifview and gifdiff as they are not needed): *./configure --disable-gifdiff --disable-gifview && make*
 1. If you have root access, install it with *make install*
-1. If not, copy the binary from */gifsicle-1.70/src/gifsicle* to the ewww tool folder (wordpress/wp-content/ewww/gifsicle-custom).
+1. If not, copy the binary from */gifsicle-1.78/src/gifsicle* to the ewww tool folder (wordpress/wp-content/ewww/gifsicle-custom).
 
 == Frequently Asked Questions ==
 
@@ -167,6 +167,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * these are possible future bugfixes and/or feature requests, if you see a feature you like here, go vote for it in the support forum
 * throttling: ability to specify number of images to optimize in a batch via bulk optimize, and seconds between batches
 * FlaGallery optimize on upload does not work with plupload (only the browser-based method works properly). This will be implemented in a future release.
+* huge thanks to those who have done localization/translation for Dutch, Romanian, and Spanish. See http://wordpress.org/plugins/ewww-image-optimizer/other_notes/ for more information. If you would like to help translate this plugin in your language, post a thread on the support forums.
 
 = 1.7.6 =
 * fixed: color of progressbar for 4 more admin themes in WP 3.8
@@ -522,7 +523,7 @@ Written by [Shane Bishop](http://www.shanebishop.net). Based upon CW Image Optim
 
 In general, these lists only apply to shared hosting services. If the providers below have VPS or dedicated server options, those will likely work just fine. If you have any contributions or corrections to these lists, please contact me via the form at http://www.shanebishop.net
 
-Known good webhosts where things work out of the box.
+Webhosts where things work out of the box.
 
 * [Bluehost](http://www.bluehost.com)
 * [Dreamhost](http://www.dreamhost.com)
@@ -535,11 +536,12 @@ Known good webhosts where things work out of the box.
 * [OVH](http://www.ovh.co.uk)
 * [WebFaction](http://www.webfaction.com)
 
-List of known bad webhosts where the plugin will only work in cloud mode or only some tools are installed locally.
+Webhosts where the plugin will only work in cloud mode or only some tools are installed locally.
 
 * ipower
 * Gandi
 * ipage (JPG only)
+* WP Engine - use EWWW Image Optimizer Cloud fork: http://wordpress.org/plugins/ewww-image-optimizer-cloud/
 
 == Translations ==
 
