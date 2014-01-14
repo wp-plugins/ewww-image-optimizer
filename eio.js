@@ -13,7 +13,7 @@ jQuery(document).ready(function($) {
 		var loop_action = 'bulk_ngg_loop';
 		var cleanup_action = 'bulk_ngg_cleanup';
 		if (!document.getElementById('bulk-loading')) {
-                       	$('.wrap').prepend('<h2>Bulk Optimize</h2><div id="bulk-loading"></div><div id="bulk-progressbar"></div><div id="bulk-counter"></div><div id="bulk-status"></div><div id="bulk-forms"><p>We have ' + attachments.length + ' images to optimize.</p><form id="bulk-start" method="post" action=""><input type="submit" class="button-secondary action" value="Start optimizing" /></form></div>');
+                       	$('.wrap').prepend('<h2>Bulk Optimize</h2><div id="bulk-loading"></div><div id="bulk-progressbar"></div><div id="bulk-counter"></div><form id="bulk-stop" style="display:none;" method="post" action=""><br /><input type="submit" class="button-secondary action" value="Stop Optimizing" /></form><div id="bulk-status"></div><div id="bulk-forms"><p>We have ' + attachments.length + ' images to optimize.</p><form id="bulk-start" method="post" action=""><input type="submit" class="button-secondary action" value="Start optimizing" /></form></div>');
 		}
 	} else if (ewww_vars.gallery == 'aux') {
 		var table_action = 'bulk_aux_images_table';
