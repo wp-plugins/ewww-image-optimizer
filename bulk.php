@@ -177,7 +177,7 @@ function ewww_image_optimizer_bulk_loop() {
 	// get the 'bulk attachments' with a list of IDs remaining
 	$attachments = get_option('ewww_image_optimizer_bulk_attachments');
 	// do the optimization for the current attachment (including resizes)
-	$meta = ewww_image_optimizer_resize_from_meta_data (wp_get_attachment_metadata( $attachment, true ), $attachment);
+	$meta = ewww_image_optimizer_resize_from_meta_data (wp_get_attachment_metadata( $attachment, true ), $attachment, false);
 	if(!empty($meta['file'])) {
 		// output the filename (and path relative to 'uploads' folder)
 		printf( "<p>" . __('Optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", esc_html($meta['file']) );
@@ -206,7 +206,10 @@ function ewww_image_optimizer_bulk_loop() {
 		array_shift($attachments);
 	// store the updated list of attachment IDs back in the 'bulk_attachments' option
 	update_option('ewww_image_optimizer_bulk_attachments', $attachments);
-	if (get_site_option('ewww_image_optimizer_debug')) echo '<div style="background-color:#ffff99;">' . $ewww_debug . '</div>';
+	if ( ewww_image_optimizer_get_option ( 'ewww_image_optimizer_debug' ) ) {
+		echo '<div style="background-color:#ffff99;">' . $ewww_debug . '</div>';
+	}
+	ewww_image_optimizer_debug_log();
 	die();
 }
 

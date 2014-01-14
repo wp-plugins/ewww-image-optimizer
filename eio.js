@@ -186,7 +186,11 @@ jQuery(document).ready(function($) {
 				$('#bulk-progressbar').progressbar("option", "value", i );
 				$('#bulk-counter').html('Optimized ' + i + '/' + attachments.length);
 		                $('#bulk-status').append(response);
-				if (i < attachments.length) {
+				var exceed=/exceeded/m;
+				if (exceed.test(response)) {
+					$('#bulk-loading').html('<p style="color: red"><b>License Exceeded</b></p>');
+				}
+				else if (i < attachments.length) {
 					processImage();
 				}
 				else {

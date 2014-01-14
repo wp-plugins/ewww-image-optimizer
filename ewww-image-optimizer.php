@@ -1561,7 +1561,8 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $resize) {
 		// convert it to human readable format
 		$savings_str = size_format($savings, 1);
 		// replace spaces with proper html entity encoding
-		$savings_str = str_replace('B ', 'B', $savings_str);
+		//$savings_str = str_replace('B ', 'B', $savings_str);
+		$savings_str = preg_replace('/\.0 B /', ' B', $savings_str);
 		$savings_str = str_replace(' ', '&nbsp;', $savings_str);
 		// determine the percentage savings
 		$percent = 100 - (100 * ($s[1] / $s[0]));

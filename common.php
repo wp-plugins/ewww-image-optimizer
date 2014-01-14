@@ -668,6 +668,10 @@ function ewww_image_optimizer_cloud_verify() {
 				define('EWWW_IMAGE_OPTIMIZER_CLOUD_IP', $ip);
 			}
 			$ewww_debug .= "verification success via: $ip <br>";
+			if ( preg_match ( '/exceeded/', $result['body']) ) {
+				global $ewww_exceed;
+				$ewww_exceed = true;
+			}
 			break;
 		} else {
 			$ewww_debug .= "verification failed via: $ip <br>" . print_r($result, true) . "<br>";
@@ -722,7 +726,12 @@ function ewww_image_optimizer_cloud_quota() {
 */
 function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $newfile = null, $newtype = null, $jpg_params = array('r' => '255', 'g' => '255', 'b' => '255', 'quality' => null)) {
 	global $ewww_debug;
+	global $ewww_exceed;
 	$ewww_debug .= "<b>ewww_image_optimizer_cloud_optimizer()</b><br>";
+	if ( $ewww_exceed ) {
+		$ewww_debug .= "license exceeded, image not processed<br>";
+		return array($file, false, 'exceeded');
+	}
 	if(ewww_image_optimizer_get_option('ewww_image_optimizer_jpegtran_copy') == TRUE){
         	// don't copy metadata
                 $metadata = 0;
@@ -834,7 +843,7 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $n
  *
  * Called after `wp_generate_attachment_metadata` is completed.
  */
-function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
+function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = true) {
 	global $ewww_debug;
 	global $wpdb;
 	$ewww_debug .= "<b>ewww_image_optimizer_resize_from_meta_data()</b><br>";
@@ -994,8 +1003,9 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null) {
 			}
 		}
 	}
-
-	ewww_image_optimizer_debug_log();
+	if ( $log ) {
+		ewww_image_optimizer_debug_log();
+	}
 	// send back the updated metadata
 	return $meta;
 }
@@ -1237,7 +1247,7 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 		$type = ewww_image_optimizer_mimetype($file_path, 'i');
 		// get a human readable filesize
 		$file_size = size_format(filesize($file_path), 2);
-		$file_size = str_replace('B ', 'B', $file_size);
+		$file_size = preg_replace('/\.00 B /', ' B', $file_size);
 		// run the appropriate code based on the mimetype
 		switch($type) {
 			case 'image/jpeg':
