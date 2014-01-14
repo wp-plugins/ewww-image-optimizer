@@ -1,4 +1,5 @@
 jQuery(document).ready(function($) {
+	var k = 0;
 	var attachpost = ewww_vars.attachments.replace(/&quot;/g, '"');
 	var attachments = $.parseJSON(attachpost);
 	if (ewww_vars.gallery == 'flag') {
@@ -32,14 +33,9 @@ jQuery(document).ready(function($) {
 		document.getElementById('bulk-forms').style.display='none';
 	        var loading_data = {
 	                action: loading_action,
-//			_wpnonce: ewww_vars._wpnonce,
 	        };
-//		var i = 0;
 	        $.post(ajaxurl, loading_data, function(response) {
 	                $('#bulk-loading').html(response);
-//			$('#bulk-progressbar').progressbar({ max: attachments.length });
-//			$('#bulk-counter').html('Optimized 0/' + attachments.length);
-//			processImage();
 		        var import_data = {
 		                action: import_action,
 				_wpnonce: ewww_vars._wpnonce,
@@ -155,6 +151,7 @@ jQuery(document).ready(function($) {
 	});
 	$('#bulk-start').submit(function() {
 		document.getElementById('bulk-forms').style.display='none';
+		document.getElementById('bulk-stop').style.display='block';
 	        var init_data = {
 	                action: init_action,
 			_wpnonce: ewww_vars._wpnonce,
@@ -190,6 +187,10 @@ jQuery(document).ready(function($) {
 				if (exceed.test(response)) {
 					$('#bulk-loading').html('<p style="color: red"><b>License Exceeded</b></p>');
 				}
+				else if (k == 9) {
+					jqxhr.abort();
+					$('#bulk-loading').html('<p style="color: red"><b>Optimization stopped, reload page to resume.</b></p>');
+				}
 				else if (i < attachments.length) {
 					processImage();
 				}
@@ -200,6 +201,7 @@ jQuery(document).ready(function($) {
 				        };
 				        $.post(ajaxurl, cleanup_data, function(response) {
 				                $('#bulk-loading').html(response);
+						document.getElementById('bulk-stop').style.display='none';
 				        });
 				}
 				
@@ -210,6 +212,11 @@ jQuery(document).ready(function($) {
 		}
 		return false;
 	});
+	$('#bulk-stop').submit(function() {
+		k = 9;
+		document.getElementById('bulk-stop').style.display='none';
+		return false;
+	});
 });
 function ewwwRemoveImage(imageID) {
 	var image_removal = {
@@ -217,7 +224,6 @@ function ewwwRemoveImage(imageID) {
 		_wpnonce: ewww_vars._wpnonce,
 		image_id: imageID,
 	};
-//	alert("going to remove image: " + imageID);
 	jQuery.post(ajaxurl, image_removal, function(response) {
 		if(response) {
 			jQuery('#image-' + imageID).remove();

@@ -26,6 +26,9 @@ function ewww_image_optimizer_bulk_preview() {
 		<div id="bulk-loading"></div>
 		<div id="bulk-progressbar"></div>
 		<div id="bulk-counter"></div>
+		<form id="bulk-stop" style="display:none;" method="post" action="">
+			<br /><input type="submit" class="button-secondary action" value="<?php _e('Stop Optimizing', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?>" />
+		</form>
 		<div id="bulk-status"></div>
 		<div id="bulk-forms">
 		<p><?php printf(__('We have %d images to optimize.', EWWW_IMAGE_OPTIMIZER_DOMAIN), count($attachments)); ?></p>

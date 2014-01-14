@@ -177,6 +177,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * fixed: debug output not working properly on bulk optimize
 * changed: when cloud license has been exceeded, the optimizer will not attempt to upload images, and bulk operations will stop immediately
 * fixed: unnecessary decimals will not be displayed for file-sizes in bytes
+* added: button to stop bulk optimization process
 
 = 1.7.6 =
 * fixed: color of progressbar for 4 more admin themes in WP 3.8

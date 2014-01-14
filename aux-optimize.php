@@ -44,6 +44,9 @@ function ewww_image_optimizer_aux_images () {
 		<div id="bulk-loading"></div>
 		<div id="bulk-progressbar"></div>
 		<div id="bulk-counter"></div>
+		<form id="bulk-stop" style="display:none;" method="post" action="">
+			<br /><input type="submit" class="button-secondary action" value="<?php _e('Stop Optimizing', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?>" />
+		</form>
 		<div id="bulk-status"></div>
 		<div id="bulk-forms"><p><?php _e('This tool will optimize large batches of images from your wordpress install. This does not include the Media Library or galleries where we have full integration. This tool is for images in your theme, BuddyPress, WP Symposium, and other folders that you have specified on the settings page.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
 		<?php if (!empty($db_convert)) { ?>
