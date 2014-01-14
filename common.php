@@ -225,6 +225,7 @@ function ewww_image_optimizer_network_admin_menu() {
 
 // adds the bulk optimize and settings page to the admin menu
 function ewww_image_optimizer_admin_menu() {
+	// TODO: cleanup this duplication, and put links on settings page to Bulk Optimize and Optimize More
 	// adds bulk optimize to the media library menu
 	$ewww_bulk_page = add_media_page(__('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), __('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), 'edit_others_posts', 'ewww-image-optimizer-bulk', 'ewww_image_optimizer_bulk_preview');
 	add_action('admin_footer-' . $ewww_bulk_page, 'ewww_image_optimizer_debug');

@@ -1,4 +1,5 @@
 <?php 
+// TODO: somehow we broke progressbars for the nextgen (and possibly flagallery) bulk optimizers
 class ewwwngg {
 	/* initializes the nextgen integration functions */
 	function ewwwngg() {
