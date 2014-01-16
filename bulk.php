@@ -21,9 +21,12 @@ function ewww_image_optimizer_bulk_preview() {
 	} else {
 		$button_text = __('Resume previous bulk operation', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 	}
+	$loading_image = plugins_url('/wpspin.gif', __FILE__);
 	// create the html for the bulk optimize form and status divs
 ?>
-		<div id="bulk-loading"></div>
+		<div id="bulk-loading">
+			<p id="ewww-loading" class="bulk-info" style="display:none"><?php _e('Importing', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?>&nbsp;<img src='<?php echo $loading_image; ?>' alt='loading'/></p>
+		</div>
 		<div id="bulk-progressbar"></div>
 		<div id="bulk-counter"></div>
 		<form id="bulk-stop" style="display:none;" method="post" action="">
@@ -31,27 +34,36 @@ function ewww_image_optimizer_bulk_preview() {
 		</form>
 		<div id="bulk-status"></div>
 		<div id="bulk-forms">
-		<p><?php printf(__('We have %d images to optimize.', EWWW_IMAGE_OPTIMIZER_DOMAIN), count($attachments)); ?></p>
-		<form id="bulk-start" method="post" action="">
-			<input type="submit" class="button-secondary action" value="<?php echo $button_text; ?>" />
+		<p class="bulk-info"><?php printf(__('There are %d images to optimize from the Media Library.', EWWW_IMAGE_OPTIMIZER_DOMAIN), count($attachments)); ?><br />
+		<?php _e('Previously optimized images will be skipped by default.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
+		<form id="bulk-start" class="bulk-form" method="post" action="">
+<!-- TODO: translate strings -->
+			<p><label for="ewww-force" style="font-weight: bold">Force re-optimize for Media Library</label>&emsp;<input type="checkbox" id="ewww-force" name="ewww-force"></p>
+			<p><label for="ewww-delay" style="font-weight: bold">Choose how long to pause between batches of images.</label>&emsp;<input type="text" id="ewww-delay" name="ewww-delay" disabled value="0"></p>
+			<div id="ewww-delay-slider" style="width:50%"></div>
+			<p><label for="ewww-interval" style="font-weight: bold">Choose how many images should be processed before each delay.</label>&emsp;<input type="text" id="ewww-interval" name="ewww-interval" disabled value="0"></p>
+			<div id="ewww-interval-slider" style="width:50%"></div>
+			<p><input type="submit" class="button-secondary action" value="<?php echo $button_text; ?>" /></p>
 		</form>
 <?php
 		// if the 'bulk resume' option was not empty, offer to reset it so the user can start back from the beginning
 		if (!empty($resume)): 
 ?>
-			<p><?php _e('If you would like to start over again, press the Reset Status button to reset the bulk operation status.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
-			<form method="post" action="">
+			<p class="bulk-info"><?php _e('If you would like to start over again, press the Reset Status button to reset the bulk operation status.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
+			<form class="bulk-form" method="post" action="">
 				<?php wp_nonce_field( 'ewww-image-optimizer-bulk', '_wpnonce'); ?>
 				<input type="hidden" name="reset" value="1">
 				<button id="bulk-reset" type="submit" class="button-secondary action"><?php _e('Reset Status', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></button>
 			</form>
 <?php		endif;
-	echo '</div></div>';
+	echo '</div><!--</div>-->';
+	ewww_image_optimizer_aux_images();
 }
 
 // prepares the bulk operation and includes the javascript functions
 function ewww_image_optimizer_bulk_script($hook) {
 	global $ewww_debug;
+	global $wpdb;
 	// make sure we are being called from the bulk optimization page
 	if ('media_page_ewww-image-optimizer-bulk' != $hook)
 		return;
@@ -61,6 +73,23 @@ function ewww_image_optimizer_bulk_script($hook) {
 	if (!empty($_REQUEST['reset']) && wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' )) {
 		// set the 'bulk resume' option to an empty string to reset the bulk operation
 		update_option('ewww_image_optimizer_bulk_resume', '');
+	}
+        // check to see if we are supposed to reset the bulk operation and verify we are authorized to do so
+	if (!empty($_REQUEST['reset-aux']) && wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-aux-images' )) {
+		// set the 'bulk resume' option to an empty string to reset the bulk operation
+		update_option('ewww_image_optimizer_aux_resume', '');
+	}
+        // check to see if we are supposed to empty the auxiliary images table and verify we are authorized to do so
+	if (!empty($_REQUEST['empty']) && wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-aux-images' )) {
+		global $wpdb;
+		// empty the ewwwio_images table to allow re-optimization
+		$table_name = $wpdb->prefix . "ewwwio_images"; 
+		$sql = "TRUNCATE " . $table_name; 
+    		$wpdb->query($sql); 
+	}
+        // check to see if we are supposed to convert the auxiliary images table and verify we are authorized to do so
+	if (!empty($_REQUEST['convert']) && wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-aux-images' )) {
+		ewww_image_optimizer_aux_images_convert();
 	}
 	// check the 'bulk resume' option
 	$resume = get_option('ewww_image_optimizer_bulk_resume');
@@ -117,18 +146,28 @@ function ewww_image_optimizer_bulk_script($hook) {
 //	$attachments = ewww_image_optimizer_clean_attachments($attachments);
 	// store the attachment IDs we retrieved in the 'bulk_attachments' option so we can keep track of our progress in the database
 	update_option('ewww_image_optimizer_bulk_attachments', $attachments);
-	wp_enqueue_script('ewwwjuiscript', plugins_url('/jquery-ui-1.10.2.custom.min.js', __FILE__), false);
-	wp_enqueue_script('ewwwbulkscript', plugins_url('/eio.js', __FILE__), array('jquery'));
+#	wp_enqueue_script('ewwwjuiscript', plugins_url('/jquery-ui-1.10.2.custom.min.js', __FILE__), false);
+#	wp_enqueue_script('ewwwjuiscripttwo', plugins_url('/jquery-ui-1.10.3.custom.min.js', __FILE__), false);
+	wp_enqueue_script('ewwwbulkscript', plugins_url('/eio.js', __FILE__), array('jquery', 'jquery-ui-slider', 'jquery-ui-progressbar'));
 	//}
+	$image_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->prefix . 'ewwwio_images');
 	// submit a couple variables to the javascript to work with
 	$attachments = json_encode($attachments);
 	wp_localize_script('ewwwbulkscript', 'ewww_vars', array(
 			'_wpnonce' => wp_create_nonce('ewww-image-optimizer-bulk'),
-			'attachments' => $attachments
+			'attachments' => $attachments,
+			'image_count' => $image_count,
 		)
 	);
 	// load the stylesheet for the jquery progressbar
 	wp_enqueue_style('jquery-ui-progressbar', plugins_url('jquery-ui-1.10.1.custom.css', __FILE__));
+}
+
+// find the number of images in the ewwwio_images table
+function ewww_image_optimizer_aux_images_table_count() {
+	global $wpdb;
+	echo $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->prefix . 'ewwwio_images');
+	die();
 }
 
 // called by javascript to initialize some output
@@ -171,6 +210,9 @@ function ewww_image_optimizer_bulk_loop() {
 	if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
 		wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 	} 
+	if (!empty($_REQUEST['sleep'])) {
+		sleep($_REQUEST['sleep']);
+	}
 	// retrieve the time when the optimizer starts
 	$started = microtime(true);
 	// allow 50 seconds for each image (this doesn't include any exec calls, only php processing time)
@@ -179,8 +221,13 @@ function ewww_image_optimizer_bulk_loop() {
 	$attachment = $_POST['attachment'];
 	// get the 'bulk attachments' with a list of IDs remaining
 	$attachments = get_option('ewww_image_optimizer_bulk_attachments');
+	$meta = wp_get_attachment_metadata( $attachment, true );
+	if (!empty($meta['ewww_image_optimizer']) && empty($_REQUEST['force'])) {
+		printf( "<p>" . __('Already optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", esc_html($meta['file']) );
 	// do the optimization for the current attachment (including resizes)
-	$meta = ewww_image_optimizer_resize_from_meta_data (wp_get_attachment_metadata( $attachment, true ), $attachment, false);
+//	$meta = ewww_image_optimizer_resize_from_meta_data (wp_get_attachment_metadata( $attachment, true ), $attachment, false);
+	} else {
+		$meta = ewww_image_optimizer_resize_from_meta_data ($meta, $attachment, false);
 	if(!empty($meta['file'])) {
 		// output the filename (and path relative to 'uploads' folder)
 		printf( "<p>" . __('Optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", esc_html($meta['file']) );
@@ -204,6 +251,7 @@ function ewww_image_optimizer_bulk_loop() {
 	printf(__('Elapsed: %.3f seconds', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</p>", $elapsed);
 	// update the metadata for the current attachment
 	wp_update_attachment_metadata( $attachment, $meta );
+	}
 	// remove the first element fromt the $attachments array
 	if (!empty($attachments))
 		array_shift($attachments);

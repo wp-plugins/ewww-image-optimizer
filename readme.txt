@@ -48,10 +48,6 @@ NOTE: Does not optimize thumbnails on initial upload for legacy (1.9.x) versions
 
 Features optimization on upload capability, re-optimization, and bulk optimizing. The Bulk Optimize function is located near the bottom of the FlAGallery menu, and will optimize all images in all galleries. It is also possible to optimize groups of images in a gallery, or multiple galleries at once.
 
-= BuddyPress =
-
-Located under Media, the BuddyPress Optimizer allows the user to optimize all avatars (group and individual). Stores a history of optimized images, so that you can optimize new images without re-optimizing old images.
-
 = Image Store =
 
 Uploads are automatically optimized. Look for Optimize under the Image Store (Galleries) menu to see status of optimization and for re-optimization and bulk-optimization options. Using the Bulk Optimization tool under Media Library automatically includes all Image Store uploads.
@@ -179,6 +175,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * fixed: unnecessary decimals will not be displayed for file-sizes in bytes
 * added: button to stop bulk optimization process
 * removed: unnecessary calls to escapeshellarg() that were stripping accented characters from filenames
+* changed: Optimize More and Bulk Optimize are now on the same page
+* changed: After running Optimize More, you can Show Optimized Images and Empty Table without refreshing the page.
+* fixed: blank page when resetting bulk status in flagallery
 
 = 1.7.6 =
 * fixed: color of progressbar for 4 more admin themes in WP 3.8
@@ -470,6 +469,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * First release (forked from CW Image Optimizer)
 
 == Upgrade Notice ==
+
+= 1.7.7 =
+* changed: Optimize More and Bulk Optimize are now on the same page
 
 = 1.7.6 =
 * metadata stripping now applies to PNG images, but only if using optipng 0.7.x, you may want to run a bulk optimize on all your PNG images to make sure you have the best possible optimization

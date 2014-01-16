@@ -229,20 +229,20 @@ function ewww_image_optimizer_admin_menu() {
 	// adds bulk optimize to the media library menu
 	$ewww_bulk_page = add_media_page(__('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), __('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), 'edit_others_posts', 'ewww-image-optimizer-bulk', 'ewww_image_optimizer_bulk_preview');
 	add_action('admin_footer-' . $ewww_bulk_page, 'ewww_image_optimizer_debug');
-	$ewww_theme_optimize_page = add_theme_page(__('Optimize Theme Images', EWWW_IMAGE_OPTIMIZER_DOMAIN), __('Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), 'install_themes', 'ewww-image-optimizer-theme-images', 'ewww_image_optimizer_aux_images');
-	add_action('admin_footer-' . $ewww_theme_optimize_page, 'ewww_image_optimizer_debug');
+//	$ewww_theme_optimize_page = add_theme_page(__('Optimize Theme Images', EWWW_IMAGE_OPTIMIZER_DOMAIN), __('Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), 'install_themes', 'ewww-image-optimizer-theme-images', 'ewww_image_optimizer_aux_images');
+//	add_action('admin_footer-' . $ewww_theme_optimize_page, 'ewww_image_optimizer_debug');
 	$ewww_aux_optimize_page = add_management_page(__('Optimize More Images', EWWW_IMAGE_OPTIMIZER_DOMAIN), __('Optimize More', EWWW_IMAGE_OPTIMIZER_DOMAIN), 'install_themes', 'ewww-image-optimizer-aux-images', 'ewww_image_optimizer_aux_images');
 	add_action('admin_footer-' . $ewww_aux_optimize_page, 'ewww_image_optimizer_debug');
 	// if buddypress is active, add the BuddyPress Optimizer to the menu
-	if (is_plugin_active('buddypress/bp-loader.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('buddypress/bp-loader.php'))) {
+/*	if (is_plugin_active('buddypress/bp-loader.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('buddypress/bp-loader.php'))) {
 		$ewww_buddypress_optimize_page = add_media_page(__('Optimize BuddyPress Images', EWWW_IMAGE_OPTIMIZER_DOMAIN), __('BuddyPress Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), 'install_themes', 'ewww-image-optimizer-buddypress-images', 'ewww_image_optimizer_aux_images');
 		add_action('admin_footer-' . $ewww_buddypress_optimize_page, 'ewww_image_optimizer_debug');
-	}
+	}*/
 	// if WP Symposium is active, add the Symposium Optimizer to the menu
-	if (is_plugin_active('wp-symposium/wp-symposium.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('wp-symposium/wp-symposium.php'))) {
+/*	if (is_plugin_active('wp-symposium/wp-symposium.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('wp-symposium/wp-symposium.php'))) {
 		$ewww_symposium_optimize_page = add_media_page(__('Optimize WP Symposium Images', EWWW_IMAGE_OPTIMIZER_DOMAIN), __('WP Symposium Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), 'install_themes', 'ewww-image-optimizer-symposium-images', 'ewww_image_optimizer_aux_images');
 		add_action('admin_footer-' . $ewww_symposium_optimize_page, 'ewww_image_optimizer_debug');
-	}
+	}*/
 	if (!function_exists('is_plugin_active_for_network') || !is_plugin_active_for_network(plugin_basename(EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE))) { 
 		// add options page to the settings menu
 		$ewww_options_page = add_options_page(
@@ -338,18 +338,29 @@ function ewww_image_optimizer_ims() {
 	return;	
 }
 
-// enqueue custom jquery stylesheet
+// enqueue custom jquery stylesheet for bulk optimizer
 function ewww_image_optimizer_media_scripts($hook) {
 	if ($hook == 'upload.php') {
 		wp_enqueue_script('jquery-ui-tooltip');
 		wp_enqueue_style('jquery-ui-tooltip-custom', plugins_url('jquery-ui-1.10.1.custom.css', __FILE__));
 	}
+/*	if (preg_match('/settings_page_ewww-image-optimizer/', $hook)) { 
+		wp_enqueue_style('jquery-ui-tooltip-custom', plugins_url('jquery-ui-1.10.1.custom.css', __FILE__));
+		wp_enqueue_script('jquery-ui-accordion');
+	}*/
+		// TODO: see if we can get this to work properly without enqueueing our own js
+		//wp_enqueue_script('jquery-ui-progressbar');
+//		wp_enqueue_style('jquery-ui-accordion', plugins_url('jquery-ui-1.10.3.custom.min.css', __FILE__));
 }
 
 // used to output any debug messages available
 function ewww_image_optimizer_debug() {
 	global $ewww_debug;
 	if (ewww_image_optimizer_get_option('ewww_image_optimizer_debug')) echo '<div style="background-color:#ffff99;position:relative;bottom:60px;padding:5px 20px 10px;margin:0 0 15px 160px"><h3>Debug Log</h3>' . $ewww_debug . '</div>';
+	?>
+	<script type='text/javascript'>
+	</script>
+	<?php
 }
 
 // used to output debug messages to a logfile in the plugin folder in cases where output to the screen is a bad idea
@@ -854,8 +865,9 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = tr
 //		$gallery_type = 5;
 //	}
 	$ewww_debug .= "attachment id: $ID<br>";
-	if (!wp_get_attachment_metadata($ID))
+	if (!wp_get_attachment_metadata($ID)) {
 		$new_image = true;
+	}
 	list($file_path, $upload_path) = ewww_image_optimizer_attachment_path($meta, $ID);
 	// if the attachment has been uploaded via the image store plugin
 	if ('ims_image' == get_post_type($ID)) {

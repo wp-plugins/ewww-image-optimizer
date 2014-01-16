@@ -39,7 +39,7 @@ class ewwwflag {
 	// Handles the bulk html output
 	function ewww_flag_bulk () {
 		// if there is POST data, make sure bulkaction and doaction are the values we want
-		if (!empty($_POST)) {
+		if (!empty($_POST) && empty($_REQUEST['reset'])) {
 			// if there is no requested bulk action, do nothing
 			if (empty($_REQUEST['bulkaction'])) {
 				return;
@@ -75,16 +75,16 @@ class ewwwflag {
 		</form>
 		<div id="bulk-status"></div>
 		<div id="bulk-forms">
-		<p><?php printf(__('We have %d images to optimize.', EWWW_IMAGE_OPTIMIZER_DOMAIN), count($attachments)); ?></p>
-		<form id="bulk-start" method="post" action="">
+		<p class="bulk-info"><?php printf(__('We have %d images to optimize.', EWWW_IMAGE_OPTIMIZER_DOMAIN), count($attachments)); ?></p>
+		<form id="bulk-start" class="bulk-form" method="post" action="">
 			<input type="submit" class="button-secondary action" value="<?php echo $button_text; ?>" />
 		</form>
 		<?php
 		// if there was a previous operation, offer the option to reset the option in the db
 		if (!empty($resume)):
 		?>
-			<p><?php _e('If you would like to start over again, press the Reset Status button to reset the bulk operation status.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
-			<form method="post" action="">
+			<p class="bulk-info"><?php _e('If you would like to start over again, press the Reset Status button to reset the bulk operation status.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
+			<form method="post" class="bulk-form" action="">
 				<?php wp_nonce_field( 'ewww-image-optimizer-bulk', '_wpnonce'); ?>
 				<input type="hidden" name="reset" value="1">
 				<button id="bulk-reset" type="submit" class="button-secondary action"><?php _e('Reset Status', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></button>
@@ -155,7 +155,7 @@ class ewwwflag {
 		// add a custom jquery-ui script that contains the progressbar widget
 		wp_enqueue_script('ewwwjuiscript', plugins_url('/jquery-ui-1.10.2.custom.min.js', __FILE__), false);
 		// add the EWWW IO javascript
-		wp_enqueue_script('ewwwbulkscript', plugins_url('/eio.js', __FILE__), array('jquery'));
+		wp_enqueue_script('ewwwbulkscript', plugins_url('/eio.js', __FILE__), array('jquery', 'jquery-ui-progressbar', 'jquery-ui-slider'));
 		// add the styling for the progressbar
 		wp_enqueue_style('jquery-ui-progressbar', plugins_url('jquery-ui-1.10.1.custom.css', __FILE__));
 		// encode the IDs for javascript use
