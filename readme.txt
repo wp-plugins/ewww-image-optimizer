@@ -178,6 +178,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * changed: Optimize More and Bulk Optimize are now on the same page
 * changed: After running Optimize More, you can Show Optimized Images and Empty Table without refreshing the page.
 * fixed: blank page when resetting bulk status in flagallery
+* change: already optimized images in Media Library will not be re-optimized by default via bulk tool
 
 = 1.7.6 =
 * fixed: color of progressbar for 4 more admin themes in WP 3.8
