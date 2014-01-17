@@ -7,8 +7,8 @@ function ewww_image_optimizer_aux_images () {
 	// retrieve the attachment IDs that were pre-loaded in the database
 //	$attachments = get_option('ewww_image_optimizer_aux_attachments');
 	// Retrieve the value of the 'aux resume' option and set the button text for the form to use
-	$resume = get_option('ewww_image_optimizer_aux_resume');
-	if (empty($resume)) {
+	$aux_resume = get_option('ewww_image_optimizer_aux_resume');
+	if (empty($aux_resume)) {
 		$button_text = __('Start optimizing', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 	} else {
 		$button_text = __('Resume previous optimization', EWWW_IMAGE_OPTIMIZER_DOMAIN);
@@ -69,7 +69,7 @@ function ewww_image_optimizer_aux_images () {
 <?php			}
 		//}
 		// if the 'bulk resume' option was not empty, offer to reset it so the user can start back from the beginning
-		if (!empty($resume)) {
+		if (!empty($aux_resume)) {
 ?>
 			<p class="bulk-info"><?php _e('If you would like to start over again, press the Reset Status button to reset the bulk operation status.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
 			<form id="aux-reset" class="bulk-form" method="post" action="">

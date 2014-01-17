@@ -33,23 +33,25 @@ function ewww_image_optimizer_bulk_preview() {
 			<br /><input type="submit" class="button-secondary action" value="<?php _e('Stop Optimizing', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?>" />
 		</form>
 		<div id="bulk-status"></div>
+		<form class="bulk-form">
+			<p><label for="ewww-force" style="font-weight: bold"><?php _e('Force re-optimize for Media Library', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label>&emsp;<input type="checkbox" id="ewww-force" name="ewww-force"></p>
+			<p><label for="ewww-delay" style="font-weight: bold"><?php _e('Choose how long to pause between batches of images (seconds)', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label>&emsp;<input type="text" id="ewww-delay" name="ewww-delay" value="0"></p>
+			<div id="ewww-delay-slider" style="width:50%"></div>
+			<p><label for="ewww-interval" style="font-weight: bold"><?php _e('Choose how many images should be processed before each delay', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label>&emsp;<input type="text" id="ewww-interval" name="ewww-interval" value="1"></p>
+			<div id="ewww-interval-slider" style="width:50%"></div>
+		</form>
+		<h3><?php _e('Optimize Media Library', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></h3>
 		<div id="bulk-forms">
-		<p class="bulk-info"><?php printf(__('There are %d images to optimize from the Media Library.', EWWW_IMAGE_OPTIMIZER_DOMAIN), count($attachments)); ?><br />
+		<p class="media-info bulk-info"><?php printf(__('There are %d images to optimize from the Media Library.', EWWW_IMAGE_OPTIMIZER_DOMAIN), count($attachments)); ?><br />
 		<?php _e('Previously optimized images will be skipped by default.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
 		<form id="bulk-start" class="bulk-form" method="post" action="">
-<!-- TODO: translate strings -->
-			<p><label for="ewww-force" style="font-weight: bold">Force re-optimize for Media Library</label>&emsp;<input type="checkbox" id="ewww-force" name="ewww-force"></p>
-			<p><label for="ewww-delay" style="font-weight: bold">Choose how long to pause between batches of images.</label>&emsp;<input type="text" id="ewww-delay" name="ewww-delay" disabled value="0"></p>
-			<div id="ewww-delay-slider" style="width:50%"></div>
-			<p><label for="ewww-interval" style="font-weight: bold">Choose how many images should be processed before each delay.</label>&emsp;<input type="text" id="ewww-interval" name="ewww-interval" disabled value="0"></p>
-			<div id="ewww-interval-slider" style="width:50%"></div>
 			<p><input type="submit" class="button-secondary action" value="<?php echo $button_text; ?>" /></p>
 		</form>
 <?php
 		// if the 'bulk resume' option was not empty, offer to reset it so the user can start back from the beginning
 		if (!empty($resume)): 
 ?>
-			<p class="bulk-info"><?php _e('If you would like to start over again, press the Reset Status button to reset the bulk operation status.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
+			<p class="media-info bulk-info"><?php _e('If you would like to start over again, press the Reset Status button to reset the bulk operation status.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
 			<form class="bulk-form" method="post" action="">
 				<?php wp_nonce_field( 'ewww-image-optimizer-bulk', '_wpnonce'); ?>
 				<input type="hidden" name="reset" value="1">

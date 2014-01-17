@@ -225,14 +225,14 @@ function ewww_image_optimizer_network_admin_menu() {
 
 // adds the bulk optimize and settings page to the admin menu
 function ewww_image_optimizer_admin_menu() {
-	// TODO: cleanup this duplication, and put links on settings page to Bulk Optimize and Optimize More
+	// TODO: cleanup this duplication, and put links on settings page to Bulk Optimize
 	// adds bulk optimize to the media library menu
 	$ewww_bulk_page = add_media_page(__('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), __('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), 'edit_others_posts', 'ewww-image-optimizer-bulk', 'ewww_image_optimizer_bulk_preview');
 	add_action('admin_footer-' . $ewww_bulk_page, 'ewww_image_optimizer_debug');
 //	$ewww_theme_optimize_page = add_theme_page(__('Optimize Theme Images', EWWW_IMAGE_OPTIMIZER_DOMAIN), __('Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), 'install_themes', 'ewww-image-optimizer-theme-images', 'ewww_image_optimizer_aux_images');
 //	add_action('admin_footer-' . $ewww_theme_optimize_page, 'ewww_image_optimizer_debug');
-	$ewww_aux_optimize_page = add_management_page(__('Optimize More Images', EWWW_IMAGE_OPTIMIZER_DOMAIN), __('Optimize More', EWWW_IMAGE_OPTIMIZER_DOMAIN), 'install_themes', 'ewww-image-optimizer-aux-images', 'ewww_image_optimizer_aux_images');
-	add_action('admin_footer-' . $ewww_aux_optimize_page, 'ewww_image_optimizer_debug');
+//	$ewww_aux_optimize_page = add_management_page(__('Optimize More Images', EWWW_IMAGE_OPTIMIZER_DOMAIN), __('Optimize More', EWWW_IMAGE_OPTIMIZER_DOMAIN), 'install_themes', 'ewww-image-optimizer-aux-images', 'ewww_image_optimizer_aux_images');
+//	add_action('admin_footer-' . $ewww_aux_optimize_page, 'ewww_image_optimizer_debug');
 	// if buddypress is active, add the BuddyPress Optimizer to the menu
 /*	if (is_plugin_active('buddypress/bp-loader.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('buddypress/bp-loader.php'))) {
 		$ewww_buddypress_optimize_page = add_media_page(__('Optimize BuddyPress Images', EWWW_IMAGE_OPTIMIZER_DOMAIN), __('BuddyPress Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), 'install_themes', 'ewww-image-optimizer-buddypress-images', 'ewww_image_optimizer_aux_images');
@@ -348,19 +348,12 @@ function ewww_image_optimizer_media_scripts($hook) {
 		wp_enqueue_style('jquery-ui-tooltip-custom', plugins_url('jquery-ui-1.10.1.custom.css', __FILE__));
 		wp_enqueue_script('jquery-ui-accordion');
 	}*/
-		// TODO: see if we can get this to work properly without enqueueing our own js
-		//wp_enqueue_script('jquery-ui-progressbar');
-//		wp_enqueue_style('jquery-ui-accordion', plugins_url('jquery-ui-1.10.3.custom.min.css', __FILE__));
 }
 
 // used to output any debug messages available
 function ewww_image_optimizer_debug() {
 	global $ewww_debug;
 	if (ewww_image_optimizer_get_option('ewww_image_optimizer_debug')) echo '<div style="background-color:#ffff99;position:relative;bottom:60px;padding:5px 20px 10px;margin:0 0 15px 160px"><h3>Debug Log</h3>' . $ewww_debug . '</div>';
-	?>
-	<script type='text/javascript'>
-	</script>
-	<?php
 }
 
 // used to output debug messages to a logfile in the plugin folder in cases where output to the screen is a bad idea

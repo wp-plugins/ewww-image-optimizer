@@ -1,30 +1,29 @@
-jQuery(function($) {
-	$("#ewww-interval-slider").slider({
-		min: 0,
-		max: 50,
-		step: 5,
-		slide: function(event, ui) {
-			$("#ewww-interval").val(ui.value);
-		}
-	});
-	$("#ewww-interval").val($("#ewww-interval-slider").slider("value"));
-});
-jQuery(function($) {
-	$("#ewww-delay-slider").slider({
-		min: 0,
-		max: 30,
-		step: 5,
-		slide: function(event, ui) {
-			$("#ewww-delay").val(ui.value);
-		}
-	});
-	$("#ewww-delay").val($("#ewww-delay-slider").slider("value"));
-});
 jQuery(document).ready(function($) {
-	var k = 0;
-	var ewww_force = 0;
+	// sliders for the bulk page
+	$(function() {
+		$("#ewww-interval-slider").slider({
+			min: 1,
+			max: 50,
+			slide: function(event, ui) {
+				$("#ewww-interval").val(ui.value);
+			}
+		});
+		$("#ewww-interval").val($("#ewww-interval-slider").slider("value"));
+	});
+	$(function() {
+		$("#ewww-delay-slider").slider({
+			min: 0,
+			max: 30,
+			slide: function(event, ui) {
+				$("#ewww-delay").val(ui.value);
+			}
+		});
+		$("#ewww-delay").val($("#ewww-delay-slider").slider("value"));
+	});
+	// cleanup the attachments array
 	var attachpost = ewww_vars.attachments.replace(/&quot;/g, '"');
 	var attachments = $.parseJSON(attachpost);
+	// initialize the ajax actions for the appropriate bulk page
 	if (ewww_vars.gallery == 'flag') {
 		var init_action = 'bulk_flag_init';
 		var filename_action = 'bulk_flag_filename';
@@ -35,14 +34,15 @@ jQuery(document).ready(function($) {
 		var filename_action = 'bulk_ngg_filename';
 		var loop_action = 'bulk_ngg_loop';
 		var cleanup_action = 'bulk_ngg_cleanup';
+		// this loads inline on the nextgen gallery management pages
 		if (!document.getElementById('bulk-loading')) {
                        	$('.wrap').prepend('<h2>Bulk Optimize</h2><div id="bulk-loading"></div><div id="bulk-progressbar"></div><div id="bulk-counter"></div><form id="bulk-stop" style="display:none;" method="post" action=""><br /><input type="submit" class="button-secondary action" value="Stop Optimizing" /></form><div id="bulk-status"></div><div id="bulk-forms"><p class="bulk-info">We have ' + attachments.length + ' images to optimize.</p><form id="bulk-start" class="bulk-form" method="post" action=""><input type="submit" class="button-secondary action" value="Start optimizing" /></form></div>');
 		}
-	} else if (ewww_vars.gallery == 'aux') {
+/*	} else if (ewww_vars.gallery == 'aux') {
 		var init_action = 'bulk_aux_images_init';
 		var filename_action = 'bulk_aux_images_filename';
 		var loop_action = 'bulk_aux_images_loop';
-		var cleanup_action = 'bulk_aux_images_cleanup';
+		var cleanup_action = 'bulk_aux_images_cleanup';*/
 	} else {
 		var scan_action = 'bulk_aux_images_scan';
 		var init_action = 'bulk_init';
@@ -51,10 +51,13 @@ jQuery(document).ready(function($) {
 		var cleanup_action = 'bulk_cleanup';
 	}
 	var i = 0;
+	var k = 0;
+	var ewww_force = 0;
 	var ewww_interval = 0;
 	var ewww_delay = 0;
 	var ewww_countdown = 0;
 	var ewww_sleep = 0;
+	var ewww_aux = false;
 	var init_data = {
 	        action: init_action,
 		_wpnonce: ewww_vars._wpnonce,
@@ -62,7 +65,6 @@ jQuery(document).ready(function($) {
 	var table_action = 'bulk_aux_images_table';
 	var table_count_action = 'bulk_aux_images_table_count';
 	var import_action = 'bulk_aux_images_import';
-	var ewww_aux = false;
 	$('#aux-start').submit(function() {
 		ewww_aux = true;
 		init_action = 'bulk_aux_images_init';
@@ -94,23 +96,15 @@ jQuery(document).ready(function($) {
 	});
 	$('#import-start').submit(function() {
 		$('#bulk-forms').hide();
-//		document.getElementById('bulk-forms').style.display='none';
-/*	        var loading_data = {
-	                action: loading_action,
-			loading_text: 'importing',
-	        };*/
-//	        $.post(ajaxurl, loading_data, function(response) {
-	                $('#ewww-loading').show();
-	                //$('#bulk-loading').html(response);
-		        var import_data = {
-		                action: import_action,
-				_wpnonce: ewww_vars._wpnonce,
-		        };
-		        $.post(ajaxurl, import_data, function(response) {
-		                $('#bulk-status').html(response);
-		        	$('#ewww-loading').hide();
-		        });
-//	        });
+	        $('#ewww-loading').show();
+		var import_data = {
+			action: import_action,
+			_wpnonce: ewww_vars._wpnonce,
+		};
+		$.post(ajaxurl, import_data, function(response) {
+			$('#bulk-status').html(response);
+			$('#ewww-loading').hide();
+		});
 		return false;
 	});	
 	$('#show-table').submit(function() {
@@ -226,14 +220,13 @@ jQuery(document).ready(function($) {
 		return false;
 	});
 	function startOpt () {
-		ewww_interval = $('#ewww-interval-slider').slider('value');
-		ewww_delay = $('#ewww-delay-slider').slider('value');
+		ewww_interval = $('#ewww-interval').val();
+		ewww_delay = $('#ewww-delay').val();
 		ewww_countdown = ewww_interval;
 		if ($('#ewww-force:checkbox:checked').val()) {
 			ewww_force = 1;
 		}
 		$('.aux-table').hide();
-//		$('#bulk-forms').hide();
 		$('#bulk-stop').show();
 				$('.bulk-form').hide();
 				$('.bulk-info').hide();
@@ -246,8 +239,6 @@ jQuery(document).ready(function($) {
 	        });
 	}
 	function processImage () {
-//		alert($('#ewww-interval-slider').slider('value'));
-		//alert($('#ewww-delay-slider').slider('value'));
 		if (ewww_countdown == 0) {
 			ewww_sleep = ewww_delay;
 			ewww_countdown = ewww_interval;
@@ -261,9 +252,6 @@ jQuery(document).ready(function($) {
 		$.post(ajaxurl, filename_data, function(response) {
 		        $('#bulk-loading').html(response);
 		});
-//		alert(ewww_countdown + ' ' + ewww_sleep);
-//		if (ewww_countdown == 0) {
-//		}
 	        var loop_data = {
 	                action: loop_action,
 			_wpnonce: ewww_vars._wpnonce,
@@ -300,20 +288,8 @@ jQuery(document).ready(function($) {
 			        $.post(ajaxurl, cleanup_data, function(response) {
 			                $('#bulk-loading').html(response);
 					$('#bulk-stop').hide();
+					auxCleanup();
 			        });
-				auxCleanup();
-	/*			if (ewww_aux == true) {
-					var table_count_data = {
-						action: table_count_action,
-					};
-					$.post(ajaxurl, table_count_data, function(response) {
-						ewww_vars.image_count = response;
-					});
-					$('#show-table').show();
-					$('#empty-table').show();
-					$('#table-info').show();
-					$('h3').show();
-				}*/
 			}
 	        })
 		.fail(function() { 
@@ -331,23 +307,37 @@ jQuery(document).ready(function($) {
 			$('#show-table').show();
 			$('#empty-table').show();
 			$('#table-info').show();
+	//		$('.bulk-info').show();
+			$('.bulk-form').show();
+			$('.media-info').show();
 			$('h3').show();
+			attachpost = ewww_vars.attachments.replace(/&quot;/g, '"');
+			attachments = $.parseJSON(attachpost);
+			init_action = 'bulk_init';
+			filename_action = 'bulk_filename';
+			loop_action = 'bulk_loop';
+			cleanup_action = 'bulk_cleanup';
+			init_data = {
+			        action: init_action,
+				_wpnonce: ewww_vars._wpnonce,
+			};
+			ewww_aux = false;
 		}
 	}	
 });
-function ewwwRemoveImage(imageID) {
-	var image_removal = {
-		action: 'bulk_aux_images_remove',
-		_wpnonce: ewww_vars._wpnonce,
-		image_id: imageID,
-	};
-	jQuery.post(ajaxurl, image_removal, function(response) {
-		if(response == '1') {
-			jQuery('#image-' + imageID).remove();
-			ewww_vars.image_count--;
-			jQuery('.displaying-num').text(ewww_vars.image_count + ' total images');
-		} else {
-			alert("could not remove image from table.");
-		}
-	});
-}
+	function ewwwRemoveImage(imageID) {
+		var image_removal = {
+			action: 'bulk_aux_images_remove',
+			_wpnonce: ewww_vars._wpnonce,
+			image_id: imageID,
+		};
+		jQuery.post(ajaxurl, image_removal, function(response) {
+			if(response == '1') {
+				jQuery('#image-' + imageID).remove();
+				ewww_vars.image_count--;
+				jQuery('.displaying-num').text(ewww_vars.image_count + ' total images');
+			} else {
+				alert("could not remove image from table.");
+			}
+		});
+	}
