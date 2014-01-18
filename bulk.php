@@ -42,7 +42,7 @@ function ewww_image_optimizer_bulk_preview() {
 		</form>
 		<h3><?php _e('Optimize Media Library', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></h3>
 		<div id="bulk-forms">
-		<p class="media-info bulk-info"><?php printf(__('There are %d images to optimize from the Media Library.', EWWW_IMAGE_OPTIMIZER_DOMAIN), count($attachments)); ?><br />
+		<p class="media-info bulk-info"><?php printf(__('We have %d images to optimize.', EWWW_IMAGE_OPTIMIZER_DOMAIN), count($attachments)); ?><br />
 		<?php _e('Previously optimized images will be skipped by default.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
 		<form id="bulk-start" class="bulk-form" method="post" action="">
 			<p><input type="submit" class="button-secondary action" value="<?php echo $button_text; ?>" /></p>
@@ -227,32 +227,32 @@ function ewww_image_optimizer_bulk_loop() {
 	if (!empty($meta['ewww_image_optimizer']) && empty($_REQUEST['force'])) {
 		printf( "<p>" . __('Already optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", esc_html($meta['file']) );
 	// do the optimization for the current attachment (including resizes)
-//	$meta = ewww_image_optimizer_resize_from_meta_data (wp_get_attachment_metadata( $attachment, true ), $attachment, false);
 	} else {
 		$meta = ewww_image_optimizer_resize_from_meta_data ($meta, $attachment, false);
-	if(!empty($meta['file'])) {
-		// output the filename (and path relative to 'uploads' folder)
-		printf( "<p>" . __('Optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", esc_html($meta['file']) );
-	} else {
-		printf("<p>" . __('Skipped image, ID:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", $attachment );
-	}
-	if(!empty($meta['ewww_image_optimizer']))
-		// tell the user what the results were for the original image
-		printf(__('Full size – %s', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "<br>", $meta['ewww_image_optimizer']);
-	// check to see if there are resized version of the image
-	if (isset($meta['sizes']) && is_array($meta['sizes'])) {
-		// cycle through each resize
-		foreach ($meta['sizes'] as $size) {
-			// output the results for the current resized version
-			printf("%s – %s<br>", $size['file'], $size['ewww_image_optimizer']);
+		if(!empty($meta['file'])) {
+			// output the filename (and path relative to 'uploads' folder)
+			printf( "<p>" . __('Optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", esc_html($meta['file']) );
+		} else {
+			printf("<p>" . __('Skipped image, ID:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", $attachment );
 		}
-	}
-	// calculate how much time has elapsed since we started
-	$elapsed = microtime(true) - $started;
-	// output how much time has elapsed since we started
-	printf(__('Elapsed: %.3f seconds', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</p>", $elapsed);
-	// update the metadata for the current attachment
-	wp_update_attachment_metadata( $attachment, $meta );
+		if(!empty($meta['ewww_image_optimizer'])) {
+			// tell the user what the results were for the original image
+			printf(__('Full size – %s', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "<br>", $meta['ewww_image_optimizer']);
+		}
+		// check to see if there are resized version of the image
+		if (isset($meta['sizes']) && is_array($meta['sizes'])) {
+			// cycle through each resize
+			foreach ($meta['sizes'] as $size) {
+				// output the results for the current resized version
+				printf("%s – %s<br>", $size['file'], $size['ewww_image_optimizer']);
+			}
+		}
+		// calculate how much time has elapsed since we started
+		$elapsed = microtime(true) - $started;
+		// output how much time has elapsed since we started
+		printf(__('Elapsed: %.3f seconds', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</p>", $elapsed);
+		// update the metadata for the current attachment
+		wp_update_attachment_metadata( $attachment, $meta );
 	}
 	// remove the first element fromt the $attachments array
 	if (!empty($attachments))

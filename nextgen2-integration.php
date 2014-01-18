@@ -15,6 +15,7 @@ class ewwwngg {
 		add_action('wp_ajax_bulk_ngg_filename', array(&$this, 'ewww_ngg_bulk_filename'));
 		add_action('wp_ajax_bulk_ngg_loop', array(&$this, 'ewww_ngg_bulk_loop'));
 		add_action('wp_ajax_bulk_ngg_cleanup', array(&$this, 'ewww_ngg_bulk_cleanup'));
+		add_action('wp_ajax_bulk_ngg_preview', array(&$this, 'ewww_ngg_bulk_preview'));
 //		add_action('wp_ajax_ewww_ngg_thumbs', array(&$this, 'ewww_ngg_thumbs_only'));
 		//add_action('ngg_after_new_images_added', array(&$this, 'ewww_ngg_new_thumbs'), 10, 2);
 		register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_ngg_resume');
@@ -145,7 +146,7 @@ class ewwwngg {
 				return;
 			}
 			// if we have a valid status, display it, the image size, and give a re-optimize link
-			if ( $status && !empty( $status ) ) {
+			if ( !empty( $status ) ) {
 				echo $status;
 				echo "<br>" . sprintf(__('Image Size: %s', EWWW_IMAGE_OPTIMIZER_DOMAIN), $file_size);
 				printf("<br><a href=\"admin.php?action=ewww_ngg_manual&amp;attachment_ID=%d\">%s</a>",
@@ -200,8 +201,16 @@ class ewwwngg {
 			<br /><input type="submit" class="button-secondary action" value="<?php _e('Stop Optimizing', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?>" />
 		</form>
                 <div id="bulk-status"></div>
+		<form class="bulk-form">
+			<p><label for="ewww-force" style="font-weight: bold"><?php _e('Force re-optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label>&emsp;<input type="checkbox" id="ewww-force" name="ewww-force"></p>
+			<p><label for="ewww-delay" style="font-weight: bold"><?php _e('Choose how long to pause between batches of images (in seconds, 0 = disabled)', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label>&emsp;<input type="text" id="ewww-delay" name="ewww-delay" value="0"></p>
+			<div id="ewww-delay-slider" style="width:50%"></div>
+			<p><label for="ewww-interval" style="font-weight: bold"><?php _e('Choose how many images should be processed before each delay', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label>&emsp;<input type="text" id="ewww-interval" name="ewww-interval" value="1"></p>
+			<div id="ewww-interval-slider" style="width:50%"></div>
+		</form>
                 <div id="bulk-forms">
-                <p class="bulk-info"><?php printf(__('We have %d images to optimize.', EWWW_IMAGE_OPTIMIZER_DOMAIN), count($attachments)); ?></p>
+		<p class="bulk-info"><?php printf(__('We have %d images to optimize.', EWWW_IMAGE_OPTIMIZER_DOMAIN), count($attachments)); ?><br />
+		<?php _e('Previously optimized images will be skipped by default.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
                 <form id="bulk-start" class="bulk-form" method="post" action="">
                         <input type="submit" class="button-secondary action" value="<?php echo $button_text; ?>" />
                 </form>
@@ -216,6 +225,9 @@ class ewwwngg {
                         </form>
 <?php           }
 	        echo '</div></div>';
+		if (!empty($_REQUEST['inline'])) {
+			die();
+		}
 		return;
 	}
 
@@ -328,6 +340,9 @@ class ewwwngg {
                 if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
                         wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
                 }
+		if (!empty($_REQUEST['sleep'])) {
+			sleep($_REQUEST['sleep']);
+		}
 		// need this file to work with metadata
 		require_once(WP_CONTENT_DIR . '/plugins/nextgen-gallery/products/photocrati_nextgen/modules/ngglegacy/lib/meta.php');
 		// find out what time we started, in microseconds
@@ -337,6 +352,11 @@ class ewwwngg {
 		$meta = new nggMeta($id);
 		// retrieve the filepath
 		$file_path = $meta->image->imagePath;
+//		$ewww = $meta->get_META('ewww_image_optimizer');
+	if ($meta->get_META('ewww_image_optimizer') && empty($_REQUEST['force'])) {
+		printf( "<p>" . __('Already optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", esc_html($file_path) );
+	// do the optimization for the current attachment (including resizes)
+	} else {
 		// run the optimizer on the current image
 		$fres = ewww_image_optimizer($file_path, 2, false, false);
 		// update the metadata of the optimized image
@@ -353,6 +373,7 @@ class ewwwngg {
 		// outupt how much time we spent
 		$elapsed = microtime(true) - $started;
 		printf(__('Elapsed: %.3f seconds', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</p>", $elapsed);
+	}
 		// get the list of attachments remaining from the db
 		$attachments = get_option('ewww_image_optimizer_bulk_ngg_attachments');
 		// remove the first item

@@ -166,7 +166,6 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * webp support
 * jpegmini server integration (for resizes only)
 * tinypng api integration (again, for resizes only)
-* FlaGallery optimize on upload does not work with plupload (only the browser-based method works properly). This will be implemented in a future release.
 * huge thanks to those who have done localization/translation for Dutch, Romanian, and Spanish. See http://wordpress.org/plugins/ewww-image-optimizer/other_notes/ for more information. If you would like to help translate this plugin in your language, post a thread on the support forums.
 
 = 1.7.7 =
@@ -179,6 +178,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * changed: After running Optimize More, you can Show Optimized Images and Empty Table without refreshing the page.
 * fixed: blank page when resetting bulk status in flagallery
 * change: already optimized images in Media Library will not be re-optimized by default via bulk tool
+* fixed: FlaGallery version 4.0, optimize on upload now works with plupload
 
 = 1.7.6 =
 * fixed: color of progressbar for 4 more admin themes in WP 3.8

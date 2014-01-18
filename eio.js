@@ -1,9 +1,19 @@
+/*if (ewww_vars.gallery == 'nextgen' && !document.getElementById('bulk-loading')) {
+	var preview_action = 'bulk_ngg_preview';
+	var preview_data = {
+		action: preview_action,
+		inline: 1,
+        };
+        jQuery.post(ajaxurl, preview_data, function(response) {
+		jQuery('.wrap').prepend(response);
+	});
+}*/
 jQuery(document).ready(function($) {
 	// sliders for the bulk page
 	$(function() {
 		$("#ewww-interval-slider").slider({
 			min: 1,
-			max: 50,
+			max: 25,
 			slide: function(event, ui) {
 				$("#ewww-interval").val(ui.value);
 			}
@@ -30,13 +40,25 @@ jQuery(document).ready(function($) {
 		var loop_action = 'bulk_flag_loop';
 		var cleanup_action = 'bulk_flag_cleanup';
 	} else if (ewww_vars.gallery == 'nextgen') {
+		var preview_action = 'bulk_ngg_preview';
 		var init_action = 'bulk_ngg_init';
 		var filename_action = 'bulk_ngg_filename';
 		var loop_action = 'bulk_ngg_loop';
 		var cleanup_action = 'bulk_ngg_cleanup';
 		// this loads inline on the nextgen gallery management pages
 		if (!document.getElementById('bulk-loading')) {
-                       	$('.wrap').prepend('<h2>Bulk Optimize</h2><div id="bulk-loading"></div><div id="bulk-progressbar"></div><div id="bulk-counter"></div><form id="bulk-stop" style="display:none;" method="post" action=""><br /><input type="submit" class="button-secondary action" value="Stop Optimizing" /></form><div id="bulk-status"></div><div id="bulk-forms"><p class="bulk-info">We have ' + attachments.length + ' images to optimize.</p><form id="bulk-start" class="bulk-form" method="post" action=""><input type="submit" class="button-secondary action" value="Start optimizing" /></form></div>');
+			var preview_data = {
+			        action: preview_action,
+				inline: 1,
+			};
+			$.post(ajaxurl, preview_data, function(response) {
+        	               	$('.wrap').prepend(response);
+	$('#bulk-start').submit(function() {
+		startOpt();
+		return false;
+	});
+			//$('.wrap').prepend('<h2>Bulk Optimize</h2><div id="bulk-loading"></div><div id="bulk-progressbar"></div><div id="bulk-counter"></div><form id="bulk-stop" style="display:none;" method="post" action=""><br /><input type="submit" class="button-secondary action" value="Stop Optimizing" /></form><div id="bulk-status"></div><form class="bulk-form"><p><label for="ewww-force" style="font-weight: bold">Force re-optimize</label>&emsp;<input type="checkbox" id="ewww-force" name="ewww-force"></p><p><label for="ewww-delay" style="font-weight: bold">Choose how long to pause between batches of images (in seconds, 0 = disabled)</label>&emsp;<input type="text" id="ewww-delay" name="ewww-delay" value="0"></p><div id="ewww-delay-slider" style="width:50%"></div><p><label for="ewww-interval" style="font-weight: bold">Choose how many images should be processed before each delay</label>&emsp;<input type="text" id="ewww-interval" name="ewww-interval" value="1"></p><div id="ewww-interval-slider" style="width:50%"></div></form><div id="bulk-forms"><p class="bulk-info">We have ' + attachments.length + ' images to optimize.</p><form id="bulk-start" class="bulk-form" method="post" action=""><input type="submit" class="button-secondary action" value="Start optimizing" /></form></div>');
+			});
 		}
 /*	} else if (ewww_vars.gallery == 'aux') {
 		var init_action = 'bulk_aux_images_init';
@@ -220,8 +242,16 @@ jQuery(document).ready(function($) {
 		return false;
 	});
 	function startOpt () {
-		ewww_interval = $('#ewww-interval').val();
-		ewww_delay = $('#ewww-delay').val();
+		if ( ! $('#ewww-interval').val().match( /^[1-9][0-9]*$/) ) {
+			ewww_interval = 1;
+		} else {
+			ewww_interval = $('#ewww-interval').val();
+		}
+		if ( ! $('#ewww-delay').val().match( /^[1-9][0-9]*$/) ) {
+			ewww_delay = 0;
+		} else {
+			ewww_delay = $('#ewww-delay').val();
+		}
 		ewww_countdown = ewww_interval;
 		if ($('#ewww-force:checkbox:checked').val()) {
 			ewww_force = 1;
@@ -250,7 +280,9 @@ jQuery(document).ready(function($) {
 			attachment: attachment_id,
 	        };
 		$.post(ajaxurl, filename_data, function(response) {
-		        $('#bulk-loading').html(response);
+			if (k != 9) {
+		        	$('#bulk-loading').html(response);
+			}
 		});
 	        var loop_data = {
 	                action: loop_action,
@@ -263,7 +295,8 @@ jQuery(document).ready(function($) {
 			i++;
 			$('#bulk-progressbar').progressbar("option", "value", i );
 			$('#bulk-counter').html('Optimized ' + i + '/' + attachments.length);
-	                $('#bulk-status').append(response);
+//	                $('#bulk-status').append(response + '<br>' + ewww_sleep + '<br>' + ewww_countdown + '<br>' );
+	                $('#bulk-status').append( response );
 			var exceed=/exceeded/m;
 			if (exceed.test(response)) {
 				$('#bulk-loading').html('<p style="color: red"><b>License Exceeded</b></p>');
