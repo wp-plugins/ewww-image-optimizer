@@ -74,8 +74,16 @@ class ewwwflag {
 			<br /><input type="submit" class="button-secondary action" value="<?php _e('Stop Optimizing', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?>" />
 		</form>
 		<div id="bulk-status"></div>
+		<form class="bulk-form">
+			<p><label for="ewww-force" style="font-weight: bold"><?php _e('Force re-optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label>&emsp;<input type="checkbox" id="ewww-force" name="ewww-force"></p>
+			<p><label for="ewww-delay" style="font-weight: bold"><?php _e('Choose how long to pause between batches of images (in seconds, 0 = disabled)', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label>&emsp;<input type="text" id="ewww-delay" name="ewww-delay" value="<?php if ($delay = ewww_image_optimizer_get_option ( 'ewww_image_optimizer_delay' ) ) { echo $delay; } else { echo 0; } ?>"></p>
+			<div id="ewww-delay-slider" style="width:50%"></div>
+		<!--	<p><label for="ewww-interval" style="font-weight: bold"><?php _e('Choose how many images should be processed before each delay', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label>&emsp;<input type="text" id="ewww-interval" name="ewww-interval" value="<?php if ($interval = ewww_image_optimizer_get_option ( 'ewww_image_optimizer_interval' ) ) { echo $interval; } else { echo 1; } ?>"></p>
+			<div id="ewww-interval-slider" style="width:50%"></div>-->
+		</form>
 		<div id="bulk-forms">
-		<p class="bulk-info"><?php printf(__('We have %d images to optimize.', EWWW_IMAGE_OPTIMIZER_DOMAIN), count($attachments)); ?></p>
+		<p class="bulk-info"><?php printf(__('We have %d images to optimize.', EWWW_IMAGE_OPTIMIZER_DOMAIN), count($attachments)); ?><br />
+		<?php _e('Previously optimized images will be skipped by default.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
 		<form id="bulk-start" class="bulk-form" method="post" action="">
 			<input type="submit" class="button-secondary action" value="<?php echo $button_text; ?>" />
 		</form>
@@ -249,6 +257,9 @@ class ewwwflag {
 		if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
 			wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 		}
+		if (!empty($_REQUEST['sleep'])) {
+			sleep($_REQUEST['sleep']);
+		}
 		// need this file to work with flag meta
 		require_once(WP_CONTENT_DIR . '/plugins/flash-album-gallery/lib/meta.php');
 		// record the starting time for the current image (in microseconds)
@@ -257,22 +268,26 @@ class ewwwflag {
 		// get the image meta for the current ID
 		$meta = new flagMeta($id);
 		$file_path = $meta->image->imagePath;
-		// optimize the full-size version
-		$fres = ewww_image_optimizer($file_path, 3, false, false);
-		// and store the results in the metadata
-		flagdb::update_image_meta($id, array('ewww_image_optimizer' => $fres[1]));
-		// let the user know what happened
-		printf( "<p>" . __('Optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", esc_html($meta->image->filename) );
-		printf(__('Full size – %s', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "<br>", $fres[1]);
-		$thumb_path = $meta->image->thumbPath;
-		// optimize the thumbnail
-		$tres = ewww_image_optimizer($thumb_path, 3, false, true);
-		// and let the user know the results
-		printf(__('Thumbnail – %s', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "<br>", $tres[1]);
-		// determine how much time the image took to process
-		$elapsed = microtime(true) - $started;
-		// and output it to the user
-		printf(__('Elapsed: %.3f seconds', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</p>", $elapsed);
+		if ($meta->get_META('ewww_image_optimizer') && empty($_REQUEST['force'])) {
+			printf( "<p>" . __('Already optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", esc_html($file_path) );
+		} else {
+			// optimize the full-size version
+			$fres = ewww_image_optimizer($file_path, 3, false, false);
+			// and store the results in the metadata
+			flagdb::update_image_meta($id, array('ewww_image_optimizer' => $fres[1]));
+			// let the user know what happened
+			printf( "<p>" . __('Optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", esc_html($meta->image->filename) );
+			printf(__('Full size – %s', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "<br>", $fres[1]);
+			$thumb_path = $meta->image->thumbPath;
+			// optimize the thumbnail
+			$tres = ewww_image_optimizer($thumb_path, 3, false, true);
+			// and let the user know the results
+			printf(__('Thumbnail – %s', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "<br>", $tres[1]);
+			// determine how much time the image took to process
+			$elapsed = microtime(true) - $started;
+			// and output it to the user
+			printf(__('Elapsed: %.3f seconds', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</p>", $elapsed);
+		}
 		// retrieve the list of attachments left to work on
 		$attachments = get_option('ewww_image_optimizer_bulk_flag_attachments');
 		// take the first image off the list

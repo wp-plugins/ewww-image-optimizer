@@ -40,6 +40,8 @@ function ewww_image_optimizer_aux_images () {
 	$db_convert = $wpdb->get_results($convert_query, ARRAY_N);
 	// generate the WP spinner image for display
 	$loading_image = plugins_url('/wpspin.gif', __FILE__);
+	$lastaux = get_option('ewww_image_optimizer_aux_last');
+	date_default_timezone_set ( get_option ( 'timezone_string' ) );
 	// find out what kind of images we are optimizing
 	?>
 <!--	<div class="wrap">-->
@@ -53,13 +55,15 @@ function ewww_image_optimizer_aux_images () {
 				<button id="table-convert" type="submit" class="button-secondary action"><?php _e('Convert Table', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></button>
 			</form>
 		<?php } ?>	
-		<?php //if (empty($attachments)) { ?>
 			<p id="ewww-nothing" class="bulk-info" style="display:none"><?php _e('There are no images to optimize.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
 			<p id="ewww-scanning" class="bulk-info" style="display:none"><?php _e('Scanning, this could take a while', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?>&nbsp;<img src='<?php echo $loading_image; ?>' alt='loading'/></p>
-		<?php //} else { ?>
+		<?php if (!empty($lastaux)) { ?>
+			<p id="ewww-lastaux" class="bulk-info"><?php printf(__('Last optimization was completed on %1$s at %2$s and optimized %3$d images', EWWW_IMAGE_OPTIMIZER_DOMAIN), date(get_option('date_format'), $lastaux[0]), date(get_option('time_format'), $lastaux[0]), $lastaux[1]); ?></p>
+		<?php } //else { ?>
 <!--			<p><?php //printf(__('We have %d images to optimize.', EWWW_IMAGE_OPTIMIZER_DOMAIN), count($attachments)); ?></p>-->
 			<form id="aux-start" class="bulk-form" method="post" action="">
-				<input type="submit" class="button-secondary action" value="<?php echo $button_text; ?>" />
+				<input id="aux-first" type="submit" class="button-secondary action" value="<?php echo $button_text; ?>" />
+				<input id="aux-again" type="submit" class="button-secondary action" style="display:none" value="<?php _e('Optimize Again', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?>" />
 			</form>
 			<?php if ($upload_import) { ?>
 				<p class="bulk-info"><?php _e('You should import Media Library images into the table to prevent duplicate optimization.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
@@ -308,8 +312,9 @@ function ewww_image_optimizer_image_scan($dir) {
 	global $wpdb;
 	$ewww_debug .= "<b>ewww_image_optimizer_image_scan()</b><br>";
 	$images = Array();
-	if (!is_dir($dir))
+	if (!is_dir($dir)) {
 		return $images;
+	}
 	$iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir), RecursiveIteratorIterator::CHILD_FIRST);
 	$start = microtime(true);
 	$query = 'SELECT path,image_size FROM ' . $wpdb->prefix . 'ewwwio_images';
@@ -521,6 +526,9 @@ function ewww_image_optimizer_aux_images_initialize($auto = false) {
 	} 
 	// update the 'aux resume' option to show that an operation is in progress
 	update_option('ewww_image_optimizer_aux_resume', 'true');
+	// store the time and number of images for later display
+	$count = count(get_option('ewww_image_optimizer_aux_attachments'));
+	update_option('ewww_image_optimizer_aux_last', array(time(), $count));
 	// let the user know that we are beginning
 	if (!$auto) {
 		// generate the WP spinner image for display
@@ -615,7 +623,9 @@ function ewww_image_optimizer_aux_images_cleanup($auto = false) {
 	// verify that an authorized user has started the optimizer
 	if (!$auto && (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'install_themes' ))) {
 		wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
-	} 
+	}
+	$stored_last = get_option('ewww_image_optimizer_aux_last');
+	update_option('ewww_image_optimizer_aux_last', array(time(), $stored_last[1]));
 	// all done, so we can update the bulk options with empty values
 	update_option('ewww_image_optimizer_aux_resume', '');
 	update_option('ewww_image_optimizer_aux_attachments', '');

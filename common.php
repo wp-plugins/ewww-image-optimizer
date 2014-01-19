@@ -178,6 +178,7 @@ function ewww_image_optimizer_auto() {
 		update_option('ewww_image_optimizer_aux_attachments', '');
 		ewww_image_optimizer_aux_images_script('appearance_page_ewww-image-optimizer-theme-images');
 		ewww_image_optimizer_aux_images_initialize(true);
+		$delay = ewww_image_optimizer_get_option('ewww_image_optimizer_delay');		
 		$attachments = get_option('ewww_image_optimizer_aux_attachments');
 		foreach ($attachments as $attachment) {
 			if (!get_option('ewww_image_optimizer_aux_resume')) {
@@ -185,6 +186,9 @@ function ewww_image_optimizer_auto() {
 				return;
 			}
 			ewww_image_optimizer_aux_images_loop($attachment, true);
+			if (!empty($delay)) {
+				sleep($delay);
+			}
 		}	
 		ewww_image_optimizer_aux_images_cleanup(true);
 		ewww_image_optimizer_debug_log();
@@ -412,6 +416,9 @@ function ewww_image_optimizer_jpg_quality_sanitize ($input) {
 function ewww_image_optimizer_aux_paths_sanitize ($input) {
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_aux_paths_santitize()</b><br>";
+	if (empty($input)) {
+		return '';
+	}
 	$path_array = array();
 	$paths = explode("\n", $input);
 	foreach ($paths as $path) {

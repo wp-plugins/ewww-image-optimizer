@@ -243,6 +243,9 @@ class ewwwngg {
                 <div id="bulk-forms">
                 <p class="bulk-info"><?php printf(__('We have %d images to optimize.', EWWW_IMAGE_OPTIMIZER_DOMAIN), count($attachments)); ?></p>
                 <form id="bulk-start" class="bulk-form" method="post" action="">
+			<input type="hidden" id="ewww-delay" name="ewww-delay" value="0">
+			<input type="hidden" id="ewww-interval" name="ewww-interval" value="1">
+			
                         <input type="submit" class="button-secondary action" value="<?php echo $button_text; ?>" />
                 </form>
                 <?php
@@ -256,6 +259,9 @@ class ewwwngg {
                         </form>
 <?php           }
 	        echo '</div></div>';
+		if (!empty($_REQUEST['inline'])) {
+			die();
+		}
 		return;
 	}
 

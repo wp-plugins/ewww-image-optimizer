@@ -6,10 +6,6 @@ function ewww_image_optimizer_bulk_preview() {
 	// retrieve the attachment IDs that were pre-loaded in the database
 	$attachments = get_option('ewww_image_optimizer_bulk_attachments');
 	// make sure there are some attachments to optimize
-	if (count($attachments) < 1) {
-		echo '<p>' . __('You do not appear to have uploaded any images yet.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</p>';
-		return;
-	}
 ?>
 	<div class="wrap"> 
 	<div id="icon-upload" class="icon32"><br /></div><h2><?php _e('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></h2>
@@ -35,19 +31,22 @@ function ewww_image_optimizer_bulk_preview() {
 		<div id="bulk-status"></div>
 		<form class="bulk-form">
 			<p><label for="ewww-force" style="font-weight: bold"><?php _e('Force re-optimize for Media Library', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label>&emsp;<input type="checkbox" id="ewww-force" name="ewww-force"></p>
-			<p><label for="ewww-delay" style="font-weight: bold"><?php _e('Choose how long to pause between batches of images (in seconds, 0 = disabled)', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label>&emsp;<input type="text" id="ewww-delay" name="ewww-delay" value="0"></p>
+			<p><label for="ewww-delay" style="font-weight: bold"><?php _e('Choose how long to pause between batches of images (in seconds, 0 = disabled)', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label>&emsp;<input type="text" id="ewww-delay" name="ewww-delay" value="<?php if ($delay = ewww_image_optimizer_get_option ( 'ewww_image_optimizer_delay' ) ) { echo $delay; } else { echo 0; } ?>"></p>
 			<div id="ewww-delay-slider" style="width:50%"></div>
-			<p><label for="ewww-interval" style="font-weight: bold"><?php _e('Choose how many images should be processed before each delay', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label>&emsp;<input type="text" id="ewww-interval" name="ewww-interval" value="1"></p>
-			<div id="ewww-interval-slider" style="width:50%"></div>
+<!--			<p><label for="ewww-interval" style="font-weight: bold"><?php _e('Choose how many images should be processed before each delay', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label>&emsp;<input type="text" id="ewww-interval" name="ewww-interval" value="<?php if ($interval = ewww_image_optimizer_get_option ( 'ewww_image_optimizer_interval' ) ) { echo $interval; } else { echo 1; } ?>"></p>
+			<div id="ewww-interval-slider" style="width:50%"></div>-->
 		</form>
 		<h3><?php _e('Optimize Media Library', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></h3>
-		<div id="bulk-forms">
-		<p class="media-info bulk-info"><?php printf(__('We have %d images to optimize.', EWWW_IMAGE_OPTIMIZER_DOMAIN), count($attachments)); ?><br />
-		<?php _e('Previously optimized images will be skipped by default.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
-		<form id="bulk-start" class="bulk-form" method="post" action="">
-			<p><input type="submit" class="button-secondary action" value="<?php echo $button_text; ?>" /></p>
-		</form>
-<?php
+<?php		if (count($attachments) < 1) {
+			echo '<p>' . __('You do not appear to have uploaded any images yet.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</p>';
+		} else { ?>
+			<div id="bulk-forms">
+			<p class="media-info bulk-info"><?php printf(__('We have %d images to optimize.', EWWW_IMAGE_OPTIMIZER_DOMAIN), count($attachments)); ?><br />
+			<?php _e('Previously optimized images will be skipped by default.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
+			<form id="bulk-start" class="bulk-form" method="post" action="">
+				<p><input type="submit" class="button-secondary action" value="<?php echo $button_text; ?>" /></p>
+			</form>
+<?php		}
 		// if the 'bulk resume' option was not empty, offer to reset it so the user can start back from the beginning
 		if (!empty($resume)): 
 ?>
@@ -88,6 +87,7 @@ function ewww_image_optimizer_bulk_script($hook) {
 		$table_name = $wpdb->prefix . "ewwwio_images"; 
 		$sql = "TRUNCATE " . $table_name; 
     		$wpdb->query($sql); 
+		update_option('ewww_image_optimizer_aux_last', '');
 	}
         // check to see if we are supposed to convert the auxiliary images table and verify we are authorized to do so
 	if (!empty($_REQUEST['convert']) && wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-aux-images' )) {
