@@ -31,7 +31,7 @@ function ewww_image_optimizer_bulk_preview() {
 		<div id="bulk-status"></div>
 		<form class="bulk-form">
 			<p><label for="ewww-force" style="font-weight: bold"><?php _e('Force re-optimize for Media Library', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label>&emsp;<input type="checkbox" id="ewww-force" name="ewww-force"></p>
-			<p><label for="ewww-delay" style="font-weight: bold"><?php _e('Choose how long to pause between batches of images (in seconds, 0 = disabled)', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label>&emsp;<input type="text" id="ewww-delay" name="ewww-delay" value="<?php if ($delay = ewww_image_optimizer_get_option ( 'ewww_image_optimizer_delay' ) ) { echo $delay; } else { echo 0; } ?>"></p>
+			<p><label for="ewww-delay" style="font-weight: bold"><?php _e('Choose how long to pause between images (in seconds, 0 = disabled)', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label>&emsp;<input type="text" id="ewww-delay" name="ewww-delay" value="<?php if ($delay = ewww_image_optimizer_get_option ( 'ewww_image_optimizer_delay' ) ) { echo $delay; } else { echo 0; } ?>"></p>
 			<div id="ewww-delay-slider" style="width:50%"></div>
 <!--			<p><label for="ewww-interval" style="font-weight: bold"><?php _e('Choose how many images should be processed before each delay', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label>&emsp;<input type="text" id="ewww-interval" name="ewww-interval" value="<?php if ($interval = ewww_image_optimizer_get_option ( 'ewww_image_optimizer_interval' ) ) { echo $interval; } else { echo 1; } ?>"></p>
 			<div id="ewww-interval-slider" style="width:50%"></div>-->
@@ -41,7 +41,7 @@ function ewww_image_optimizer_bulk_preview() {
 			echo '<p>' . __('You do not appear to have uploaded any images yet.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</p>';
 		} else { ?>
 			<div id="bulk-forms">
-			<p class="media-info bulk-info"><?php printf(__('We have %d images to optimize.', EWWW_IMAGE_OPTIMIZER_DOMAIN), count($attachments)); ?><br />
+			<p class="media-info bulk-info"><?php printf(__('There are %d images in the Media Library.', EWWW_IMAGE_OPTIMIZER_DOMAIN), count($attachments)); ?><br />
 			<?php _e('Previously optimized images will be skipped by default.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
 			<form id="bulk-start" class="bulk-form" method="post" action="">
 				<p><input type="submit" class="button-secondary action" value="<?php echo $button_text; ?>" /></p>
@@ -168,8 +168,13 @@ function ewww_image_optimizer_bulk_script($hook) {
 // find the number of images in the ewwwio_images table
 function ewww_image_optimizer_aux_images_table_count() {
 	global $wpdb;
-	echo $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->prefix . 'ewwwio_images');
-	die();
+	$count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->prefix . 'ewwwio_images');
+	if (!empty($_REQUEST['inline'])) {
+		echo $count;
+		die();
+	}
+	return $count;
+	
 }
 
 // called by javascript to initialize some output

@@ -330,6 +330,7 @@ jQuery(document).ready(function($) {
 		if (ewww_aux == true) {
 			var table_count_data = {
 				action: table_count_action,
+				inline: 1,
 			};
 			$.post(ajaxurl, table_count_data, function(response) {
 				ewww_vars.image_count = response;

@@ -205,7 +205,12 @@ function ewww_image_optimizer_admin_init() {
 			restore_current_blog();
 		}
 	}
-	add_action('admin_enqueue_scripts', 'ewww_image_optimizer_progressbar_style');
+	global $wp_version;
+	$my_version = $wp_version;
+	$my_version = substr($my_version, 0, 3);
+	if ( $my_version >= 3.8 ) { 
+		add_action('admin_enqueue_scripts', 'ewww_image_optimizer_progressbar_style');
+	}
 }
 
 // tells the user they are on an unsupported operating system
@@ -588,6 +593,7 @@ function ewww_image_optimizer_install_paths () {
 	}
 	if (PHP_OS == 'FreeBSD') {
 		$arch_type = php_uname('m');
+		$ewww_debug .= "CPU architecture: $arch_type<br>";
 		$gifsicle_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'gifsicle-fbsd';
 		$optipng_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'optipng-fbsd';
 		if ($arch_type == 'amd64') {
@@ -601,6 +607,7 @@ function ewww_image_optimizer_install_paths () {
 	}
 	if (PHP_OS == 'Linux') {
 		$arch_type = php_uname('m');
+		$ewww_debug .= "CPU architecture: $arch_type<br>";
 		$gifsicle_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'gifsicle-linux';
 		$optipng_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'optipng-linux';
 		if ($arch_type == 'x86_64') {
@@ -1689,7 +1696,7 @@ function ewww_image_optimizer_options () {
 		<a href="http://wordpress.org/extend/plugins/ewww-image-optimizer/installation/"><?php _e('Installation Instructions', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></a> | 
 		<a href="http://wordpress.org/support/plugin/ewww-image-optimizer"><?php _e('Plugin Support', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></a> | 
 		<a href="http://stats.pingdom.com/w89y81bhecp4"><?php _e('Cloud Status', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></a></p>
-		<p><?php printf(__('If you have existing images you would like to optimize, you can use the %s tool.', EWWW_IMAGE_OPTIMIZER_DOMAIN), '<a href="upload.php?page=ewww-image-optimizer-bulk">' . __('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</a>'); ?></p>
+		<p><?php printf(__('New images uploaded to the Media Library will be optimized automatically. If you have existing images you would like to optimize, you can use the %s tool.', EWWW_IMAGE_OPTIMIZER_DOMAIN), '<a href="upload.php?page=ewww-image-optimizer-bulk">' . __('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</a>'); ?></p>
 		<div id="status" style="border: 1px solid #ccc; padding: 0 8px; border-radius: 12px;">
 			<h3>Plugin Status</h3>
 			<?php

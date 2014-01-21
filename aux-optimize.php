@@ -9,7 +9,7 @@ function ewww_image_optimizer_aux_images () {
 	// Retrieve the value of the 'aux resume' option and set the button text for the form to use
 	$aux_resume = get_option('ewww_image_optimizer_aux_resume');
 	if (empty($aux_resume)) {
-		$button_text = __('Start optimizing', EWWW_IMAGE_OPTIMIZER_DOMAIN);
+		$button_text = __('Scan and optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 	} else {
 		$button_text = __('Resume previous optimization', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 	}
@@ -33,9 +33,10 @@ function ewww_image_optimizer_aux_images () {
 		$upload_import = false;
 	}
 	// find out if the auxiliary image table has anything in it
+	$already_optimized = ewww_image_optimizer_aux_images_table_count();
 	$table = $wpdb->prefix . 'ewwwio_images';
-	$query = "SELECT id FROM $table LIMIT 1";
-	$already_optimized = $wpdb->get_results($query);
+//	$query = "SELECT id FROM $table LIMIT 1";
+//	$already_optimized = $wpdb->get_results($query);
 	$convert_query = "SELECT image_md5 FROM $table WHERE image_md5 <> ''";
 	$db_convert = $wpdb->get_results($convert_query, ARRAY_N);
 	// generate the WP spinner image for display
@@ -45,7 +46,7 @@ function ewww_image_optimizer_aux_images () {
 	// find out what kind of images we are optimizing
 	?>
 <!--	<div class="wrap">-->
-	<div id="icon-themes" class="icon32"><br /></div><h3><?php _e('Optimize Everything Else', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></h3>
+	<h3><?php _e('Optimize Everything Else', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></h3>
 		<div id="aux-forms"><p class="bulk-info"><?php _e('Use this tool to optimize images outside of the Media Library and galleries where we have full integration. Examples: theme images, BuddyPress, WP Symposium, and any folders that you have specified on the settings page.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
 		<?php if (!empty($db_convert)) { ?>
 			<p class="bulk-info"><?php _e('The database schema has changed, you need to convert to the new format.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
@@ -88,7 +89,7 @@ function ewww_image_optimizer_aux_images () {
 			$display = '';
 		}
 ?>
-			<p id="table-info" class="bulk-info"<?php echo "$display>" . __('The plugin keeps track of already optimized images to prevent re-optimization. If you would like to re-optimize images, or flush the table for some reason, press the Empty Table button to reset the bulk operation status.'); ?></p>
+			<p id="table-info" class="bulk-info"<?php echo "$display>"; printf( __('The plugin keeps track of already optimized images to prevent re-optimization. If you would like to re-optimize images, or flush the table for some reason, press the Empty Table button to reset the bulk operation status. There are %d images that have been optimized so far.'), $already_optimized); ?></p>
 			<form id="empty-table" class="bulk-form" method="post" action=""<?php echo $display; ?>>
 				<?php wp_nonce_field( 'ewww-image-optimizer-aux-images', '_wpnonce'); ?>
 				<input type="hidden" name="empty" value="1">
