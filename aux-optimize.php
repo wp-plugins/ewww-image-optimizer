@@ -460,22 +460,23 @@ function ewww_image_optimizer_aux_images_script($hook) {
 //	wp_enqueue_script('ewwwbulkscript', plugins_url('/eio.js', __FILE__), array('jquery'));
 	// submit a couple variables to the javascript to work with
 	$attachments = json_encode($attachments);
-//	if (!empty($_REQUEST['scan'])) {
+	if (!empty($_REQUEST['scan'])) {
 		if (empty($attachments)) {
 			_e('Nothing to optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 		} else {
 			echo $attachments;
 		}
 		die();
-/*	} else {
-		wp_localize_script('ewwwbulkscript', 'ewww_vars', array(
+	} else {
+		return;
+	/*	wp_localize_script('ewwwbulkscript', 'ewww_vars', array(
 				'_wpnonce' => wp_create_nonce('ewww-image-optimizer-aux-images'),
 				'gallery' => 'aux',
 				'attachments' => $attachments,
 				'image_count' => $image_count,
 			)
-		);
-	}*/
+		);*/
+	}
 	// load the stylesheet for the jquery progressbar
 //	wp_enqueue_style('jquery-ui-progressbar', plugins_url('jquery-ui-1.10.1.custom.css', __FILE__));
 //	wp_enqueue_style('colors-css');
