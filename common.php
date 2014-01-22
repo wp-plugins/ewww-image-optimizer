@@ -39,8 +39,7 @@ add_filter('wp_image_editors', 'ewww_image_optimizer_load_editor', 60);
 register_deactivation_hook(EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE, 'ewww_image_optimizer_network_deactivate');
 
 // require the files that does the bulk processing
-require(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'bulk.php');
-require(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'aux-optimize.php');
+// TODO: surely we can do something to ensure these only load in the admin...
 
 // need to include the plugin library for the is_plugin_active function
 require_once(ABSPATH . 'wp-admin/includes/plugin.php');
@@ -172,6 +171,8 @@ function ewww_image_optimizer_load_editor($editors) {
 function ewww_image_optimizer_auto() {
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_auto()</b><br>";
+	require_once(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'bulk.php');
+	require_once(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'aux-optimize.php');
 	if (ewww_image_optimizer_get_option('ewww_image_optimizer_auto') == TRUE) {
 		$ewww_debug .= "running scheduled optimization<br>";
 		update_option('ewww_image_optimizer_aux_resume', '');

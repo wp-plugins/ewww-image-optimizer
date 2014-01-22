@@ -179,6 +179,8 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * fixed: blank page when resetting bulk status in flagallery
 * change: already optimized images in Media Library will not be re-optimized by default via bulk tool
 * fixed: FlaGallery version 4.0, optimize on upload now works with plupload
+* fixed: proper validation that an image has been removed from the auxilliary images table
+* move more code into admin_init to improve page load on front-end
 
 = 1.7.6 =
 * fixed: color of progressbar for 4 more admin themes in WP 3.8
