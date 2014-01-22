@@ -23,7 +23,7 @@ define('EWWW_IMAGE_OPTIMIZER_TOOL_PATH', WP_CONTENT_DIR . '/ewww/');
 define('EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE', __FILE__);
 // this is the full system path to the plugin folder
 define('EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH', plugin_dir_path(__FILE__));
-define('EWWW_IMAGE_OPTIMIZER_VERSION', '176.21');
+define('EWWW_IMAGE_OPTIMIZER_VERSION', '176.26');
 
 require_once(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'common.php');
 
@@ -205,8 +205,10 @@ function ewww_image_optimizer_admin_init() {
 			restore_current_blog();
 		}
 	}
+	// require the files that do the bulk processing
 	require_once(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'bulk.php');
 	require_once(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'aux-optimize.php');
+	// queue the function that contains custom styling for our progressbars, but only in wp 3.8+
 	global $wp_version;
 	$my_version = $wp_version;
 	$my_version = substr($my_version, 0, 3);

@@ -224,6 +224,7 @@ function ewww_image_optimizer_bulk_loop() {
 	// get the 'bulk attachments' with a list of IDs remaining
 	$attachments = get_option('ewww_image_optimizer_bulk_attachments');
 	$meta = wp_get_attachment_metadata( $attachment, true );
+	// TODO: push this downstream, so we can verify that resizes also get optimizes, just in case...
 	if (!empty($meta['ewww_image_optimizer']) && empty($_REQUEST['force'])) {
 		printf( "<p>" . __('Already optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", esc_html($meta['file']) );
 	// do the optimization for the current attachment (including resizes)

@@ -38,9 +38,6 @@ add_action('ewww_image_optimizer_auto', 'ewww_image_optimizer_auto');
 add_filter('wp_image_editors', 'ewww_image_optimizer_load_editor', 60);
 register_deactivation_hook(EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE, 'ewww_image_optimizer_network_deactivate');
 
-// require the files that does the bulk processing
-// TODO: surely we can do something to ensure these only load in the admin...
-
 // need to include the plugin library for the is_plugin_active function
 require_once(ABSPATH . 'wp-admin/includes/plugin.php');
 // include the file that loads the nextgen gallery optimization functions
@@ -129,6 +126,22 @@ function ewww_image_optimizer_install_table() {
 	require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 	dbDelta($sql);
 	
+	// remove extra decimals in ewwwio_images table
+	$query = 'SELECT id,results FROM ' . $wpdb->prefix . "ewwwio_images WHERE results LIKE '%.0&nbsp;B)%'";
+	$old_records = $wpdb->get_results($query, ARRAY_A);
+	foreach ($old_records as $record) {
+			$ewww_debug .= 'converting record: ' . $record['id'] . '<br>';
+			$savings = preg_replace('/\.0&nbsp;B/', '&nbsp;B', $record['results']);
+			$ewww_debug .= 'using string: ' . $savings . '<br>';
+			$wpdb->update($wpdb->prefix . "ewwwio_images",
+				array(
+					'results' => $savings,
+				),
+				array(
+					'id' => $record['id'],
+				));
+	}
+				ewww_image_optimizer_debug_log();
 	// make sure some of our options are not autoloaded (since they can be huge)
 	$bulk_attachments = get_option('ewww_image_optimizer_bulk_attachments', '');
 	delete_option('ewww_image_optimizer_bulk_attachments');
@@ -177,7 +190,7 @@ function ewww_image_optimizer_auto() {
 		$ewww_debug .= "running scheduled optimization<br>";
 		update_option('ewww_image_optimizer_aux_resume', '');
 		update_option('ewww_image_optimizer_aux_attachments', '');
-		ewww_image_optimizer_aux_images_script('appearance_page_ewww-image-optimizer-theme-images');
+		ewww_image_optimizer_aux_images_script('ewww-image-optimizer-auto');
 		ewww_image_optimizer_aux_images_initialize(true);
 		$delay = ewww_image_optimizer_get_option('ewww_image_optimizer_delay');		
 		$attachments = get_option('ewww_image_optimizer_aux_attachments');

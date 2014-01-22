@@ -248,7 +248,7 @@ function ewww_image_optimizer_aux_images_table() {
 			$type = ewww_image_optimizer_mimetype($optimized_image[0], 'i');
 			// get a human readable filesize
 			$file_size = size_format(filesize($optimized_image[0]), 2);
-			$file_size = str_replace('B ', 'B', $file_size);
+			$file_size = str_replace('.00 B ', ' B', $file_size);
 ?>			<tr<?php if($alternate) echo " class='alternate'"; ?> id="image-<?php echo $optimized_image[3]; ?>">
 				<td style='width:80px' class='column-icon'><img width='50' height='50' src='<?php echo $image_url; ?>' /></td>
 				<td class='title'>...<?php echo $image_name; ?></td>
@@ -360,7 +360,7 @@ function ewww_image_optimizer_aux_images_convert() {
 // prepares the bulk operation and includes the javascript functions
 function ewww_image_optimizer_aux_images_script($hook) {
 	// make sure we are being called from the proper page
-	if ('appearance_page_ewww-image-optimizer-theme-images' !== $hook && 'media_page_ewww-image-optimizer-buddypress-images' !== $hook && 'media_page_ewww-image-optimizer-symposium-images' !== $hook && 'tools_page_ewww-image-optimizer-aux-images' !== $hook && empty($_REQUEST['scan'])) {
+	if ('ewww-image-optimizer-auto' !== $hook && empty($_REQUEST['scan'])) {
 		return;
 	}
 	global $ewww_debug;
@@ -456,8 +456,6 @@ function ewww_image_optimizer_aux_images_script($hook) {
 		// store the filenames we retrieved in the 'bulk_attachments' option so we can keep track of our progress in the database
 		update_option('ewww_image_optimizer_aux_attachments', $attachments);
 	}
-//	wp_enqueue_script('ewwwjuiscript', plugins_url('/jquery-ui-1.10.2.custom.min.js', __FILE__), false);
-//	wp_enqueue_script('ewwwbulkscript', plugins_url('/eio.js', __FILE__), array('jquery'));
 	// submit a couple variables to the javascript to work with
 	$attachments = json_encode($attachments);
 	if (!empty($_REQUEST['scan'])) {
@@ -469,17 +467,7 @@ function ewww_image_optimizer_aux_images_script($hook) {
 		die();
 	} else {
 		return;
-	/*	wp_localize_script('ewwwbulkscript', 'ewww_vars', array(
-				'_wpnonce' => wp_create_nonce('ewww-image-optimizer-aux-images'),
-				'gallery' => 'aux',
-				'attachments' => $attachments,
-				'image_count' => $image_count,
-			)
-		);*/
 	}
-	// load the stylesheet for the jquery progressbar
-//	wp_enqueue_style('jquery-ui-progressbar', plugins_url('jquery-ui-1.10.1.custom.css', __FILE__));
-//	wp_enqueue_style('colors-css');
 }
 
 // called by javascript to initialize some output
