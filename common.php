@@ -114,11 +114,14 @@ function ewww_image_optimizer_install_table() {
 	// create a table with 4 columns: an id, the file path, the md5sum, and the optimization results
 	$sql = "CREATE TABLE $table_name (
 		id mediumint(9) NOT NULL AUTO_INCREMENT,
+		attachment_id int UNSIGNED,
 		path text NOT NULL,
 		image_md5 VARCHAR(55),
 		results VARCHAR(55) NOT NULL,
 		gallery VARCHAR(30),
 		image_size int UNSIGNED,
+		orig_size int UNSIGNED,
+		KEY attachment_id (attachment_id),
 		UNIQUE KEY id (id)
 	);";
 
@@ -869,9 +872,12 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $n
  *
  * Called after `wp_generate_attachment_metadata` is completed.
  */
-function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = true) {
+function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = true, $force = false) {
 	global $ewww_debug;
 	global $wpdb;
+	// TODO: track all images in the custom table, with original filesize, and new/current filesize
+	// may also need to track their attachment ID as well
+	// TODO: also have some doo-dad that tracks total file savings
 	$ewww_debug .= "<b>ewww_image_optimizer_resize_from_meta_data()</b><br>";
 //	if (FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_saved_file')) {
 		$gallery_type = 1;
@@ -906,8 +912,9 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = tr
 		$already_optimized = $wpdb->get_results($query, ARRAY_A);
 	}
 	// if converting, we don't care that it was already optimized
-	if (!empty($_GET['convert']) || ewww_image_optimizer_get_option('ewww_image_optimizer_jpg_to_png') || ewww_image_optimizer_get_option('ewww_image_optimizer_png_to_jpg') || ewww_image_optimizer_get_option('ewww_image_optimizer_gif_to_png'))
+	if (!empty($_GET['convert']) || ewww_image_optimizer_get_option('ewww_image_optimizer_jpg_to_png') || ewww_image_optimizer_get_option('ewww_image_optimizer_png_to_jpg') || ewww_image_optimizer_get_option('ewww_image_optimizer_gif_to_png')) {
 		$already_optimized = '';
+	}
 	// if the image wasn't optimized already OR this isn't a newly uploaded image
 	if (empty($already_optimized) || empty($new_image)) {
 		// run the image optimizer on the file, and store the results
@@ -1147,6 +1154,25 @@ function ewww_image_optimizer_attachment_path($meta, $ID) {
 	if (is_file($file_path))
 		return array($file_path, $upload_path);
 	return array('', $upload_path);
+}
+
+// takes a human-readable size, and generates an approximate byte-size
+function ewww_image_optimizer_size_unformat ($formatted) {
+	$size_parts = explode ( '&nbsp;', $formatted);
+	switch ($size_parts[1]) {
+		case 'B':
+			return intval($size_parts[0]);
+		case 'kB':
+			return intval($size_parts[0] * 1024);
+		case 'MB':
+			return intval($size_parts[0] * 1048576);
+		case 'GB':
+			return intval($size_parts[0] * 1073741824);
+		case 'TB':
+			return intval($size_parts[0] * 1099511627776);
+		default:
+			return 0;
+	}
 }
 
 // takes an array of attachment info and strips out extra fields

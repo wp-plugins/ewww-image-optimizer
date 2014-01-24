@@ -11,8 +11,9 @@ function ewww_image_optimizer_aux_images () {
 	} else {
 		$button_text = __('Resume previous optimization', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 	}
-	$paths = ewww_image_optimizer_get_option('ewww_image_optimizer_aux_paths');
-	if (!empty($paths)) {
+	//$paths = ewww_image_optimizer_get_option('ewww_image_optimizer_aux_paths');
+	$upload_import = get_option('ewww_image_optimizer_imported');
+	/*if (!empty($paths)) {
 		foreach ($paths as $path) {
 			// retrieve the location of the wordpress upload folder
 			$upload_dir = wp_upload_dir();
@@ -28,7 +29,7 @@ function ewww_image_optimizer_aux_images () {
 		}
 	} else {
 		$upload_import = false;
-	}
+	}*/
 	// find out if the auxiliary image table has anything in it
 	$already_optimized = ewww_image_optimizer_aux_images_table_count();
 	$table = $wpdb->prefix . 'ewwwio_images';
@@ -58,7 +59,7 @@ function ewww_image_optimizer_aux_images () {
 				<input id="aux-first" type="submit" class="button-secondary action" value="<?php echo $button_text; ?>" />
 				<input id="aux-again" type="submit" class="button-secondary action" style="display:none" value="<?php _e('Optimize Again', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?>" />
 			</form>
-			<?php if ($upload_import) { ?>
+			<?php if (empty($upload_import)) { ?>
 				<p class="bulk-info"><?php _e('You should import Media Library images into the table to prevent duplicate optimization.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
 				<form id="import-start" class="bulk-form" method="post" action="">
 					<input type="submit" class="button-secondary action" value="<?php _e('Import Images', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?>" />
@@ -128,7 +129,6 @@ function ewww_image_optimizer_aux_images_import() {
 		_e('Nothing to import', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 		die;
 	}
-	// we need to strip the excess data from attachments, since we only want the attachment IDs
 	$ewww_debug .= "importing " . count($attachments) . " attachments<br>";
 	foreach ($attachments as $id) {
 		// allow 50 seconds for each import
@@ -143,14 +143,19 @@ function ewww_image_optimizer_aux_images_import() {
 		}
 		if (!empty($meta['ewww_image_optimizer']) ) {
 			$results = $meta['ewww_image_optimizer'];
+			preg_match('/\((.+)\)/', $results, $savings_size);
+			$savings_size = ewww_image_optimizer_size_unformat($savings_size[1]);
 		} else {
 			$results = '';
+			$savings_size = 0;
 		}
 		$query = "SELECT id,image_size FROM " . $wpdb->prefix . "ewwwio_images WHERE BINARY path = '$attachment'";
 		$already_optimized = $wpdb->get_row($query, ARRAY_A);
 		$image_size = filesize($attachment);
+		$orig_size = $image_size + $savings_size;
 		$ewww_debug .= "current attachment: $attachment<br>";
 		$ewww_debug .= "current size: $image_size<br>";
+		$ewww_debug .= "original size: $orig_size<br>";
 		if (!empty($already_optimized))
 			$ewww_debug .= "stored size:  " . $already_optimized['image_size'] . "<br>";
 		if (empty($already_optimized)) {
@@ -159,7 +164,9 @@ function ewww_image_optimizer_aux_images_import() {
 			$wpdb->insert( $wpdb->prefix . "ewwwio_images", array(
 					'path' => $attachment,
 					'image_size' => $image_size,
+					'orig_size' => $orig_size,
 					'results' => $results,
+					'attachment_id' => $id,
 				));
 		} elseif ($image_size != $already_optimized['image_size']) {
 			$ewww_debug .= "updating record<br>";
@@ -167,7 +174,9 @@ function ewww_image_optimizer_aux_images_import() {
 			$wpdb->update( $wpdb->prefix . "ewwwio_images",
 				array(
 					'image_size' => $image_size,
+					'orig_size' => $orig_size,
 					'results' => $results,
+					'attachment_id' => $id,
 				),
 				array(
 					'id' => $already_optimized->id
@@ -188,13 +197,18 @@ function ewww_image_optimizer_aux_images_import() {
 				$ewww_debug .= "current resize: $resize_path<br>";
 				if (!empty($meta['ewww_image_optimizer']) ) {
 					$results = $data['ewww_image_optimizer'];
+			preg_match('/\((.+)\)/', $results, $savings_size);
+			$savings_size = ewww_image_optimizer_size_unformat($savings_size[1]);
 				} else {
 					$results = '';
+			$savings_size = 0;
 				}
 				$query = "SELECT id,image_size FROM " . $wpdb->prefix . "ewwwio_images WHERE BINARY path = '$resize_path'";
 				$already_optimized = $wpdb->get_row($query, ARRAY_A);
 				$image_size = filesize($resize_path);
+		$orig_size = $image_size + $savings_size;
 				$ewww_debug .= "current size: $image_size<br>";
+		$ewww_debug .= "original size: $orig_size<br>";
 				if (!empty($already_optimized))
 					$ewww_debug .= "stored size:  " . $already_optimized['image_size'] . "<br>";
 				if (empty($already_optimized)) {
@@ -203,7 +217,9 @@ function ewww_image_optimizer_aux_images_import() {
 					$wpdb->insert( $wpdb->prefix . "ewwwio_images", array(
 							'path' => $resize_path,
 							'image_size' => $image_size,
+							'orig_size' => $orig_size,
 							'results' => $results,
+							'attachment_id' => $id,
 						));
 				} elseif ($image_size != $already_optimized['image_size']) {
 					$ewww_debug .= "updating record<br>";
@@ -211,7 +227,9 @@ function ewww_image_optimizer_aux_images_import() {
 					$wpdb->update( $wpdb->prefix . "ewwwio_images",
 						array(
 							'image_size' => $image_size,
+							'orig_size' => $orig_size,
 							'results' => $results,
+							'attachment_id' => $id,
 						),
 						array(
 							'id' => $already_optimized->id
@@ -221,6 +239,7 @@ function ewww_image_optimizer_aux_images_import() {
 		}
 		ewww_image_optimizer_debug_log();
 	}
+	update_option('ewww_image_optimizer_imported', true);
 	echo "<b>" . __('Finished importing', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</b>";
 	die();
 }
@@ -365,7 +384,6 @@ function ewww_image_optimizer_aux_images_script($hook) {
 	}
 	global $ewww_debug;
 	global $wpdb;
-	// allow 150 seconds for import
 	$ewww_debug .= "<b>ewww_image_optimizer_aux_images_script()</b><br>";
 	// initialize the $attachments variable for auxiliary images
 	$attachments = null;

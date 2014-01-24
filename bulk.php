@@ -4,8 +4,9 @@ function ewww_image_optimizer_bulk_preview() {
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_bulk_preview()</b><br>";
 	// retrieve the attachment IDs that were pre-loaded in the database
-	$attachments = get_option('ewww_image_optimizer_bulk_attachments');
-	// make sure there are some attachments to optimize
+//	$attachments = get_option('ewww_image_optimizer_bulk_attachments');
+	list($fullsize_count, $unoptimized_count, $resize_count, $unoptimized_resize_count) = ewww_image_optimizer_count_optimized ();
+//	$resize_count = 0
 ?>
 	<div class="wrap"> 
 	<div id="icon-upload" class="icon32"><br /></div><h2><?php _e('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></h2>
@@ -37,11 +38,11 @@ function ewww_image_optimizer_bulk_preview() {
 			<div id="ewww-interval-slider" style="width:50%"></div>-->
 		</form>
 		<h3><?php _e('Optimize Media Library', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></h3>
-<?php		if (count($attachments) < 1) {
+<?php		if ($fullsize_count < 1) {
 			echo '<p>' . __('You do not appear to have uploaded any images yet.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</p>';
 		} else { ?>
 			<div id="bulk-forms">
-			<p class="media-info bulk-info"><?php printf(__('There are %d images in the Media Library.', EWWW_IMAGE_OPTIMIZER_DOMAIN), count($attachments)); ?><br />
+			<p class="media-info bulk-info"><?php printf(__('%1$d images in the Media Library have been selected (%2$d unoptimized), with %3$d resizes (%4$d unoptimized).', EWWW_IMAGE_OPTIMIZER_DOMAIN), $fullsize_count, $unoptimized_count, $resize_count, $unoptimized_resize_count); ?><br />
 			<?php _e('Previously optimized images will be skipped by default.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
 			<form id="bulk-start" class="bulk-form" method="post" action="">
 				<input id="bulk-first" type="submit" class="button-secondary action" value="<?php echo $button_text; ?>" />
@@ -58,8 +59,34 @@ function ewww_image_optimizer_bulk_preview() {
 				<button id="bulk-reset" type="submit" class="button-secondary action"><?php _e('Reset Status', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></button>
 			</form>
 <?php		endif;
-	echo '</div><!--</div>-->';
+	echo '</div>';
 	ewww_image_optimizer_aux_images();
+}
+
+// retrieve image counts for the bulk process
+function ewww_image_optimizer_count_optimized () {
+	// retrieve the attachment IDs that were pre-loaded in the database
+	$attachments = get_option('ewww_image_optimizer_bulk_attachments');
+	$unoptimized_full = 0;
+	$unoptimized_re = 0;
+	$resize_count = 0;
+	foreach ($attachments as $attachment) {
+		$meta = wp_get_attachment_metadata( $attachment, true );
+		if (empty($meta['ewww_image_optimizer'])) {
+			$unoptimized_full++;
+		}
+		// resized versions, so we can continue
+		if (isset($meta['sizes']) ) {
+			foreach($meta['sizes'] as $size => $data) {
+				$resize_count++;
+				// update the optimization results
+				if (empty($meta['sizes'][$size]['ewww_image_optimizer'])) {
+					$unoptimized_re++;
+				}
+			}
+		}
+	}
+	return array(count($attachments), $unoptimized_full, $resize_count, $unoptimized_re);
 }
 
 // prepares the bulk operation and includes the javascript functions
@@ -89,6 +116,7 @@ function ewww_image_optimizer_bulk_script($hook) {
 		$sql = "TRUNCATE " . $table_name; 
     		$wpdb->query($sql); 
 		update_option('ewww_image_optimizer_aux_last', '');
+		update_option('ewww_image_optimizer_imported', '');
 	}
         // check to see if we are supposed to convert the auxiliary images table and verify we are authorized to do so
 	if (!empty($_REQUEST['convert']) && wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-aux-images' )) {

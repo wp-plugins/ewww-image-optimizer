@@ -23,7 +23,7 @@ define('EWWW_IMAGE_OPTIMIZER_TOOL_PATH', WP_CONTENT_DIR . '/ewww/');
 define('EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE', __FILE__);
 // this is the full system path to the plugin folder
 define('EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH', plugin_dir_path(__FILE__));
-define('EWWW_IMAGE_OPTIMIZER_VERSION', '176.26');
+define('EWWW_IMAGE_OPTIMIZER_VERSION', '176.34');
 
 require_once(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'common.php');
 
@@ -175,7 +175,8 @@ function ewww_image_optimizer_admin_init() {
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_enable_cloudinary');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_delay', 'intval');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_interval', 'intval');
-	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_aux_last');
+//	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_aux_last');
+//	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_imported');
 	// setup scheduled optimization if the user has enabled it, and it isn't already scheduled
 	if (ewww_image_optimizer_get_option('ewww_image_optimizer_auto') == TRUE && !wp_next_scheduled('ewww_image_optimizer_auto')) {
 		$ewww_debug .= "scheduling auto-optimization<br>";
