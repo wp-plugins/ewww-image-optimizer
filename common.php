@@ -282,7 +282,6 @@ function ewww_image_optimizer_admin_menu() {
 
 // list IMS images and optimization status
 function ewww_image_optimizer_ims() {
-	// TODO: make sure stuff still works here...
 	$ims_columns = get_column_headers('ims_gallery');
 	echo "<h3>" . __('Image Store Optimization', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</h3>";
 	if (empty($_REQUEST['gid'])) {

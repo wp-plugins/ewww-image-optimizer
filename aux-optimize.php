@@ -229,6 +229,9 @@ function ewww_image_optimizer_aux_images_import() {
 				ewww_image_optimizer_import_file ($file_path, $meta->image->meta_data['ewww_image_optimizer']);
 				$thumb_path = $meta->image->thumbPath;
 				if (empty($meta->image->meta_data['thumbnail']['ewww_image_optimizer'])) {
+					$meta->image->meta_data['thumbnail']['ewww_image_optimizer'] = __('Unknown Savings', EWWW_IMAGE_OPTIMIZER_DOMAIN);
+					// update the image metadata in the db
+					flagdb::update_image_meta($id, $meta->image->meta_data);
 					ewww_image_optimizer_import_file ($thumb_path, __('Unknown Savings', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 				} else {
 					ewww_image_optimizer_import_file ($thumb_path, $meta->image->meta_data['thumbnail']['ewww_image_optimizer']);

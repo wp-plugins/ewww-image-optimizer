@@ -475,7 +475,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 == Upgrade Notice ==
 
 = 1.7.7 =
-* changed: Optimize More and Bulk Optimize are now on the same page
+* Bulk Optimize page: Import to the custom ewwwio table is mandatory (one time) before running Bulk Optimize, and highly recommended for all users to prevent duplicate optimizations. Optimize More and Bulk Optimize are now on one page.
 
 = 1.7.6 =
 * metadata stripping now applies to PNG images, but only if using optipng 0.7.x, you may want to run a bulk optimize on all your PNG images to make sure you have the best possible optimization
