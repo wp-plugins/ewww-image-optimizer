@@ -182,6 +182,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * move more code into admin_init to improve page load on front-end
 * added: ability to specify number of seconds between images (throttling)
 * added: nextgen and grand flagallery thumb optimization is now stored in database
+* change: significant speed improvement, optimizer only checks for the tools it needs for the current image
 
 = 1.7.6 =
 * fixed: color of progressbar for 4 more admin themes in WP 3.8
