@@ -1,8 +1,5 @@
 <?php 
 class ewwwngg {
-	// TODO: customize the message on bulk optimize to tell how many are not optimized
-	// TODO: rewrite some functions to follow the logic of the ewww_added_new_image function so we don't miss any sizes, and potentially stop relying on the legacy stuff (not sure about that)
-	// TODO: store results for other sizes in the metadata as well
 	/* initializes the nextgen integration functions */
 	function ewwwngg() {
 		add_filter('ngg_manage_images_columns', array(&$this, 'ewww_manage_images_columns'));
@@ -35,7 +32,6 @@ class ewwwngg {
 	function ewww_added_new_image ($image, $storage = null) {
 		global $ewww_debug;
 		$ewww_debug .= "<b>ewww_added_new_image()</b><br>";
-//		$ewww_debug .= "<br>" . print_r($image->meta_data, TRUE) . "<br>";
 		if (empty($storage)) {
 			// creating the 'registry' object for working with nextgen
 			$registry = C_Component_Registry::get_instance();
@@ -44,7 +40,7 @@ class ewwwngg {
 		}
 		// find the image id
 		$image_id = $storage->object->_get_image_id($image);
-//		$ewww_debug .= "image id: $image_id<br>";
+		$ewww_debug .= "image id: $image_id<br>";
 		// get an array of sizes available for the $image
 		$sizes = $storage->get_image_sizes($image);
 		// run the optimizer on the image for each $size
@@ -63,7 +59,6 @@ class ewwwngg {
 				$image->meta_data[$size]['ewww_image_optimizer'] = $res[1];
 			}
 			nggdb::update_image_meta($image_id, $image->meta_data);
-//			$storage->object->_image_mapper->save($image);
 			$ewww_debug .= 'storing results for full size image<br>';
 		}
 		ewww_image_optimizer_debug_log();
@@ -72,7 +67,6 @@ class ewwwngg {
 
 	/* Manually process an image from the NextGEN Gallery */
 	function ewww_ngg_manual() {
-		// TODO: use $this->ewww_added_new_image() or possibly just re-use the bulk loop entirely
 		// check permission of current user
 		if ( FALSE === current_user_can('upload_files') ) {
 			wp_die(__('You don\'t have permission to work with uploaded files.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
@@ -83,8 +77,15 @@ class ewwwngg {
 		}
 		// store the attachment $id
 		$id = intval($_GET['attachment_ID']);
+		// creating the 'registry' object for working with nextgen
+		$registry = C_Component_Registry::get_instance();
+		// creating a database storage object from the 'registry' object
+		$storage  = $registry->get_utility('I_Gallery_Storage');
+		// get an image object
+		$image = $storage->object->_image_mapper->find($id);
+		$image = $this->ewww_added_new_image ($image, $storage);
 		// retrieve the metadata for the image
-		$meta = new nggMeta( $id );
+/*		$meta = new nggMeta( $id );
 		// retrieve the image path
 		$file_path = $meta->image->imagePath;
 		// run the optimizer on the current image
@@ -94,7 +95,7 @@ class ewwwngg {
 		// get the filepath of the thumbnail image
 		$thumb_path = $meta->image->thumbPath;
 		// run the optimization on the thumbnail
-		ewww_image_optimizer($thumb_path, 2, false, true);
+		ewww_image_optimizer($thumb_path, 2, false, true);*/
 		// get the referring page, and send the user back there
 		$sendback = wp_get_referer();
 		$sendback = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $sendback);
@@ -112,18 +113,26 @@ class ewwwngg {
 	function ewww_manage_image_custom_column( $column_name, $id ) {
 		// once we've found our custom column
 		if( $column_name == 'ewww_image_optimizer' ) {    
+			// creating the 'registry' object for working with nextgen
+			$registry = C_Component_Registry::get_instance();
+			// creating a database storage object from the 'registry' object
+			$storage  = $registry->get_utility('I_Gallery_Storage');
+			// get an image object
+			$image = $storage->object->_image_mapper->find($id);
 			// get the metadata for the image
-			$meta = new nggMeta( $id );
-		if (ewww_image_optimizer_get_option('ewww_image_optimizer_debug')) {
-			$print_meta = print_r($meta->image->meta_data, TRUE);
-			$print_meta = preg_replace(array('/ /', '/\n+/'), array('&nbsp;', '<br />'), $print_meta);
-			echo '<div style="background-color:#ffff99;font-size: 10px;padding: 10px;margin:-10px -10px 10px;line-height: 1.1em">' . $print_meta . '</div>';
-		}
+		//	$meta = new nggMeta( $id );
+			if (ewww_image_optimizer_get_option('ewww_image_optimizer_debug')) {
+				$print_meta = print_r($image->meta_data, TRUE);
+				$print_meta = preg_replace(array('/ /', '/\n+/'), array('&nbsp;', '<br />'), $print_meta);
+				echo '<div style="background-color:#ffff99;font-size: 10px;padding: 10px;margin:-10px -10px 10px;line-height: 1.1em">' . $print_meta . '</div>';
+			}
 			// get the optimization status for the image
-			$status = $meta->get_META('ewww_image_optimizer');
+//			$status = $meta->get_META('ewww_image_optimizer');
 			$msg = '';
-			// get the file path of the image
-			$file_path = $meta->image->imagePath;
+			// get the absolute path
+			$file_path = $storage->get_image_abspath($image, 'full');
+/*			// get the file path of the image
+			$file_path = $meta->image->imagePath;*/
 			// get the mimetype of the image
 			$type = ewww_image_optimizer_mimetype($file_path, 'i');
 			// retrieve the human-readable filesize of the image
@@ -163,10 +172,10 @@ class ewwwngg {
 				return;
 			}
 			// if we have a valid status, display it, the image size, and give a re-optimize link
-			if ( !empty( $status ) ) {
-				echo $status;
+			if ( !empty( $image->meta_data['ewww_image_optimizer'] ) ) {
+				echo $image->meta_data['ewww_image_optimizer'];
 				echo "<br>" . sprintf(__('Image Size: %s', EWWW_IMAGE_OPTIMIZER_DOMAIN), $file_size);
-				printf("<br><a href=\"admin.php?action=ewww_ngg_manual&amp;attachment_ID=%d\">%s</a>",
+				printf("<br><a href=\"admin.php?action=ewww_ngg_manual&amp;force=1&amp;attachment_ID=%d\">%s</a>",
 				$id,
 				__('Re-optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 			// otherwise, give the image size, and a link to optimize right now
@@ -193,16 +202,14 @@ class ewwwngg {
                               return;
                         }
                 }
-		// TODO: make sure this section is consistent with the main bulk optimizer
 		// retrieve the attachments array from the db
-                $attachments = get_option('ewww_image_optimizer_bulk_ngg_attachments');
+//                $attachments = get_option('ewww_image_optimizer_bulk_ngg_attachments');
 		list($fullsize_count, $unoptimized_count, $resize_count, $unoptimized_resize_count) = ewww_image_optimizer_count_optimized ('ngg');
 		// make sure there are some attachments to process
-                if (count($attachments) < 1) {
+                if ($fullsize_count < 1) {
                         echo '<p>' . __('You do not appear to have uploaded any images yet.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</p>';
                         return;
                 }
-		// end TODO
                 ?>
 		<div class="wrap">
                 <div id="icon-upload" class="icon32"></div><h2><?php _e('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></h2>
@@ -349,14 +356,21 @@ class ewwwngg {
                         wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
                 }
 		// need this file to work with metadata
-		require_once(WP_CONTENT_DIR . '/plugins/nextgen-gallery/products/photocrati_nextgen/modules/ngglegacy/lib/meta.php');
+	//	require_once(WP_CONTENT_DIR . '/plugins/nextgen-gallery/products/photocrati_nextgen/modules/ngglegacy/lib/meta.php');
 		$id = $_POST['attachment'];
+		// creating the 'registry' object for working with nextgen
+		$registry = C_Component_Registry::get_instance();
+		// creating a database storage object from the 'registry' object
+		$storage  = $registry->get_utility('I_Gallery_Storage');
+		// get an image object
+		$image = $storage->object->_image_mapper->find($id);
 		// get the meta for the image
-		$meta = new nggMeta($id);
+	//	$meta = new nggMeta($id);
 		$loading_image = plugins_url('/wpspin.gif', __FILE__);
 		// get the filename for the image, and output our current status
-		$file_name = esc_html($meta->image->filename);
-		echo "<p>" . __('Optimizing', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <b>" . $file_name . "</b>&nbsp;<img src='$loading_image' alt='loading'/></p>";
+		$file_path = esc_html($storage->get_image_abspath($image, 'full'));
+//		$file_name = esc_html($meta->image->filename);
+		echo "<p>" . __('Optimizing', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <b>" . $file_path . "</b>&nbsp;<img src='$loading_image' alt='loading'/></p>";
 		die();
 	}
 

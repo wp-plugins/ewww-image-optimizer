@@ -181,6 +181,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * fixed: proper validation that an image has been removed from the auxilliary images table
 * move more code into admin_init to improve page load on front-end
 * added: ability to specify number of seconds between images (throttling)
+* added: nextgen and grand flagallery thumb optimization is now stored in database
 
 = 1.7.6 =
 * fixed: color of progressbar for 4 more admin themes in WP 3.8

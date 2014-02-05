@@ -282,6 +282,7 @@ function ewww_image_optimizer_admin_menu() {
 
 // list IMS images and optimization status
 function ewww_image_optimizer_ims() {
+	// TODO: make sure stuff still works here...
 	$ims_columns = get_column_headers('ims_gallery');
 	echo "<h3>" . __('Image Store Optimization', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</h3>";
 	if (empty($_REQUEST['gid'])) {
@@ -1430,7 +1431,7 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 			// output the filesize
 			echo "<br>" . sprintf(__('Image Size: %s', EWWW_IMAGE_OPTIMIZER_DOMAIN), $file_size);
 			// output a link to re-optimize manually
-			printf("<br><a href=\"admin.php?action=ewww_image_optimizer_manual_optimize&amp;attachment_ID=%d\">%s</a>",
+			printf("<br><a href=\"admin.php?action=ewww_image_optimizer_manual_optimize&amp;force=1&amp;attachment_ID=%d\">%s</a>",
 				$id,
 				__('Re-optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 			if (!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_convert_links') && 'ims_image' != get_post_type($id))

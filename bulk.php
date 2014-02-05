@@ -99,7 +99,6 @@ function ewww_image_optimizer_count_optimized ($gallery) {
 			}
 			break;
 		case 'ngg':
-			// TODO: are we getting warnings for non-existent thumbs, or what is the deal?
 			// retrieve the attachment IDs that were pre-loaded in the database
 			$attachments = get_option('ewww_image_optimizer_bulk_ngg_attachments');
 			// creating the 'registry' object for working with nextgen

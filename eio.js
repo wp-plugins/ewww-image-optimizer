@@ -236,12 +236,13 @@ jQuery(document).ready(function($) {
 		startOpt();
 		return false;
 	});
-	$('#bulk-stop').submit(function() {
-		k = 9;
-		$('#bulk-stop').hide();
-		return false;
-	});
 	function startOpt () {
+		k = 0;
+		$('#bulk-stop').submit(function() {
+			k = 9;
+			$('#bulk-stop').hide();
+			return false;
+		});
 //		if ( ! $('#ewww-interval').val().match( /^[1-9][0-9]*$/) ) {
 			ewww_interval = 1;
 /*		} else {
