@@ -1,5 +1,8 @@
 <?php 
 class ewwwflag {
+	// TODO: optimize the 'optimized/webview' versions of images on upload, and on the custom bulk action
+	// TODO: customize the message on bulk optimize to tell how many are not optimized
+	// TODO: prevent bulkk from firing when a different action is called on manage galleries/images pages
 	/* initializes the flagallery integration functions */
 	function ewwwflag() {
 		add_filter('flag_manage_images_columns', array(&$this, 'ewww_manage_images_columns'));
@@ -51,6 +54,7 @@ class ewwwflag {
 		}
 		// get the previously stored attachments array from the options table
 		$attachments = get_option('ewww_image_optimizer_bulk_flag_attachments');
+		list($fullsize_count, $unoptimized_count, $resize_count, $unoptimized_resize_count) = ewww_image_optimizer_count_optimized ('flag');
 		// bail-out if there aren't any images to optimize
 		if (count($attachments) < 1) {
 			echo '<p>' . __('You do not appear to have uploaded any images yet.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</p>';
@@ -82,7 +86,8 @@ class ewwwflag {
 			<div id="ewww-interval-slider" style="width:50%"></div>-->
 		</form>
 		<div id="bulk-forms">
-		<p class="bulk-info"><?php printf(__('We have %d images to optimize.', EWWW_IMAGE_OPTIMIZER_DOMAIN), count($attachments)); ?><br />
+		<p class="bulk-info"><?php printf(__('%1$d images in the Media Library have been selected (%2$d unoptimized), with %3$d resizes (%4$d unoptimized).', EWWW_IMAGE_OPTIMIZER_DOMAIN), $fullsize_count, $unoptimized_count, $resize_count, $unoptimized_resize_count); ?><br />
+<!--		<p class="bulk-info"><?php printf(__('We have %d images to optimize.', EWWW_IMAGE_OPTIMIZER_DOMAIN), count($attachments)); ?><br />-->
 		<?php _e('Previously optimized images will be skipped by default.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
 		<form id="bulk-start" class="bulk-form" method="post" action="">
 			<input type="submit" class="button-secondary action" value="<?php echo $button_text; ?>" />
@@ -178,6 +183,7 @@ class ewwwflag {
 	}
 	/* flag_added_new_image hook - optimize newly uploaded images */
 	function ewww_added_new_image ($image) {
+		global $ewww_debug;
 		// make sure the image path is set
 		if (isset($image->imagePath)) {
 			// optimize the full size
@@ -186,8 +192,13 @@ class ewwwflag {
 			$tres = ewww_image_optimizer($image->thumbPath, 3, false, true);
 			// get the image ID
 			$pid = $image->pid;
+			// retrieve the metadata for the image ID
+			$meta = new flagMeta( $pid );
+			$ewww_debug .= print_r($meta->image->meta_data, TRUE) . "<br>";
+			$meta->image->meta_data['ewww_image_optimizer'] = $res[1];
+			$meta->image->meta_data['thumbnail']['ewww_image_optimizer'] = $tres[1];
 			// update the image metadata in the db
-			flagdb::update_image_meta($pid, array('ewww_image_optimizer' => $res[1]));
+			flagdb::update_image_meta($pid, $meta->image->meta_data);
 		}
 	}
 
@@ -323,8 +334,13 @@ class ewwwflag {
 		if($column_name == 'ewww_image_optimizer') {
 			// get the metadata
 			$meta = new flagMeta($id);
+		if (ewww_image_optimizer_get_option('ewww_image_optimizer_debug')) {
+			$print_meta = print_r($meta->image->meta_data, TRUE);
+			$print_meta = preg_replace(array('/ /', '/\n+/'), array('&nbsp;', '<br />'), $print_meta);
+			echo '<div style="background-color:#ffff99;font-size: 10px;padding: 10px;margin:-10px -10px 10px;line-height: 1.1em">' . $print_meta . '</div>';
+		}
 			// grab the image status from the meta
-			$status = $meta->get_META('ewww_image_optimizer');
+			$status = $meta->image->meta_data['ewww_image_optimizer'];
 			$msg = '';
 			// get the image path from the meta
 			$file_path = $meta->image->imagePath;

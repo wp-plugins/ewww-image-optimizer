@@ -114,14 +114,12 @@ function ewww_image_optimizer_install_table() {
 	// create a table with 4 columns: an id, the file path, the md5sum, and the optimization results
 	$sql = "CREATE TABLE $table_name (
 		id mediumint(9) NOT NULL AUTO_INCREMENT,
-		attachment_id int UNSIGNED,
 		path text NOT NULL,
 		image_md5 VARCHAR(55),
 		results VARCHAR(55) NOT NULL,
 		gallery VARCHAR(30),
 		image_size int UNSIGNED,
 		orig_size int UNSIGNED,
-		KEY attachment_id (attachment_id),
 		UNIQUE KEY id (id)
 	);";
 
@@ -863,6 +861,78 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $n
 	}
 }
 
+// check the database to see if we've done this image before
+function ewww_image_optimizer_check_table ($file, $orig_size) {
+	global $wpdb;
+	global $ewww_debug;
+	$already_optimized = false;
+	$ewww_debug .= "<b>ewww_image_optimizer_check_table()</b><br>";
+	$query = "SELECT results FROM " . $wpdb->prefix . 'ewwwio_images' . " WHERE BINARY path = '$file' AND image_size = '$orig_size'";
+	$already_optimized = $wpdb->get_var($query);
+	if (!empty($already_optimized) && empty($_REQUEST['force'])) {
+		$prev_string = " - " . __('Previously Optimized', EWWW_IMAGE_OPTIMIZER_DOMAIN);
+		$already_optimized = preg_replace("/$prev_string/", '', $already_optimized);
+		$already_optimized = $already_optimized . $prev_string;
+		$ewww_debug .= "already optimized: $already_optimized<br>";
+		return $already_optimized;
+	}
+}
+
+// receives a path, results, optimized size, and an original size to insert into ewwwwio_images table
+function ewww_image_optimizer_update_table ($attachment, $opt_size, $orig_size) {
+	global $wpdb;
+	global $ewww_debug;
+	$ewww_debug .= "<b>ewww_image_optimizer_update_table()</b><br>";
+	$query = "SELECT id,orig_size FROM " . $wpdb->prefix . "ewwwio_images WHERE BINARY path = '$attachment'";
+	$already_optimized = $wpdb->get_row($query, ARRAY_A);
+/*	if (!empty($already_optimized) && $already_optimized['orig_size'] > $orig_size) {
+		$ewww_debug .= "already optimized, using original size from database<br>";
+		$orig_size = $already_optimized['orig_size'];
+	}*/
+	$ewww_debug .= "savings: $opt_size vs. $orig_size<br>";
+	if ($opt_size == $orig_size) {
+		$ewww_debug .= "original and new file are same size, no savings<br>";
+		$results_msg = __('No savings', EWWW_IMAGE_OPTIMIZER_DOMAIN);
+	} else {
+		// calculate how much space was saved
+		$savings = intval($orig_size) - intval($opt_size);
+		// convert it to human readable format
+		$savings_str = size_format($savings, 1);
+		// replace spaces and extra decimals with proper html entity encoding
+		$savings_str = preg_replace('/\.0 B /', ' B', $savings_str);
+		$savings_str = str_replace(' ', '&nbsp;', $savings_str);
+		// determine the percentage savings
+		$percent = 100 - (100 * ($opt_size / $orig_size));
+		// use the percentage and the savings size to output a nice message to the user
+		$results_msg = sprintf(__("Reduced by %01.1f%% (%s)", EWWW_IMAGE_OPTIMIZER_DOMAIN),
+			$percent,
+			$savings_str
+		);
+		$ewww_debug .= "original and new file are different size: $results_msg<br>";
+	}
+	if (empty($already_optimized)) {
+		$ewww_debug .= "creating new record, path: $attachment, size: " . $opt_size . "<br>";
+		// store info on the current image for future reference
+		$wpdb->insert( $wpdb->prefix . "ewwwio_images", array(
+				'path' => $attachment,
+				'image_size' => $opt_size,
+				'orig_size' => $orig_size,
+				'results' => $results_msg,
+			));
+	} else {
+		$ewww_debug .= "updating existing record (" . $already_optimized['id'] . "), path: $attachment, size: " . $opt_size . "<br>";
+		// store info on the current image for future reference
+		$wpdb->update( $wpdb->prefix . "ewwwio_images",
+			array(
+				'image_size' => $opt_size,
+				'results' => $results_msg,
+			),
+			array(
+				'id' => $already_optimized['id'],
+			));
+	}
+	return $results_msg;
+}
 /**
  * Read the image paths from an attachment's meta data and process each image
  * with ewww_image_optimizer().
@@ -872,10 +942,9 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $n
  *
  * Called after `wp_generate_attachment_metadata` is completed.
  */
-function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = true, $force = false) {
+function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = true) {
 	global $ewww_debug;
 	global $wpdb;
-	// TODO: track all images in the custom table, with original filesize, and new/current filesize
 	// may also need to track their attachment ID as well
 	// TODO: also have some doo-dad that tracks total file savings
 	$ewww_debug .= "<b>ewww_image_optimizer_resize_from_meta_data()</b><br>";
@@ -887,6 +956,8 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = tr
 	$ewww_debug .= "attachment id: $ID<br>";
 	if (!wp_get_attachment_metadata($ID)) {
 		$new_image = true;
+	} else {
+		$new_image = false;
 	}
 	list($file_path, $upload_path) = ewww_image_optimizer_attachment_path($meta, $ID);
 	// if the attachment has been uploaded via the image store plugin
@@ -908,23 +979,35 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = tr
 		$imsanity_path = trailingslashit($path_parts['dirname']) . $path_parts['filename'] . '-' . $newW . 'x' . $newH . '.' . $path_parts['extension'];
 		$ewww_debug .= "imsanity path: $imsanity_path<br>";
 		$image_size = filesize($file_path);
-		$query = "SELECT id,results FROM " . $wpdb->prefix . 'ewwwio_images' . " WHERE path = '$imsanity_path' AND image_size = '$image_size'";
+		$query = "SELECT id FROM " . $wpdb->prefix . 'ewwwio_images' . " WHERE BINARY path = '$imsanity_path' AND image_size = '$image_size'";
 		$already_optimized = $wpdb->get_results($query, ARRAY_A);
+		$ewww_debug .= "updating existing record, path: $file_path, size: " . $image_size . "<br>";
+		// store info on the current image for future reference
+		$wpdb->update( $wpdb->prefix . "ewwwio_images",
+			array(
+				'path' => $file_path,
+			),
+			array(
+				'id' => $already_optimized[0]['id'],
+			));
 	}
 	// if converting, we don't care that it was already optimized
-	if (!empty($_GET['convert']) || ewww_image_optimizer_get_option('ewww_image_optimizer_jpg_to_png') || ewww_image_optimizer_get_option('ewww_image_optimizer_png_to_jpg') || ewww_image_optimizer_get_option('ewww_image_optimizer_gif_to_png')) {
+	/*if (!empty($_GET['convert']) || ewww_image_optimizer_get_option('ewww_image_optimizer_jpg_to_png') || ewww_image_optimizer_get_option('ewww_image_optimizer_png_to_jpg') || ewww_image_optimizer_get_option('ewww_image_optimizer_gif_to_png')) {
 		$already_optimized = '';
-	}
-	// if the image wasn't optimized already OR this isn't a newly uploaded image
-	if (empty($already_optimized) || empty($new_image)) {
+	}*/
+	// if the image wasn't optimized already OR the user has chosen to force re-optimization
+//	if (empty($already_optimized) || !empty($_REQUEST['force'])) {
 		// run the image optimizer on the file, and store the results
-		list($file, $msg, $conv, $original) = ewww_image_optimizer($file_path, $gallery_type, false, false);
+		list($file, $msg, $conv, $original) = ewww_image_optimizer($file_path, $gallery_type, false, $new_image);
 	// So... only if this is a newly uploaded image that was resized by Imsanity, we skip optimization and just copy the results from the database
-	} else {
+/*	} else {
 		$file = $file_path;
 		$msg = $already_optimized[0]['results'];
 		$conv = false;
-	}
+	}*/
+/*	if ($msg !== false) {
+		return $meta;
+	}*/
 	// update the optimization results in the metadata
 	$meta['ewww_image_optimizer'] = $msg;
 	if ($file === false) {
@@ -980,19 +1063,19 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = tr
 			if (!$dup_size) {
 				$resize_path = $base_dir . $data['file'];
 				// check the database to make sure it wasn't already optimized via wp_image_editor and friends
-				$image_size = filesize($resize_path);
+				/*$image_size = filesize($resize_path);
 				$query = "SELECT id,results FROM " . $wpdb->prefix . 'ewwwio_images' . " WHERE path = '$resize_path' AND image_size = '$image_size'";
 				$already_optimized = $wpdb->get_results($query, ARRAY_A);
 				if (!empty($_GET['convert']) || ewww_image_optimizer_get_option('ewww_image_optimizer_jpg_to_png') || ewww_image_optimizer_get_option('ewww_image_optimizer_png_to_jpg') || ewww_image_optimizer_get_option('ewww_image_optimizer_gif_to_png'))
 					$already_optimized = '';
-				if (empty($already_optimized)) {
+				if (empty($already_optimized)) {*/
 					// run the optimization and store the results
-					list($optimized_file, $results, $resize_conv, $original) = ewww_image_optimizer($resize_path, $gallery_type, $conv, true);
-				} else {
+					list($optimized_file, $results, $resize_conv, $original) = ewww_image_optimizer($resize_path, $gallery_type, $conv, $new_image);
+/*				} else {
 					$optimized_file = $resize_path;
 					$results = $already_optimized[0]['results'] . " - " . __('Previously Optimized', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 					$resize_conv = false;
-				}
+				}*/
 				// if the resize was converted, store the result and the original filename in the metadata for later recovery
 				if ($resize_conv) {
 					// if we don't already have the update attachment filter
@@ -1272,7 +1355,6 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 		if (ewww_image_optimizer_get_option('ewww_image_optimizer_debug')) {
 			$print_meta = print_r($meta, TRUE);
 			$print_meta = preg_replace(array('/ /', '/\n+/'), array('&nbsp;', '<br />'), $print_meta);
-//			$print_meta = preg_replace('/\n/', '<br />', $print_meta);
 			echo '<div style="background-color:#ffff99;font-size: 10px;padding: 10px;margin:-10px -10px 10px;line-height: 1.1em">' . $print_meta . '</div>';
 		}
 		if(!empty($meta['cloudinary'])) {

@@ -5,13 +5,13 @@ function ewww_image_optimizer_bulk_preview() {
 	$ewww_debug .= "<b>ewww_image_optimizer_bulk_preview()</b><br>";
 	// retrieve the attachment IDs that were pre-loaded in the database
 //	$attachments = get_option('ewww_image_optimizer_bulk_attachments');
-	list($fullsize_count, $unoptimized_count, $resize_count, $unoptimized_resize_count) = ewww_image_optimizer_count_optimized ();
+	list($fullsize_count, $unoptimized_count, $resize_count, $unoptimized_resize_count) = ewww_image_optimizer_count_optimized ('media');
+	$upload_import = get_option('ewww_image_optimizer_imported');
 //	$resize_count = 0
 ?>
 	<div class="wrap"> 
 	<div id="icon-upload" class="icon32"><br /></div><h2><?php _e('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></h2>
-<?php 
-	// Retrieve the value of the 'bulk resume' option and set the button text for the form to use
+<?php	// Retrieve the value of the 'bulk resume' option and set the button text for the form to use
 	$resume = get_option('ewww_image_optimizer_bulk_resume');
 	if (empty($resume)) {
 		$button_text = __('Start optimizing', EWWW_IMAGE_OPTIMIZER_DOMAIN);
@@ -30,6 +30,13 @@ function ewww_image_optimizer_bulk_preview() {
 			<br /><input type="submit" class="button-secondary action" value="<?php _e('Stop Optimizing', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?>" />
 		</form>
 		<div id="bulk-status"></div>
+<?php 		if (empty($upload_import)) { ?>
+			<p class="bulk-info"><?php _e('You should import Media Library images into the table to prevent duplicate optimization.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
+			<form id="import-start" class="bulk-form" method="post" action="">
+				<input type="submit" class="button-secondary action" value="<?php _e('Import Images', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?>" />
+			</form>
+<?php			return;
+		} ?>
 		<form class="bulk-form">
 			<p><label for="ewww-force" style="font-weight: bold"><?php _e('Force re-optimize for Media Library', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label>&emsp;<input type="checkbox" id="ewww-force" name="ewww-force"></p>
 			<p><label for="ewww-delay" style="font-weight: bold"><?php _e('Choose how long to pause between images (in seconds, 0 = disabled)', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label>&emsp;<input type="text" id="ewww-delay" name="ewww-delay" value="<?php if ($delay = ewww_image_optimizer_get_option ( 'ewww_image_optimizer_delay' ) ) { echo $delay; } else { echo 0; } ?>"></p>
@@ -64,27 +71,83 @@ function ewww_image_optimizer_bulk_preview() {
 }
 
 // retrieve image counts for the bulk process
-function ewww_image_optimizer_count_optimized () {
-	// retrieve the attachment IDs that were pre-loaded in the database
-	$attachments = get_option('ewww_image_optimizer_bulk_attachments');
+function ewww_image_optimizer_count_optimized ($gallery) {
+	global $ewww_debug;
 	$unoptimized_full = 0;
 	$unoptimized_re = 0;
 	$resize_count = 0;
-	foreach ($attachments as $attachment) {
-		$meta = wp_get_attachment_metadata( $attachment, true );
-		if (empty($meta['ewww_image_optimizer'])) {
-			$unoptimized_full++;
-		}
-		// resized versions, so we can continue
-		if (isset($meta['sizes']) ) {
-			foreach($meta['sizes'] as $size => $data) {
-				$resize_count++;
-				// update the optimization results
-				if (empty($meta['sizes'][$size]['ewww_image_optimizer'])) {
-					$unoptimized_re++;
+	$ewww_debug .= "scanning for $gallery<br>";
+	switch ($gallery) {
+		case 'media':
+			// retrieve the attachment IDs that were pre-loaded in the database
+			$attachments = get_option('ewww_image_optimizer_bulk_attachments');
+			foreach ($attachments as $attachment) {
+				$meta = wp_get_attachment_metadata( $attachment, true );
+				if (empty($meta['ewww_image_optimizer'])) {
+					$unoptimized_full++;
+				}
+				// resized versions, so we can continue
+				if (isset($meta['sizes']) ) {
+					foreach($meta['sizes'] as $size => $data) {
+						$resize_count++;
+						// update the optimization results
+						if (empty($meta['sizes'][$size]['ewww_image_optimizer'])) {
+							$unoptimized_re++;
+						}
+					}
 				}
 			}
-		}
+			break;
+		case 'ngg':
+			// TODO: are we getting warnings for non-existent thumbs, or what is the deal?
+			// retrieve the attachment IDs that were pre-loaded in the database
+			$attachments = get_option('ewww_image_optimizer_bulk_ngg_attachments');
+			// creating the 'registry' object for working with nextgen
+			$registry = C_Component_Registry::get_instance();
+			// creating a database storage object from the 'registry' object
+			$storage  = $registry->get_utility('I_Gallery_Storage');
+			foreach ($attachments as $attachment) {
+				// need this file to work with metadata
+		//		require_once(WP_CONTENT_DIR . '/plugins/nextgen-gallery/products/photocrati_nextgen/modules/ngglegacy/lib/meta.php');
+				// get the metadata
+		//		$meta = new nggMeta($attachment);
+				// get an image object
+				$image = $storage->object->_image_mapper->find($attachment);
+				if (empty($image->meta_data['ewww_image_optimizer'])) {
+						$unoptimized_full++;
+				}
+				// get an array of sizes available for the $image
+				$sizes = $storage->get_image_sizes($image);
+				foreach ($sizes as $size) {
+					if ($size !== 'full') {
+						$resize_count++;
+						if (empty($image->meta_data[$size]['ewww_image_optimizer'])) {
+							$unoptimized_re++;
+						}
+					}
+				}
+			}
+			break;
+		case 'flag':
+			//TODO: count 'websizes'
+			// retrieve the attachment IDs that were pre-loaded in the database
+			$attachments = get_option('ewww_image_optimizer_bulk_flag_attachments');
+			foreach ($attachments as $attachment) {
+				// need this file to work with metadata
+		//		require_once(WP_CONTENT_DIR . '/plugins/nextgen-gallery/products/photocrati_nextgen/modules/ngglegacy/lib/meta.php');
+				// get the metadata
+				$meta = new flagMeta($attachment);
+				if (empty($meta->image->meta_data['ewww_image_optimizer'])) {
+					$unoptimized_full++;
+				}
+				if (!empty($meta->image->meta_data['thumbnail'])) {
+					$resize_count++;
+					if(empty($meta->image->meta_data['thumbnail']['ewww_image_optimizer'])) {
+						$unoptimized_re++;
+					}
+				}
+			}
+			break;
 	}
 	return array(count($attachments), $unoptimized_full, $resize_count, $unoptimized_re);
 }
@@ -252,13 +315,17 @@ function ewww_image_optimizer_bulk_loop() {
 	// get the 'bulk attachments' with a list of IDs remaining
 	$attachments = get_option('ewww_image_optimizer_bulk_attachments');
 	$meta = wp_get_attachment_metadata( $attachment, true );
-	// TODO: push this downstream, so we can verify that resizes also get optimizes, just in case...
-	if (!empty($meta['ewww_image_optimizer']) && empty($_REQUEST['force'])) {
-		printf( "<p>" . __('Already optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", esc_html($meta['file']) );
-	// do the optimization for the current attachment (including resizes)
+/*	if (!empty($meta['ewww_image_optimizer'])) {
+		$old_results = $meta['ewww_image_optimizer'];
 	} else {
+		$old_results = '';
+	}*/
+	// do the optimization for the current attachment (including resizes)
 		$meta = ewww_image_optimizer_resize_from_meta_data ($meta, $attachment, false);
-		if(!empty($meta['file'])) {
+		/*if ( $meta['ewww_image_optimizer'] == $old_results ) {
+			printf( "<p>" . __('Already optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", esc_html($meta['file']) );
+		} else*/
+		if ( !empty ( $meta['file'] ) ) {
 			// output the filename (and path relative to 'uploads' folder)
 			printf( "<p>" . __('Optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", esc_html($meta['file']) );
 		} else {
@@ -282,8 +349,8 @@ function ewww_image_optimizer_bulk_loop() {
 		printf(__('Elapsed: %.3f seconds', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</p>", $elapsed);
 		// update the metadata for the current attachment
 		wp_update_attachment_metadata( $attachment, $meta );
-	}
-	// remove the first element fromt the $attachments array
+//	}
+	// remove the first element from the $attachments array
 	if (!empty($attachments))
 		array_shift($attachments);
 	// store the updated list of attachment IDs back in the 'bulk_attachments' option

@@ -116,7 +116,7 @@ jQuery(document).ready(function($) {
 		return false;
 	});
 	$('#import-start').submit(function() {
-//		$('#bulk-forms').hide();
+		$('.bulk-info').hide();
 		$('#import-start').hide();
 	        $('#ewww-loading').show();
 		var import_data = {

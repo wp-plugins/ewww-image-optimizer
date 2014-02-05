@@ -161,11 +161,10 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 = future =
 * these are possible future bugfixes and/or feature requests, if you see a feature you like here, go vote for it in the support forum
-* throttling: ability to specify number of images to optimize in a batch via bulk optimize, and seconds between batches
 * show statistics: display cumulative savings and computation time in status section
 * webp support
 * jpegmini server integration (for resizes only)
-* tinypng api integration (again, for resizes only)
+* pngquant (for resizes only)
 * huge thanks to those who have done localization/translation for Dutch, Romanian, and Spanish. See http://wordpress.org/plugins/ewww-image-optimizer/other_notes/ for more information. If you would like to help translate this plugin in your language, post a thread on the support forums.
 
 = 1.7.7 =
@@ -181,6 +180,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * fixed: FlaGallery version 4.0, optimize on upload now works with plupload
 * fixed: proper validation that an image has been removed from the auxilliary images table
 * move more code into admin_init to improve page load on front-end
+* added: ability to specify number of seconds between images (throttling)
 
 = 1.7.6 =
 * fixed: color of progressbar for 4 more admin themes in WP 3.8

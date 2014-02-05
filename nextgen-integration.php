@@ -241,7 +241,8 @@ class ewwwngg {
                 <div id="bulk-counter"></div>
                 <div id="bulk-status"></div>
                 <div id="bulk-forms">
-                <p class="bulk-info"><?php printf(__('We have %d images to optimize.', EWWW_IMAGE_OPTIMIZER_DOMAIN), count($attachments)); ?></p>
+                <p class="bulk-info"><?php printf(__('We have %d images to optimize.', EWWW_IMAGE_OPTIMIZER_DOMAIN), count($attachments)); ?><br />
+		<?php _e('Previously optimized images will be skipped by default.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
                 <form id="bulk-start" class="bulk-form" method="post" action="">
 			<input type="hidden" id="ewww-delay" name="ewww-delay" value="0">
 			<input type="hidden" id="ewww-interval" name="ewww-interval" value="1">
