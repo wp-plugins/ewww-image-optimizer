@@ -183,6 +183,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * added: ability to specify number of seconds between images (throttling)
 * added: nextgen and grand flagallery thumb optimization is now stored in database
 * change: significant speed improvement, optimizer only checks for the tools it needs for the current image
+* fixed: urls for converted resizes were not being updated in posts
 
 = 1.7.6 =
 * fixed: color of progressbar for 4 more admin themes in WP 3.8

@@ -1143,7 +1143,6 @@ function ewww_image_optimizer_update_attachment($meta, $ID) {
 	global $ewww_debug;
 	global $wpdb;
 	$ewww_debug .= "<b>ewww_image_optimizer_update_attachment()</b><br>";
-	// TODO: continue cleaning up all wpdb and mysql calls
 	// update the file location in the post metadata based on the new path stored in the attachment metadata
 	update_attached_file($ID, $meta['file']);
 	// retrieve the post information based on the $ID
@@ -1170,14 +1169,13 @@ function ewww_image_optimizer_update_attachment($meta, $ID) {
 			array('post_content' => $post_content),
 			array('ID' => $row['ID'])
 		);
-		$row = $wpdb->get_row(null, ARRAY_A);
+//		$row = $wpdb->get_row(null, ARRAY_A);
 	}
 	if (isset($meta['sizes']) ) {
 		// for each resized version
 		foreach($meta['sizes'] as $size => $data) {
 			// if the resize was converted
 			if (isset($data['converted'])) {
-				// TODO: figure out how to retrieve the actual old url, not the generated one
 				// generate the url for the old image
 				if (empty($data['real_orig_file'])) {
 					$old_sguid = dirname($post->guid) . "/" . basename($data['orig_file']);

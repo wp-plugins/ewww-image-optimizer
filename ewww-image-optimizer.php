@@ -933,7 +933,7 @@ function ewww_image_optimizer_notice_utils() {
  * @returns array
  */
 function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
-	global $wpdb;
+//	global $wpdb;
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer()</b><br>";
 	// if the plugin gets here without initializing, we need to run through some things first
