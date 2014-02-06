@@ -1051,7 +1051,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 					// get a unique filename for the png image
 					list($pngfile, $filenum) = ewww_image_optimizer_unique_filename($file, '.png');
 				}
-		$tools = ewww_image_optimizer_path_check(true, false, true, true);
 			} else {
 				if ( $results_msg = ewww_image_optimizer_check_table ( $file, $orig_size ) ) {
 					return array ( $file, $results_msg, $converted, $original );
@@ -1059,7 +1058,16 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 				// otherwise, set it to OFF
 				$convert = false;
 				$pngfile = '';
-		$tools = ewww_image_optimizer_path_check(true, false, false, false);
+			}
+			if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_jpg')) {
+				list($file, $converted, $result) = ewww_image_optimizer_cloud_optimizer($file, $type, $convert, $pngfile, 'image/png');
+				if ($converted) $converted = $filenum;
+				break;
+			}
+			if ($convert) {
+				$tools = ewww_image_optimizer_path_check(true, true, false, true);
+			} else {
+				$tools = ewww_image_optimizer_path_check(true, false, false, false);
 			}
 			// if jpegtran optimization is disabled
 			if (ewww_image_optimizer_get_option('ewww_image_optimizer_disable_jpegtran')) {
@@ -1073,11 +1081,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 			} else {
 				// set the optimization process to ON
 				$optimize = true;
-			}
-			if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_jpg')) {
-				list($file, $converted, $result) = ewww_image_optimizer_cloud_optimizer($file, $type, $convert, $pngfile, 'image/png');
-				if ($converted) $converted = $filenum;
-				break;
 			}
 			// if the conversion process is turned ON, or if this is a resize and the full-size was converted
 			if ($convert && !ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_jpg')) {
@@ -1275,7 +1278,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 					// construct the filename for the new JPG
 					list($jpgfile, $filenum) = ewww_image_optimizer_unique_filename($file, '.jpg');
 				}
-		$tools = ewww_image_optimizer_path_check(true, true, false, true);
 			} else {
 				$ewww_debug .= "PNG to JPG conversion turned off<br>";
 				if ( $results_msg = ewww_image_optimizer_check_table ( $file, $orig_size ) ) {
@@ -1288,7 +1290,16 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 				$g = null;
 				$b = null;
 				$gquality = null;
-		$tools = ewww_image_optimizer_path_check(false, true, false, true);
+			}
+			if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_png')) {
+				list($file, $converted, $result) = ewww_image_optimizer_cloud_optimizer($file, $type, $convert, $jpgfile, 'image/jpeg', array('r' => $r, 'g' => $g, 'b' => $b, 'quality' => $gquality));
+				if ($converted) $converted = $filenum;
+				break;
+			}
+			if ($convert) {
+				$tools = ewww_image_optimizer_path_check(true, true, false, true);
+			} else {
+				$tools = ewww_image_optimizer_path_check(false, true, false, true);
 			}
 			// if pngout and optipng are disabled
 			if (ewww_image_optimizer_get_option('ewww_image_optimizer_disable_optipng') && ewww_image_optimizer_get_option('ewww_image_optimizer_disable_pngout')) {
@@ -1307,12 +1318,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 				$optimize = true;
 			}
 			// retrieve the filesize of the original image
-			$orig_size = filesize($file);
-			if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_png')) {
-				list($file, $converted, $result) = ewww_image_optimizer_cloud_optimizer($file, $type, $convert, $jpgfile, 'image/jpeg', array('r' => $r, 'g' => $g, 'b' => $b, 'quality' => $gquality));
-				if ($converted) $converted = $filenum;
-					break;
-			}
+//			$orig_size = filesize($file);
 			// if conversion is on and the PNG doesn't have transparency or the user set a background color to replace transparency, or this is a resize and the full-size image was converted
 			if ($convert) {
 				$ewww_debug .= "attempting to convert PNG to JPG: $jpgfile <br>";
@@ -1503,7 +1509,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 					// construct the filename for the new PNG
 					list($pngfile, $filenum) = ewww_image_optimizer_unique_filename($file, '.png');
 				}
-		$tools = ewww_image_optimizer_path_check(false, true, true, true);
 			} else {
 				if ( $results_msg = ewww_image_optimizer_check_table ( $file, $orig_size ) ) {
 					return array ( $file, $results_msg, $converted, $original );
@@ -1511,7 +1516,16 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 				// turn conversion OFF
 				$convert = false;
 				$pngfile = '';
-		$tools = ewww_image_optimizer_path_check(false, false, true, false);
+			}
+			if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_gif')) {
+				list($file, $converted, $result) = ewww_image_optimizer_cloud_optimizer($file, $type, $convert, $pngfile, 'image/png');
+				if ($converted) $converted = $filenum;
+				break;
+			}
+			if ($convert) {
+				$tools = ewww_image_optimizer_path_check(false, true, true, true);
+			} else {
+				$tools = ewww_image_optimizer_path_check(false, false, true, false);
 			}
 			// if gifsicle is disabled
 			if (ewww_image_optimizer_get_option('ewww_image_optimizer_disable_gifsicle')) {
@@ -1524,11 +1538,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 			} else {
 				// otherwise, turn optimization ON
 				$optimize = true;
-			}
-			if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_gif')) {
-				list($file, $converted, $result) = ewww_image_optimizer_cloud_optimizer($file, $type, $convert, $pngfile, 'image/png');
-				if ($converted) $converted = $filenum;
-				break;
 			}
 			// if conversion is ON, the GIF isn't animated, or this is a resize and the full-size image was converted
 			if ($convert) {

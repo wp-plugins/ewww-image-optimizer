@@ -13,6 +13,10 @@ if (preg_match('/get_current_user/', $disabled)) {
 global $wp_version;
 $my_version = substr($wp_version, 0, 3);
 $ewww_debug .= "WP version: $wp_version<br>";
+global $wpdb;
+if (!isset($wpdb->ewwwio_images)) {
+	$wpdb->ewwwio_images = $wpdb->prefix . "ewwwio_images";
+}
 
 /**
  * Hooks
@@ -109,10 +113,10 @@ function ewww_image_optimizer_install_table() {
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_install_table()</b><br>";
 	global $wpdb;
-	$table_name = $wpdb->prefix . "ewwwio_images";
+//	$table_name = $wpdb->prefix . "ewwwio_images";
 	
 	// create a table with 4 columns: an id, the file path, the md5sum, and the optimization results
-	$sql = "CREATE TABLE $table_name (
+	$sql = "CREATE TABLE $wpdb->ewwwio_images (
 		id mediumint(9) NOT NULL AUTO_INCREMENT,
 		path text NOT NULL,
 		image_md5 VARCHAR(55),
@@ -128,13 +132,13 @@ function ewww_image_optimizer_install_table() {
 	dbDelta($sql);
 	
 	// remove extra decimals in ewwwio_images table
-	$query = 'SELECT id,results FROM ' . $wpdb->prefix . "ewwwio_images WHERE results LIKE '%.0&nbsp;B)%'";
+	$query = "SELECT id,results FROM $wpdb->ewwwio_images WHERE results LIKE '%.0&nbsp;B)%'";
 	$old_records = $wpdb->get_results($query, ARRAY_A);
 	foreach ($old_records as $record) {
 			$ewww_debug .= 'converting record: ' . $record['id'] . '<br>';
 			$savings = preg_replace('/\.0&nbsp;B/', '&nbsp;B', $record['results']);
 			$ewww_debug .= 'using string: ' . $savings . '<br>';
-			$wpdb->update($wpdb->prefix . "ewwwio_images",
+			$wpdb->update($wpdb->ewwwio_images,
 				array(
 					'results' => $savings,
 				),
@@ -216,7 +220,7 @@ function ewww_image_optimizer_network_deactivate($network_wide) {
 	global $wpdb;
 	wp_clear_scheduled_hook('ewww_image_optimizer_auto');
 	if ($network_wide) {
-		$query = "SELECT blog_id FROM {$wpdb->blogs} WHERE site_id = '{$wpdb->siteid}' ";
+		$query = $wpdb->prepare("SELECT blog_id FROM $wpdb->blogs WHERE site_id = '$wpdb->siteid'");
 		$blogs = $wpdb->get_results($query, ARRAY_A);
 		foreach ($blogs as $blog) {
 			switch_to_blog($blog['blog_id']);
@@ -557,14 +561,14 @@ function ewww_image_optimizer_restore_from_meta_data($meta, $id) {
 		// meta sizes don't contain a path, so we calculate one
 		$base_dir = dirname($file_path) . '/';
 		foreach($meta['sizes'] as $size => $data) {
-				// check through all the sizes we've processed so far
-				foreach($processed as $proc => $scan) {
-					// if a previous resize had identical dimensions
-					if ($scan['height'] == $data['height'] && $scan['width'] == $data['width'] && isset($meta['sizes'][$proc]['converted'])) {
-						// point this resize at the same image as the previous one
-						$meta['sizes'][$size]['file'] = $meta['sizes'][$proc]['file'];
-					}
+			// check through all the sizes we've processed so far
+			foreach($processed as $proc => $scan) {
+				// if a previous resize had identical dimensions
+				if ($scan['height'] == $data['height'] && $scan['width'] == $data['width'] && isset($meta['sizes'][$proc]['converted'])) {
+					// point this resize at the same image as the previous one
+					$meta['sizes'][$size]['file'] = $meta['sizes'][$proc]['file'];
 				}
+			}
 			if (isset($data['converted'])) {
 				// if this is a unique size
 				if (file_exists($base_dir . $data['orig_file'])) {
@@ -604,10 +608,10 @@ function ewww_image_optimizer_delete ($id) {
 		// get the filename
 		$filename = basename($file_path);
 		// retrieve any posts that link the original image
-		$table_name = $wpdb->prefix . "posts";
-		$esql = "SELECT ID, post_content FROM $table_name WHERE post_content LIKE '%$filename%'";
-		$es = mysql_query($esql);
-		$rows = mysql_fetch_assoc($es);
+//		$table_name = $wpdb->prefix . "posts";
+		$esql = "SELECT ID, post_content FROM $wpdb->posts WHERE post_content LIKE '%$filename%'";
+		$rows = $wpdb->get_row($esql);
+//		$rows = mysql_fetch_assoc($es);
 		// if the original file still exists and no posts contain links to the image
 		if (file_exists($file_path) && empty($rows))
 			unlink($file_path);
@@ -629,10 +633,11 @@ function ewww_image_optimizer_delete ($id) {
 				// retrieve the filename from the metadata
 				$filename = $data['orig_file'];
 				// retrieve any posts that link the image
-				$table_name = $wpdb->prefix . "posts";
-				$esql = "SELECT ID, post_content FROM $table_name WHERE post_content LIKE '%$filename%'";
-				$es = mysql_query($esql);
-				$srows = mysql_fetch_assoc($es);
+//				$table_name = $wpdb->prefix . "posts";
+				$esql = "SELECT ID, post_content FROM $wpdb->posts WHERE post_content LIKE '%$filename%'";
+				$rows = $wpdb->get_row($esql);
+			//	$es = mysql_query($esql);
+			//	$srows = mysql_fetch_assoc($es);
 				// if there are no posts containing links to the original, delete it
 				if(empty($srows)) {
 					unlink($base_dir . $data['orig_file']);
@@ -867,7 +872,7 @@ function ewww_image_optimizer_check_table ($file, $orig_size) {
 	global $ewww_debug;
 	$already_optimized = false;
 	$ewww_debug .= "<b>ewww_image_optimizer_check_table()</b><br>";
-	$query = "SELECT results FROM " . $wpdb->prefix . 'ewwwio_images' . " WHERE BINARY path = '$file' AND image_size = '$orig_size'";
+	$query = $wpdb->prepare("SELECT results FROM $wpdb->ewwwio_images WHERE BINARY path = %s AND image_size = '$orig_size'", $file);
 	$already_optimized = $wpdb->get_var($query);
 	if (!empty($already_optimized) && empty($_REQUEST['force'])) {
 		$prev_string = " - " . __('Previously Optimized', EWWW_IMAGE_OPTIMIZER_DOMAIN);
@@ -883,7 +888,7 @@ function ewww_image_optimizer_update_table ($attachment, $opt_size, $orig_size) 
 	global $wpdb;
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_update_table()</b><br>";
-	$query = "SELECT id,orig_size FROM " . $wpdb->prefix . "ewwwio_images WHERE BINARY path = '$attachment'";
+	$query = $wpdb->prepare("SELECT id,orig_size FROM $wpdb->ewwwio_images WHERE BINARY path = %s", $attachment);
 	$already_optimized = $wpdb->get_row($query, ARRAY_A);
 /*	if (!empty($already_optimized) && $already_optimized['orig_size'] > $orig_size) {
 		$ewww_debug .= "already optimized, using original size from database<br>";
@@ -913,7 +918,7 @@ function ewww_image_optimizer_update_table ($attachment, $opt_size, $orig_size) 
 	if (empty($already_optimized)) {
 		$ewww_debug .= "creating new record, path: $attachment, size: " . $opt_size . "<br>";
 		// store info on the current image for future reference
-		$wpdb->insert( $wpdb->prefix . "ewwwio_images", array(
+		$wpdb->insert( $wpdb->ewwwio_images, array(
 				'path' => $attachment,
 				'image_size' => $opt_size,
 				'orig_size' => $orig_size,
@@ -922,7 +927,7 @@ function ewww_image_optimizer_update_table ($attachment, $opt_size, $orig_size) 
 	} else {
 		$ewww_debug .= "updating existing record (" . $already_optimized['id'] . "), path: $attachment, size: " . $opt_size . "<br>";
 		// store info on the current image for future reference
-		$wpdb->update( $wpdb->prefix . "ewwwio_images",
+		$wpdb->update( $wpdb->ewwwio_images,
 			array(
 				'image_size' => $opt_size,
 				'results' => $results_msg,
@@ -931,6 +936,7 @@ function ewww_image_optimizer_update_table ($attachment, $opt_size, $orig_size) 
 				'id' => $already_optimized['id'],
 			));
 	}
+	$wpdb->flush();
 	return $results_msg;
 }
 /**
@@ -979,11 +985,11 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = tr
 		$imsanity_path = trailingslashit($path_parts['dirname']) . $path_parts['filename'] . '-' . $newW . 'x' . $newH . '.' . $path_parts['extension'];
 		$ewww_debug .= "imsanity path: $imsanity_path<br>";
 		$image_size = filesize($file_path);
-		$query = "SELECT id FROM " . $wpdb->prefix . 'ewwwio_images' . " WHERE BINARY path = '$imsanity_path' AND image_size = '$image_size'";
+		$query = $wpdb->prepare("SELECT id FROM $wpdb->ewwwio_images WHERE BINARY path = %s AND image_size = '$image_size'", $imsanity_path);
 		$already_optimized = $wpdb->get_results($query, ARRAY_A);
 		$ewww_debug .= "updating existing record, path: $file_path, size: " . $image_size . "<br>";
 		// store info on the current image for future reference
-		$wpdb->update( $wpdb->prefix . "ewwwio_images",
+		$wpdb->update( $wpdb->ewwwio_images,
 			array(
 				'path' => $file_path,
 			),
@@ -1084,6 +1090,9 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = tr
 						add_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10, 2);
 					$meta['sizes'][$size]['converted'] = 1;
 					$meta['sizes'][$size]['orig_file'] = str_replace($base_dir, '', $original);
+					$ewww_debug .= "original filename: $original<br>";
+					$meta['sizes'][$size]['real_orig_file'] = str_replace($base_dir, '', $resize_path);
+					$ewww_debug .= "resize path: $resize_path<br>";
 				}
 				// update the filename
 				$meta['sizes'][$size]['file'] = str_replace($base_dir, '', $optimized_file);
@@ -1132,45 +1141,71 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = tr
  */
 function ewww_image_optimizer_update_attachment($meta, $ID) {
 	global $ewww_debug;
+	global $wpdb;
 	$ewww_debug .= "<b>ewww_image_optimizer_update_attachment()</b><br>";
+	// TODO: continue cleaning up all wpdb and mysql calls
 	// update the file location in the post metadata based on the new path stored in the attachment metadata
 	update_attached_file($ID, $meta['file']);
 	// retrieve the post information based on the $ID
 	$post = get_post($ID);
 	// save the previous attachment address
 	$old_guid = $post->guid;
+	//$old_guid = esc_sql($post->guid);
 	// construct the new guid based on the filename from the attachment metadata
 	$guid = dirname($post->guid) . "/" . basename($meta['file']);
 	// retrieve any posts that link the image
-	global $wpdb;
-	$table_name = $wpdb->prefix . "posts";
-	$esql = "SELECT ID, post_content FROM $table_name WHERE post_content LIKE '%$old_guid%'";
-	$es = mysql_query($esql);
+//	$table_name = $wpdb->prefix . "posts";
+	$esql = $wpdb->prepare("SELECT ID, post_content FROM $wpdb->posts WHERE post_content LIKE '%%%s%%'", $old_guid);
+//	$es = mysql_query($esql);
 	// while there are posts to process
-	while($rows = mysql_fetch_assoc($es)) {
+	$rows = $wpdb->get_results($esql, ARRAY_A);
+	foreach ($rows as $row) {
 		// replace all occurences of the old guid with the new guid
-		$post_content = addslashes(str_replace($old_guid, $guid, $rows['post_content']));
+		$post_content = str_replace($old_guid, $guid, $row['post_content']);
+		$ewww_debug .= "replacing $old_guid with $guid in post " . $row['ID'] . '<br>';
+		//$post_content = addslashes(str_replace($old_guid, $guid, $rows['post_content']));
 		// send the updated content back to the database
-		mysql_query("UPDATE $table_name SET post_content = '$post_content' WHERE ID = {$rows["ID"]}");
+		$wpdb->update(
+			$wpdb->posts,
+			array('post_content' => $post_content),
+			array('ID' => $row['ID'])
+		);
+		$row = $wpdb->get_row(null, ARRAY_A);
 	}
 	if (isset($meta['sizes']) ) {
 		// for each resized version
 		foreach($meta['sizes'] as $size => $data) {
 			// if the resize was converted
 			if (isset($data['converted'])) {
+				// TODO: figure out how to retrieve the actual old url, not the generated one
 				// generate the url for the old image
-				$old_sguid = dirname($post->guid) . "/" . basename($data['orig_file']);
+				if (empty($data['real_orig_file'])) {
+					$old_sguid = dirname($post->guid) . "/" . basename($data['orig_file']);
+				} else {
+					$old_sguid = dirname($post->guid) . "/" . basename($data['real_orig_file']);
+					unset ($meta['sizes'][$size]['real_orig_file'] );
+				}
+				$ewww_debug .= "processing: $size<br>";
+				$ewww_debug .= "old guid: $old_sguid <br>";
 				// generate the url for the new image
 				$sguid = dirname($post->guid) . "/" . basename($data['file']);
+				$ewww_debug .= "new guid: $sguid <br>";
 				// retrieve any posts that link the resize
-				$ersql = "SELECT ID, post_content FROM $table_name WHERE post_content LIKE '%$old_sguid%'";
-				$ers = mysql_query($ersql);
+				$ersql = $wpdb->prepare("SELECT ID, post_content FROM $wpdb->posts WHERE post_content LIKE '%%%s%%'", $old_sguid);
+				$ewww_debug .= "using query: $ersql<br>";
+				//$ers = mysql_query($ersql);
+				$rows = $wpdb->get_results($ersql, ARRAY_A);
 				// while there are posts to process
-				while($rows = mysql_fetch_assoc($ers)) {
+				foreach ($rows as $row) {
 					// replace all occurences of the old guid with the new guid
-					$post_content = addslashes(str_replace($old_sguid, $sguid, $rows['post_content']));
+					$post_content = str_replace($old_sguid, $sguid, $row['post_content']);
+					$ewww_debug .= "replacing $old_sguid with $sguid in post " . $row['ID'] . '<br>';
 					// send the updated content back to the database
-					mysql_query("UPDATE $table_name SET post_content = '$post_content' WHERE ID = {$rows["ID"]}");
+					$wpdb->update(
+						$wpdb->posts,
+						array('post_content' => $post_content),
+						array('ID' => $row['ID'])
+					);
 				}
 			}
 		}
@@ -1193,6 +1228,7 @@ function ewww_image_optimizer_update_attachment($meta, $ID) {
 	wp_update_post( array('ID' => $ID,
 			      'post_mime_type' => $mime,
 			      'guid' => $guid) );
+	ewww_image_optimizer_debug_log();
 	return $meta;
 }
 

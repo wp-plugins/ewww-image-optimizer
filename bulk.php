@@ -172,11 +172,9 @@ function ewww_image_optimizer_bulk_script($hook) {
 	}
         // check to see if we are supposed to empty the auxiliary images table and verify we are authorized to do so
 	if (!empty($_REQUEST['empty']) && wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-aux-images' )) {
-		global $wpdb;
+//		global $wpdb;
 		// empty the ewwwio_images table to allow re-optimization
-		$table_name = $wpdb->prefix . "ewwwio_images"; 
-		$sql = "TRUNCATE " . $table_name; 
-    		$wpdb->query($sql); 
+    		$wpdb->query( "TRUNCATE $wpdb->ewwwio_images" ); 
 		update_option('ewww_image_optimizer_aux_last', '');
 		update_option('ewww_image_optimizer_imported', '');
 	}
@@ -253,7 +251,7 @@ function ewww_image_optimizer_bulk_script($hook) {
 // find the number of images in the ewwwio_images table
 function ewww_image_optimizer_aux_images_table_count() {
 	global $wpdb;
-	$count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->prefix . 'ewwwio_images');
+	$count = $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->ewwwio_images");
 	if (!empty($_REQUEST['inline'])) {
 		echo $count;
 		die();
@@ -296,7 +294,7 @@ function ewww_image_optimizer_bulk_filename() {
  
 // called by javascript to process each image in the loop
 function ewww_image_optimizer_bulk_loop() {
-	global $wpdb;
+//	global $wpdb;
 	global $ewww_debug;
 	// verify that an authorized user has started the optimizer
 	if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
