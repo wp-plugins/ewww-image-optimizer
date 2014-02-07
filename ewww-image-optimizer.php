@@ -211,9 +211,9 @@ function ewww_image_optimizer_admin_init() {
 	require_once(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'aux-optimize.php');
 	// queue the function that contains custom styling for our progressbars, but only in wp 3.8+
 	global $wp_version;
-	$my_version = $wp_version;
-	$my_version = substr($my_version, 0, 3);
-	if ( $my_version >= 3.8 ) { 
+//	$my_version = $wp_version;
+//	$my_version = substr($my_version, 0, 3);
+	if ( substr($wp_version, 0, 3) >= 3.8 ) { 
 		add_action('admin_enqueue_scripts', 'ewww_image_optimizer_progressbar_style');
 	}
 }
@@ -1040,7 +1040,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 	switch($type) {
 		case 'image/jpeg':
 			// if jpg2png conversion is enabled, and this image is in the wordpress media library
-			if ((($new || !empty($_REQUEST['force'])) && ewww_image_optimizer_get_option('ewww_image_optimizer_jpg_to_png') && $gallery_type == 1) || !empty($_GET['convert'])) {
+			if ((ewww_image_optimizer_get_option('ewww_image_optimizer_jpg_to_png') && $gallery_type == 1) || !empty($_GET['convert'])) {
 				// generate the filename for a PNG
 				// if this is a resize version
 				if ($converted) {
@@ -1052,12 +1052,15 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 					list($pngfile, $filenum) = ewww_image_optimizer_unique_filename($file, '.png');
 				}
 			} else {
-				if ( $results_msg = ewww_image_optimizer_check_table ( $file, $orig_size ) ) {
-					return array ( $file, $results_msg, $converted, $original );
-				}
 				// otherwise, set it to OFF
 				$convert = false;
 				$pngfile = '';
+			}
+			// check for previous optimization, so long as the force flag is on and this isn't a new image that needs converting
+			if ( empty( $_REQUEST['force'] ) && ! ( $new && $convert ) ) {
+				if ( $results_msg = ewww_image_optimizer_check_table( $file, $orig_size ) ) {
+					return array( $file, $results_msg, $converted, $original );
+				}
 			}
 			if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_jpg')) {
 				list($file, $converted, $result) = ewww_image_optimizer_cloud_optimizer($file, $type, $convert, $pngfile, 'image/png');
@@ -1243,7 +1246,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 			break;
 		case 'image/png':
 			// png2jpg conversion is turned on, and the image is in the wordpress media library
-			if (((($new || !empty($_REQUEST['force'])) && ewww_image_optimizer_get_option('ewww_image_optimizer_png_to_jpg') && $gallery_type == 1) || !empty($_GET['convert'])) && (!ewww_image_optimizer_png_alpha($file) || ewww_image_optimizer_jpg_background())) {
+			if (((ewww_image_optimizer_get_option('ewww_image_optimizer_png_to_jpg') && $gallery_type == 1) || !empty($_GET['convert'])) && (!ewww_image_optimizer_png_alpha($file) || ewww_image_optimizer_jpg_background())) {
 				$ewww_debug .= "PNG to JPG conversion turned on<br>";
 				// if the user set a fill background for transparency
 				$background = '';
@@ -1290,6 +1293,12 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 				$g = null;
 				$b = null;
 				$gquality = null;
+			}
+			// check for previous optimization, so long as the force flag is on and this isn't a new image that needs converting
+			if ( empty( $_REQUEST['force'] ) && ! ( $new && $convert ) ) {
+				if ( $results_msg = ewww_image_optimizer_check_table( $file, $orig_size ) ) {
+					return array( $file, $results_msg, $converted, $original );
+				}
 			}
 			if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_png')) {
 				list($file, $converted, $result) = ewww_image_optimizer_cloud_optimizer($file, $type, $convert, $jpgfile, 'image/jpeg', array('r' => $r, 'g' => $g, 'b' => $b, 'quality' => $gquality));
@@ -1498,7 +1507,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 			break;
 		case 'image/gif':
 			// if gif2png is turned on, and the image is in the wordpress media library
-			if (((($new || !empty($_REQUEST['force'])) && ewww_image_optimizer_get_option('ewww_image_optimizer_gif_to_png') && $gallery_type == 1) || !empty($_GET['convert'])) && !ewww_image_optimizer_is_animated($file)) {
+			if (((ewww_image_optimizer_get_option('ewww_image_optimizer_gif_to_png') && $gallery_type == 1) || !empty($_GET['convert'])) && !ewww_image_optimizer_is_animated($file)) {
 				// generate the filename for a PNG
 				// if this is a resize version
 				if ($converted) {
@@ -1516,6 +1525,12 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 				// turn conversion OFF
 				$convert = false;
 				$pngfile = '';
+			}
+			// check for previous optimization, so long as the force flag is on and this isn't a new image that needs converting
+			if ( empty( $_REQUEST['force'] ) && ! ( $new && $convert ) ) {
+				if ( $results_msg = ewww_image_optimizer_check_table( $file, $orig_size ) ) {
+					return array( $file, $results_msg, $converted, $original );
+				}
 			}
 			if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_gif')) {
 				list($file, $converted, $result) = ewww_image_optimizer_cloud_optimizer($file, $type, $convert, $pngfile, 'image/png');
