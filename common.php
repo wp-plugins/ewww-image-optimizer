@@ -870,7 +870,7 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $n
 			unlink($tempfile);
 			$msg = 'unchanged';
 		}
-		return array($file, $converted, $msg);
+		return array($file, $converted, $msg, $newsize);
 	}
 }
 

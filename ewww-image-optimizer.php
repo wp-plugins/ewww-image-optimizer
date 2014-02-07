@@ -941,6 +941,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 		ewww_image_optimizer_init();
 	// initialize the original filename 
 	$original = $file;
+	$result = '';
 	// check that the file exists
 	if (FALSE === file_exists($file)) {
 		// tell the user we couldn't find the file
@@ -1038,6 +1039,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 	$convert = true;
 	// run the appropriate optimization/conversion for the mime-type
 	switch($type) {
+		// TODO: do conversion after optimization, so that empty alpha channels are stripped before attempting PNG to JPG
 		case 'image/jpeg':
 			// if jpg2png conversion is enabled, and this image is in the wordpress media library
 			if ((ewww_image_optimizer_get_option('ewww_image_optimizer_jpg_to_png') && $gallery_type == 1) || !empty($_GET['convert'])) {
@@ -1063,7 +1065,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 				}
 			}
 			if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_jpg')) {
-				list($file, $converted, $result) = ewww_image_optimizer_cloud_optimizer($file, $type, $convert, $pngfile, 'image/png');
+				list($file, $converted, $result, $new_size) = ewww_image_optimizer_cloud_optimizer($file, $type, $convert, $pngfile, 'image/png');
 				if ($converted) $converted = $filenum;
 				break;
 			}
@@ -1297,7 +1299,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 				}
 			}
 			if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_png')) {
-				list($file, $converted, $result) = ewww_image_optimizer_cloud_optimizer($file, $type, $convert, $jpgfile, 'image/jpeg', array('r' => $r, 'g' => $g, 'b' => $b, 'quality' => $gquality));
+				list($file, $converted, $result, $new_size) = ewww_image_optimizer_cloud_optimizer($file, $type, $convert, $jpgfile, 'image/jpeg', array('r' => $r, 'g' => $g, 'b' => $b, 'quality' => $gquality));
 				if ($converted) $converted = $filenum;
 				break;
 			}
@@ -1527,7 +1529,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 				}
 			}
 			if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_gif')) {
-				list($file, $converted, $result) = ewww_image_optimizer_cloud_optimizer($file, $type, $convert, $pngfile, 'image/png');
+				list($file, $converted, $result, $new_size) = ewww_image_optimizer_cloud_optimizer($file, $type, $convert, $pngfile, 'image/png');
 				if ($converted) $converted = $filenum;
 				break;
 			}
