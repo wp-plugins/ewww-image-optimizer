@@ -172,7 +172,8 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * changed: when cloud license has been exceeded, the optimizer will not attempt to upload images, and bulk operations will stop immediately
 * fixed: unnecessary decimals will not be displayed for file-sizes in bytes
 * added: button to stop bulk optimization process
-* removed: unnecessary calls to escapeshellarg() that were stripping accented characters from filenames
+* fixed: rewrote escapeshellarg() to avoid stripping accented characters from filenames
+* fixed: problems with apostrophes in filenames
 * changed: Optimize More and Bulk Optimize are now on the same page
 * changed: After running Optimize More, you can Show Optimized Images and Empty Table without refreshing the page.
 * fixed: blank page when resetting bulk status in flagallery

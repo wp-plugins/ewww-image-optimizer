@@ -455,6 +455,13 @@ function ewww_image_optimizer_aux_paths_sanitize ($input) {
 	return $path_array;
 }
 
+// replacement for escapeshellarg() that won't kill non-ASCII characters
+function ewww_image_optimizer_escapeshellarg( $arg ) {
+	global $ewww_debug;
+	$safe_arg = "'" . str_replace("'", "'\"'\"'", $arg) . "'";
+	return $safe_arg;
+}
+
 // Retrieves jpg background fill setting, or returns null for png2jpg conversions
 function ewww_image_optimizer_jpg_background () {
 	global $ewww_debug;
@@ -466,6 +473,7 @@ function ewww_image_optimizer_jpg_background () {
 		// we remove a leading # symbol, since we take care of it later
 		preg_replace('/#/','',$background);
 		// send back the verified, cleaned-up background color
+		$ewww_debug .= "background: $background<br>";
 		return $background;
 	} else {
 		// send back a blank value
@@ -1335,8 +1343,10 @@ function ewww_image_optimizer_png_alpha ($filename){
 	$color_type = ord(@file_get_contents($filename, NULL, NULL, 25, 1));
 	// if it is set to RGB alpha or Grayscale alpha
 	if ($color_type == 4 || $color_type == 6) {
+		$ewww_debug .= "transparency found<br>";
 		return true;
 	} else {
+		$ewww_debug .= "no transparency<br>";
 		return false;
 	}
 }
@@ -1348,8 +1358,9 @@ function ewww_image_optimizer_is_animated($filename) {
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_is_animated()</b><br>";
 	// if we can't open the file in read-only buffered mode
-	if(!($fh = @fopen($filename, 'rb')))
+	if(!($fh = @fopen($filename, 'rb'))) {
 		return false;
+	}
 	// initialize $count
 	$count = 0;
    

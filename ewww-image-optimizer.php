@@ -1093,8 +1093,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 				// convert the JPG to PNG
 				if (!empty($convert_path)) {
 					$ewww_debug .= "converting with ImageMagick<br>";
-					$ewww_debug .= "using command: $convert_path $file -strip $pngfile";
-					exec("$convert_path $file -strip $pngfile");
+					exec( $convert_path . " " . ewww_image_optimizer_escapeshellarg( $file ) . " -strip " . ewww_image_optimizer_escapeshellarg( $pngfile ) );
 				} elseif (ewww_image_optimizer_gd_support()) {
 					$ewww_debug .= "converting with GD<br>";
 					imagepng(imagecreatefromjpeg($file), $pngfile);
@@ -1112,7 +1111,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 					if (file_exists($pngfile)) {
 						$ewww_debug .= "optimizing converted PNG with optipng<br>";
 						// run optipng on the new PNG
-						exec("$nice " . $tools['OPTIPNG'] . " -o$optipng_level -quiet $strip $pngfile");
+						exec( "$nice " . $tools['OPTIPNG'] . " -o$optipng_level -quiet $strip " . ewww_image_optimizer_escapeshellarg( $pngfile ) );
 					}
 				}
 				// if pngout isn't disabled
@@ -1123,7 +1122,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 					if (file_exists($pngfile)) {
 						$ewww_debug .= "optimizing converted PNG with pngout<br>";
 						// run pngout on the new PNG
-						exec("$nice " . $tools['PNGOUT'] . " -s$pngout_level -q $pngfile");
+						exec( "$nice " . $tools['PNGOUT'] . " -s$pngout_level -q " . ewww_image_optimizer_escapeshellarg( $pngfile ) );
 					}
 				}
 				if (is_file($pngfile)) {
@@ -1163,9 +1162,9 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 					$copy_opt = 'all';
 				}
 				// run jpegtran - non-progressive
-				exec("$nice " . $tools['JPEGTRAN'] . " -copy $copy_opt -optimize -outfile $tempfile $file");
+				exec( "$nice " . $tools['JPEGTRAN'] . " -copy $copy_opt -optimize -outfile " . ewww_image_optimizer_escapeshellarg( $tempfile ) . " " . ewww_image_optimizer_escapeshellarg( $file ) );
 				// run jpegtran - progressive
-				exec("$nice " . $tools['JPEGTRAN'] . " -copy $copy_opt -optimize -progressive -outfile $progfile $file");
+				exec( "$nice " . $tools['JPEGTRAN'] . " -copy $copy_opt -optimize -progressive -outfile " . ewww_image_optimizer_escapeshellarg( $progfile ) . " " . ewww_image_optimizer_escapeshellarg( $file ) );
 				if (is_file($tempfile)) {
 					// check the filesize of the non-progressive JPG
 					$non_size = filesize($tempfile);
@@ -1283,9 +1282,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 				}
 			} else {
 				$ewww_debug .= "PNG to JPG conversion turned off<br>";
-				if ( $results_msg = ewww_image_optimizer_check_table ( $file, $orig_size ) ) {
-					return array ( $file, $results_msg, $converted, $original );
-				}
 				// turn the conversion process OFF
 				$convert = false;
 				$jpgfile = '';
@@ -1337,7 +1333,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 				if (!empty($convert_path)) {
 					$ewww_debug .= "converting with ImageMagick<br>";
 					$ewww_debug .= "using command: $convert_path $background -flatten $cquality $file $jpgfile";
-					exec ("$convert_path $background -flatten $cquality $file $jpgfile");
+					exec ( "$convert_path $background -flatten $cquality " . ewww_image_optimizer_escapeshellarg( $file ) . " " . ewww_image_optimizer_escapeshellarg( $jpgfile ) );
 				} elseif (ewww_image_optimizer_gd_support()) {
 					$ewww_debug .= "converting with GD<br>";
 					// retrieve the data from the PNG
@@ -1377,9 +1373,9 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 						$copy_opt = 'all';
 					}
 					// run jpegtran - non-progressive
-					exec("$nice " . $tools['JPEGTRAN'] . " -copy $copy_opt -optimize -outfile $tempfile $jpgfile");
+					exec( "$nice " . $tools['JPEGTRAN'] . " -copy $copy_opt -optimize -outfile " . ewww_image_optimizer_escapeshellarg( $tempfile ) . " " . ewww_image_optimizer_escapeshellarg( $jpgfile ) );
 					// run jpegtran - progressive
-					exec("$nice " . $tools['JPEGTRAN'] . " -copy $copy_opt -optimize -progressive -outfile $progfile $jpgfile");
+					exec( "$nice " . $tools['JPEGTRAN'] . " -copy $copy_opt -optimize -progressive -outfile " . ewww_image_optimizer_escapeshellarg( $progfile ) . " " . ewww_image_optimizer_escapeshellarg( $jpgfile ) );
 					if (is_file($tempfile)) {
 						// check the filesize of the non-progressive JPG
 						$non_size = filesize($tempfile);
@@ -1452,6 +1448,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 					} else {
 						$strip = '';
 					}
+// don't forget to escape the filenames when we implement this down the road!
 /*					exec("$nice pngquant --quality=60-100 -s1 $file");
 					$quantfile = preg_replace('/\.\w+$/', '-fs8.png', $file);
 					if (filesize($file) > filesize($quantfile)) {
@@ -1460,7 +1457,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 						unlink($quantfile);
 					}*/
 					// run optipng on the PNG file
-					exec("$nice " . $tools['OPTIPNG'] . " -o$optipng_level -quiet $strip $file");
+					exec( "$nice " . $tools['OPTIPNG'] . " -o$optipng_level -quiet $strip " . ewww_image_optimizer_escapeshellarg( $file ) );
 					//exec("$nice advpng -z -4 -i 1 $file");
 				}
 				// if pngout is enabled
@@ -1468,7 +1465,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 					// retrieve the optimization level for pngout
 					$pngout_level = ewww_image_optimizer_get_option('ewww_image_optimizer_pngout_level');
 					// run pngout on the PNG file
-					exec("$nice " . $tools['PNGOUT'] . " -s$pngout_level -q $file");
+					exec( "$nice " . $tools['PNGOUT'] . " -s$pngout_level -q " . ewww_image_optimizer_escapeshellarg( $file ) );
 				}
 				//}
 			}
@@ -1519,9 +1516,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 					list($pngfile, $filenum) = ewww_image_optimizer_unique_filename($file, '.png');
 				}
 			} else {
-				if ( $results_msg = ewww_image_optimizer_check_table ( $file, $orig_size ) ) {
-					return array ( $file, $results_msg, $converted, $original );
-				}
 				// turn conversion OFF
 				$convert = false;
 				$pngfile = '';
@@ -1572,7 +1566,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 					// otherwise, if pngout was not used
 					} else {*/
 						// run optipng on the GIF file
-						exec("$nice " . $tools['OPTIPNG'] . " -out $pngfile -o$optipng_level -quiet $strip $file");
+						exec( "$nice " . $tools['OPTIPNG'] . " -out " . ewww_image_optimizer_escapeshellarg( $pngfile ) . " -o$optipng_level -quiet $strip " . ewww_image_optimizer_escapeshellarg( $file ) );
 //					}
 				}
 				// if pngout is enabled
@@ -1580,7 +1574,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 					// retrieve the pngout optimization level
 					$pngout_level = ewww_image_optimizer_get_option('ewww_image_optimizer_pngout_level');
 					// run pngout on the file
-					exec("$nice " . $tools['PNGOUT'] . " -s$pngout_level -q $file $pngfile");
+					exec( "$nice " . $tools['PNGOUT'] . " -s$pngout_level -q " . ewww_image_optimizer_escapeshellarg( $file ) . " " . ewww_image_optimizer_escapeshellarg( $pngfile ) );
 				}
 				// if a PNG file was created
 				if (file_exists($pngfile)) {
@@ -1604,7 +1598,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 			// if optimization is turned ON
 			if ($optimize) {
 				// run gifsicle on the GIF
-				exec("$nice " . $tools['GIFSICLE'] . " -b -O3 --careful $file");
+				exec( "$nice " . $tools['GIFSICLE'] . " -b -O3 --careful " . ewww_image_optimizer_escapeshellarg( $file ) );
 			}
 			// flush the cache for filesize
 			clearstatcache();

@@ -324,7 +324,7 @@ function ewww_image_optimizer_aux_images_table() {
 			$file_size = size_format(filesize($optimized_image[0]), 2);
 			$file_size = str_replace('.00 B ', ' B', $file_size);
 ?>			<tr<?php if($alternate) echo " class='alternate'"; ?> id="image-<?php echo $optimized_image[3]; ?>">
-				<td style='width:80px' class='column-icon'><img width='50' height='50' src='<?php echo $image_url; ?>' /></td>
+				<td style='width:80px' class='column-icon'><img width='50' height='50' src="<?php echo $image_url; ?>" /></td>
 				<td class='title'>...<?php echo $image_name; ?></td>
 				<td><?php echo $type; ?></td>
 				<td><?php echo "$savings <br>" . sprintf(__('Image Size: %s', EWWW_IMAGE_OPTIMIZER_DOMAIN), $file_size); ?><br><a class="removeimage" onclick="ewwwRemoveImage(<?php echo $optimized_image[3]; ?>)"><?php _e('Remove from table', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></a></td>
@@ -576,7 +576,7 @@ function ewww_image_optimizer_aux_images_filename() {
 	// generate the WP spinner image for display
 	$loading_image = plugins_url('/wpspin.gif', __FILE__);
 	// let the user know that we are beginning
-	echo "<p>" . __('Optimizing', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <b>" . $_POST['attachment'] . "</b>&nbsp;<img src='$loading_image' alt='loading'/></p>";
+	echo "<p>" . __('Optimizing', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <b>" . preg_replace( ":\\\':", "'", $_POST['attachment'] ) . "</b>&nbsp;<img src='$loading_image' alt='loading'/></p>";
 	die();
 }
  
@@ -598,6 +598,7 @@ function ewww_image_optimizer_aux_images_loop($attachment = null, $auto = false)
 	set_time_limit (50);
 	// get the path of the current attachment
 	if (empty($attachment)) $attachment = $_POST['attachment'];
+	$attachment = preg_replace( ":\\\':", "'", $attachment);
 	// get the 'aux attachments' with a list of attachments remaining
 	$attachments = get_option('ewww_image_optimizer_aux_attachments');
 	// do the optimization for the current image
