@@ -1554,15 +1554,8 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 					} else {
 						$strip = '';
 					}
-					// if $pngfile exists (which means pngout was run already)
-				/*	if (file_exists($pngfile)) {
-						// run optipng on the PNG file
-						exec("$nice " . $tools['OPTIPNG'] . " -o$optipng_level -quiet $pngfile");
-					// otherwise, if pngout was not used
-					} else {*/
-						// run optipng on the GIF file
-						exec( "$nice " . $tools['OPTIPNG'] . " -out " . ewww_image_optimizer_escapeshellarg( $pngfile ) . " -o$optipng_level -quiet $strip " . ewww_image_optimizer_escapeshellarg( $file ) );
-//					}
+					// run optipng on the GIF file
+					exec( "$nice " . $tools['OPTIPNG'] . " -out " . ewww_image_optimizer_escapeshellarg( $pngfile ) . " -o$optipng_level -quiet $strip " . ewww_image_optimizer_escapeshellarg( $file ) );
 				}
 				// if pngout is enabled
 				if (!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_pngout') && $tools['PNGOUT']) {

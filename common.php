@@ -794,8 +794,9 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $n
 	} else {
 		$tempfile = $file . ".tmp";
 		file_put_contents($tempfile, $response['body']);
-		$newsize = filesize($tempfile);
 		$orig_size = filesize($file);
+		$newsize = $orig_size;
+		$ewww_debug .= "cloud results: $newsize (new) vs. $orig_size (original)<br>";
 		$converted = false;
 		$msg = '';
 		if (preg_match('/exceeded/', $response['body'])) {
@@ -803,12 +804,14 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $n
 			$msg = 'exceeded';
 			unlink($tempfile);
 		} elseif (ewww_image_optimizer_mimetype($tempfile, 'i') == $type) {
+			$newsize = filesize($tempfile);
 			rename($tempfile, $file);
 			// store the result of the conversion
 		//	$msg = "$orig_size vs. $newsize";
 		//	$ewww_debug .= "optimized image is better: $msg<br>";
 		} elseif (ewww_image_optimizer_mimetype($tempfile, 'i') == $newtype) {
 			$converted = true;
+			$newsize = filesize($tempfile);
 			rename($tempfile, $newfile);
 			// store the result of the conversion
 		//	$msg = "$orig_size vs. $newsize";
@@ -846,7 +849,7 @@ function ewww_image_optimizer_update_table ($attachment, $opt_size, $orig_size) 
 	$ewww_debug .= "<b>ewww_image_optimizer_update_table()</b><br>";
 	$query = $wpdb->prepare("SELECT id,orig_size FROM $wpdb->ewwwio_images WHERE BINARY path = %s", $attachment);
 	$already_optimized = $wpdb->get_row($query, ARRAY_A);
-	$ewww_debug .= "savings: $opt_size vs. $orig_size<br>";
+	$ewww_debug .= "savings: $opt_size (new) vs. $orig_size (orig)<br>";
 	if ($opt_size == $orig_size) {
 		$ewww_debug .= "original and new file are same size, no savings<br>";
 		$results_msg = __('No savings', EWWW_IMAGE_OPTIMIZER_DOMAIN);
