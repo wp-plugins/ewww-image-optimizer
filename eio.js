@@ -1,13 +1,3 @@
-/*if (ewww_vars.gallery == 'nextgen' && !document.getElementById('bulk-loading')) {
-	var preview_action = 'bulk_ngg_preview';
-	var preview_data = {
-		action: preview_action,
-		inline: 1,
-        };
-        jQuery.post(ajaxurl, preview_data, function(response) {
-		jQuery('.wrap').prepend(response);
-	});
-}*/
 jQuery(document).ready(function($) {
 	// sliders for the bulk page
 	/*$(function() {
@@ -243,11 +233,7 @@ jQuery(document).ready(function($) {
 			$('#bulk-stop').hide();
 			return false;
 		});
-//		if ( ! $('#ewww-interval').val().match( /^[1-9][0-9]*$/) ) {
-			ewww_interval = 1;
-/*		} else {
-			ewww_interval = $('#ewww-interval').val();
-		}*/
+		ewww_interval = 1;
 		if ( ! $('#ewww-delay').val().match( /^[1-9][0-9]*$/) ) {
 			ewww_delay = 0;
 		} else {
@@ -296,7 +282,6 @@ jQuery(document).ready(function($) {
 			i++;
 			$('#bulk-progressbar').progressbar("option", "value", i );
 			$('#bulk-counter').html('Optimized ' + i + '/' + attachments.length);
-//	                $('#bulk-status').append(response + '<br>' + ewww_sleep + '<br>' + ewww_countdown + '<br>' );
 	                $('#bulk-status').append( response );
 			var exceed=/exceeded/m;
 			if (exceed.test(response)) {
@@ -342,7 +327,6 @@ jQuery(document).ready(function($) {
 			$('#show-table').show();
 			$('#empty-table').show();
 			$('#table-info').show();
-	//		$('.bulk-info').show();
 			$('.bulk-form').show();
 			$('.media-info').show();
 			$('h3').show();
@@ -369,19 +353,19 @@ jQuery(document).ready(function($) {
 		}
 	}	
 });
-	function ewwwRemoveImage(imageID) {
-		var image_removal = {
-			action: 'bulk_aux_images_remove',
-			_wpnonce: ewww_vars._wpnonce,
-			image_id: imageID,
-		};
-		jQuery.post(ajaxurl, image_removal, function(response) {
-			if(response == '1') {
-				jQuery('#image-' + imageID).remove();
-				ewww_vars.image_count--;
-				jQuery('.displaying-num').text(ewww_vars.image_count + ' total images');
-			} else {
-				alert("could not remove image from table.");
-			}
-		});
-	}
+function ewwwRemoveImage(imageID) {
+	var image_removal = {
+		action: 'bulk_aux_images_remove',
+		_wpnonce: ewww_vars._wpnonce,
+		image_id: imageID,
+	};
+	jQuery.post(ajaxurl, image_removal, function(response) {
+		if(response == '1') {
+			jQuery('#image-' + imageID).remove();
+			ewww_vars.image_count--;
+			jQuery('.displaying-num').text(ewww_vars.image_count + ' total images');
+		} else {
+			alert("could not remove image from table.");
+		}
+	});
+}

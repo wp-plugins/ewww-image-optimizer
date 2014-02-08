@@ -4,10 +4,8 @@ function ewww_image_optimizer_bulk_preview() {
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_bulk_preview()</b><br>";
 	// retrieve the attachment IDs that were pre-loaded in the database
-//	$attachments = get_option('ewww_image_optimizer_bulk_attachments');
 	list($fullsize_count, $unoptimized_count, $resize_count, $unoptimized_resize_count) = ewww_image_optimizer_count_optimized ('media');
 	$upload_import = get_option('ewww_image_optimizer_imported');
-//	$resize_count = 0
 ?>
 	<div class="wrap"> 
 	<div id="icon-upload" class="icon32"><br /></div><h2><?php _e('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></h2>
@@ -106,10 +104,6 @@ function ewww_image_optimizer_count_optimized ($gallery) {
 			// creating a database storage object from the 'registry' object
 			$storage  = $registry->get_utility('I_Gallery_Storage');
 			foreach ($attachments as $attachment) {
-				// need this file to work with metadata
-		//		require_once(WP_CONTENT_DIR . '/plugins/nextgen-gallery/products/photocrati_nextgen/modules/ngglegacy/lib/meta.php');
-				// get the metadata
-		//		$meta = new nggMeta($attachment);
 				// get an image object
 				$image = $storage->object->_image_mapper->find($attachment);
 				if (empty($image->meta_data['ewww_image_optimizer'])) {
@@ -132,8 +126,6 @@ function ewww_image_optimizer_count_optimized ($gallery) {
 			// retrieve the attachment IDs that were pre-loaded in the database
 			$attachments = get_option('ewww_image_optimizer_bulk_flag_attachments');
 			foreach ($attachments as $attachment) {
-				// need this file to work with metadata
-		//		require_once(WP_CONTENT_DIR . '/plugins/nextgen-gallery/products/photocrati_nextgen/modules/ngglegacy/lib/meta.php');
 				// get the metadata
 				$meta = new flagMeta($attachment);
 				if (empty($meta->image->meta_data['ewww_image_optimizer'])) {
@@ -172,7 +164,6 @@ function ewww_image_optimizer_bulk_script($hook) {
 	}
         // check to see if we are supposed to empty the auxiliary images table and verify we are authorized to do so
 	if (!empty($_REQUEST['empty']) && wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-aux-images' )) {
-//		global $wpdb;
 		// empty the ewwwio_images table to allow re-optimization
     		$wpdb->query( "TRUNCATE $wpdb->ewwwio_images" ); 
 		update_option('ewww_image_optimizer_aux_last', '');
@@ -294,7 +285,6 @@ function ewww_image_optimizer_bulk_filename() {
  
 // called by javascript to process each image in the loop
 function ewww_image_optimizer_bulk_loop() {
-//	global $wpdb;
 	global $ewww_debug;
 	// verify that an authorized user has started the optimizer
 	if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
@@ -312,41 +302,32 @@ function ewww_image_optimizer_bulk_loop() {
 	// get the 'bulk attachments' with a list of IDs remaining
 	$attachments = get_option('ewww_image_optimizer_bulk_attachments');
 	$meta = wp_get_attachment_metadata( $attachment, true );
-/*	if (!empty($meta['ewww_image_optimizer'])) {
-		$old_results = $meta['ewww_image_optimizer'];
-	} else {
-		$old_results = '';
-	}*/
 	// do the optimization for the current attachment (including resizes)
-		$meta = ewww_image_optimizer_resize_from_meta_data ($meta, $attachment, false);
-		/*if ( $meta['ewww_image_optimizer'] == $old_results ) {
-			printf( "<p>" . __('Already optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", esc_html($meta['file']) );
-		} else*/
-		if ( !empty ( $meta['file'] ) ) {
-			// output the filename (and path relative to 'uploads' folder)
-			printf( "<p>" . __('Optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", esc_html($meta['file']) );
-		} else {
-			printf("<p>" . __('Skipped image, ID:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", $attachment );
+	$meta = ewww_image_optimizer_resize_from_meta_data ($meta, $attachment, false);
+	if ( !empty ( $meta['file'] ) ) {
+		// output the filename (and path relative to 'uploads' folder)
+		printf( "<p>" . __('Optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", esc_html($meta['file']) );
+	} else {
+		printf("<p>" . __('Skipped image, ID:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", $attachment );
+	}
+	if(!empty($meta['ewww_image_optimizer'])) {
+		// tell the user what the results were for the original image
+		printf(__('Full size – %s', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "<br>", $meta['ewww_image_optimizer']);
+	}
+	// check to see if there are resized version of the image
+	if (isset($meta['sizes']) && is_array($meta['sizes'])) {
+		// cycle through each resize
+		foreach ($meta['sizes'] as $size) {
+			// output the results for the current resized version
+			printf("%s – %s<br>", $size['file'], $size['ewww_image_optimizer']);
 		}
-		if(!empty($meta['ewww_image_optimizer'])) {
-			// tell the user what the results were for the original image
-			printf(__('Full size – %s', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "<br>", $meta['ewww_image_optimizer']);
-		}
-		// check to see if there are resized version of the image
-		if (isset($meta['sizes']) && is_array($meta['sizes'])) {
-			// cycle through each resize
-			foreach ($meta['sizes'] as $size) {
-				// output the results for the current resized version
-				printf("%s – %s<br>", $size['file'], $size['ewww_image_optimizer']);
-			}
-		}
-		// calculate how much time has elapsed since we started
-		$elapsed = microtime(true) - $started;
-		// output how much time has elapsed since we started
-		printf(__('Elapsed: %.3f seconds', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</p>", $elapsed);
-		// update the metadata for the current attachment
-		wp_update_attachment_metadata( $attachment, $meta );
-//	}
+	}
+	// calculate how much time has elapsed since we started
+	$elapsed = microtime(true) - $started;
+	// output how much time has elapsed since we started
+	printf(__('Elapsed: %.3f seconds', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</p>", $elapsed);
+	// update the metadata for the current attachment
+	wp_update_attachment_metadata( $attachment, $meta );
 	// remove the first element from the $attachments array
 	if (!empty($attachments))
 		array_shift($attachments);

@@ -175,8 +175,6 @@ function ewww_image_optimizer_admin_init() {
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_enable_cloudinary');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_delay', 'intval');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_interval', 'intval');
-//	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_aux_last');
-//	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_imported');
 	// setup scheduled optimization if the user has enabled it, and it isn't already scheduled
 	if (ewww_image_optimizer_get_option('ewww_image_optimizer_auto') == TRUE && !wp_next_scheduled('ewww_image_optimizer_auto')) {
 		$ewww_debug .= "scheduling auto-optimization<br>";
@@ -211,8 +209,6 @@ function ewww_image_optimizer_admin_init() {
 	require_once(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'aux-optimize.php');
 	// queue the function that contains custom styling for our progressbars, but only in wp 3.8+
 	global $wp_version;
-//	$my_version = $wp_version;
-//	$my_version = substr($my_version, 0, 3);
 	if ( substr($wp_version, 0, 3) >= 3.8 ) { 
 		add_action('admin_enqueue_scripts', 'ewww_image_optimizer_progressbar_style');
 	}
@@ -981,8 +977,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 	if (!EWWW_IMAGE_OPTIMIZER_CLOUD) {
 		// check to see if 'nice' exists
 		$nice = ewww_image_optimizer_find_binary('nice', 'n');
-		// get the utility paths
-		//$tools = ewww_image_optimizer_path_check();
 	}
 	// if the user has disabled the utility checks
 	if (ewww_image_optimizer_get_option('ewww_image_optimizer_skip_check') == TRUE || EWWW_IMAGE_OPTIMIZER_CLOUD) {
@@ -1325,7 +1319,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 				$optimize = true;
 			}
 			// retrieve the filesize of the original image
-//			$orig_size = filesize($file);
 			// if conversion is on and the PNG doesn't have transparency or the user set a background color to replace transparency, or this is a resize and the full-size image was converted
 			if ($convert) {
 				$ewww_debug .= "attempting to convert PNG to JPG: $jpgfile <br>";
@@ -1575,8 +1568,14 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 				if (!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_pngout') && $tools['PNGOUT']) {
 					// retrieve the pngout optimization level
 					$pngout_level = ewww_image_optimizer_get_option('ewww_image_optimizer_pngout_level');
-					// run pngout on the file
-					exec( "$nice " . $tools['PNGOUT'] . " -s$pngout_level -q " . ewww_image_optimizer_escapeshellarg( $file ) . " " . ewww_image_optimizer_escapeshellarg( $pngfile ) );
+					// if $pngfile exists (which means optipng was run already)
+					if (file_exists($pngfile)) {
+						// run pngout on the PNG file
+						exec( "$nice " . $tools['PNGOUT'] . " -s$pngout_level -q " . ewww_image_optimizer_escapeshellarg( $pngfile ) );
+					} else {
+						// run pngout on the GIF file
+						exec( "$nice " . $tools['PNGOUT'] . " -s$pngout_level -q " . ewww_image_optimizer_escapeshellarg( $file ) . " " . ewww_image_optimizer_escapeshellarg( $pngfile ) );
+					}
 				}
 				// if a PNG file was created
 				if (file_exists($pngfile)) {
@@ -1647,31 +1646,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 		$results_msg = ewww_image_optimizer_update_table ($file, $new_size, $orig_size);
 		return array($file, $results_msg, $converted, $original);
 	}
-	// if the image is unchanged
-	/*if ($result == 'unchanged') {
-		// tell the user we couldn't save them anything
-		return array($file, __('No savings', EWWW_IMAGE_OPTIMIZER_DOMAIN), $converted, $original);
-	}
-	// if the image changed
-	if (strpos($result, ' vs. ') !== false) {
-		// strip and split $result where it says ' vs. '
-		$s = explode(' vs. ', $result);
-		// calculate how much space was saved
-		$savings = intval($s[0]) - intval($s[1]);
-		// convert it to human readable format
-		$savings_str = size_format($savings, 1);
-		// replace spaces and extra decimals with proper html entity encoding
-		$savings_str = preg_replace('/\.0 B /', ' B', $savings_str);
-		$savings_str = str_replace(' ', '&nbsp;', $savings_str);
-		// determine the percentage savings
-		$percent = 100 - (100 * ($s[1] / $s[0]));
-		// use the percentage and the savings size to output a nice message to the user
-		$results_msg = sprintf(__("Reduced by %01.1f%% (%s)", EWWW_IMAGE_OPTIMIZER_DOMAIN),
-			$percent,
-			$savings_str);
-		// send back the filename, the results, and the $converted flag
-		return array($file, $results_msg, $converted, $original);
-	}*/
 	// otherwise, send back the filename, the results (some sort of error message), the $converted flag, and the name of the original image
 	return array($file, $result, $converted, $original);
 }
@@ -1804,11 +1778,8 @@ function ewww_image_optimizer_options () {
 			if (!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_jpegtran') && !ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_jpg')  && !EWWW_IMAGE_OPTIMIZER_NOEXEC) {
 				echo "\n", '<b>jpegtran: </b>';
 				$jpegtran_installed = ewww_image_optimizer_tool_found(EWWW_IMAGE_OPTIMIZER_JPEGTRAN, 'j');
-				//if (!empty($jpegtran_installed) && preg_match('/version 8|9/', $jpegtran_installed)) {
 				if (!empty($jpegtran_installed)) {
 					echo '<span style="color: green; font-weight: bolder">OK</span>&emsp;version: ' . $jpegtran_installed . '<br />'; 
-//				} elseif (!empty($jpegtran_installed)) {
-//					echo '<span style="color: orange; font-weight: bolder">UPDATE AVAILABLE</span>*&emsp;<b>Copy</b> executable from ' . $jpegtran_src . ' to ' . $jpegtran_dst . ' or to a system path (like /usr/local/bin), OR <a href="http://www.ijg.org/"><b>Download</b> jpegtran source</a>&emsp;<b>version:</b> ' . $jpegtran_installed . '<br />';
 				} else { 
 					echo '<span style="color: red; font-weight: bolder">MISSING</span><br />';
 				}
@@ -1817,10 +1788,7 @@ function ewww_image_optimizer_options () {
 				echo "\n", '<b>optipng:</b> '; 
 				$optipng_version = ewww_image_optimizer_tool_found(EWWW_IMAGE_OPTIMIZER_OPTIPNG, 'o');
 				if (!empty($optipng_version)) { 
-				//if (!empty($optipng_version) && preg_match('/0.7.4/', $optipng_version)) { 
 					echo '<span style="color: green; font-weight: bolder">OK</span>&emsp;version: ' . $optipng_version . '<br />'; 
-//				} elseif (!empty($optipng_version)) {
-//					echo '<span style="color: orange; font-weight: bolder">UPDATE AVAILABLE</span>*&emsp;<b>Copy</b> binary from ' . $optipng_src . ' to ' . $optipng_dst . ' or to a system path (like /usr/local/bin), OR <a href="http://prdownloads.sourceforge.net/optipng/optipng-0.7.4.tar.gz?download"><b>Download</b> optipng source</a>&emsp;<b>version:</b> ' . $optipng_version . '<br />';
 				} else {
 					echo '<span style="color: red; font-weight: bolder">MISSING</span><br />';
 				}
@@ -1828,11 +1796,8 @@ function ewww_image_optimizer_options () {
 			if (!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_gifsicle') && !ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_gif') && !EWWW_IMAGE_OPTIMIZER_NOEXEC) {
 				echo "\n", '<b>gifsicle:</b> ';
 				$gifsicle_version = ewww_image_optimizer_tool_found(EWWW_IMAGE_OPTIMIZER_GIFSICLE, 'g');
-				//if (!empty($gifsicle_version) && preg_match('/1.7(0|1)/', $gifsicle_version)) { 
 				if (!empty($gifsicle_version) && preg_match('/LCDF Gifsicle/', $gifsicle_version)) { 
 					echo '<span style="color: green; font-weight: bolder">OK</span>&emsp;version: ' . $gifsicle_version . '<br />'; 
-//				} elseif (!empty($gifsicle_version) && preg_match('/LCDF Gifsicle/', $gifsicle_version)) {
-//						echo '<span style="color: orange; font-weight: bolder">UPDATE AVAILABLE</span>*&emsp;<b>Copy</b> binary from ' . $gifsicle_src . ' to ' . $gifsicle_dst . ' or to a system path (like /usr/local/bin), OR <a href="http://www.lcdf.org/gifsicle/gifsicle-1.70.tar.gz"><b>Download</b> gifsicle source</a>&emsp;<b>version:</b> ' . $gifsicle_version . '<br />';
 				} else {
 					echo '<span style="color: red; font-weight: bolder">MISSING</span><br />';
 				}
@@ -1841,10 +1806,7 @@ function ewww_image_optimizer_options () {
 				echo "\n", '<b>pngout:</b> '; 
 				$pngout_version = ewww_image_optimizer_tool_found(EWWW_IMAGE_OPTIMIZER_PNGOUT, 'p');
 				if (!empty($pngout_version) && (preg_match('/PNGOUT/', $pngout_version))) { 
-				//if (!empty($pngout_version) && (preg_match('/Feb 2(0|1) 2013/', $pngout_version))) { 
 					echo '<span style="color: green; font-weight: bolder">OK</span>&emsp;version: ' . preg_replace('/PNGOUT \[.*\)\s*?/', '', $pngout_version) . '<br />'; 
-//				} elseif (!empty($pngout_version) && preg_match('/PNGOUT/', $pngout_version)) {
-//					echo '<span style="color: orange; font-weight: bolder">UPDATE AVAILABLE</span>*&emsp;<b>Install</b> <a href="admin.php?action=ewww_image_optimizer_install_pngout">automatically</a> | <a href="http://advsys.net/ken/utils.htm">manually</a>&emsp;<b>version:</b> ' . preg_replace('/PNGOUT \[.*\)\s*?/', '', $pngout_version) . '<br />'; 
 				} else {
 					echo '<span style="color: red; font-weight: bolder">MISSING</span>&emsp;<b>' . __('Install', EWWW_IMAGE_OPTIMIZER_DOMAIN) . ' <a href="admin.php?action=ewww_image_optimizer_install_pngout">' . __('automatically', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</a> | <a href="http://advsys.net/ken/utils.htm">' . __('manually', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</a></b> - ' . __('Pngout is free closed-source software that can produce drastically reduced filesizes for PNGs, but can be very time consuming to process images', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '<br />'; 
 				}
