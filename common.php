@@ -622,6 +622,7 @@ function ewww_image_optimizer_delete ($id) {
 			}
 		}
 	}
+	// TODO: remove records from ewwwio table
 	return;
 }
 
@@ -639,7 +640,7 @@ function ewww_image_optimizer_cloud_verify() {
 		update_option('ewww_image_optimizer_cloud_gif', '');
 		return false;
 	}
-	$servers = gethostbynamel('optimize.exactlywww.com');
+	$servers = gethostbynamel('optimize3.exactlywww.com');
 	foreach ($servers as $ip) {
 		$url = "http://$ip/";
 		$result = wp_remote_post($url, array(

@@ -1010,7 +1010,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 		// strip the file extension
 		$filename = str_replace($fileext[0], '', $file);
 		// grab the dimensions
-		preg_match('/-\d+x\d+$/', $filename, $fileresize);
+		preg_match('/-\d+x\d+(-\d+)*$/', $filename, $fileresize);
 		// strip the dimensions
 		$filename = str_replace($fileresize[0], '', $filename);
 		// reconstruct the filename with the same increment (stored in $converted) as the full version
@@ -1033,8 +1033,9 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 	$convert = true;
 	// run the appropriate optimization/conversion for the mime-type
 	switch($type) {
-		// TODO: do conversion after optimization, so that empty alpha channels are stripped before attempting PNG to JPG
+		// TODO: do conversion after optimization, so that empty alpha channels are stripped before attempting PNG to JPG, and it seems to save some logic work
 		case 'image/jpeg':
+			$png_size = 0;
 			// if jpg2png conversion is enabled, and this image is in the wordpress media library
 			if ((ewww_image_optimizer_get_option('ewww_image_optimizer_jpg_to_png') && $gallery_type == 1) || !empty($_GET['convert'])) {
 				// generate the filename for a PNG
@@ -1241,7 +1242,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 			break;
 		case 'image/png':
 			// png2jpg conversion is turned on, and the image is in the wordpress media library
-			if (((ewww_image_optimizer_get_option('ewww_image_optimizer_png_to_jpg') && $gallery_type == 1) || !empty($_GET['convert'])) && (!ewww_image_optimizer_png_alpha($file) || ewww_image_optimizer_jpg_background())) {
+			if ((ewww_image_optimizer_get_option('ewww_image_optimizer_png_to_jpg') && $gallery_type == 1) || !empty($_GET['convert'])) {
 				$ewww_debug .= "PNG to JPG conversion turned on<br>";
 				// if the user set a fill background for transparency
 				$background = '';
@@ -1253,9 +1254,9 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 					// set the background flag for 'convert'
 					$background = "-background " . '"' . "#$background" . '"';
 				} else {
-					$r = '255';
-					$g = '255';
-					$b = '255';
+					$r = '';
+					$g = '';
+					$b = '';
 				}
 				// if the user manually set the JPG quality
 				if ($quality = ewww_image_optimizer_jpg_quality()) {
@@ -1318,9 +1319,75 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 				// turn optimization on if we made it through all the checks
 				$optimize = true;
 			}
-			// retrieve the filesize of the original image
-			// if conversion is on and the PNG doesn't have transparency or the user set a background color to replace transparency, or this is a resize and the full-size image was converted
-			if ($convert) {
+			// if optimization is turned on
+			if ($optimize) {
+				// if optipng is enabled
+				if(!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_optipng')) {
+					// retrieve the optimization level for optipng
+					$optipng_level = ewww_image_optimizer_get_option('ewww_image_optimizer_optipng_level');
+					if (ewww_image_optimizer_get_option('ewww_image_optimizer_jpegtran_copy') && preg_match('/0.7/', ewww_image_optimizer_tool_found($tools['OPTIPNG'], 'o'))) {
+						$strip = '-strip all ';
+					} else {
+						$strip = '';
+					}
+// don't forget to escape the filenames when we implement this down the road!
+/*					exec("$nice pngquant --quality=60-100 -s1 $file");
+					$quantfile = preg_replace('/\.\w+$/', '-fs8.png', $file);
+					if (filesize($file) > filesize($quantfile)) {
+						rename($quantfile, $file);
+					} else {
+						unlink($quantfile);
+					}*/
+					// run optipng on the PNG file
+					exec( "$nice " . $tools['OPTIPNG'] . " -o$optipng_level -quiet $strip " . ewww_image_optimizer_escapeshellarg( $file ) );
+					//exec("$nice advpng -z -4 -i 1 $file");
+				}
+				// if pngout is enabled
+				if(!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_pngout')) {
+					// retrieve the optimization level for pngout
+					$pngout_level = ewww_image_optimizer_get_option('ewww_image_optimizer_pngout_level');
+					// run pngout on the PNG file
+					exec( "$nice " . $tools['PNGOUT'] . " -s$pngout_level -q " . ewww_image_optimizer_escapeshellarg( $file ) );
+				}
+			// if conversion and optimization are both disabled we are done here
+			} elseif (!$convert) {
+				$ewww_debug .= "not going to process as we can neither convert or optimize<br>";
+				break;
+			}
+			// flush the cache for filesize
+			clearstatcache();
+			// retrieve the new filesize of the PNG
+			$new_size = filesize($file);
+			// if the converted JPG was smaller than the original, and smaller than the optimized PNG, and the JPG isn't an empty file
+			/*if ($converted && $new_size > $jpg_size && $jpg_size != 0) {
+				// store the size of the JPG as the new filesize
+				$new_size = $jpg_size;
+				// if the user wants originals delted after a conversion
+				if (ewww_image_optimizer_get_option('ewww_image_optimizer_delete_originals') == TRUE) {
+					// delete the original PNG
+					unlink($file);
+				}
+				// update the $file location to the new JPG
+				$file = $jpgfile;
+			// if the converted JPG was smaller than the original, but larger than the optimized PNG
+			} elseif ($converted) {
+				// unsuccessful conversion
+				$converted = FALSE;
+				if (is_file($jpgfile)) {
+					// delete the resulting JPG
+					unlink($jpgfile);
+				}
+			}*/
+			// if the new file (converted OR optimized) is smaller than the original
+/*			if ($orig_size > $new_size) {
+				// return a message comparing the two
+				$result = "$orig_size vs. $new_size";    
+			} else {
+				// otherwise nothing has changed
+				$result = "unchanged";
+			}*/
+			// if conversion is on and the PNG doesn't have transparency or the user set a background color to replace transparency
+			if ($convert && (!ewww_image_optimizer_png_alpha($file) || ewww_image_optimizer_jpg_background())) {
 				$ewww_debug .= "attempting to convert PNG to JPG: $jpgfile <br>";
 				// retrieve version info for ImageMagick
 				$convert_path = ewww_image_optimizer_find_binary('convert', 'i');
@@ -1337,6 +1404,11 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 					list($width, $height) = getimagesize($file);
 					// create a new image with those dimensions
 					$output = imagecreatetruecolor($width, $height);
+					if ($r === '') {
+						$r = 255;
+						$g = 255;
+						$b = 255;
+					}
 					// allocate the background color
 					$rgb = imagecolorallocate($output, $r, $g, $b);
 					// fill the new image with the background color 
@@ -1417,8 +1489,17 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 				} 
 				$ewww_debug .= "converted JPG size: $jpg_size<br>";
 				// if the new JPG is smaller than the original PNG
-				if ($orig_size > $jpg_size && $jpg_size != 0) {
-					// successful conversion (for now), so we store the increment
+				if ($new_size > $jpg_size && $jpg_size != 0) {
+					// store the size of the JPG as the new filesize
+					$new_size = $jpg_size;
+					// if the user wants originals delted after a conversion
+					if (ewww_image_optimizer_get_option('ewww_image_optimizer_delete_originals') == TRUE) {
+						// delete the original PNG
+						unlink($file);
+					}
+					// update the $file location to the new JPG
+					$file = $jpgfile;
+					// successful conversion, so we store the increment
 					$converted = $filenum;
 				} else {
 					$converted = FALSE;
@@ -1427,74 +1508,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 						unlink ($jpgfile);
 					}
 				}
-			// if conversion and optimization are both disabled we are done here
-			} elseif (!$optimize) {
-				$ewww_debug .= "not going to process as we can neither convert or optimize<br>";
-				break;
-			}
-			// if optimization is turned on
-			if ($optimize) {
-				// if optipng is enabled
-				if(!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_optipng')) {
-					// retrieve the optimization level for optipng
-					$optipng_level = ewww_image_optimizer_get_option('ewww_image_optimizer_optipng_level');
-					if (ewww_image_optimizer_get_option('ewww_image_optimizer_jpegtran_copy') && preg_match('/0.7/', ewww_image_optimizer_tool_found($tools['OPTIPNG'], 'o'))) {
-						$strip = '-strip all ';
-					} else {
-						$strip = '';
-					}
-// don't forget to escape the filenames when we implement this down the road!
-/*					exec("$nice pngquant --quality=60-100 -s1 $file");
-					$quantfile = preg_replace('/\.\w+$/', '-fs8.png', $file);
-					if (filesize($file) > filesize($quantfile)) {
-						rename($quantfile, $file);
-					} else {
-						unlink($quantfile);
-					}*/
-					// run optipng on the PNG file
-					exec( "$nice " . $tools['OPTIPNG'] . " -o$optipng_level -quiet $strip " . ewww_image_optimizer_escapeshellarg( $file ) );
-					//exec("$nice advpng -z -4 -i 1 $file");
-				}
-				// if pngout is enabled
-				if(!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_pngout')) {
-					// retrieve the optimization level for pngout
-					$pngout_level = ewww_image_optimizer_get_option('ewww_image_optimizer_pngout_level');
-					// run pngout on the PNG file
-					exec( "$nice " . $tools['PNGOUT'] . " -s$pngout_level -q " . ewww_image_optimizer_escapeshellarg( $file ) );
-				}
-				//}
-			}
-			// flush the cache for filesize
-			clearstatcache();
-			// retrieve the new filesize of the PNG
-			$new_size = filesize($file);
-			// if the converted JPG was smaller than the original, and smaller than the optimized PNG, and the JPG isn't an empty file
-			if ($converted && $new_size > $jpg_size && $jpg_size != 0) {
-				// store the size of the JPG as the new filesize
-				$new_size = $jpg_size;
-				// if the user wants originals delted after a conversion
-				if (ewww_image_optimizer_get_option('ewww_image_optimizer_delete_originals') == TRUE) {
-					// delete the original PNG
-					unlink($file);
-				}
-				// update the $file location to the new JPG
-				$file = $jpgfile;
-			// if the converted JPG was smaller than the original, but larger than the optimized PNG
-			} elseif ($converted) {
-				// unsuccessful conversion
-				$converted = FALSE;
-				if (is_file($jpgfile)) {
-					// delete the resulting JPG
-					unlink($jpgfile);
-				}
-			}
-			// if the new file (converted OR optimized) is smaller than the original
-			if ($orig_size > $new_size) {
-				// return a message comparing the two
-				$result = "$orig_size vs. $new_size";    
-			} else {
-				// otherwise nothing has changed
-				$result = "unchanged";
 			}
 			break;
 		case 'image/gif':
