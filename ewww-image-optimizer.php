@@ -1033,7 +1033,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 	$convert = true;
 	// run the appropriate optimization/conversion for the mime-type
 	switch($type) {
-		// TODO: do conversion after optimization, so that empty alpha channels are stripped before attempting PNG to JPG, and it seems to save some logic work
 		case 'image/jpeg':
 			$png_size = 0;
 			// if jpg2png conversion is enabled, and this image is in the wordpress media library
