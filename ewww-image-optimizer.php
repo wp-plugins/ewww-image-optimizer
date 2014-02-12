@@ -1082,68 +1082,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 				// set the optimization process to ON
 				$optimize = true;
 			}
-			// if the conversion process is turned ON, or if this is a resize and the full-size was converted
-			if ($convert && !ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_jpg')) {
-				$ewww_debug .= "attempting to convert JPG to PNG: $pngfile <br>";
-				// retrieve version info for ImageMagick
-				$convert_path = ewww_image_optimizer_find_binary('convert', 'i');
-				// convert the JPG to PNG
-				if (!empty($convert_path)) {
-					$ewww_debug .= "converting with ImageMagick<br>";
-					exec( $convert_path . " " . ewww_image_optimizer_escapeshellarg( $file ) . " -strip " . ewww_image_optimizer_escapeshellarg( $pngfile ) );
-				} elseif (ewww_image_optimizer_gd_support()) {
-					$ewww_debug .= "converting with GD<br>";
-					imagepng(imagecreatefromjpeg($file), $pngfile);
-				}
-				// if optipng isn't disabled
-				if (!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_optipng')) {
-					// retrieve the optipng optimization level
-					$optipng_level = ewww_image_optimizer_get_option('ewww_image_optimizer_optipng_level');
-					if (ewww_image_optimizer_get_option('ewww_image_optimizer_jpegtran_copy') && preg_match('/0.7/', ewww_image_optimizer_tool_found($tools['OPTIPNG'], 'o'))) {
-						$strip = '-strip all ';
-					} else {
-						$strip = '';
-					}
-					// if the PNG file was created
-					if (file_exists($pngfile)) {
-						$ewww_debug .= "optimizing converted PNG with optipng<br>";
-						// run optipng on the new PNG
-						exec( "$nice " . $tools['OPTIPNG'] . " -o$optipng_level -quiet $strip " . ewww_image_optimizer_escapeshellarg( $pngfile ) );
-					}
-				}
-				// if pngout isn't disabled
-				if (!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_pngout')) {
-					// retrieve the pngout optimization level
-					$pngout_level = ewww_image_optimizer_get_option('ewww_image_optimizer_pngout_level');
-					// if the PNG file was created
-					if (file_exists($pngfile)) {
-						$ewww_debug .= "optimizing converted PNG with pngout<br>";
-						// run pngout on the new PNG
-						exec( "$nice " . $tools['PNGOUT'] . " -s$pngout_level -q " . ewww_image_optimizer_escapeshellarg( $pngfile ) );
-					}
-				}
-				if (is_file($pngfile)) {
-					// find out the size of the new PNG file
-					$png_size = filesize($pngfile);
-				} else {
-					$png_size = 0;
-				}
-				$ewww_debug .= "converted PNG size: $png_size<br>";
-				// if the PNG is smaller than the original JPG, and we didn't end up with an empty file
-				if ($orig_size > $png_size && $png_size != 0) {
-					// successful conversion (for now), and we store the increment
-					$converted = $filenum;
-				} else {
-					// otherwise delete the PNG
-					$converted = FALSE;
-					if (is_file($pngfile)) {
-						unlink ($pngfile);
-					}
-				}
-			// if conversion and optimization are both turned OFF, finish the JPG processing
-			} elseif (!$optimize) {
-				break;
-			}
 			// if optimization is turned ON
 			if ($optimize && !ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_jpg')) {
 				$ewww_debug .= "attempting to optimize JPG...<br>";
@@ -1216,28 +1154,90 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 					$result = 'unchanged';
 					$new_size = $orig_size;
 				}
+			// if conversion and optimization are both turned OFF, finish the JPG processing
+			} elseif (!$convert) {
+				break;
 			}
 			// if we generated a smaller PNG than the optimized JPG
-			if ($converted && $new_size > $png_size) {
-				$ewww_debug .= "converted PNG is better: $png_size vs. $new_size<br>";
-				// store the size of the converted PNG
-				$new_size = $png_size;
-				// check to see if the user wants the originals deleted
-				if (ewww_image_optimizer_get_option('ewww_image_optimizer_delete_originals') == TRUE) {
-					// delete the original JPG
-					unlink($file);
-				}
-				// store the location of the PNG file
-				$file = $pngfile;
+/*			if ($converted && $new_size > $png_size) {
 				// store the result of the conversion
 				$result = "$orig_size vs. $new_size";
 			// if the PNG was smaller than the original JPG, but bigger than the optimized JPG
 			} elseif ($converted) {
-				$ewww_debug .= "converted PNG is no good<br>";
 				// unsuccessful conversion
 				$converted = FALSE;
 				// remove the converted PNG
 				unlink($pngfile);
+			}*/
+			// if the conversion process is turned ON, or if this is a resize and the full-size was converted
+			if ($convert && !ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_jpg')) {
+				$ewww_debug .= "attempting to convert JPG to PNG: $pngfile <br>";
+				// retrieve version info for ImageMagick
+				$convert_path = ewww_image_optimizer_find_binary('convert', 'i');
+				// convert the JPG to PNG
+				if (!empty($convert_path)) {
+					$ewww_debug .= "converting with ImageMagick<br>";
+					exec( $convert_path . " " . ewww_image_optimizer_escapeshellarg( $file ) . " -strip " . ewww_image_optimizer_escapeshellarg( $pngfile ) );
+				} elseif (ewww_image_optimizer_gd_support()) {
+					$ewww_debug .= "converting with GD<br>";
+					imagepng(imagecreatefromjpeg($file), $pngfile);
+				}
+				// if optipng isn't disabled
+				if (!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_optipng')) {
+					// retrieve the optipng optimization level
+					$optipng_level = ewww_image_optimizer_get_option('ewww_image_optimizer_optipng_level');
+					if (ewww_image_optimizer_get_option('ewww_image_optimizer_jpegtran_copy') && preg_match('/0.7/', ewww_image_optimizer_tool_found($tools['OPTIPNG'], 'o'))) {
+						$strip = '-strip all ';
+					} else {
+						$strip = '';
+					}
+					// if the PNG file was created
+					if (file_exists($pngfile)) {
+						$ewww_debug .= "optimizing converted PNG with optipng<br>";
+						// run optipng on the new PNG
+						exec( "$nice " . $tools['OPTIPNG'] . " -o$optipng_level -quiet $strip " . ewww_image_optimizer_escapeshellarg( $pngfile ) );
+					}
+				}
+				// if pngout isn't disabled
+				if (!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_pngout')) {
+					// retrieve the pngout optimization level
+					$pngout_level = ewww_image_optimizer_get_option('ewww_image_optimizer_pngout_level');
+					// if the PNG file was created
+					if (file_exists($pngfile)) {
+						$ewww_debug .= "optimizing converted PNG with pngout<br>";
+						// run pngout on the new PNG
+						exec( "$nice " . $tools['PNGOUT'] . " -s$pngout_level -q " . ewww_image_optimizer_escapeshellarg( $pngfile ) );
+					}
+				}
+				if (is_file($pngfile)) {
+					// find out the size of the new PNG file
+					$png_size = filesize($pngfile);
+				} else {
+					$png_size = 0;
+				}
+				$ewww_debug .= "converted PNG size: $png_size<br>";
+				// if the PNG is smaller than the original JPG, and we didn't end up with an empty file
+				if ($new_size > $png_size && $png_size != 0) {
+					$ewww_debug .= "converted PNG is better: $png_size vs. $new_size<br>";
+					// store the size of the converted PNG
+					$new_size = $png_size;
+					// check to see if the user wants the originals deleted
+					if (ewww_image_optimizer_get_option('ewww_image_optimizer_delete_originals') == TRUE) {
+						// delete the original JPG
+						unlink($file);
+					}
+					// store the location of the PNG file
+					$file = $pngfile;
+					// successful conversion and we store the increment
+					$converted = $filenum;
+				} else {
+					$ewww_debug .= "converted PNG is no good<br>";
+					// otherwise delete the PNG
+					$converted = FALSE;
+					if (is_file($pngfile)) {
+						unlink ($pngfile);
+					}
+				}
 			}
 			break;
 		case 'image/png':
@@ -1512,7 +1512,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 			break;
 		case 'image/gif':
 			// if gif2png is turned on, and the image is in the wordpress media library
-			if (((ewww_image_optimizer_get_option('ewww_image_optimizer_gif_to_png') && $gallery_type == 1) || !empty($_GET['convert'])) && !ewww_image_optimizer_is_animated($file)) {
+			if ((ewww_image_optimizer_get_option('ewww_image_optimizer_gif_to_png') && $gallery_type == 1) || !empty($_GET['convert'])) {
 				// generate the filename for a PNG
 				// if this is a resize version
 				if ($converted) {
@@ -1556,8 +1556,48 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 				// otherwise, turn optimization ON
 				$optimize = true;
 			}
-			// if conversion is ON, the GIF isn't animated, or this is a resize and the full-size image was converted
-			if ($convert) {
+			// if optimization is turned ON
+			if ($optimize) {
+				// run gifsicle on the GIF
+				exec( "$nice " . $tools['GIFSICLE'] . " -b -O3 --careful " . ewww_image_optimizer_escapeshellarg( $file ) );
+			// if conversion and optimization are both turned OFF, we are done here
+			} elseif (!$convert) {
+				break;
+			}
+			// flush the cache for filesize
+			clearstatcache();
+			// get the new filesize for the GIF
+			$new_size = filesize($file);
+			// if the PNG was smaller than the original GIF, and smaller than the optimized GIF
+/*			if ($converted && $new_size > $png_size && $png_size != 0) {
+				// store the PNG size as the new filesize
+				$new_size = $png_size;
+				// if the user wants original GIFs deleted after successful conversion
+				if (ewww_image_optimizer_get_option('ewww_image_optimizer_delete_originals') == TRUE) {
+					// delete the original GIF
+					unlink($file);
+				}
+				// update the $file location with the new PNG
+				$file = $pngfile;
+			// if the PNG was smaller than the original GIF, but bigger than the optimized GIF
+			} elseif ($converted) {
+				// unsuccessful conversion
+				$converted = FALSE;
+				if (is_file($pngfile)) {
+					// delete the resulting PNG
+					unlink($pngfile);
+				}
+			}*/
+/*			// if the new file (converted or optimized) is smaller than the original
+			if ($orig_size > $new_size) {
+				// send back a message with the results
+				$result = "$orig_size vs. $new_size";
+			} else {
+				// otherwise, nothing has changed
+				$result = "unchanged";
+			}*/
+			// if conversion is ON and the GIF isn't animated
+			if ($convert && !ewww_image_optimizer_is_animated($file)) {
 				// if optipng is enabled
 				if (!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_optipng') && $tools['OPTIPNG']) {
 					// retrieve the optipng optimization level
@@ -1588,7 +1628,16 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 					// retrieve the filesize of the PNG
 					$png_size = filesize($pngfile);
 					// if the new PNG is smaller than the original GIF
-					if ($orig_size > $png_size && $png_size != 0) {
+					if ($new_size > $png_size && $png_size != 0) {
+						// store the PNG size as the new filesize
+						$new_size = $png_size;
+						// if the user wants original GIFs deleted after successful conversion
+						if (ewww_image_optimizer_get_option('ewww_image_optimizer_delete_originals') == TRUE) {
+							// delete the original GIF
+							unlink($file);
+						}
+						// update the $file location with the new PNG
+						$file = $pngfile;
 						// successful conversion (for now), so we store the increment
 						$converted = $filenum;
 					} else {
@@ -1598,46 +1647,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 						}
 					}
 				}
-			// if conversion and optimization are both turned OFF, we are done here
-			} elseif (!$optimize) {
-				break;
-			}
-			// if optimization is turned ON
-			if ($optimize) {
-				// run gifsicle on the GIF
-				exec( "$nice " . $tools['GIFSICLE'] . " -b -O3 --careful " . ewww_image_optimizer_escapeshellarg( $file ) );
-			}
-			// flush the cache for filesize
-			clearstatcache();
-			// get the new filesize for the GIF
-			$new_size = filesize($file);
-			// if the PNG was smaller than the original GIF, and smaller than the optimized GIF
-			if ($converted && $new_size > $png_size && $png_size != 0) {
-				// store the PNG size as the new filesize
-				$new_size = $png_size;
-				// if the user wants original GIFs deleted after successful conversion
-				if (ewww_image_optimizer_get_option('ewww_image_optimizer_delete_originals') == TRUE) {
-					// delete the original GIF
-					unlink($file);
-				}
-				// update the $file location with the new PNG
-				$file = $pngfile;
-			// if the PNG was smaller than the original GIF, but bigger than the optimized GIF
-			} elseif ($converted) {
-				// unsuccessful conversion
-				$converted = FALSE;
-				if (is_file($pngfile)) {
-					// delete the resulting PNG
-					unlink($pngfile);
-				}
-			}
-			// if the new file (converted or optimized) is smaller than the original
-			if ($orig_size > $new_size) {
-				// send back a message with the results
-				$result = "$orig_size vs. $new_size";
-			} else {
-				// otherwise, nothing has changed
-				$result = "unchanged";
 			}
 			break;
 		default:
@@ -1649,7 +1658,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 		return array($file, __('License exceeded', EWWW_IMAGE_OPTIMIZER_DOMAIN), $converted, $original);
 	}
 	if (!empty($new_size)) {
-		$results_msg = ewww_image_optimizer_update_table ($file, $new_size, $orig_size);
+		$results_msg = ewww_image_optimizer_update_table ($file, $new_size, $orig_size, $new);
 		return array($file, $results_msg, $converted, $original);
 	}
 	// otherwise, send back the filename, the results (some sort of error message), the $converted flag, and the name of the original image

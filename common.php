@@ -844,14 +844,17 @@ function ewww_image_optimizer_check_table ($file, $orig_size) {
 }
 
 // receives a path, results, optimized size, and an original size to insert into ewwwwio_images table
-function ewww_image_optimizer_update_table ($attachment, $opt_size, $orig_size) {
+// if this is a $new image, copy the result stored in the database
+function ewww_image_optimizer_update_table ($attachment, $opt_size, $orig_size, $preserve_results = false) {
 	global $wpdb;
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_update_table()</b><br>";
-	$query = $wpdb->prepare("SELECT id,orig_size FROM $wpdb->ewwwio_images WHERE BINARY path = %s", $attachment);
+	$query = $wpdb->prepare("SELECT id,orig_size,results FROM $wpdb->ewwwio_images WHERE BINARY path = %s", $attachment);
 	$already_optimized = $wpdb->get_row($query, ARRAY_A);
 	$ewww_debug .= "savings: $opt_size (new) vs. $orig_size (orig)<br>";
-	if ($opt_size == $orig_size) {
+	if (!empty($already_optimized['results']) && $preserve_results && $opt_size === $orig_size) {
+		$results_msg = $already_optimized['results'];
+	} elseif ($opt_size === $orig_size) {
 		$ewww_debug .= "original and new file are same size, no savings<br>";
 		$results_msg = __('No savings', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 	} else {
