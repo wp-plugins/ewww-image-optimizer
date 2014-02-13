@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: images, image, attachments, attachment, optimize, optimization, nextgen, buddypress, flagallery, flash-gallery, lossless, photos, photo, picture, pictures, seo, compression, image-store, imstore, slider, image editor, gmagick, wp-symposium, meta-slider, metaslider
 Requires at least: 3.5
 Tested up to: 3.8
-Stable tag: 1.7.5
+Stable tag: 1.8.0
 License: GPLv3
 
 Reduce file sizes for images within WordPress including NextGEN, GRAND FlAGallery and more. Uses jpegtran, optipng, pngout, and gifsicle.
@@ -48,13 +48,23 @@ NOTE: Does not optimize thumbnails on initial upload for legacy (1.9.x) versions
 
 Features optimization on upload capability, re-optimization, and bulk optimizing. The Bulk Optimize function is located near the bottom of the FlAGallery menu, and will optimize all images in all galleries. It is also possible to optimize groups of images in a gallery, or multiple galleries at once.
 
-= BuddyPress =
-
-Located under Media, the BuddyPress Optimizer allows the user to optimize all avatars (group and individual). Stores a history of optimized images, so that you can optimize new images without re-optimizing old images.
-
 = Image Store =
 
 Uploads are automatically optimized. Look for Optimize under the Image Store (Galleries) menu to see status of optimization and for re-optimization and bulk-optimization options. Using the Bulk Optimization tool under Media Library automatically includes all Image Store uploads.
+
+= Translations =
+
+Translators: 
+Romanian translation by MediasInfo.ro.
+Spanish translation by Andrew Kurtis of WebHostingHub.
+Dutch translation by Ludo Rubben.
+
+1. Please post in the support forums announcing your intent to translate the plugin into a particular language. 
+1. Download ewww-image-optimizer.pot from the plugin /languages/ folder.
+1. Fill in the msgstr for each msgid and complete the header information as best as you can (recommended to use PoEdit).
+1. Save it as a .po file.
+1. Submit it via the form at http://www.shanebishop.net/contact-me/
+
 
 == Installation ==
 
@@ -165,9 +175,31 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 = future =
 * these are possible future bugfixes and/or feature requests, if you see a feature you like here, go vote for it in the support forum
-* throttling: ability to specify number of images to optimize in a batch via bulk optimize, and seconds between batches
-* FlaGallery optimize on upload does not work with plupload (only the browser-based method works properly). This will be implemented in a future release.
-* huge thanks to those who have done localization/translation for Dutch, Romanian, and Spanish. See http://wordpress.org/plugins/ewww-image-optimizer/other_notes/ for more information. If you would like to help translate this plugin in your language, post a thread on the support forums.
+* show statistics: display cumulative savings and computation time in status section
+* webp support
+* jpegmini server integration (for resizes only)
+* pngquant (for resizes only)
+* huge thanks to those who have done localization/translation for Dutch, Romanian, and Spanish. If you would like to help translate this plugin in your language, post a thread on the support forums.
+
+= 1.8.0 =
+* fixed: debug output not working properly on bulk optimize
+* changed: when cloud license has been exceeded, the optimizer will not attempt to upload images, and bulk operations will stop immediately
+* fixed: unnecessary decimals will not be displayed for file-sizes in bytes
+* added: button to stop bulk optimization process
+* fixed: rewrote escapeshellarg() to avoid stripping accented characters from filenames
+* fixed: problems with apostrophes in filenames
+* changed: Optimize More and Bulk Optimize are now on the same page
+* changed: After running Optimize More, you can Show Optimized Images and Empty Table without refreshing the page.
+* fixed: blank page when resetting bulk status in flagallery
+* change: already optimized images in Media Library will not be re-optimized by default via bulk tool
+* fixed: FlaGallery version 4.0, optimize on upload now works with plupload
+* fixed: proper validation that an image has been removed from the auxilliary images table
+* move more code into admin_init to improve page load on front-end
+* added: ability to specify number of seconds between images (throttling)
+* added: nextgen and grand flagallery thumb optimization is now stored in database
+* change: significant speed improvement, optimizer only checks for the tools it needs for the current image
+* fixed: urls for converted resizes were not being updated in posts
+* fixed: attempt to convert PNGs with empty alpha channels after optimization on first pass, instead of on re-optimization
 
 = 1.7.6 =
 * fixed: color of progressbar for 4 more admin themes in WP 3.8
@@ -176,6 +208,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * fixed: Optimize More was using case-insensitive queries for matching paths
 * fixed: Optimize More was unable to record image sizes over 8388607 bytes
 * removed: obsolete jquery 1.9.1 file used for maintaining backwards compatiblity with really old versions of WP
+* fixed: weirdness with paths preventing Windows servers from activating, and cleanup of plugin path code
 
 = 1.7.5 =
 * new version of gifsicle (1.78), for more detail, see http://www.lcdf.org/gifsicle/changes.html
@@ -459,6 +492,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 == Upgrade Notice ==
 
+= 1.8.0 =
+* Bulk Optimize page: Import to the custom ewwwio table is mandatory (one time) before running Bulk Optimize, and highly recommended for all users to prevent duplicate optimizations. Optimize More and Bulk Optimize are now on one page.
+
 = 1.7.6 =
 * metadata stripping now applies to PNG images, but only if using optipng 0.7.x, you may want to run a bulk optimize on all your PNG images to make sure you have the best possible optimization
 
@@ -543,15 +579,3 @@ Webhosts where the plugin will only work in cloud mode or only some tools are in
 * ipage (JPG only)
 * WP Engine - use EWWW Image Optimizer Cloud fork: http://wordpress.org/plugins/ewww-image-optimizer-cloud/
 
-== Translations ==
-
-Translators: 
-Romanian translation by MediasInfo.ro.
-Spanish translation by Andrew Kurtis of WebHostingHub.
-Dutch translation by Ludo Rubben.
-
-1. Please post in the support forums announcing your intent to translate the plugin into a particular language. 
-1. Download ewww-image-optimizer.pot from the plugin /languages/ folder.
-1. Fill in the msgstr for each msgid and complete the header information as best as you can.
-1. Save it as a .po file.
-1. Submit it via the form at http://www.shanebishop.net/contact-me/
