@@ -918,6 +918,7 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = tr
 	global $wpdb;
 	// may also need to track their attachment ID as well
 	// TODO: also have some doo-dad that tracks total file savings
+	// TODO: apparently there is a metadata_exists() function??
 	$ewww_debug .= "<b>ewww_image_optimizer_resize_from_meta_data()</b><br>";
 	$gallery_type = 1;
 	$ewww_debug .= "attachment id: $ID<br>";

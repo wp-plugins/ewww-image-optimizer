@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: images, image, attachments, attachment, optimize, optimization, nextgen, buddypress, flagallery, flash-gallery, lossless, photos, photo, picture, pictures, seo, compression, image-store, imstore, slider, image editor, gmagick, wp-symposium, meta-slider, metaslider
 Requires at least: 3.5
 Tested up to: 3.8
-Stable tag: 1.7.6
+Stable tag: 1.8.0
 License: GPLv3
 
 Reduce file sizes for images within WordPress including NextGEN, GRAND FlAGallery and more. Uses jpegtran, optipng, pngout, and gifsicle.
@@ -51,6 +51,20 @@ Features optimization on upload capability, re-optimization, and bulk optimizing
 = Image Store =
 
 Uploads are automatically optimized. Look for Optimize under the Image Store (Galleries) menu to see status of optimization and for re-optimization and bulk-optimization options. Using the Bulk Optimization tool under Media Library automatically includes all Image Store uploads.
+
+= Translations =
+
+Translators: 
+Romanian translation by MediasInfo.ro.
+Spanish translation by Andrew Kurtis of WebHostingHub.
+Dutch translation by Ludo Rubben.
+
+1. Please post in the support forums announcing your intent to translate the plugin into a particular language. 
+1. Download ewww-image-optimizer.pot from the plugin /languages/ folder.
+1. Fill in the msgstr for each msgid and complete the header information as best as you can (recommended to use PoEdit).
+1. Save it as a .po file.
+1. Submit it via the form at http://www.shanebishop.net/contact-me/
+
 
 == Installation ==
 
@@ -165,9 +179,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * webp support
 * jpegmini server integration (for resizes only)
 * pngquant (for resizes only)
-* huge thanks to those who have done localization/translation for Dutch, Romanian, and Spanish. See http://wordpress.org/plugins/ewww-image-optimizer/other_notes/ for more information. If you would like to help translate this plugin in your language, post a thread on the support forums.
+* huge thanks to those who have done localization/translation for Dutch, Romanian, and Spanish. If you would like to help translate this plugin in your language, post a thread on the support forums.
 
-= 1.7.7 =
+= 1.8.0 =
 * fixed: debug output not working properly on bulk optimize
 * changed: when cloud license has been exceeded, the optimizer will not attempt to upload images, and bulk operations will stop immediately
 * fixed: unnecessary decimals will not be displayed for file-sizes in bytes
@@ -478,7 +492,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 == Upgrade Notice ==
 
-= 1.7.7 =
+= 1.8.0 =
 * Bulk Optimize page: Import to the custom ewwwio table is mandatory (one time) before running Bulk Optimize, and highly recommended for all users to prevent duplicate optimizations. Optimize More and Bulk Optimize are now on one page.
 
 = 1.7.6 =
@@ -565,15 +579,3 @@ Webhosts where the plugin will only work in cloud mode or only some tools are in
 * ipage (JPG only)
 * WP Engine - use EWWW Image Optimizer Cloud fork: http://wordpress.org/plugins/ewww-image-optimizer-cloud/
 
-== Translations ==
-
-Translators: 
-Romanian translation by MediasInfo.ro.
-Spanish translation by Andrew Kurtis of WebHostingHub.
-Dutch translation by Ludo Rubben.
-
-1. Please post in the support forums announcing your intent to translate the plugin into a particular language. 
-1. Download ewww-image-optimizer.pot from the plugin /languages/ folder.
-1. Fill in the msgstr for each msgid and complete the header information as best as you can.
-1. Save it as a .po file.
-1. Submit it via the form at http://www.shanebishop.net/contact-me/
