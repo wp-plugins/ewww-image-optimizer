@@ -904,6 +904,49 @@ function ewww_image_optimizer_update_table ($attachment, $opt_size, $orig_size, 
 	$wpdb->flush();
 	return $results_msg;
 }
+
+// called by javascript to process each image in the loop
+function ewww_image_optimizer_aux_images_loop($attachment = null, $auto = false) {
+	global $ewww_debug;
+	$ewww_debug .= "<b>ewww_image_optimizer_aux_images_loop()</b><br>";
+	// verify that an authorized user has started the optimizer
+	if (!$auto && (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'install_themes' ))) {
+		wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+	}
+	if (!empty($_REQUEST['sleep'])) {
+		sleep($_REQUEST['sleep']);
+	}
+	// retrieve the time when the optimizer starts
+	$started = microtime(true);
+	// allow 50 seconds for each image (this doesn't include any exec calls, only php processing time)
+	set_time_limit (50);
+	// get the path of the current attachment
+	if (empty($attachment)) $attachment = $_POST['attachment'];
+	$attachment = preg_replace( ":\\\':", "'", $attachment);
+	// get the 'aux attachments' with a list of attachments remaining
+	$attachments = get_option('ewww_image_optimizer_aux_attachments');
+	// do the optimization for the current image
+	$results = ewww_image_optimizer($attachment, 4, false, false);
+	// remove the first element fromt the $attachments array
+	if (!empty($attachments)) {
+		array_shift($attachments);
+	}
+	// store the updated list of attachment IDs back in the 'bulk_attachments' option
+	update_option('ewww_image_optimizer_aux_attachments', $attachments);
+	if (!$auto) {
+		// output the path
+		printf( "<p>" . __('Optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", esc_html($attachment) );
+		// tell the user what the results were for the original image
+		printf( "%s<br>", $results[1] );
+		// calculate how much time has elapsed since we started
+		$elapsed = microtime(true) - $started;
+		// output how much time has elapsed since we started
+		printf(__('Elapsed: %.3f seconds', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</p>", $elapsed);
+		if (get_site_option('ewww_image_optimizer_debug')) echo '<div style="background-color:#ffff99;">' . $ewww_debug . '</div>';
+		die();
+	}
+}
+
 /**
  * Read the image paths from an attachment's meta data and process each image
  * with ewww_image_optimizer().

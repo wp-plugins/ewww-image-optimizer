@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: images, image, attachments, attachment, optimize, optimization, nextgen, buddypress, flagallery, flash-gallery, lossless, photos, photo, picture, pictures, seo, compression, image-store, imstore, slider, image editor, gmagick, wp-symposium, meta-slider, metaslider
 Requires at least: 3.5
 Tested up to: 3.8
-Stable tag: 1.8.0
+Stable tag: 1.8.1
 License: GPLv3
 
 Reduce file sizes for images within WordPress including NextGEN, GRAND FlAGallery and more. Uses jpegtran, optipng, pngout, and gifsicle.
@@ -180,6 +180,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * jpegmini server integration (for resizes only)
 * pngquant (for resizes only)
 * huge thanks to those who have done localization/translation for Dutch, Romanian, and Spanish. If you would like to help translate this plugin in your language, post a thread on the support forums.
+
+= 1.8.1 =
+* fixed: ewww_image_optimizer_aux_images_loop() undefined causes any calls to WP_Image_Editor to fail (breaks lots of stuff)
 
 = 1.8.0 =
 * fixed: debug output not working properly on bulk optimize
