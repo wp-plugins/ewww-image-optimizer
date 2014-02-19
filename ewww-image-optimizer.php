@@ -429,6 +429,11 @@ function ewww_image_optimizer_tool_found($path, $tool) {
 	return FALSE;
 }
 
+// escape any spaces in the filename, not sure any more than that is necessary for unixy systems
+function ewww_image_optimizer_escapeshellcmd ($path) {
+	return (preg_replace('/ /', '\ ', $path));
+}
+
 // If the utitilites are in the content folder, we use that. Otherwise, we check system paths. We also do a basic check to make sure we weren't given a malicious path.
 function ewww_image_optimizer_path_check ( $j = true, $o = true, $g = true, $p = true) {
 	global $ewww_debug;
@@ -440,28 +445,28 @@ function ewww_image_optimizer_path_check ( $j = true, $o = true, $g = true, $p =
 	// for Windows, everything must be in the wp-content/ewww folder, so that is all we check
 	if ('WINNT' == PHP_OS) {
 		if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran.exe') && $j) {
-			$jpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran.exe';
+			$jpt = '"' . EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran.exe"';
 			$ewww_debug .= "found $jpt, testing...<br>";
 			if (ewww_image_optimizer_tool_found($jpt, 'j') && ewww_image_optimizer_md5check($jpt)) {
 				$jpegtran = $jpt;
 			}
 		}
 		if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng.exe') && $o) {
-			$opt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng.exe';
+			$opt = '"' . EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng.exe"';
 			$ewww_debug .= "found $opt, testing...<br>";
 			if (ewww_image_optimizer_tool_found($opt, 'o') && ewww_image_optimizer_md5check($opt)) {
 				$optipng = $opt;
 			}
 		}
 		if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle.exe') && $g) {
-			$gpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle.exe';
+			$gpt = '"' . EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle.exe"';
 			$ewww_debug .= "found $gpt, testing...<br>";
 			if (ewww_image_optimizer_tool_found($gpt, 'g') && ewww_image_optimizer_md5check($gpt)) {
 				$gifsicle = $gpt;
 			}
 		}
 		if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout.exe') && $p) {
-			$ppt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout.exe';
+			$ppt = '"' . EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout.exe"';
 			$ewww_debug .= "found $ppt, testing...<br>";
 			if (ewww_image_optimizer_tool_found($ppt, 'p') && ewww_image_optimizer_md5check($ppt)) {
 				$pngout = $ppt;
@@ -476,6 +481,7 @@ function ewww_image_optimizer_path_check ( $j = true, $o = true, $g = true, $p =
 				$jpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran';
 				$ewww_debug .= "found $jpt, testing...<br>";
 				if (ewww_image_optimizer_md5check($jpt) && ewww_image_optimizer_mimetype($jpt, 'b')) {
+					$jpt = ewww_image_optimizer_escapeshellcmd ( $jpt );
 					if (ewww_image_optimizer_tool_found($jpt, 'j')) {
 						$jpegtran = $jpt;
 					}
@@ -486,6 +492,7 @@ function ewww_image_optimizer_path_check ( $j = true, $o = true, $g = true, $p =
 				$jpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran-custom';
 				$ewww_debug .= "found $jpt, testing...<br>";
 				if (filesize($jpt) > 15000 && ewww_image_optimizer_mimetype($jpt, 'b')) {
+					$jpt = ewww_image_optimizer_escapeshellcmd ( $jpt );
 					if (ewww_image_optimizer_tool_found($jpt, 'j')) {
 						$jpegtran = $jpt;
 					}
@@ -501,6 +508,7 @@ function ewww_image_optimizer_path_check ( $j = true, $o = true, $g = true, $p =
 				$opt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng';
 				$ewww_debug .= "found $opt, testing...<br>";
 				if (ewww_image_optimizer_md5check($opt) && ewww_image_optimizer_mimetype($opt, 'b')) {
+					$opt = ewww_image_optimizer_escapeshellcmd ( $opt );
 					if (ewww_image_optimizer_tool_found($opt, 'o')) {
 						$optipng = $opt;
 					}
@@ -510,6 +518,7 @@ function ewww_image_optimizer_path_check ( $j = true, $o = true, $g = true, $p =
 				$opt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng-custom';
 				$ewww_debug .= "found $opt, testing...<br>";
 				if (filesize($opt) > 15000 && ewww_image_optimizer_mimetype($opt, 'b')) {
+					$opt = ewww_image_optimizer_escapeshellcmd ( $opt );
 					if (ewww_image_optimizer_tool_found($opt, 'o')) {
 						$optipng = $opt;
 					}
@@ -524,6 +533,7 @@ function ewww_image_optimizer_path_check ( $j = true, $o = true, $g = true, $p =
 				$gpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle';
 				$ewww_debug .= "found $gpt, testing...<br>";
 				if (ewww_image_optimizer_md5check($gpt) && ewww_image_optimizer_mimetype($gpt, 'b')) {
+					$gpt = ewww_image_optimizer_escapeshellcmd ( $gpt );
 					if (ewww_image_optimizer_tool_found($gpt, 'g')) {
 						$gifsicle = $gpt;
 					}
@@ -533,6 +543,7 @@ function ewww_image_optimizer_path_check ( $j = true, $o = true, $g = true, $p =
 				$gpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle-custom';
 				$ewww_debug .= "found $gpt, testing...<br>";
 				if (filesize($gpt) > 15000 && ewww_image_optimizer_mimetype($gpt, 'b')) {
+					$gpt = ewww_image_optimizer_escapeshellcmd ( $gpt );
 					if (ewww_image_optimizer_tool_found($gpt, 'g')) {
 						$gifsicle = $gpt;
 					}
@@ -548,6 +559,7 @@ function ewww_image_optimizer_path_check ( $j = true, $o = true, $g = true, $p =
 				$ppt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static';
 				$ewww_debug .= "found $ppt, testing...<br>";
 				if (ewww_image_optimizer_md5check($ppt) && ewww_image_optimizer_mimetype($ppt, 'b')) {
+					$ppt = ewww_image_optimizer_escapeshellcmd ( $ppt );
 					if (ewww_image_optimizer_tool_found($ppt, 'p')) {
 						$pngout = $ppt;
 					}
@@ -1667,6 +1679,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 // retrieves the pngout linux package with wget, unpacks it with tar, 
 // copies the appropriate version to the plugin folder, and sends the user back where they came from
 function ewww_image_optimizer_install_pngout() {
+	// TODO: fix up tar commands to handle spaces in their args
 	if (FALSE === current_user_can('install_plugins')) {
 		wp_die(__('You don\'t have permission to install image optimizer utilities.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 	}
@@ -1683,30 +1696,30 @@ function ewww_image_optimizer_install_pngout() {
 	$latest = '20130221';
 	if (empty($pngout_error)) {
 		if (PHP_OS == 'Linux' || PHP_OS == 'FreeBSD') {
-			$download_result = download_url('http://static.jonof.id.au/dl/kenutils/pngout-' . $latest . '-' . $os_string . '-static.tar.gz');
+			$download_result = ewww_image_optimizer_escapeshellarg ( download_url ( 'http://static.jonof.id.au/dl/kenutils/pngout-' . $latest . '-' . $os_string . '-static.tar.gz' ) );
 			if (is_wp_error($download_result)) {
 				$pngout_error = $download_result->get_error_message();
 			} else {
 				$arch_type = php_uname('m');
-				exec("$tar xzf $download_result -C " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-' . $latest . '-' . $os_string . '-static/' . $arch_type . '/pngout-static');
+				exec("$tar xzf $download_result -C " . ewww_image_optimizer_escapeshellarg ( EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH ) . ' pngout-' . $latest . '-' . $os_string . '-static/' . $arch_type . '/pngout-static');
 				if (!rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-' . $os_string . '-static/' . $arch_type . '/pngout-static', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static'))
 					if (empty($pngout_error)) $pngout_error = __("could not move pngout", EWWW_IMAGE_OPTIMIZER_DOMAIN);
 				if (!chmod(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static', 0755))
 					if (empty($pngout_error)) $pngout_error = __("could not set permissions", EWWW_IMAGE_OPTIMIZER_DOMAIN);
-				$pngout_version = ewww_image_optimizer_tool_found(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static', 'p');
+				$pngout_version = ewww_image_optimizer_tool_found ( ewww_image_optimizer_escapeshellarg ( EWWW_IMAGE_OPTIMIZER_TOOL_PATH ) . 'pngout-static', 'p' );
 			}
 		}
 		if (PHP_OS == 'Darwin') {
-			$download_result = download_url('http://static.jonof.id.au/dl/kenutils/pngout-' . $latest . '-darwin.tar.gz');
+			$download_result = ewww_image_optimizer_escapeshellarg ( download_url ( 'http://static.jonof.id.au/dl/kenutils/pngout-' . $latest . '-darwin.tar.gz' ) );
 			if (is_wp_error($download_result)) {
 				$pngout_error = $download_result->get_error_message();
 			} else {
-				exec("$tar xzf $download_result -C " . EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . ' pngout-' . $latest . '-darwin/pngout');
+				exec("$tar xzf $download_result -C " . ewww_image_optimizer_escapeshellarg ( EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH ) . ' pngout-' . $latest . '-darwin/pngout');
 				if (!rename(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngout-' . $latest . '-darwin/pngout', EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static'))
 					if (empty($pngout_error)) $pngout_error = __("could not move pngout", EWWW_IMAGE_OPTIMIZER_DOMAIN);
 				if (!chmod(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static', 0755))
 					if (empty($pngout_error)) $pngout_error = __("could not set permissions", EWWW_IMAGE_OPTIMIZER_DOMAIN);
-				$pngout_version = ewww_image_optimizer_tool_found(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static', 'p');
+				$pngout_version = ewww_image_optimizer_tool_found( ewww_image_optimizer_escapeshellarg ( EWWW_IMAGE_OPTIMIZER_TOOL_PATH ) . 'pngout-static', 'p' );
 			}
 		}
 	}
@@ -1717,7 +1730,7 @@ function ewww_image_optimizer_install_pngout() {
 		} else {
 			if (!rename($download_result, EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout.exe'))
 				if (empty($pngout_error)) $pngout_error = __("could not move pngout", EWWW_IMAGE_OPTIMIZER_DOMAIN);
-			$pngout_version = ewww_image_optimizer_tool_found(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout.exe', 'p');
+			$pngout_version = ewww_image_optimizer_tool_found ( '"' . EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout.exe"', 'p' );
 		}
 	}
 	if (!empty($pngout_version)) {
