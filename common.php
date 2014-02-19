@@ -131,7 +131,7 @@ function ewww_image_optimizer_install_table() {
 	dbDelta($sql);
 	
 	// remove extra decimals in ewwwio_images table
-	$query = "SELECT id,results FROM $wpdb->ewwwio_images WHERE results LIKE '%.0&nbsp;B)%'";
+	/*$query = "SELECT id,results FROM $wpdb->ewwwio_images WHERE results LIKE '%.0&nbsp;B)%'";
 	$old_records = $wpdb->get_results($query, ARRAY_A);
 	foreach ($old_records as $record) {
 			$ewww_debug .= 'converting record: ' . $record['id'] . '<br>';
@@ -144,8 +144,8 @@ function ewww_image_optimizer_install_table() {
 				array(
 					'id' => $record['id'],
 				));
-	}
-				ewww_image_optimizer_debug_log();
+	}*/
+			//	ewww_image_optimizer_debug_log();
 	// make sure some of our options are not autoloaded (since they can be huge)
 	$bulk_attachments = get_option('ewww_image_optimizer_bulk_attachments', '');
 	delete_option('ewww_image_optimizer_bulk_attachments');
@@ -646,7 +646,7 @@ function ewww_image_optimizer_cloud_verify() {
 		update_option('ewww_image_optimizer_cloud_gif', '');
 		return false;
 	}
-	$servers = gethostbynamel('optimize3.exactlywww.com');
+	$servers = gethostbynamel('optimize.exactlywww.com');
 	foreach ($servers as $ip) {
 		$url = "http://$ip/";
 		$result = wp_remote_post($url, array(
