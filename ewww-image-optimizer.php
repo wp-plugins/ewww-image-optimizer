@@ -445,31 +445,31 @@ function ewww_image_optimizer_path_check ( $j = true, $o = true, $g = true, $p =
 	// for Windows, everything must be in the wp-content/ewww folder, so that is all we check
 	if ('WINNT' == PHP_OS) {
 		if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran.exe') && $j) {
-			$jpt = '"' . EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran.exe"';
+			$jpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran.exe';
 			$ewww_debug .= "found $jpt, testing...<br>";
-			if (ewww_image_optimizer_tool_found($jpt, 'j') && ewww_image_optimizer_md5check($jpt)) {
-				$jpegtran = $jpt;
+			if (ewww_image_optimizer_tool_found('"' . $jpt . '"', 'j') && ewww_image_optimizer_md5check($jpt)) {
+				$jpegtran = '"' . $jpt . '"';
 			}
 		}
 		if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng.exe') && $o) {
-			$opt = '"' . EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng.exe"';
+			$opt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng.exe';
 			$ewww_debug .= "found $opt, testing...<br>";
-			if (ewww_image_optimizer_tool_found($opt, 'o') && ewww_image_optimizer_md5check($opt)) {
-				$optipng = $opt;
+			if (ewww_image_optimizer_tool_found('"' . $opt . '"', 'o') && ewww_image_optimizer_md5check($opt)) {
+				$optipng = '"' . $opt . '"';
 			}
 		}
 		if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle.exe') && $g) {
-			$gpt = '"' . EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle.exe"';
+			$gpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle.exe';
 			$ewww_debug .= "found $gpt, testing...<br>";
-			if (ewww_image_optimizer_tool_found($gpt, 'g') && ewww_image_optimizer_md5check($gpt)) {
-				$gifsicle = $gpt;
+			if (ewww_image_optimizer_tool_found('"' . $gpt . '"', 'g') && ewww_image_optimizer_md5check($gpt)) {
+				$gifsicle = '"' . $gpt . '"';
 			}
 		}
 		if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout.exe') && $p) {
-			$ppt = '"' . EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout.exe"';
+			$ppt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout.exe';
 			$ewww_debug .= "found $ppt, testing...<br>";
-			if (ewww_image_optimizer_tool_found($ppt, 'p') && ewww_image_optimizer_md5check($ppt)) {
-				$pngout = $ppt;
+			if (ewww_image_optimizer_tool_found('"' . $ppt . '"', 'p') && ewww_image_optimizer_md5check($ppt)) {
+				$pngout = '"' . $ppt . '"';
 			}
 		}
 	} else {
@@ -1679,7 +1679,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new) {
 // retrieves the pngout linux package with wget, unpacks it with tar, 
 // copies the appropriate version to the plugin folder, and sends the user back where they came from
 function ewww_image_optimizer_install_pngout() {
-	// TODO: fix up tar commands to handle spaces in their args
 	if (FALSE === current_user_can('install_plugins')) {
 		wp_die(__('You don\'t have permission to install image optimizer utilities.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 	}
