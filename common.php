@@ -667,8 +667,8 @@ function ewww_image_optimizer_delete ($id) {
 
 // submits the api key for verification
 function ewww_image_optimizer_cloud_verify ( $cache = true ) {
-	// TODO: implement some caching of the IP and results, with a 24-hour expiration, and an override parameter
 	global $ewww_debug;
+	global $ewww_cloud_ip;
 	$ewww_debug .= "<b>ewww_image_optimizer_cloud_verify()</b><br>";
 	$api_key = ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_key');
 	if (empty($api_key)) {
@@ -682,19 +682,10 @@ function ewww_image_optimizer_cloud_verify ( $cache = true ) {
 	}
 	$prev_verified = get_option('ewww_image_optimizer_cloud_verified');
 	$last_checked = get_option('ewww_image_optimizer_cloud_last');
-	$cloud_ip = get_option('ewww_image_optimizer_cloud_ip');
+	$ewww_cloud_ip = get_option('ewww_image_optimizer_cloud_ip');
 	$servers = gethostbynamel('optimize.exactlywww.com');
-/*	foreach ($servers as $ip) {
-		if ($ip === $cloud_ip) {
-			$valid_ip = true;
-		}
-	}*/
-	if ($cache && $prev_verified && $last_checked + 86400 > time()) {
-		$ewww_debug .= "using cached IP: $cloud_ip<br>";
-		if (!defined('EWWW_IMAGE_OPTIMIZER_CLOUD_IP')) {
-			define('EWWW_IMAGE_OPTIMIZER_CLOUD_IP', $cloud_ip);
-		}
-		// SET CLOUD_IPT constant
+	if ($cache && $prev_verified && $last_checked + 86400 > time() && !empty($ewww_cloud_ip)) {
+		$ewww_debug .= "using cached IP: $ewww_cloud_ip<br>";
 		return $prev_verified;	
 	} elseif ( empty ( $servers ) ) {
 		$ewww_debug .= "unable to resolve servers<br>";
@@ -711,11 +702,7 @@ function ewww_image_optimizer_cloud_verify ( $cache = true ) {
 				$ewww_debug .= "verification failed: $error_message <br>";
 			} elseif (!empty($result['body']) && preg_match('/(great|exceeded)/', $result['body'])) {
 				$verified = $result['body'];
-				// TODO: need to be able to either set this earlier for bulk and settings, or be able to override it
-				// Might need to convert the constant to a global instead
-				if (!defined('EWWW_IMAGE_OPTIMIZER_CLOUD_IP')) {
-					define('EWWW_IMAGE_OPTIMIZER_CLOUD_IP', $ip);
-				}
+				$ewww_cloud_ip = $ip;
 				$ewww_debug .= "verification success via: $ip <br>";
 				/*if ( preg_match ( '/exceeded/', $result['body']) ) {
 					global $ewww_exceed;
@@ -738,7 +725,7 @@ function ewww_image_optimizer_cloud_verify ( $cache = true ) {
 	} else {
 		update_option ( 'ewww_image_optimizer_cloud_verified', $verified );
 		update_option ( 'ewww_image_optimizer_cloud_last', time() );
-		update_option ( 'ewww_image_optimizer_cloud_ip', EWWW_IMAGE_OPTIMIZER_CLOUD_IP );
+		update_option ( 'ewww_image_optimizer_cloud_ip', $ewww_cloud_ip );
 		$ewww_debug .= "verification body contents: " . $result['body'] . "<br>";
 		return $verified;
 	}
@@ -747,9 +734,10 @@ function ewww_image_optimizer_cloud_verify ( $cache = true ) {
 // checks the provided api key for quota information
 function ewww_image_optimizer_cloud_quota() {
 	global $ewww_debug;
+	global $ewww_cloud_ip;
 	$ewww_debug .= "<b>ewww_image_optimizer_cloud_quota()</b><br>";
 	$api_key = ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_key');
-	$url = "http://" . EWWW_IMAGE_OPTIMIZER_CLOUD_IP . "/quota.php";
+	$url = "http://$ewww_cloud_ip/quota.php";
 	$result = wp_remote_post($url, array(
 		'timeout' => 10,
 		'body' => array('api_key' => $api_key)
@@ -780,6 +768,7 @@ function ewww_image_optimizer_cloud_quota() {
 function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $newfile = null, $newtype = null, $jpg_params = array('r' => '255', 'g' => '255', 'b' => '255', 'quality' => null)) {
 	global $ewww_debug;
 	global $ewww_exceed;
+	global $ewww_cloud_ip;
 	$ewww_debug .= "<b>ewww_image_optimizer_cloud_optimizer()</b><br>";
 	if ( $ewww_exceed ) {
 		$ewww_debug .= "license exceeded, image not processed<br>";
@@ -804,7 +793,7 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $n
 	$ewww_debug .= "newtype: $newtype <br>";
 	$ewww_debug .= "jpg_params: " . print_r($jpg_params, true) . " <br>";
 	$api_key = ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_key');
-	$url = 'http://' . EWWW_IMAGE_OPTIMIZER_CLOUD_IP . '/';
+	$url = "http://$ewww_cloud_ip/";
 	$boundary = wp_generate_password(24, false);
 
 	$headers = array(
