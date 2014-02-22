@@ -61,6 +61,7 @@ class ewwwflag {
 			echo '<p>' . __('You do not appear to have uploaded any images yet.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</p>';
 			return;
 		}
+		ewww_image_optimizer_cloud_verify(false); 
 		?>
 		<div class="wrap"><div id="icon-upload" class="icon32"></div><h2>GRAND FlAGallery <?php _e('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></h2>
 		<?php

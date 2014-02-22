@@ -3,6 +3,7 @@
 function ewww_image_optimizer_bulk_preview() {
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_bulk_preview()</b><br>";
+	ewww_image_optimizer_cloud_verify(false); 
 	// retrieve the attachment IDs that were pre-loaded in the database
 	list($fullsize_count, $unoptimized_count, $resize_count, $unoptimized_resize_count) = ewww_image_optimizer_count_optimized ('media');
 	$upload_import = get_option('ewww_image_optimizer_imported');
