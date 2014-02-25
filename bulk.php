@@ -72,15 +72,52 @@ function ewww_image_optimizer_bulk_preview() {
 // retrieve image counts for the bulk process
 function ewww_image_optimizer_count_optimized ($gallery) {
 	global $ewww_debug;
+	global $wpdb;
+	$ewww_debug .= "<b>ewww_image_optimizer_count_optmized()</b><br>";
 	$unoptimized_full = 0;
 	$unoptimized_re = 0;
 	$resize_count = 0;
 	$ewww_debug .= "scanning for $gallery<br>";
+//	$max_time = ini_get('max_execution_time');
+//	$ewww_debug .= "max time allowed: $max_time<br>";
+	// retrieve the time when the optimizer starts
+	$started = microtime(true);
+	// TODO: perhaps short-circuit this if we can't finish in time
 	switch ($gallery) {
 		case 'media':
-			// retrieve the attachment IDs that were pre-loaded in the database
-			$attachments = get_option('ewww_image_optimizer_bulk_attachments');
+			// see if we were given attachment IDs to work with via GET/POST
+		        if (empty($_REQUEST['ids']) && !get_option('ewww_image_optimizer_bulk_resume')) {
+				// retrieve all the image attachment metadata from the database
+				$attachments = $wpdb->get_results("SELECT metas.meta_value FROM $wpdb->postmeta metas INNER JOIN $wpdb->posts posts ON posts.ID = metas.post_id WHERE posts.post_mime_type LIKE '%image%' AND metas.meta_key = '_wp_attachment_metadata'", ARRAY_N);
+			} else {
+				// retrieve the attachment IDs that were pre-loaded in the database
+				$attachments = get_option('ewww_image_optimizer_bulk_attachments');
+			}
 			foreach ($attachments as $attachment) {
+		        	if (empty($_REQUEST['ids']) && !get_option('ewww_image_optimizer_bulk_resume')) {
+					$meta = unserialize($attachment[0]);
+				} else {
+					$meta = wp_get_attachment_metadata( $attachment, true );
+				}
+				if (empty($meta['ewww_image_optimizer'])) {
+					$unoptimized_full++;
+				}
+				// resized versions, so we can continue
+				if (isset($meta['sizes']) ) {
+					foreach($meta['sizes'] as $size => $data) {
+						$resize_count++;
+						if (empty($meta['sizes'][$size]['ewww_image_optimizer'])) {
+							$unoptimized_re++;
+						}
+					}
+				}
+			}
+//			$ewww_debug .= "counts: " . count($fattachments) . " $funoptimized_full $fresize_count $funoptimized_re <br>";
+			// retrieve the attachment IDs that were pre-loaded in the database
+/*			$attachments = get_option('ewww_image_optimizer_bulk_attachments');
+			foreach ($attachments as $attachment) {
+	// allow 50 seconds for each image (this doesn't include any exec calls, only php processing time)
+//	set_time_limit (50);
 				$meta = wp_get_attachment_metadata( $attachment, true );
 				if (empty($meta['ewww_image_optimizer'])) {
 					$unoptimized_full++;
@@ -94,8 +131,13 @@ function ewww_image_optimizer_count_optimized ($gallery) {
 							$unoptimized_re++;
 						}
 					}
-				}
-			}
+				}*/
+				// calculate how much time has elapsed since we started
+				/*$elapsed = microtime(true) - $started + 2;
+				if ($elapsed > $max_time) {
+					break;
+				}*/
+			//}
 			break;
 		case 'ngg':
 			// retrieve the attachment IDs that were pre-loaded in the database
@@ -141,6 +183,8 @@ function ewww_image_optimizer_count_optimized ($gallery) {
 			}
 			break;
 	}
+				$elapsed = microtime(true) - $started;
+	$ewww_debug .= "counting images took $elapsed seconds<br>";
 	return array(count($attachments), $unoptimized_full, $resize_count, $unoptimized_re);
 }
 

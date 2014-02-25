@@ -811,6 +811,8 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $n
 		'green' => $jpg_params['g'],
 		'blue' => $jpg_params['b'],
 		'quality' => $jpg_params['quality'],
+		'compress' => ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_png_compress'),
+		'lossy' => ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_png_lossy'),
 	);
 
 	$payload = '';
@@ -1011,13 +1013,14 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = tr
 	global $wpdb;
 	// may also need to track their attachment ID as well
 	// TODO: also have some doo-dad that tracks total file savings
-	// TODO: apparently there is a metadata_exists() function??
 	$ewww_debug .= "<b>ewww_image_optimizer_resize_from_meta_data()</b><br>";
 	$gallery_type = 1;
 	$ewww_debug .= "attachment id: $ID<br>";
-	if (!wp_get_attachment_metadata($ID)) {
+	if (!metadata_exists('post', $ID, '_wp_attachment_metadata')) {
+		$ewww_debug .= "this is a newly uploaded image with no metadata yet<br>";
 		$new_image = true;
 	} else {
+		$ewww_debug .= "this image already has metadata, so it is not new<br>";
 		$new_image = false;
 	}
 	list($file_path, $upload_path) = ewww_image_optimizer_attachment_path($meta, $ID);
