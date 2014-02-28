@@ -45,11 +45,16 @@ class ewwwngg {
 		$sizes = $storage->get_image_sizes($image);
 		// run the optimizer on the image for each $size
 		foreach ($sizes as $size) {
+			if ( $size === 'full' && ewww_image_optimizer_get_option('ewww_image_optimizer_lossy_skip_full')) {
+				$full_size = true;
+			} else {
+				$full_size = false;
+			} 
 			// get the absolute path
 			$file_path = $storage->get_image_abspath($image, $size);
 			$ewww_debug .= "optimizing (nextgen): $file_path<br>";
 			// optimize the image and grab the results
-			$res = ewww_image_optimizer($file_path, 2, false, false);
+			$res = ewww_image_optimizer($file_path, 2, false, false, $full_size);
 			$ewww_debug .= "results " . $res[1] . "<br>";
 			// only if we're dealing with the full-size original
 			if ($size === 'full') {

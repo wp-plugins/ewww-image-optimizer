@@ -1444,13 +1444,6 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new, $fullsize 
 			}
 			// if optimization is turned on
 			if ($optimize) {
-				// retrieve path info for ImageMagick
-				$convert_path = ewww_image_optimizer_find_binary('convert', 'i');
-				// copy the PNG to reduce duplicate pallette entries (and start with a clean slate)
-				if (!empty($convert_path)) {
-					$ewww_debug .= "copying with ImageMagick<br>";
-					exec ( "$convert_path " . ewww_image_optimizer_escapeshellarg( $file ) . " " . ewww_image_optimizer_escapeshellarg( $file ) );
-				}
 				// if lossy optimization is ON and full-size exclusion is not active
 				if ( ewww_image_optimizer_get_option( 'ewww_image_optimizer_png_lossy' ) && $tools['PNGQUANT'] && !$fullsize) {
 					$ewww_debug .= "attempting lossy reduction<br>";

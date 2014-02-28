@@ -189,7 +189,7 @@ class ewwwflag {
 		// make sure the image path is set
 		if (isset($image->imagePath)) {
 			// optimize the full size
-			$res = ewww_image_optimizer($image->imagePath, 3, false, false);
+			$res = ewww_image_optimizer($image->imagePath, 3, false, false, ewww_image_optimizer_get_option('ewww_image_optimizer_lossy_skip_full'));
 			// optimize the thumbnail
 			$tres = ewww_image_optimizer($image->thumbPath, 3, false, true);
 			// get the image ID
@@ -220,7 +220,7 @@ class ewwwflag {
 		// determine the path of the image
 		$file_path = $meta->image->imagePath;
 		// optimize the full size
-		$res = ewww_image_optimizer($file_path, 3, false, false);
+		$res = ewww_image_optimizer($file_path, 3, false, false, ewww_image_optimizer_get_option('ewww_image_optimizer_lossy_skip_full'));
 		$meta->image->meta_data['ewww_image_optimizer'] = $res[1];
 		// determine the path of the thumbnail
 		$thumb_path = $meta->image->thumbPath;
@@ -290,7 +290,7 @@ class ewwwflag {
 			printf( "<p>" . __('Already optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", esc_html($file_path) );
 		} else {*/
 			// optimize the full-size version
-			$fres = ewww_image_optimizer($file_path, 3, false, false);
+			$fres = ewww_image_optimizer($file_path, 3, false, false, ewww_image_optimizer_get_option('ewww_image_optimizer_lossy_skip_full'));
 			$meta->image->meta_data['ewww_image_optimizer'] = $fres[1];
 			// let the user know what happened
 			printf( "<p>" . __('Optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", esc_html($meta->image->filename) );

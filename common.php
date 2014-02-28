@@ -683,7 +683,7 @@ function ewww_image_optimizer_cloud_verify ( $cache = true ) {
 	$prev_verified = get_option('ewww_image_optimizer_cloud_verified');
 	$last_checked = get_option('ewww_image_optimizer_cloud_last');
 	$ewww_cloud_ip = get_option('ewww_image_optimizer_cloud_ip');
-	$servers = gethostbynamel('optimize3.exactlywww.com');
+	$servers = gethostbynamel('optimize.exactlywww.com');
 	if ($cache && $prev_verified && $last_checked + 86400 > time() && !empty($ewww_cloud_ip)) {
 		$ewww_debug .= "using cached IP: $ewww_cloud_ip<br>";
 		return $prev_verified;	
