@@ -187,6 +187,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * fixed: a few WP Retina @2x images were not being optimized, and none of them were stored in the ewwwio_images table properly
 * new: better compression for cloud users via advpng
 * new: lossy compression for PNG images via pngquant
+* changed: Bulk Optimize loads much quicker (mostly noticable on sites with thousands of images)
 
 = 1.8.2 =
 * updated Romanian translation
@@ -586,6 +587,7 @@ Webhosts where things work out of the box.
 * [HostGator](http://www.hostgator.com)
 * [Hetzner Online](http://www.hetzner.de)
 * [Hosterdam](http://www.hosterdam.com) (FreeBSD)
+* [iFastNet](https://ifastnet.com/portal/) (with custom php.ini from customer support)
 * [Namecheap](http://www.namecheap.com)
 * [OVH](http://www.ovh.co.uk)
 * [WebFaction](http://www.webfaction.com)

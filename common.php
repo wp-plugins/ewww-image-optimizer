@@ -683,7 +683,7 @@ function ewww_image_optimizer_cloud_verify ( $cache = true ) {
 	$prev_verified = get_option('ewww_image_optimizer_cloud_verified');
 	$last_checked = get_option('ewww_image_optimizer_cloud_last');
 	$ewww_cloud_ip = get_option('ewww_image_optimizer_cloud_ip');
-	$servers = gethostbynamel('optimize.exactlywww.com');
+	$servers = gethostbynamel('optimize3.exactlywww.com');
 	if ($cache && $prev_verified && $last_checked + 86400 > time() && !empty($ewww_cloud_ip)) {
 		$ewww_debug .= "using cached IP: $ewww_cloud_ip<br>";
 		return $prev_verified;	
@@ -765,7 +765,7 @@ function ewww_image_optimizer_cloud_quota() {
  * @param   array $jpg_params		r, g, b values and jpg quality setting for conversion
  * @returns array
 */
-function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $newfile = null, $newtype = null, $jpg_params = array('r' => '255', 'g' => '255', 'b' => '255', 'quality' => null)) {
+function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $newfile = null, $newtype = null, $fullsize = false, $jpg_params = array('r' => '255', 'g' => '255', 'b' => '255', 'quality' => null)) {
 	global $ewww_debug;
 	global $ewww_exceed;
 	global $ewww_cloud_ip;
@@ -785,6 +785,11 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $n
 		$convert = 0;
 	} else {
 		$convert = 1;
+	}
+	if (ewww_image_optimizer_get_option('ewww_image_optimizer_png_lossy') && !$fullsize) {
+		$lossy = 1;
+	} else {
+		$lossy = 0;
 	}
 	$ewww_debug .= "file: $file <br>";
 	$ewww_debug .= "type: $type <br>";
@@ -812,7 +817,7 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $n
 		'blue' => $jpg_params['b'],
 		'quality' => $jpg_params['quality'],
 		'compress' => ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_png_compress'),
-		'lossy' => ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_png_lossy'),
+		'lossy' => $lossy,
 	);
 
 	$payload = '';
@@ -1055,7 +1060,7 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = tr
 				'id' => $already_optimized[0]['id'],
 			));
 	}
-	list($file, $msg, $conv, $original) = ewww_image_optimizer($file_path, $gallery_type, false, $new_image);
+	list($file, $msg, $conv, $original) = ewww_image_optimizer($file_path, $gallery_type, false, $new_image, ewww_image_optimizer_get_option('ewww_image_optimizer_lossy_skip_full'));
 	// update the optimization results in the metadata
 	$meta['ewww_image_optimizer'] = $msg;
 	if ($file === false) {
