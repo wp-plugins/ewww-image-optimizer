@@ -2,13 +2,13 @@
 # This file is distributed under the same license as the EWWW Image Optimizer package.
 msgid ""
 msgstr ""
-"Project-Id-Version: EWWW Image Optimizer 1.7.5\n"
+"Project-Id-Version: EWWW Image Optimizer 1.7.6\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/ewww-image-optimizer\n"
-"POT-Creation-Date: 2013-11-14 00:05:24+00:00\n"
+"POT-Creation-Date: 2013-12-20 23:49:19+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2013-12-05 15:32+0100\n"
+"PO-Revision-Date: 2014-01-08 15:32+0100\n"
 "Last-Translator: jelena kovacevic <jecajeca260@gmail.com>\n"
 "X-Generator: Poedit 1.5.5\n"
 
@@ -142,6 +142,10 @@ msgstr "Nombre de la Fila"
 #: aux-optimize.php:251
 msgid "Image Type"
 msgstr "Tipo de imagen"
+
+#: aux-optimize.php:269
+msgid "Remove from table"
+msgstr "Eliminar de la tabla"
 
 #: aux-optimize.php:251 ewww-image-optimizer.php:1068
 #: ewww-image-optimizer.php:1100 flag-integration.php:299
@@ -775,7 +779,7 @@ msgstr "Ajustes de Optimización"
 
 #: ewww-image-optimizer.php:3043
 msgid "Remove metadata"
-msgstr "Quite los metadatos"
+msgstr "Eliminar metadatos"
 
 #: ewww-image-optimizer.php:3044
 msgid "This wil remove ALL metadata: EXIF and comments."
