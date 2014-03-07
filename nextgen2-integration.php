@@ -1,5 +1,7 @@
 <?php 
 class ewwwngg {
+	// TODO: restore custom column via filter ngg_manage_images_row
+	// TODO: add action via filter ngg_manage_images_row_actions
 	/* initializes the nextgen integration functions */
 	function ewwwngg() {
 		add_filter('ngg_manage_images_columns', array(&$this, 'ewww_manage_images_columns'));
@@ -42,7 +44,7 @@ class ewwwngg {
 		$image_id = $storage->object->_get_image_id($image);
 		$ewww_debug .= "image id: $image_id<br>";
 		// get an array of sizes available for the $image
-		$sizes = $storage->get_image_sizes($image);
+		$sizes = $storage->get_image_sizes();
 		// run the optimizer on the image for each $size
 		foreach ($sizes as $size) {
 			if ( $size === 'full' && ewww_image_optimizer_get_option('ewww_image_optimizer_lossy_skip_full')) {
@@ -414,7 +416,7 @@ class ewwwngg {
 		// output the results of the optimization
 		printf("<p>" . __('Optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", basename($storage->object->get_image_abspath($image, 'full')));
 		// get an array of sizes available for the $image
-		$sizes = $storage->get_image_sizes($image);
+		$sizes = $storage->get_image_sizes();
 		// run the optimizer on the image for each $size
 		foreach ($sizes as $size) {
 			if ($size === 'full') {
