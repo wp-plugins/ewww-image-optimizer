@@ -96,6 +96,9 @@ function ewww_image_optimizer_count_optimized ($gallery) {
 				} else {
 					$meta = wp_get_attachment_metadata( $attachment, true );
 				}
+				if (empty($meta)) {
+					continue;
+				}
 				if (empty($meta['ewww_image_optimizer'])) {
 					$unoptimized_full++;
 				}

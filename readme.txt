@@ -189,6 +189,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * jpegmini server integration (for resizes only)
 * huge thanks to those who have done localization/translation for Dutch, Romanian, and Spanish. If you would like to help translate this plugin in your language, post a thread on the support forums.
 
+= 1.8.5 =
+* fixed: images with empty metadata count as unoptimized images on Bulk Optimize
+
 = 1.8.4 =
 * fixed: Import process is much faster by about 50x
 
