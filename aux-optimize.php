@@ -120,14 +120,9 @@ function ewww_image_optimizer_aux_images_import() {
 	$ewww_debug .= "importing " . count($attachments) . " attachments<br>";
 	$insert_query = "INSERT INTO $wpdb->ewwwio_images (path, image_size, orig_size, results) VALUES ";
 	$rows = array();
-//	$record_count = 0;
-	//foreach ($attachments as $id) {
 	foreach ($attachments as $attachment) {
 		$record = array();
-		// allow 50 seconds for each import
-		//set_time_limit (50);
 		$gallery_type = 0;
-//		$meta = wp_get_attachment_metadata($id);
 		$id = $attachment[0]; 
 		$meta = unserialize($attachment[1]);
 		if (empty($attachment) || empty($attachment[1])) {
@@ -242,7 +237,6 @@ function ewww_image_optimizer_aux_images_import() {
 				}
 				if (count($rows) > 1000) {
 					$wpdb->query($insert_query . implode(', ', $rows));
-//					$insert_query = "INSERT INTO $wpdb->ewwwio_images (path, image_size, orig_size, results) VALUES ";
 					$rows = array();
 				}
 				ewww_image_optimizer_debug_log();
@@ -251,24 +245,47 @@ function ewww_image_optimizer_aux_images_import() {
 	}
 	// fla gallery import
 	if (is_plugin_active('flash-album-gallery/flag.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('flash-album-gallery/flag.php'))) {
+		$images = $wpdb->get_results("SELECT pid,meta_data,filename,galleryid FROM $wpdb->flagpictures ORDER BY sortorder ASC", ARRAY_N);
+		$galleries = $wpdb->get_results("SELECT gid,path FROM $wpdb->flaggallery", ARRAY_N);
 		// need this file to work with flag meta
-		require_once(WP_CONTENT_DIR . '/plugins/flash-album-gallery/lib/meta.php');
-		$ids = $wpdb->get_col("SELECT pid FROM $wpdb->flagpictures ORDER BY sortorder ASC");
-		foreach ($ids as $id) {
-			// get the image meta for the current ID
-			$meta = new flagMeta($id);
-			$file_path = $meta->image->imagePath;
-			if (!empty($meta->image->meta_data['ewww_image_optimizer'])) {
-				ewww_image_optimizer_import_file ($file_path, $meta->image->meta_data['ewww_image_optimizer']);
-				$thumb_path = $meta->image->thumbPath;
-				if (empty($meta->image->meta_data['thumbnail']['ewww_image_optimizer'])) {
-					$meta->image->meta_data['thumbnail']['ewww_image_optimizer'] = __('Unknown Savings', EWWW_IMAGE_OPTIMIZER_DOMAIN);
-					// update the image metadata in the db
-					flagdb::update_image_meta($id, $meta->image->meta_data);
-					ewww_image_optimizer_import_file ($thumb_path, __('Unknown Savings', EWWW_IMAGE_OPTIMIZER_DOMAIN));
-				} else {
-					ewww_image_optimizer_import_file ($thumb_path, $meta->image->meta_data['thumbnail']['ewww_image_optimizer']);
+//		require_once(WP_CONTENT_DIR . '/plugins/flash-album-gallery/lib/meta.php');
+//		$ids = $wpdb->get_col("SELECT pid FROM $wpdb->flagpictures ORDER BY sortorder ASC");
+		foreach ($images as $image) {
+			$record = array();
+			$gallery_path = '';
+			foreach ($galleries as $gallery) {
+				if ($gallery[0] == $image[3]) {
+					$gallery_path = trailingslashit($gallery[1]);
 				}
+			}
+			// get the image meta for the current ID
+			$meta = unserialize( $image[1] );
+			//$meta = new flagMeta($id);
+			//$file_path = $meta->image->imagePath;
+			$file_path = ABSPATH . $gallery_path . $image[2];
+			$ewww_debug .= "flagallery path generated: $file_path<br>";
+			if (!empty($meta['ewww_image_optimizer'])) {
+				$record = ewww_image_optimizer_import_file ($file_path, $meta['ewww_image_optimizer']);
+				if (!empty($record)) {
+					$rows[] = "('$record[0]', '$record[1]', '$record[2]', '$record[3]')";
+				}
+				//$thumb_path = $meta->image->thumbPath;
+				$thumb_path = ABSPATH . $gallery_path . 'thumbs/thumbs_' . $image[2];
+				if (empty($meta['thumbnail']['ewww_image_optimizer'])) {
+					$meta['thumbnail']['ewww_image_optimizer'] = __('Unknown Savings', EWWW_IMAGE_OPTIMIZER_DOMAIN);
+					// update the image metadata in the db
+					flagdb::update_image_meta($id, $meta);
+					$record = ewww_image_optimizer_import_file ($thumb_path, __('Unknown Savings', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+				} else {
+					$record = ewww_image_optimizer_import_file ($thumb_path, $meta['thumbnail']['ewww_image_optimizer']);
+				}
+				if (!empty($record)) {
+					$rows[] = "('$record[0]', '$record[1]', '$record[2]', '$record[3]')";
+				}
+			}
+			if (count($rows) > 1000) {
+				$wpdb->query($insert_query . implode(', ', $rows));
+				$rows = array();
 			}
 			ewww_image_optimizer_debug_log();
 		}

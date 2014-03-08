@@ -189,12 +189,15 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * jpegmini server integration (for resizes only)
 * huge thanks to those who have done localization/translation for Dutch, Romanian, and Spanish. If you would like to help translate this plugin in your language, post a thread on the support forums.
 
+= 1.8.4 =
+* fixed: Import process is much faster by about 50x
+
 = 1.8.3 =
 * fixed: tools cannot be found if there are spaces in the WP paths
 * changed: API key validation is now cached to greatly reduce page load time, mostly on the admin side, but also for any sites that generate or allow uploading images on the front-end
 * fixed: a few WP Retina @2x images were not being optimized, and none of them were stored in the ewwwio_images table properly
 * new: better compression for cloud users via advpng
-* new: lossy compression for PNG images via pngquant - cloud users can contact me via http://www.exactlywww.com/contact-us/ to get 10% extra quota for the current month (free)
+* new: lossy compression for PNG images via pngquant
 * changed: Bulk Optimize loads much quicker (mostly noticable on sites with thousands of images)
 
 = 1.8.2 =
