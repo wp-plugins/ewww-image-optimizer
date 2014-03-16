@@ -1,10 +1,11 @@
 <?php 
 class ewwwngg {
-	// TODO: restore custom column via filter ngg_manage_images_row
+	// TODO: make sure the custom column works on 2.0.4x still
 	// TODO: add action via filter ngg_manage_images_row_actions
 	/* initializes the nextgen integration functions */
 	function ewwwngg() {
 		add_filter('ngg_manage_images_columns', array(&$this, 'ewww_manage_images_columns'));
+		add_filter('ngg_manage_images_number_of_columns', array(&$this, 'ewww_manage_images_number_of_columns'));
 		add_action('ngg_manage_image_custom_column', array(&$this, 'ewww_manage_image_custom_column'), 10, 2);
 		add_action('ngg_added_new_image', array(&$this, 'ewww_added_new_image'));
 		add_action('admin_action_ewww_ngg_manual', array(&$this, 'ewww_ngg_manual'));
@@ -109,29 +110,45 @@ class ewwwngg {
 		wp_redirect($sendback);
 		exit(0);
 	}
+	/* ngg_manage_images_number_of_columns hook, changed in NGG 2.0.50ish */
+	function ewww_manage_images_number_of_columns ($count) {
+		$count++;
+		add_filter("ngg_manage_images_column_{$count}_header", array(&$this, 'ewww_manage_images_columns'));
+                add_filter("ngg_manage_images_column_{$count}_content", array(&$this, 'ewww_manage_image_custom_column'), 10, 2);
+		return $count;
+	}
 
 	/* ngg_manage_images_columns hook */
-	function ewww_manage_images_columns( $columns ) {
-		$columns['ewww_image_optimizer'] = __('Image Optimizer', EWWW_IMAGE_OPTIMIZER_DOMAIN);
-		return $columns;
+	function ewww_manage_images_columns( $columns = null ) {
+		if ( is_array ( $columns ) ) {
+			$columns['ewww_image_optimizer'] = __( 'Image Optimizer', EWWW_IMAGE_OPTIMIZER_DOMAIN );
+			return $columns;
+		} else {
+			return __( 'Image Optimizer', EWWW_IMAGE_OPTIMIZER_DOMAIN );
+		}
 	}
 
 	/* ngg_manage_image_custom_column hook */
 	function ewww_manage_image_custom_column( $column_name, $id ) {
 		// once we've found our custom column
-		if( $column_name == 'ewww_image_optimizer' ) {    
+		if( $column_name == 'ewww_image_optimizer' || $column_name == '' ) {
+			$output = '';
 			// creating the 'registry' object for working with nextgen
 			$registry = C_Component_Registry::get_instance();
 			// creating a database storage object from the 'registry' object
 			$storage  = $registry->get_utility('I_Gallery_Storage');
-			// get an image object
-			$image = $storage->object->_image_mapper->find($id);
+			if ( is_object( $id ) ) {
+				$image = $id;
+			} else {
+				// get an image object
+				$image = $storage->object->_image_mapper->find($id);
+			}
 			// get the metadata for the image
 		//	$meta = new nggMeta( $id );
 			if (ewww_image_optimizer_get_option('ewww_image_optimizer_debug')) {
 				$print_meta = print_r($image->meta_data, TRUE);
 				$print_meta = preg_replace(array('/ /', '/\n+/'), array('&nbsp;', '<br />'), $print_meta);
-				echo '<div style="background-color:#ffff99;font-size: 10px;padding: 10px;margin:-10px -10px 10px;line-height: 1.1em">' . $print_meta . '</div>';
+				$output .= '<div style="background-color:#ffff99;font-size: 10px;padding: 10px;margin:-10px -10px 10px;line-height: 1.1em">' . $print_meta . '</div>';
 			}
 			// get the optimization status for the image
 //			$status = $meta->get_META('ewww_image_optimizer');
@@ -180,18 +197,23 @@ class ewwwngg {
 			}
 			// if we have a valid status, display it, the image size, and give a re-optimize link
 			if ( !empty( $image->meta_data['ewww_image_optimizer'] ) ) {
-				echo $image->meta_data['ewww_image_optimizer'];
-				echo "<br>" . sprintf(__('Image Size: %s', EWWW_IMAGE_OPTIMIZER_DOMAIN), $file_size);
-				printf("<br><a href=\"admin.php?action=ewww_ngg_manual&amp;force=1&amp;attachment_ID=%d\">%s</a>",
-				$id,
+				$output .= $image->meta_data['ewww_image_optimizer'];
+				$output .= "<br>" . sprintf(__('Image Size: %s', EWWW_IMAGE_OPTIMIZER_DOMAIN), $file_size);
+				$output .= sprintf("<br><a href=\"admin.php?action=ewww_ngg_manual&amp;force=1&amp;attachment_ID=%d\">%s</a>",
+				$image->pid,
 				__('Re-optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 			// otherwise, give the image size, and a link to optimize right now
 			} else {
 				print __('Not processed', EWWW_IMAGE_OPTIMIZER_DOMAIN);
-				echo "<br>" . sprintf(__('Image Size: %s', EWWW_IMAGE_OPTIMIZER_DOMAIN), $file_size);
-				printf("<br><a href=\"admin.php?action=ewww_ngg_manual&amp;attachment_ID=%d\">%s</a>",
-				$id,
+				$output .= "<br>" . sprintf(__('Image Size: %s', EWWW_IMAGE_OPTIMIZER_DOMAIN), $file_size);
+				$output .= sprintf("<br><a href=\"admin.php?action=ewww_ngg_manual&amp;attachment_ID=%d\">%s</a>",
+				$image->pid,
 				__('Optimize now!', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+			}
+			if ( is_object( $id ) ) {
+				return $output;
+			} else {
+				echo $output;
 			}
 		}
 	}

@@ -25,6 +25,7 @@ jQuery(document).ready(function($) {
 	var attachments = $.parseJSON(attachpost);
 	var i = 0;
 	var k = 0;
+	var import_total = 0;
 	var ewww_force = 0;
 	var ewww_interval = 0;
 	var ewww_delay = 0;
@@ -72,7 +73,8 @@ jQuery(document).ready(function($) {
 	};
 	var table_action = 'bulk_aux_images_table';
 	var table_count_action = 'bulk_aux_images_table_count';
-	var import_action = 'bulk_aux_images_import';
+	var import_init_action = 'bulk_import_init';
+	var import_loop_action = 'bulk_import_loop';
 	$('#aux-start').submit(function() {
 		ewww_aux = true;
 		init_action = 'bulk_aux_images_init';
@@ -109,13 +111,13 @@ jQuery(document).ready(function($) {
 		$('.bulk-info').hide();
 		$('#import-start').hide();
 	        $('#ewww-loading').show();
-		var import_data = {
-			action: import_action,
+		var import_init_data = {
+			action: import_init_action,
 			_wpnonce: ewww_vars._wpnonce,
 		};
-		$.post(ajaxurl, import_data, function(response) {
-			$('#bulk-status').html(response);
-			$('#ewww-loading').hide();
+		$.post(ajaxurl, import_init_data, function(response) {
+			import_total = response;
+			bulkImport();
 		});
 		return false;
 	});	
@@ -313,6 +315,27 @@ jQuery(document).ready(function($) {
 	        })
 		.fail(function() { 
 			$('#bulk-loading').html('<p style="color: red"><b>Operation Interrupted</b></p>');
+		});
+	}
+	function bulkImport() {
+		var import_loop_data = {
+			action: import_loop_action,
+			_wpnonce: ewww_vars._wpnonce,
+		};
+	        var jqxhr = $.post(ajaxurl, import_loop_data, function(response) {
+			var unfinished=/^\d+$/m;
+			//var finished=/Finished/m;
+			if (unfinished.test(response)) {
+				$('#bulk-status').html(response + '/' + import_total);
+				bulkImport();
+			}
+			else {
+				$('#bulk-status').html(response);
+				$('#ewww-loading').hide();
+			}
+	        })
+		.fail(function() { 
+			$('#bulk-status').html('<p style="color: red"><b>Operation Interrupted</b></p>');
 		});
 	}
 	function auxCleanup() {

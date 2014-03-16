@@ -692,7 +692,7 @@ function ewww_image_optimizer_cloud_verify ( $cache = true ) {
 		return false;
 	} else {
 		foreach ($servers as $ip) {
-			$url = "http://$ip/";
+			$url = "http://$ip/verify/";
 			$result = wp_remote_post($url, array(
 				'timeout' => 20,
 				'body' => array('api_key' => $api_key)
@@ -737,7 +737,7 @@ function ewww_image_optimizer_cloud_quota() {
 	global $ewww_cloud_ip;
 	$ewww_debug .= "<b>ewww_image_optimizer_cloud_quota()</b><br>";
 	$api_key = ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_key');
-	$url = "http://$ewww_cloud_ip/quota.php";
+	$url = "http://$ewww_cloud_ip/quota/";
 	$result = wp_remote_post($url, array(
 		'timeout' => 10,
 		'body' => array('api_key' => $api_key)
