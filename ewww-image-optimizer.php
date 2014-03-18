@@ -1899,7 +1899,7 @@ function ewww_image_optimizer_options () {
 			<?php
 			if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_key')) {
 				echo '<p><b>Cloud API Key:</b> ';
-				$verify_cloud = ewww_image_optimizer_cloud_verify(); 
+				$verify_cloud = ewww_image_optimizer_cloud_verify(false); 
 				if (preg_match('/great/', $verify_cloud)) {
 					echo '<span style="color: green">' . __('Verified,', EWWW_IMAGE_OPTIMIZER_DOMAIN) . ' </span>';
 					echo ewww_image_optimizer_cloud_quota();

@@ -101,12 +101,12 @@ function ewww_image_optimizer_import_init() {
 		$nextgen_data = get_plugin_data(trailingslashit(WP_PLUGIN_DIR) . 'nextgen-gallery/nggallery.php', false, false);
 		$ewww_debug .= 'Nextgen version: ' . $nextgen_data['Version'] . '<br>';
 		if (preg_match('/^2\./', $nextgen_data['Version'])) { // for Nextgen 2
-			$import_todo += $wpdb->get_var("SELECT COUNT(pid) FROM $wpdb->nggpictures");
+			$import_todo += $wpdb->get_var("SELECT COUNT(pid) FROM $wpdb->nggpictures WHERE meta_data LIKE '%ewww_image_optimizer%'");
 			$import_status['nextgen'] = 0;
 		}
 	}
 	if (is_plugin_active('flash-album-gallery/flag.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('flash-album-gallery/flag.php'))) {
-		$import_todo += $wpdb->get_var("SELECT COUNT(pid) FROM $wpdb->flagpictures");
+		$import_todo += $wpdb->get_var("SELECT COUNT(pid) FROM $wpdb->flagpictures WHERE meta_data LIKE '%ewww_image_optimizer%'");
 		$import_status['flag'] = 0;
 	}
 	update_option( 'ewww_image_optimizer_import_status', $import_status );
@@ -216,7 +216,7 @@ function ewww_image_optimizer_import_loop() {
 			$import_finished = false;
 			// need this file to work with metadata
 			//require_once(WP_CONTENT_DIR . '/plugins/nextgen-gallery/products/photocrati_nextgen/modules/ngglegacy/lib/meta.php');
-			$images = $wpdb->get_results("SELECT pid,meta_data,filename,galleryid FROM $wpdb->nggpictures LIMIT {$import_status['nextgen']}, 100", ARRAY_N);
+			$images = $wpdb->get_results("SELECT pid,meta_data,filename,galleryid FROM $wpdb->nggpictures WHERE meta_data LIKE '%ewww_image_optimizer%' LIMIT {$import_status['nextgen']}, 100", ARRAY_N);
 			if ( count( $images ) === 0 ) {
 				$import_finished = true;
 			} else {
@@ -286,7 +286,7 @@ function ewww_image_optimizer_import_loop() {
 	if ( $import_finished && isset( $import_status['flag'] ) ) {
 		$import_finished = false;
 	//if (is_plugin_active('flash-album-gallery/flag.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('flash-album-gallery/flag.php'))) {
-		$images = $wpdb->get_results("SELECT pid,meta_data,filename,galleryid FROM $wpdb->flagpictures LIMIT {$import_status['flag']}, 100", ARRAY_N);
+		$images = $wpdb->get_results("SELECT pid,meta_data,filename,galleryid FROM $wpdb->flagpictures WHERE meta_data LIKE '%ewww_image_optimizer%' LIMIT {$import_status['flag']}, 100", ARRAY_N);
 		$galleries = $wpdb->get_results("SELECT gid,path FROM $wpdb->flaggallery", ARRAY_N);
 		if ( count( $images ) === 0 ) {
 			$import_finished = true;
@@ -372,7 +372,7 @@ function ewww_image_optimizer_import_file ($attachment, $prev_result, $already_o
 	} else {
 		$savings_size = ewww_image_optimizer_size_unformat($savings_size[1]);
 	}
-	if (!file_exists($attachment)) {
+	if ( ! file_exists( $attachment ) || preg_match( '/' . __('License exceeded', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '/', $prev_result ) ) {
 		return array();
 	}
 	$query = $wpdb->prepare("SELECT id,image_size FROM $wpdb->ewwwio_images WHERE BINARY path = %s", $attachment);

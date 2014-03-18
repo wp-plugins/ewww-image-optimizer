@@ -772,7 +772,7 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $n
 	$ewww_debug .= "<b>ewww_image_optimizer_cloud_optimizer()</b><br>";
 	if ( $ewww_exceed ) {
 		$ewww_debug .= "license exceeded, image not processed<br>";
-		return array($file, false, 'exceeded');
+		return array($file, false, 'exceeded', 0);
 	}
 	if(ewww_image_optimizer_get_option('ewww_image_optimizer_jpegtran_copy') == TRUE){
         	// don't copy metadata
@@ -897,6 +897,9 @@ function ewww_image_optimizer_check_table ($file, $orig_size) {
 	$ewww_debug .= "<b>ewww_image_optimizer_check_table()</b><br>";
 	$query = $wpdb->prepare("SELECT results FROM $wpdb->ewwwio_images WHERE BINARY path = %s AND image_size = '$orig_size'", $file);
 	$already_optimized = $wpdb->get_var($query);
+	if ( preg_match( '/' . __('License exceeded', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '/', $already_optimized ) ) {
+		return;
+	}
 	if (!empty($already_optimized) && empty($_REQUEST['force'])) {
 		$prev_string = " - " . __('Previously Optimized', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 		$already_optimized = preg_replace("/$prev_string/", '', $already_optimized);
