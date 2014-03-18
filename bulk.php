@@ -435,6 +435,7 @@ function ewww_image_optimizer_bulk_loop() {
 	if ( ewww_image_optimizer_get_option ( 'ewww_image_optimizer_debug' ) ) {
 		echo '<div style="background-color:#ffff99;">' . $ewww_debug . '</div>';
 	}
+//	$ewww_debug .= "peak memory usage: " . memory_get_peak_usage(true) . "<br>";
 	ewww_image_optimizer_debug_log();
 	die();
 }
