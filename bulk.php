@@ -67,7 +67,7 @@ function ewww_image_optimizer_bulk_preview() {
 <?php		endif;
 	echo '</div>';
 	ewww_image_optimizer_aux_images();
-	$ewww_debug .= "ending (roughly) memory usage: " . memory_get_usage(true) . "<br>";
+//	$ewww_debug .= "ending (roughly) memory usage: " . memory_get_usage(true) . "<br>";
 }
 
 // retrieve image counts for the bulk process
@@ -75,7 +75,7 @@ function ewww_image_optimizer_count_optimized ($gallery) {
 	global $ewww_debug;
 	global $wpdb;
 	$ewww_debug .= "<b>ewww_image_optimizer_count_optmized()</b><br>";
-	$ewww_debug .= "before counting memory usage: " . memory_get_usage(true) . "<br>";
+//	$ewww_debug .= "before counting memory usage: " . memory_get_usage(true) . "<br>";
 	$full_count = 0;
 	$unoptimized_full = 0;
 	$unoptimized_re = 0;
@@ -236,8 +236,8 @@ function ewww_image_optimizer_count_optimized ($gallery) {
 	}
 	$elapsed = microtime(true) - $started;
 	$ewww_debug .= "counting images took $elapsed seconds<br>";
-	$ewww_debug .= "memory allowed: " . ini_get('memory_limit') . "<br>";
-	$ewww_debug .= "after counting memory usage: " . memory_get_usage(true) . "<br>";
+//	$ewww_debug .= "memory allowed: " . ini_get('memory_limit') . "<br>";
+//	$ewww_debug .= "after counting memory usage: " . memory_get_usage(true) . "<br>";
 	return array( $full_count, $unoptimized_full, $resize_count, $unoptimized_re );
 }
 
@@ -248,7 +248,7 @@ function ewww_image_optimizer_bulk_script($hook) {
 	// make sure we are being called from the bulk optimization page
 	if ('media_page_ewww-image-optimizer-bulk' != $hook)
 		return;
-	$ewww_debug .= "starting memory usage: " . memory_get_usage(true) . "<br>";
+//	$ewww_debug .= "starting memory usage: " . memory_get_usage(true) . "<br>";
         // initialize the $attachments variable
         $attachments = null;
         // check to see if we are supposed to reset the bulk operation and verify we are authorized to do so
