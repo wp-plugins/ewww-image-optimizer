@@ -192,8 +192,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 = 1.8.5 =
 * fixed: images with empty metadata count as unoptimized images on Bulk Optimize
 * changed: Import process split into batches via AJAX to make it less likely to timeout and use less memory
+* changed: Bulk Optimize page uses less memory and is quicker to load
 * fixed: custom column in NextGEN galleries works again with NextGEN 2.0.50+
-* changed: cloud api cache refreshed when visiting Settings page
+* changed: cloud api cache refreshes properly when visiting Settings page
 * fixed: license exceeded messages do not stall Bulk Optimize incorrectly
 
 = 1.8.4 =
