@@ -196,6 +196,8 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * fixed: custom column in NextGEN galleries works again with NextGEN 2.0.50+
 * changed: cloud api cache refreshes properly when visiting Settings page
 * fixed: license exceeded messages do not stall Bulk Optimize incorrectly
+* fixed: warning on Bulk Optimize for sites using UTC
+* fixed: user-specified paths to optimize did not work if using multi-site WP with plugin activated per-site
 
 = 1.8.4 =
 * fixed: Import process is much faster by about 50x

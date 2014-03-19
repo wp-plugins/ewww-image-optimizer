@@ -21,7 +21,11 @@ function ewww_image_optimizer_aux_images () {
 	// check the last time the auxiliary optimizer was run
 	$lastaux = get_option('ewww_image_optimizer_aux_last');
 	// set the timezone according to the blog settings
-	date_default_timezone_set ( get_option ( 'timezone_string' ) );
+	$site_timezone = get_option( 'timezone_string' );
+	if ( empty( $site_timezone ) ) {
+		$site_timezone = 'UTC';
+	}
+	date_default_timezone_set( $site_timezone );
 	?>
 	<h3><?php _e('Optimize Everything Else', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></h3>
 		<div id="aux-forms"><p class="bulk-info"><?php _e('Use this tool to optimize images outside of the Media Library and galleries where we have full integration. Examples: theme images, BuddyPress, WP Symposium, and any folders that you have specified on the settings page.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
@@ -417,14 +421,14 @@ function ewww_image_optimizer_import_file ($attachment, $prev_result, $already_o
 	return array();
 }
 
-function ewww_image_optimizer_import_cleanup() {
+/*function ewww_image_optimizer_import_cleanup() {
 	// verify that an authorized user has started the optimizer
 	if (!wp_verify_nonce($_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk')) {
 		wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 	} 
 	global $ewww_debug;
 	echo "<b>" . __('Finished importing', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</b>";
-}
+}*/
 
 // displays 50 records from the auxiliary images table
 function ewww_image_optimizer_aux_images_table() {
@@ -586,7 +590,7 @@ function ewww_image_optimizer_aux_images_script($hook) {
 			$attachments = array_merge($attachments, ewww_image_optimizer_image_scan($parent_path));
 		}
 		// collect a list of images in auxiliary folders provided by user
-		if ($aux_paths = get_site_option('ewww_image_optimizer_aux_paths')) {
+		if ( $aux_paths = ewww_image_optimizer_get_option( 'ewww_image_optimizer_aux_paths' ) ) {
 			foreach ($aux_paths as $aux_path) {
 				$attachments = array_merge($attachments, ewww_image_optimizer_image_scan($aux_path));
 			}
@@ -658,6 +662,7 @@ function ewww_image_optimizer_aux_images_script($hook) {
 		// store the filenames we retrieved in the 'bulk_attachments' option so we can keep track of our progress in the database
 		update_option('ewww_image_optimizer_aux_attachments', $attachments);
 	}
+	ewww_image_optimizer_debug_log();
 	// submit a couple variables to the javascript to work with
 	$attachments = json_encode($attachments);
 	if (!empty($_REQUEST['scan'])) {
