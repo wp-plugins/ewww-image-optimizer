@@ -1690,7 +1690,8 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new, $fullsize 
 			// if optimization is turned ON
 			if ($optimize) {
 				// run gifsicle on the GIF
-				exec( "$nice " . $tools['GIFSICLE'] . " -b -O3 --careful " . ewww_image_optimizer_escapeshellarg( $file ) );
+				//exec( "$nice " . $tools['GIFSICLE'] . " -b -O3 --careful " . ewww_image_optimizer_escapeshellarg( $file ) );
+				exec( "$nice " . $tools['GIFSICLE'] . " -b -O3 " . ewww_image_optimizer_escapeshellarg( $file ) );
 			// if conversion and optimization are both turned OFF, we are done here
 			} elseif (!$convert) {
 				break;
