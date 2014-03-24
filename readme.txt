@@ -198,6 +198,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * fixed: license exceeded messages do not stall Bulk Optimize incorrectly
 * fixed: warning on Bulk Optimize for sites using UTC
 * fixed: user-specified paths to optimize did not work if using multi-site WP with plugin activated per-site
+* fixed: gifsicle sometimes generates larger images (not anymore)
 
 = 1.8.4 =
 * fixed: Import process is much faster by about 50x

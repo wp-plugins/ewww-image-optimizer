@@ -1689,9 +1689,31 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new, $fullsize 
 			}
 			// if optimization is turned ON
 			if ($optimize) {
+				$tempfile = $file . ".tmp"; //temporary GIF output
+				// TODO: find out why gifsicle is generating larger files on some images
 				// run gifsicle on the GIF
-				//exec( "$nice " . $tools['GIFSICLE'] . " -b -O3 --careful " . ewww_image_optimizer_escapeshellarg( $file ) );
-				exec( "$nice " . $tools['GIFSICLE'] . " -b -O3 " . ewww_image_optimizer_escapeshellarg( $file ) );
+				exec( "$nice " . $tools['GIFSICLE'] . " -b -O3 --careful -o $tempfile" . ewww_image_optimizer_escapeshellarg( $file ) );
+				//exec( "$nice " . $tools['GIFSICLE'] . " -b -O3 -o $tempfile " . ewww_image_optimizer_escapeshellarg( $file ) );
+				if (file_exists($tempfile)) {
+					// retrieve the filesize of the temporary GIF
+					$new_size = filesize($tempfile);
+					// if the new GIF is smaller
+					if ($orig_size > $new_size && $new_size != 0) {
+						// replace the original with the optimized file
+						rename($tempfile, $file);
+						// store the results of the optimization
+						$result = "$orig_size vs. $new_size";
+					// if the optimization didn't produce a smaller GIF
+					} else {
+						if (is_file($tempfile)) {
+							// delete the optimized file
+							unlink($tempfile);
+						}
+						// store the results
+						$result = 'unchanged';
+						$new_size = $orig_size;
+					}
+				}
 			// if conversion and optimization are both turned OFF, we are done here
 			} elseif (!$convert) {
 				break;

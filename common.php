@@ -302,6 +302,7 @@ function ewww_image_optimizer_retina ( $id, $retina_path ) {
 }
 
 // list IMS images and optimization status
+// TODO: check out new hooks in 3.4.5 and see if they are useful to us
 function ewww_image_optimizer_ims() {
 	$ims_columns = get_column_headers('ims_gallery');
 	echo "<h3>" . __('Image Store Optimization', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</h3>";
