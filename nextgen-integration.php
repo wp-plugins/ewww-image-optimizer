@@ -321,8 +321,6 @@ class ewwwngg {
 		}
 		// store the image IDs to process in the db
 		update_option('ewww_image_optimizer_bulk_ngg_attachments', $images);
-		// add a custom jquery-ui script with progressbar functions
-//		wp_enqueue_script('ewwwjuiscript', plugins_url('/jquery-ui-1.10.2.custom.min.js', __FILE__), false);
 		// add the EWWW IO script
 		wp_enqueue_script('ewwwbulkscript', plugins_url('/eio.js', __FILE__), array('jquery', 'jquery-ui-progressbar', 'jquery-ui-slider'));
 		// replacing the built-in nextgen styling rules for progressbar

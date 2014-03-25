@@ -637,11 +637,6 @@ function ewww_image_optimizer_delete ($id) {
 	$wpdb->delete($wpdb->ewwwio_images, array('path' => $file_path));
 	// resized versions, so we can continue
 	if (isset($meta['sizes']) ) {
-		// if the full-size didn't have an original image, so $file_path isn't set
-/*		if(empty($file_path)) {
-			// get the filepath
-			list($file_path, $upload_path) = ewww_image_optimizer_attachment_path($meta, $id);
-		}*/
 		// one way or another, $file_path is now set, and we can get the base folder name
 		$base_dir = dirname($file_path) . '/';
 		// check each resized version
@@ -871,20 +866,13 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $n
 		} elseif (ewww_image_optimizer_mimetype($tempfile, 'i') == $type) {
 			$newsize = filesize($tempfile);
 			rename($tempfile, $file);
-			// store the result of the conversion
-		//	$msg = "$orig_size vs. $newsize";
-		//	$ewww_debug .= "optimized image is better: $msg<br>";
 		} elseif (ewww_image_optimizer_mimetype($tempfile, 'i') == $newtype) {
 			$converted = true;
 			$newsize = filesize($tempfile);
 			rename($tempfile, $newfile);
-			// store the result of the conversion
-		//	$msg = "$orig_size vs. $newsize";
-		//	$ewww_debug .= "converted image is better: $msg<br>";
 			$file = $newfile;
 		} else {
 			unlink($tempfile);
-		//	$msg = 'unchanged';
 		}
 		return array($file, $converted, $msg, $newsize);
 	}

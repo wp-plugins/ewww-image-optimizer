@@ -53,8 +53,6 @@ class ewwwflag {
 				return;
 			}
 		}
-		// get the previously stored attachments array from the options table
-		//$attachments = get_option('ewww_image_optimizer_bulk_flag_attachments');
 		list($fullsize_count, $unoptimized_count, $resize_count, $unoptimized_resize_count) = ewww_image_optimizer_count_optimized ('flag');
 		// bail-out if there aren't any images to optimize
 		if ($fullsize_count < 1) {
@@ -167,8 +165,6 @@ class ewwwflag {
 		}
 		// store the IDs to optimize in the options table of the db
 		update_option('ewww_image_optimizer_bulk_flag_attachments', $ids);
-		// add a custom jquery-ui script that contains the progressbar widget
-//		wp_enqueue_script('ewwwjuiscript', plugins_url('/jquery-ui-1.10.2.custom.min.js', __FILE__), false);
 		// add the EWWW IO javascript
 		wp_enqueue_script('ewwwbulkscript', plugins_url('/eio.js', __FILE__), array('jquery', 'jquery-ui-progressbar', 'jquery-ui-slider'));
 		// add the styling for the progressbar
@@ -286,9 +282,6 @@ class ewwwflag {
 		// get the image meta for the current ID
 		$meta = new flagMeta($id);
 		$file_path = $meta->image->imagePath;
-/*		if ($meta->get_META('ewww_image_optimizer') && empty($_REQUEST['force'])) {
-			printf( "<p>" . __('Already optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", esc_html($file_path) );
-		} else {*/
 			// optimize the full-size version
 			$fres = ewww_image_optimizer($file_path, 3, false, false, ewww_image_optimizer_get_option('ewww_image_optimizer_lossy_skip_full'));
 			$meta->image->meta_data['ewww_image_optimizer'] = $fres[1];
@@ -306,7 +299,6 @@ class ewwwflag {
 			$elapsed = microtime(true) - $started;
 			// and output it to the user
 			printf(__('Elapsed: %.3f seconds', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</p>", $elapsed);
-//		}
 		// retrieve the list of attachments left to work on
 		$attachments = get_option('ewww_image_optimizer_bulk_flag_attachments');
 		// take the first image off the list

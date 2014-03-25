@@ -324,7 +324,6 @@ jQuery(document).ready(function($) {
 		};
 	        var jqxhr = $.post(ajaxurl, import_loop_data, function(response) {
 			var unfinished=/^\d+$/m;
-			//var finished=/Finished/m;
 			if (unfinished.test(response)) {
 				$('#bulk-status').html(response + '/' + import_total);
 				bulkImport();
