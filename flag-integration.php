@@ -225,7 +225,6 @@ class ewwwflag {
 		$meta->image->meta_data['thumbnail']['ewww_image_optimizer'] = $tres[1];
 		// update the metadata for the full-size image
 		flagdb::update_image_meta($id, $meta->image->meta_data);
-//		flagdb::update_image_meta($id, array('ewww_image_optimizer' => $res[1]));
 		// get the referring page
 		$sendback = wp_get_referer();
 		// and clean it up a bit

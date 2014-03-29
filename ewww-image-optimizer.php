@@ -722,6 +722,8 @@ function ewww_image_optimizer_find_binary ($binary, $switch) {
 		return '/usr/local/bin/' . $binary;
 	} elseif (ewww_image_optimizer_tool_found('/usr/gnu/bin/' . $binary, $switch)) {
 		return '/usr/gnu/bin/' . $binary;
+	} elseif (ewww_image_optimizer_tool_found('/usr/syno/bin/' . $binary, $switch)) { // for synology diskstation OS
+		return '/usr/syno/bin/' . $binary;
 	} else {
 		return '';
 	}
@@ -2061,7 +2063,7 @@ function ewww_image_optimizer_options () {
 			</div></div>
 			<p class="submit"><input type="submit" class="button-primary" value="<?php _e('Save Changes', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?>" /></p>
 		</form>
-		<p>I recommend hosting your Wordpress site with <a href=http://www.dreamhost.com/r.cgi?132143">Dreamhost.com</a> or <a href="http://www.bluehost.com/track/nosilver4u">Bluehost.com</a>. Using these referral links will allow you to support future development of this plugin: <a href=http://www.dreamhost.com/r.cgi?132143">Dreamhost</a> | <a href="http://www.bluehost.com/track/nosilver4u">Bluehost</a>. Alternatively, you can contribute directly by <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MKMQKCBFFG3WW">donating with Paypal</a>.</p>
+		<p>I recommend hosting your Wordpress site with <a href="http://www.dreamhost.com/r.cgi?132143">Dreamhost.com</a> or <a href="http://www.bluehost.com/track/nosilver4u">Bluehost.com</a>. Using these referral links will allow you to support future development of this plugin: <a href=http://www.dreamhost.com/r.cgi?132143">Dreamhost</a> | <a href="http://www.bluehost.com/track/nosilver4u">Bluehost</a>. Alternatively, you can contribute directly by <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MKMQKCBFFG3WW">donating with Paypal</a>.</p>
 	</div>
 	<?php
 }
