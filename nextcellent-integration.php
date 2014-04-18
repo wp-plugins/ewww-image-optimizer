@@ -373,7 +373,7 @@ class ewwwngg {
                         wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
                 }
 		// need this file to work with metadata
-		require_once(WP_CONTENT_DIR . '/plugins/nextcellent-gallery/lib/meta.php');
+		require_once(WP_CONTENT_DIR . '/plugins/nextcellent-gallery-nextgen-legacy/lib/meta.php');
 		$id = $_POST['attachment'];
 		// get the meta for the image
 		$meta = new nggMeta($id);
