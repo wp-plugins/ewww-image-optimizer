@@ -386,14 +386,14 @@ function ewww_image_optimizer_tool_found($path, $tool) {
 			}
 			break;
 		case 'o': // optipng
-			exec($path . ' -v', $optipng_version);
+			exec($path . ' -v 2>&1', $optipng_version);
 			if (!empty($optipng_version)) $ewww_debug .= "$path: $optipng_version[0]<br>";
 			if (!empty($optipng_version) && strpos($optipng_version[0], 'OptiPNG') === 0) {
 				return $optipng_version[0];
 			}
 			break;
 		case 'g': // gifsicle
-			exec($path . ' --version', $gifsicle_version);
+			exec($path . ' --version 2>&1', $gifsicle_version);
 			if (!empty($gifsicle_version)) $ewww_debug .= "$path: $gifsicle_version[0]<br>";
 			if (!empty($gifsicle_version) && strpos($gifsicle_version[0], 'LCDF Gifsicle') === 0) {
 				return $gifsicle_version[0];
@@ -407,14 +407,14 @@ function ewww_image_optimizer_tool_found($path, $tool) {
 			}
 			break;
 		case 'q': // pngquant
-			exec($path . ' -V', $pngquant_version);
+			exec($path . ' -V 2>&1', $pngquant_version);
 			if (!empty($pngquant_version)) $ewww_debug .= "$path: $pngquant_version[0]<br>";
 			if (!empty($pngquant_version) && strpos($pngquant_version[0], '2.0') === 0) {
 				return $pngquant_version[0];
 			}
 			break;
 		case 'i': // ImageMagick
-			exec("$path -version", $convert_version);
+			exec("$path -version 2>&1", $convert_version);
 			if (!empty($convert_version)) $ewww_debug .= "$path: $convert_version[0]<br>";
 			if (!empty($convert_version) && strpos($convert_version[0], 'ImageMagick')) {
 				return $convert_version[0];
@@ -439,7 +439,7 @@ function ewww_image_optimizer_tool_found($path, $tool) {
 			}
 			break;
 		case 't': // tar
-			exec("$path --version", $tar_version);
+			exec("$path --version 2>&1", $tar_version);
 			if (!empty($tar_version[0])) $ewww_debug .= "$path: $tar_version[0]<br>";
 			if (!empty($tar_version[0]) && preg_match('/bsdtar/', $tar_version[0])) {
 				return $tar_version[0];
