@@ -1292,12 +1292,16 @@ function ewww_image_optimizer_attachment_path($meta, $ID) {
 		}
 		return array($file_path, $upload_path);
 	}
-	$file_path = $meta['file'];
-	if (is_file($file_path))
-		return array($file_path, $upload_path);
-	$file_path = $upload_path . $file_path;
-	if (is_file($file_path))
-		return array($file_path, $upload_path);
+	if ( ! empty( $meta['file'] ) ) {
+		$file_path = $meta['file'];
+		if (is_file($file_path)) {
+			return array($file_path, $upload_path);
+		}
+		$file_path = $upload_path . $file_path;
+		if (is_file($file_path)) {
+			return array($file_path, $upload_path);
+		}
+	}
 	return array('', $upload_path);
 }
 
