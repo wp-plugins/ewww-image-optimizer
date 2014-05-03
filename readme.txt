@@ -195,6 +195,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 = future =
 * these are possible future bugfixes and/or feature requests, if you see a feature you like here, go vote for it in the support forum
+* full GMedia support
 * show statistics: display cumulative savings and computation time in status section
 * webp support
 * jpegmini server integration for cloud users
@@ -203,6 +204,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 = 1.9.0 =
 * changed: verification results for cloud optimization are still cached, but actual optimization requires pre-verification to maintain load-balancing
 * added: NextCellent Gallery support - no future development will be done for NextGEN 1.9.13, all future development will be on NextCellent.
+* updated translations for Romanian and Dutch
+* fixed some warnings and notices
+* added GMedia folder to Scan and Optimize function
 
 = 1.8.5 =
 * fixed: images with empty metadata count as unoptimized images on Bulk Optimize

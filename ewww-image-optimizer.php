@@ -1837,7 +1837,7 @@ function ewww_image_optimizer_options () {
 	<script type='text/javascript'>
 		jQuery(document).ready(function($) {$('.fade').fadeTo(5000,1).fadeOut(3000);});
 	</script>
-	<div class="wrap">
+	<div class="wrap" style="clear: both"><div id="ewww-container-left" style="float: left; margin-right: 200px;">
 		<div id="icon-options-general" class="icon32"><br /></div>
 		<h2>EWWW <?php _e('Image Optimizer Settings', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></h2>
 		<p><a href="http://wordpress.org/extend/plugins/ewww-image-optimizer/"><?php _e('Plugin Home Page', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></a> |
@@ -2062,8 +2062,23 @@ function ewww_image_optimizer_options () {
 			</table>
 			</div></div>
 			<p class="submit"><input type="submit" class="button-primary" value="<?php _e('Save Changes', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?>" /></p>
-		</form>
-		<p>I recommend hosting your Wordpress site with <a href="http://www.dreamhost.com/r.cgi?132143">Dreamhost.com</a> or <a href="http://www.bluehost.com/track/nosilver4u">Bluehost.com</a>. Using these referral links will allow you to support future development of this plugin: <a href=http://www.dreamhost.com/r.cgi?132143">Dreamhost</a> | <a href="http://www.bluehost.com/track/nosilver4u">Bluehost</a>. Alternatively, you can contribute directly by <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MKMQKCBFFG3WW">donating with Paypal</a>.</p>
+		</form></div><!-- end container left -->
+		<div id="ewww-container-right" style="border: 1px solid #ccc; padding: 0 8px; border-radius: 12px; float: right; margin-left: -200px; display: inline-block; width: 174px;">
+			<h3>Support EWWW I.O.</h3>
+			<p>Would you like to help support development of this plugin? Use any of these referral links to keep me working on this plugin:</p>
+			<p><b>Web Hosting:</b><br>
+				<a href="http://www.dreamhost.com/r.cgi?132143">Dreamhost</a><br>
+				<a href="http://www.bluehost.com/track/nosilver4u">Bluehost</a><br>
+				<a href="http://www.liquidweb.com/?RID=nosilver4u">liquidweb</a><br>
+				<a href="http://www.stormondemand.com/?RID=nosilver4u">Storm on Demand</a>
+			</p>
+			<p><b>VPS:</b><br>
+				<a href="https://www.digitalocean.com/?refcode=89ef0197ec7e">DigitalOcean</a><br>
+				<a href="https://clientarea.ramnode.com/aff.php?aff=1469">RamNode</a>
+			</p>
+			<p><b>CDN Networks:</b><br>Add the MaxCDN content delivery network to increase website speeds dramatically! <a target="_blank" href="http://tracking.maxcdn.com/c/91625/36539/378">Sign Up Now and Save 25%</a> (100% Money Back Guarantee for 30 days). Integrate it within Wordpress using the W3 Total Cache plugin.</p>
+<p>Contribute directly by <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MKMQKCBFFG3WW">donating with Paypal</a>.</p>
+		</div>
 	</div>
 	<?php
 }

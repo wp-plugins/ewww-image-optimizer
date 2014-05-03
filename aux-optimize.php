@@ -548,6 +548,10 @@ function ewww_image_optimizer_aux_images_script($hook) {
 			// scan the 'avatars' and 'group-avatars' folders for images
 			$attachments = array_merge($attachments, ewww_image_optimizer_image_scan($upload_dir['basedir'] . '/bpfb'));
 		}
+		if (is_plugin_active('grand-media/grand-media.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('grand-media/grand-media.php'))) {
+			// scan the grand media folder for images
+			$attachments = array_merge($attachments, ewww_image_optimizer_image_scan(WP_CONTENT_DIR . '/grand-media'));
+		}
 		if (is_plugin_active('wp-symposium/wp-symposium.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('wp-symposium/wp-symposium.php'))) {
 			$attachments = array_merge($attachments, ewww_image_optimizer_image_scan(get_option('symposium_img_path')));
 		}
