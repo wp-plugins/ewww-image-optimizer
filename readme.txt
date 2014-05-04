@@ -207,6 +207,8 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * fixed some warnings and notices
 * added GMedia folder to Scan and Optimize function
 * show cumulative savings in status section
+* added: filter to bypass optimization for developer use
+* added: option to bypass optimization for small images
 
 = 1.8.5 =
 * fixed: images with empty metadata count as unoptimized images on Bulk Optimize
