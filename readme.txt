@@ -196,7 +196,6 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 = future =
 * these are possible future bugfixes and/or feature requests, if you see a feature you like here, go vote for it in the support forum
 * full GMedia support
-* show statistics: display cumulative savings and computation time in status section
 * webp support
 * jpegmini server integration for cloud users
 * huge thanks to those who have done localization/translation for Dutch, Romanian, and Spanish. If you would like to help translate this plugin in your language, post a thread on the support forums.
@@ -207,6 +206,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * updated translations for Romanian and Dutch
 * fixed some warnings and notices
 * added GMedia folder to Scan and Optimize function
+* show cumulative savings in status section
 
 = 1.8.5 =
 * fixed: images with empty metadata count as unoptimized images on Bulk Optimize

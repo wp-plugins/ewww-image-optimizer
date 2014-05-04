@@ -1046,8 +1046,17 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new, $fullsize 
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer()</b><br>";
 	// if the plugin gets here without initializing, we need to run through some things first
-	if (!defined('EWWW_IMAGE_OPTIMIZER_CLOUD'))
+	if ( ! defined( 'EWWW_IMAGE_OPTIMIZER_CLOUD' ) ) {
 		ewww_image_optimizer_init();
+	}
+	$bypass_optimization = apply_filters( 'ewww_image_optimizer_bypass', false, $file );
+	if (true === $bypass_optimization) {
+		// tell the user optimization was skipped
+		$msg = sprintf(__("Optimization skipped for <span class='code'>%s</span>", EWWW_IMAGE_OPTIMIZER_DOMAIN), $file);
+		$ewww_debug .= "optimization bypassed: $file <br>";
+		// send back the above message
+		return array(false, $msg, $converted, $file);
+	}
 	// initialize the original filename 
 	$original = $file;
 	$result = '';
@@ -1852,8 +1861,19 @@ function ewww_image_optimizer_options () {
 		<p><?php printf(__('New images uploaded to the Media Library will be optimized automatically. If you have existing images you would like to optimize, you can use the %s tool.', EWWW_IMAGE_OPTIMIZER_DOMAIN), $bulk_link); ?></p>
 		<div id="status" style="border: 1px solid #ccc; padding: 0 8px; border-radius: 12px;">
 			<h3>Plugin Status</h3>
-			<?php
+	<?php 
+	global $wpdb;
+	$total_query = "SELECT orig_size-image_size FROM $wpdb->ewwwio_images";
+	$savings = $wpdb->get_results($total_query, ARRAY_N);
+	$total_savings = 0;
+	foreach ($savings as $saved) {
+		$total_savings += $saved[0];
+	}
+	// get a human readable filesize
+	$readable_savings = size_format( $total_savings, 2 );
+			echo "<b>" . __('Total Savings:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</b> $readable_savings<br>";
 			if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_key')) {
+				// TODO: translatablify this string
 				echo '<p><b>Cloud API Key:</b> ';
 				$verify_cloud = ewww_image_optimizer_cloud_verify(false); 
 				if (preg_match('/great/', $verify_cloud)) {
