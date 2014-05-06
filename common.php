@@ -1015,7 +1015,6 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = tr
 	global $ewww_debug;
 	global $wpdb;
 	// may also need to track their attachment ID as well
-	// TODO: also have some doo-dad that tracks total file savings
 	$ewww_debug .= "<b>ewww_image_optimizer_resize_from_meta_data()</b><br>";
 	$gallery_type = 1;
 	$ewww_debug .= "attachment id: $ID<br>";
@@ -1127,8 +1126,10 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = tr
 					$meta['sizes'][$size]['real_orig_file'] = str_replace($base_dir, '', $resize_path);
 					$ewww_debug .= "resize path: $resize_path<br>";
 				}
-				// update the filename
-				$meta['sizes'][$size]['file'] = str_replace($base_dir, '', $optimized_file);
+				if ($optimized_file !== false) {
+					// update the filename
+					$meta['sizes'][$size]['file'] = str_replace($base_dir, '', $optimized_file);
+				}
 				// update the optimization results
 				$meta['sizes'][$size]['ewww_image_optimizer'] = $results;
 			}
