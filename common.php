@@ -470,7 +470,11 @@ function ewww_image_optimizer_aux_paths_sanitize ($input) {
 // replacement for escapeshellarg() that won't kill non-ASCII characters
 function ewww_image_optimizer_escapeshellarg( $arg ) {
 	global $ewww_debug;
-	$safe_arg = "'" . str_replace("'", "'\"'\"'", $arg) . "'";
+	if ( PHP_OS === 'WINNT' ) {
+		$safe_arg = '"' . $arg . '"';
+	} else {
+		$safe_arg = "'" . str_replace("'", "'\"'\"'", $arg) . "'";
+	}
 	return $safe_arg;
 }
 

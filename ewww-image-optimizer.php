@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate image optimizers into WordPress.
- * @version 1.9.0
+ * @version 1.9.0.1
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -10,7 +10,7 @@ Plugin URI: http://wordpress.org/extend/plugins/ewww-image-optimizer/
 Description: Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
 Author: Shane Bishop
 Text Domain: ewww-image-optimizer
-Version: 1.9.0
+Version: 1.9.0.1
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
@@ -23,7 +23,7 @@ define('EWWW_IMAGE_OPTIMIZER_TOOL_PATH', WP_CONTENT_DIR . '/ewww/');
 define('EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE', __FILE__);
 // this is the full system path to the plugin folder
 define('EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH', plugin_dir_path(__FILE__));
-define('EWWW_IMAGE_OPTIMIZER_VERSION', '190');
+define('EWWW_IMAGE_OPTIMIZER_VERSION', '190.1');
 
 require_once(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'common.php');
 
@@ -411,8 +411,9 @@ function ewww_image_optimizer_tool_found($path, $tool) {
 			break;
 		case 'q': // pngquant
 			exec($path . ' -V 2>&1', $pngquant_version);
-			if (!empty($pngquant_version)) $ewww_debug .= "$path: $pngquant_version[0]<br>";
-			if (!empty($pngquant_version) && strpos($pngquant_version[0], '2.0') === 0) {
+			if ( ! empty( $pngquant_version ) ) $ewww_debug .= "$path: $pngquant_version[0]<br>";
+			if ( ! empty( $pngquant_version ) && substr( $pngquant_version[0], 0, 3 ) >= 2.0 ) {
+			//if (!empty($pngquant_version) && strpos($pngquant_version[0], '2.0') === 0) {
 				return $pngquant_version[0];
 			}
 			break;

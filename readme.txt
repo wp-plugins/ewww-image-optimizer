@@ -200,6 +200,10 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * jpegmini server integration for cloud users
 * huge thanks to those who have done localization/translation for Dutch, Romanian, and Spanish. If you would like to help translate this plugin in your language, post a thread on the support forums.
 
+= 1.9.1 =
+* fixed: escapeshellarg command breaks Windows filenames
+* fixed: newer versions of pngquant not detected
+
 = 1.9.0 =
 * changed: verification results for cloud optimization are still cached, but actual optimization requires pre-verification to maintain load-balancing
 * added: NextCellent Gallery support - no future development will be done for NextGEN 1.9.13, all future development will be on NextCellent.
