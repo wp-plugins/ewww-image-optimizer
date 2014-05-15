@@ -203,6 +203,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 = 1.9.1 =
 * fixed: escapeshellarg command breaks Windows filenames
 * fixed: newer versions of pngquant not detected
+* changed: exclude full-size from lossy optimization applies to lossy conversions too
 
 = 1.9.0 =
 * changed: verification results for cloud optimization are still cached, but actual optimization requires pre-verification to maintain load-balancing
