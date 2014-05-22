@@ -1,10 +1,10 @@
 <?php 
 class ewwwngg {
-	// TODO: add action via filter ngg_manage_images_row_actions
 	/* initializes the nextgen integration functions */
 	function ewwwngg() {
 		add_filter('ngg_manage_images_columns', array(&$this, 'ewww_manage_images_columns'));
 		add_filter('ngg_manage_images_number_of_columns', array(&$this, 'ewww_manage_images_number_of_columns'));
+		add_filter('ngg_manage_images_row_actions', array(&$this, 'ewww_manage_images_row_actions'));
 		add_action('ngg_manage_image_custom_column', array(&$this, 'ewww_manage_image_custom_column'), 10, 2);
 		add_action('ngg_added_new_image', array(&$this, 'ewww_added_new_image'));
 		add_action('admin_action_ewww_ngg_manual', array(&$this, 'ewww_ngg_manual'));
@@ -173,27 +173,56 @@ class ewwwngg {
 				print __('Unsupported file type', EWWW_IMAGE_OPTIMIZER_DOMAIN) . $msg;
 				return;
 			}
-			// if we have a valid status, display it, the image size, and give a re-optimize link
+			// if we have a valid status, display it
 			if ( !empty( $image->meta_data['ewww_image_optimizer'] ) ) {
 				$output .= $image->meta_data['ewww_image_optimizer'];
-				$output .= "<br>" . sprintf(__('Image Size: %s', EWWW_IMAGE_OPTIMIZER_DOMAIN), $file_size);
-				$output .= sprintf("<br><a href=\"admin.php?action=ewww_ngg_manual&amp;force=1&amp;attachment_ID=%d\">%s</a>",
-				$image->pid,
-				__('Re-optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+/*				$output .= "<br>" . sprintf(__('Image Size: %s', EWWW_IMAGE_OPTIMIZER_DOMAIN), $file_size) . "<br>";
+				$output .= $this->ewww_render_optimize_action_link( $id, $image );
+				$output .= sprintf("<a href=\"admin.php?action=ewww_ngg_manual&amp;force=1&amp;attachment_ID=%d\">%s</a>",
+					$image->pid,
+					__('Re-optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN));*/
 			// otherwise, give the image size, and a link to optimize right now
 			} else {
-				print __('Not processed', EWWW_IMAGE_OPTIMIZER_DOMAIN);
-				$output .= "<br>" . sprintf(__('Image Size: %s', EWWW_IMAGE_OPTIMIZER_DOMAIN), $file_size);
-				$output .= sprintf("<br><a href=\"admin.php?action=ewww_ngg_manual&amp;attachment_ID=%d\">%s</a>",
-				$image->pid,
-				__('Optimize now!', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+				$output .=  __('Not processed', EWWW_IMAGE_OPTIMIZER_DOMAIN);
+/*				$output .= sprintf("<a href=\"admin.php?action=ewww_ngg_manual&amp;attachment_ID=%d\">%s</a>",
+					$image->pid,
+					__('Optimize now!', EWWW_IMAGE_OPTIMIZER_DOMAIN));*/
 			}
+			// display the image size
+			$output .= "<br>" . sprintf(__('Image Size: %s', EWWW_IMAGE_OPTIMIZER_DOMAIN), $file_size) . "<br>";
+			// display the optimization link with the appropriate text
+			$output .= $this->ewww_render_optimize_action_link( $id, $image );
+
 			if ( is_object( $id ) ) {
 				return $output;
 			} else {
 				echo $output;
 			}
 		}
+	}
+
+	// output the action link for the manage gallery page
+	function ewww_render_optimize_action_link($id, $image) {
+/*		global $ewww_debug;
+		$ewww_debug .= print_r($image, true);
+		ewww_image_optimizer_debug_log();*/
+		if ( !empty( $image->meta_data['ewww_image_optimizer'] ) ) {
+			$link = sprintf("<a href=\"admin.php?action=ewww_ngg_manual&amp;force=1&amp;attachment_ID=%d\">%s</a>",
+                                        $image->pid,
+                                        __('Re-optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+		} else {
+			$link = sprintf("<a href=\"admin.php?action=ewww_ngg_manual&amp;attachment_ID=%d\">%s</a>",
+                                        $image->pid,
+                                        __('Optimize now!', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+		}
+		return $link;
+	}
+
+	// append our action link to the list
+	function ewww_manage_images_row_actions( $actions ) {
+		$actions['optimize'] = array(&$this, 'ewww_render_optimize_action_link');
+		return $actions; 
+		//'delete'                =>      array(&$this, 'render_delete_action_link')
 	}
 
 	/* output the html for the bulk optimize page */
@@ -215,7 +244,7 @@ class ewwwngg {
                         echo '<p>' . __('You do not appear to have uploaded any images yet.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</p>';
                         return;
                 }
-		ewww_image_optimizer_cloud_verify(false); 
+//		ewww_image_optimizer_cloud_verify(false); 
                 ?>
 		<div class="wrap">
                 <div id="icon-upload" class="icon32"></div><h2><?php _e('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></h2>

@@ -1,6 +1,5 @@
 <?php 
 class ewwwflag {
-	// TODO: optimize the 'optimized/webview' versions of images on upload, and on the custom bulk action
 	/* initializes the flagallery integration functions */
 	function ewwwflag() {
 		add_filter('flag_manage_images_columns', array(&$this, 'ewww_manage_images_columns'));
@@ -9,7 +8,8 @@ class ewwwflag {
 		add_action('flag_manage_galleries_bulkaction', array(&$this, 'ewww_manage_galleries_bulkaction'));
 		add_action('flag_manage_post_processor_images', array(&$this, 'ewww_flag_bulk'));
 		add_action('flag_manage_post_processor_galleries', array(&$this, 'ewww_flag_bulk'));
-		add_action('flag_thumbnail_created', array(&$this, 'ewww_added_new_image'));
+//		add_action('flag_thumbnail_created', array(&$this, 'ewww_added_new_image'));
+		add_action('flag_image_optimized', array(&$this, 'ewww_added_new_image'));
 		add_action('flag_image_resized', array(&$this, 'ewww_added_new_image'));
 		add_action('admin_action_ewww_flag_manual', array(&$this, 'ewww_flag_manual'));
 		add_action('admin_menu', array(&$this, 'ewww_flag_bulk_menu'));
@@ -59,7 +59,7 @@ class ewwwflag {
 			echo '<p>' . __('You do not appear to have uploaded any images yet.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</p>';
 			return;
 		}
-		ewww_image_optimizer_cloud_verify(false); 
+//		ewww_image_optimizer_cloud_verify(false); 
 		?>
 		<div class="wrap"><div id="icon-upload" class="icon32"></div><h2>GRAND FlAGallery <?php _e('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></h2>
 		<?php
@@ -182,10 +182,13 @@ class ewwwflag {
 	/* flag_added_new_image hook - optimize newly uploaded images */
 	function ewww_added_new_image ($image) {
 		global $ewww_debug;
+		$ewww_debug .= "<b>ewww_flag::ewww_added_new_image()</b><br>";
 		// make sure the image path is set
 		if (isset($image->imagePath)) {
 			// optimize the full size
 			$res = ewww_image_optimizer($image->imagePath, 3, false, false, ewww_image_optimizer_get_option('ewww_image_optimizer_lossy_skip_full'));
+			// optimize the web optimized version
+			$wres = ewww_image_optimizer($image->webimagePath, 3, false, true);
 			// optimize the thumbnail
 			$tres = ewww_image_optimizer($image->thumbPath, 3, false, true);
 			// get the image ID
@@ -194,6 +197,9 @@ class ewwwflag {
 			$meta = new flagMeta( $pid );
 			$ewww_debug .= print_r($meta->image->meta_data, TRUE) . "<br>";
 			$meta->image->meta_data['ewww_image_optimizer'] = $res[1];
+			if ( ! empty( $meta->image->meta_data['webview'] ) ) {
+				$meta->image->meta_data['webview']['ewww_image_optimizer'] = $wres[1];
+			}
 			$meta->image->meta_data['thumbnail']['ewww_image_optimizer'] = $tres[1];
 			// update the image metadata in the db
 			flagdb::update_image_meta($pid, $meta->image->meta_data);
@@ -218,6 +224,12 @@ class ewwwflag {
 		// optimize the full size
 		$res = ewww_image_optimizer($file_path, 3, false, false, ewww_image_optimizer_get_option('ewww_image_optimizer_lossy_skip_full'));
 		$meta->image->meta_data['ewww_image_optimizer'] = $res[1];
+		if ( ! empty( $meta->image->meta_data['webview'] ) ) {
+			// determine path of the webview
+			$web_path = $meta->image->webimagePath;
+			$wres = ewww_image_optimizer($web_path, 3, false, true);
+			$meta->image->meta_data['webview']['ewww_image_optimizer'] = $wres[1];
+		}
 		// determine the path of the thumbnail
 		$thumb_path = $meta->image->thumbPath;
 		// optimize the thumbnail
@@ -281,23 +293,30 @@ class ewwwflag {
 		// get the image meta for the current ID
 		$meta = new flagMeta($id);
 		$file_path = $meta->image->imagePath;
-			// optimize the full-size version
-			$fres = ewww_image_optimizer($file_path, 3, false, false, ewww_image_optimizer_get_option('ewww_image_optimizer_lossy_skip_full'));
-			$meta->image->meta_data['ewww_image_optimizer'] = $fres[1];
-			// let the user know what happened
-			printf( "<p>" . __('Optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", esc_html($meta->image->filename) );
-			printf(__('Full size – %s', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "<br>", $fres[1]);
-			$thumb_path = $meta->image->thumbPath;
-			// optimize the thumbnail
-			$tres = ewww_image_optimizer($thumb_path, 3, false, true);
-			$meta->image->meta_data['thumbnail']['ewww_image_optimizer'] = $tres[1];
-			// and let the user know the results
-			printf(__('Thumbnail – %s', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "<br>", $tres[1]);
-			flagdb::update_image_meta($id, $meta->image->meta_data);
-			// determine how much time the image took to process
-			$elapsed = microtime(true) - $started;
-			// and output it to the user
-			printf(__('Elapsed: %.3f seconds', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</p>", $elapsed);
+		// optimize the full-size version
+		$fres = ewww_image_optimizer($file_path, 3, false, false, ewww_image_optimizer_get_option('ewww_image_optimizer_lossy_skip_full'));
+		$meta->image->meta_data['ewww_image_optimizer'] = $fres[1];
+		// let the user know what happened
+		printf( "<p>" . __('Optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", esc_html($meta->image->filename) );
+		printf(__('Full size – %s', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "<br>", $fres[1]);
+		if ( ! empty( $meta->image->meta_data['webview'] ) ) {
+			// determine path of the webview
+			$web_path = $meta->image->webimagePath;
+			$wres = ewww_image_optimizer($web_path, 3, false, true);
+			$meta->image->meta_data['webview']['ewww_image_optimizer'] = $wres[1];
+			printf(__('Optimized size – %s', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "<br>", $wres[1]);
+		}
+		$thumb_path = $meta->image->thumbPath;
+		// optimize the thumbnail
+		$tres = ewww_image_optimizer($thumb_path, 3, false, true);
+		$meta->image->meta_data['thumbnail']['ewww_image_optimizer'] = $tres[1];
+		// and let the user know the results
+		printf(__('Thumbnail – %s', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "<br>", $tres[1]);
+		flagdb::update_image_meta($id, $meta->image->meta_data);
+		// determine how much time the image took to process
+		$elapsed = microtime(true) - $started;
+		// and output it to the user
+		printf(__('Elapsed: %.3f seconds', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</p>", $elapsed);
 		// retrieve the list of attachments left to work on
 		$attachments = get_option('ewww_image_optimizer_bulk_flag_attachments');
 		// take the first image off the list

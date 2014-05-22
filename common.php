@@ -671,7 +671,6 @@ function ewww_image_optimizer_delete ($id) {
 
 // submits the api key for verification
 function ewww_image_optimizer_cloud_verify ( $cache = true ) {
-	// TODO: possibly remove the caching, and only run it when needed instead... remove from bulk page
 	global $ewww_debug;
 	global $ewww_cloud_ip;
 	$ewww_debug .= "<b>ewww_image_optimizer_cloud_verify()</b><br>";
@@ -688,14 +687,15 @@ function ewww_image_optimizer_cloud_verify ( $cache = true ) {
 	$prev_verified = get_option('ewww_image_optimizer_cloud_verified');
 	$last_checked = get_option('ewww_image_optimizer_cloud_last');
 	$ewww_cloud_ip = get_option('ewww_image_optimizer_cloud_ip');
-	$servers = gethostbynamel('optimize.exactlywww.com');
 	if ($cache && $prev_verified && $last_checked + 86400 > time() && !empty($ewww_cloud_ip)) {
 		$ewww_debug .= "using cached IP: $ewww_cloud_ip<br>";
 		return $prev_verified;	
-	} elseif ( empty ( $servers ) ) {
-		$ewww_debug .= "unable to resolve servers<br>";
-		return false;
 	} else {
+		$servers = gethostbynamel('optimize.exactlywww.com');
+		if ( empty ( $servers ) ) {
+			$ewww_debug .= "unable to resolve servers<br>";
+			return false;
+		}
 		foreach ($servers as $ip) {
 			$url = "http://$ip/verify/";
 			$result = wp_remote_post($url, array(
@@ -720,6 +720,7 @@ function ewww_image_optimizer_cloud_verify ( $cache = true ) {
 		}
 	}
 	if (empty($verified)) {
+		// TODO: perhaps throw a notice on the admin screen instead of just disabling them
 		update_site_option('ewww_image_optimizer_cloud_jpg', '');
 		update_site_option('ewww_image_optimizer_cloud_png', '');
 		update_site_option('ewww_image_optimizer_cloud_gif', '');

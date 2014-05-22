@@ -1,9 +1,9 @@
 === EWWW Image Optimizer ===
 Contributors: nosilver4u
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MKMQKCBFFG3WW
-Tags: images, image, attachments, attachment, optimize, optimization, nextgen, buddypress, flagallery, flash-gallery, lossless, lossy, photos, photo, picture, pictures, seo, compression, image-store, imstore, slider, image editor, gmagick, wp-symposium, meta-slider, metaslider, jpegtran, gifsicle, optipng, pngout, pngquant
+Tags: images, image, attachments, attachment, optimize, optimization, nextgen, buddypress, flagallery, flash-gallery, lossless, lossy, photos, photo, picture, pictures, seo, compression, image-store, imstore, slider, image editor, gmagick, wp-symposium, meta-slider, metaslider, jpegtran, gifsicle, optipng, pngout, pngquant, gmedia
 Requires at least: 3.5
-Tested up to: 3.9.0
+Tested up to: 3.9.1
 Stable tag: 1.9.0
 License: GPLv3
 
@@ -43,15 +43,19 @@ All optimized images are stored in the database so that the plugin does not atte
 
 All images created by the new WP_Image_Editor class in WP 3.5 will be automatically optimized. Current implementations are GD, Imagick, and Gmagick. Images optimized via this class include Meta Slider, BuddyPress Activity Plus (thumbs), WP Retina 2x, Imsanity, Simple Image Sizes and probably countless others. If you have a plugin that uses WP_Image_Editor and would like EWWW IO to be able to optimize previous uploads, post a thread in the support forums.
 
-= Optimize Almost Everything =
+= Optimize Everything Else =
 
-As of version 1.7.0, site admins can specify any folder within their wordpress folder to be optimized. The 'Scan and Optimize' option under Media->Bulk Optimize will optimize theme images, BuddyPress avatars, BuddyPress Activity Plus images, Meta Slider slides, WP Symposium images, GD bbPress attachments, and any user-specified folders. Additionally, this tool can run on an hourly basis via wp_cron to keep newly uploaded images optimized. Scheduled optimization does NOT include Media Library images, because they are already optimized on upload.
+As of version 1.7.0, site admins can specify any folder within their wordpress folder to be optimized. The 'Scan and Optimize' option under Media->Bulk Optimize will optimize theme images, BuddyPress avatars, BuddyPress Activity Plus images, Meta Slider slides, WP Symposium images, GD bbPress attachments, Grand Media Galleries, and any user-specified folders. Additionally, this tool can run on an hourly basis via wp_cron to keep newly uploaded images optimized. Scheduled optimization does NOT include Media Library images, because they are already optimized on upload.
 
 
 = NextGEN Gallery =
 
 Features optimization on upload capability, re-optimization, and bulk optimizing. The NextGEN Bulk Optimize function is located near the bottom of the NextGEN menu, and will optimize all images in all galleries. It is also possible to optimize groups of images in a gallery, or multiple galleries at once.
-NOTE: Does not optimize thumbnails on initial upload for legacy (1.9.x) versions of NextGEN, but instead provides a button to optimize thumbnails after uploading images.
+NOTE: Does not optimize thumbnails on initial upload for legacy (1.9.x) versions of NextGEN, but instead provides a button to optimize thumbnails after uploading images. No further updates will be provided for NextGEN legacy support, use NextCellent instead.
+
+= NextCellent Gallery =
+
+Features all the same capability as NextGEN, and is the continuation of legacy (1.9.x) NextGEN support.
 
 = GRAND Flash Album Gallery =
 
@@ -65,7 +69,7 @@ Uploads are automatically optimized. Look for Optimize under the Image Store (Ga
 
 Translators: 
 Romanian translation by MediasInfo.ro.
-Spanish translation by Andrew Kurtis of WebHostingHub.
+Spanish translation by Andrew Kurtis of WebHostingHub, looking for new maintainer.
 Dutch translation by Ludo Rubben.
 
 1. Please post in the support forums announcing your intent to translate the plugin into a particular language. 
@@ -194,16 +198,21 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 == Changelog ==
 
 = future =
-* these are possible future bugfixes and/or feature requests, if you see a feature you like here, go vote for it in the support forum
+* these are current feature requests, if you see something you like here, go vote for it in the support forum
 * full GMedia support
 * webp support
 * jpegmini server integration for cloud users
-* huge thanks to those who have done localization/translation for Dutch, Romanian, and Spanish. If you would like to help translate this plugin in your language, post a thread on the support forums.
+* If you would like to help translate this plugin in your language, post a thread on the support forums.
+* looking for new maintainer for Spanish translation
 
 = 1.9.1 =
 * fixed: escapeshellarg command breaks Windows filenames
 * fixed: newer versions of pngquant not detected
 * changed: exclude full-size from lossy optimization applies to lossy conversions too
+* changed: no more caching of cloud key verification results, since verification is 300x faster, and only called when we absolutely need it
+* added: status for pngquant on settings page when lossy optimization is enabled
+* added: Optimized/webview sizes in FlaGallery are tracked properly, and optimized during bulk operations, and manual one-time optimizations.
+* added: use nextgen2 hook for adding action link in gallery management pages
 
 = 1.9.0 =
 * changed: verification results for cloud optimization are still cached, but actual optimization requires pre-verification to maintain load-balancing

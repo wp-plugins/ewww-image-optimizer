@@ -528,13 +528,6 @@ function ewww_image_optimizer_aux_images_script($hook) {
 		if ($child_path !== $parent_path) {
 			$attachments = array_merge($attachments, ewww_image_optimizer_image_scan($parent_path));
 		}
-		// collect a list of images in auxiliary folders provided by user
-		if ( $aux_paths = ewww_image_optimizer_get_option( 'ewww_image_optimizer_aux_paths' ) ) {
-			foreach ($aux_paths as $aux_path) {
-				$attachments = array_merge($attachments, ewww_image_optimizer_image_scan($aux_path));
-			}
-		}
-	
 		// collect a list of images for buddypress
 		if (is_plugin_active('buddypress/bp-loader.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('buddypress/bp-loader.php'))) {
 			// get the value of the wordpress upload directory
@@ -601,6 +594,12 @@ function ewww_image_optimizer_aux_images_script($hook) {
 				}
 			}
 			$attachments = array_merge($attachments, $slide_paths);
+		}
+		// collect a list of images in auxiliary folders provided by user
+		if ( $aux_paths = ewww_image_optimizer_get_option( 'ewww_image_optimizer_aux_paths' ) ) {
+			foreach ($aux_paths as $aux_path) {
+				$attachments = array_merge($attachments, ewww_image_optimizer_image_scan($aux_path));
+			}
 		}
 		// store the filenames we retrieved in the 'bulk_attachments' option so we can keep track of our progress in the database
 		update_option('ewww_image_optimizer_aux_attachments', $attachments);

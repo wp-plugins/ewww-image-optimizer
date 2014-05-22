@@ -3,7 +3,7 @@
 function ewww_image_optimizer_bulk_preview() {
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_bulk_preview()</b><br>";
-	ewww_image_optimizer_cloud_verify(false); 
+//	ewww_image_optimizer_cloud_verify(false); 
 	// retrieve the attachment IDs that were pre-loaded in the database
 	list($fullsize_count, $unoptimized_count, $resize_count, $unoptimized_resize_count) = ewww_image_optimizer_count_optimized ('media');
 	$upload_import = get_option('ewww_image_optimizer_imported');
@@ -160,7 +160,6 @@ function ewww_image_optimizer_count_optimized ($gallery) {
 			}
 			break;
 		case 'flag':
-			// TODO: count 'websizes'
 			if ( ! empty( $_REQUEST['doaction'] ) || get_option( 'ewww_image_optimizer_bulk_flag_resume' ) ) {
 				// retrieve the attachment IDs that were pre-loaded in the database
 				$attachment_ids = get_option('ewww_image_optimizer_bulk_flag_attachments');
@@ -178,6 +177,12 @@ function ewww_image_optimizer_count_optimized ($gallery) {
 					}
 					if (empty($meta['ewww_image_optimizer'])) {
 						$unoptimized_full++;
+					}
+					if (!empty($meta['webview'])) {
+						$resize_count++;
+						if(empty($meta['webview']['ewww_image_optimizer'])) {
+							$unoptimized_re++;
+						}
 					}
 					if (!empty($meta['thumbnail'])) {
 						$resize_count++;
