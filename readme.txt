@@ -208,6 +208,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 = 1.9.1 =
 * fixed: escapeshellarg command breaks Windows filenames
 * fixed: newer versions of pngquant not detected
+* fixed: properly check paletted/indexed PNG files for transparency (requires GD)
 * changed: exclude full-size from lossy optimization applies to lossy conversions too
 * changed: no more caching of cloud key verification results, since verification is 300x faster, and only called when we absolutely need it
 * added: status for pngquant on settings page when lossy optimization is enabled
