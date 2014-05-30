@@ -1051,16 +1051,17 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = tr
 		$ewww_debug .= "imsanity path: $imsanity_path<br>";
 		$image_size = filesize($file_path);
 		$query = $wpdb->prepare("SELECT id FROM $wpdb->ewwwio_images WHERE BINARY path = %s AND image_size = '$image_size'", $imsanity_path);
-		$already_optimized = $wpdb->get_results($query, ARRAY_A);
-		$ewww_debug .= "updating existing record, path: $file_path, size: " . $image_size . "<br>";
-		// store info on the current image for future reference
-		$wpdb->update( $wpdb->ewwwio_images,
-			array(
-				'path' => $file_path,
-			),
-			array(
-				'id' => $already_optimized[0]['id'],
-			));
+		if ( $already_optimized = $wpdb->get_results($query, ARRAY_A) ) {
+			$ewww_debug .= "updating existing record, path: $file_path, size: " . $image_size . "<br>";
+			// store info on the current image for future reference
+			$wpdb->update( $wpdb->ewwwio_images,
+				array(
+					'path' => $file_path,
+				),
+				array(
+					'id' => $already_optimized[0]['id'],
+				));
+		}
 	}
 	list($file, $msg, $conv, $original) = ewww_image_optimizer($file_path, $gallery_type, false, $new_image, ewww_image_optimizer_get_option('ewww_image_optimizer_lossy_skip_full'));
 	// update the optimization results in the metadata
