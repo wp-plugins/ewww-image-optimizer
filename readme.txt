@@ -212,6 +212,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * changed: cloud processing nodes upgraded for faster image processing
 * changed: made queries for resuming bulk operations more efficient to avoid running into max query length problems
 * fixed: images that were not processed (cloud or otherwise) can be optimized later (they are no longer stored in ewwwio_images table)
+* changed: more efficient verification of cloud api keys
 
 = 1.9.1 =
 * fixed: escapeshellarg command breaks Windows filenames
