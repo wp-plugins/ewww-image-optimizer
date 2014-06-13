@@ -205,6 +205,13 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * If you would like to help translate this plugin in your language, post a thread on the support forums.
 * looking for new maintainer for Spanish translation
 
+= 1.9.2 =
+* fixed: memory limit exceeded when counting total savings on settings page
+* fixed: application/octet-stream is accepted as valid output for mimetype check on executables
+* added: PngOptimizerCL for even better optimization of PNG images on cloud service
+* changed: cloud processing nodes upgraded for faster image processing
+* fixed: images that were not processed (cloud or otherwise) can be optimized later (they are no longer stored in ewwwio_images table)
+
 = 1.9.1 =
 * fixed: escapeshellarg command breaks Windows filenames
 * fixed: newer versions of pngquant not detected

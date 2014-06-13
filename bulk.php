@@ -34,6 +34,7 @@ function ewww_image_optimizer_bulk_preview() {
 			<form id="import-start" class="bulk-form" method="post" action="">
 				<input type="submit" class="button-secondary action" value="<?php _e('Import Images', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?>" />
 			</form>
+		</div>
 <?php			return;
 		} ?>
 		<form class="bulk-form">
@@ -88,16 +89,19 @@ function ewww_image_optimizer_count_optimized ($gallery) {
 		case 'media':
 			// see if we were given attachment IDs to work with via GET/POST
 		        if ( ! empty($_REQUEST['ids']) || get_option('ewww_image_optimizer_bulk_resume')) {
+				$ewww_debug .= 'we have preloaded attachment ids<br>';
 				// retrieve the attachment IDs that were pre-loaded in the database
 				$attachment_ids = get_option('ewww_image_optimizer_bulk_attachments');
 				foreach ($attachment_ids as $id) {
 					$attachment_query .= "'" . $id . "',";
 				}
+				$ewww_debug .= "attachments: $attachment_query<br>";
 				$attachment_query = 'AND metas.post_id IN (' . substr( $attachment_query, 0, -1 ) . ')';
 			}
 			$offset = 0;
 			// retrieve all the image attachment metadata from the database
 			while ( $attachments = $wpdb->get_results( "SELECT metas.meta_value FROM $wpdb->postmeta metas INNER JOIN $wpdb->posts posts ON posts.ID = metas.post_id WHERE posts.post_mime_type LIKE '%image%' AND metas.meta_key = '_wp_attachment_metadata' $attachment_query LIMIT $offset, 3000", ARRAY_N ) ) {
+				$ewww_debug .= "fetching 3000 attachments starting at $offset<br>";
 				foreach ($attachments as $attachment) {
 					$meta = unserialize($attachment[0]);
 					if (empty($meta)) {

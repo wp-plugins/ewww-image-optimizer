@@ -331,8 +331,10 @@ function ewww_image_optimizer_import_file ($attachment, $prev_result, $already_o
 	$prev_string = " - " . __('Previously Optimized', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 	$results = preg_replace("/$prev_string/", '', $prev_result);
 	preg_match('/\((.+)\)/', $results, $savings_size);
-	if (empty($savings_size)) {
+	if (preg_match('/' . __('No savings', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '/', $prev_result)) {
 		$savings_size = 0;
+	} elseif (empty($savings_size)) {
+		return array();
 	} else {
 		$savings_size = ewww_image_optimizer_size_unformat($savings_size[1]);
 	}
@@ -687,5 +689,6 @@ add_action('wp_ajax_bulk_aux_images_loop', 'ewww_image_optimizer_aux_images_loop
 add_action('wp_ajax_bulk_aux_images_cleanup', 'ewww_image_optimizer_aux_images_cleanup');
 add_action('wp_ajax_bulk_import_init', 'ewww_image_optimizer_import_init');
 add_action('wp_ajax_bulk_import_loop', 'ewww_image_optimizer_import_loop');
+// TODO: I think this can be removed
 add_action('wp_ajax_bulk_import_cleanup', 'ewww_image_optimizer_import_cleanup');
 ?>
