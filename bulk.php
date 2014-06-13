@@ -256,8 +256,9 @@ function ewww_image_optimizer_bulk_script($hook) {
 	global $ewww_debug;
 	global $wpdb;
 	// make sure we are being called from the bulk optimization page
-	if ('media_page_ewww-image-optimizer-bulk' != $hook)
+	if ('media_page_ewww-image-optimizer-bulk' != $hook) {
 		return;
+	}
 //	$ewww_debug .= "starting memory usage: " . memory_get_usage(true) . "<br>";
         // initialize the $attachments variable
         $attachments = null;
