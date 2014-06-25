@@ -1,4 +1,5 @@
 <?php 
+if (!function_exists('ewwwngg')) {
 class ewwwngg {
 	/* initializes the nextgen integration functions */
 	function ewwwngg() {
@@ -207,6 +208,7 @@ class ewwwngg {
 
 	/* output the html for the bulk optimize page */
 	function ewww_ngg_bulk_preview() {
+		global $ewww_debug;
 		if (!empty($_POST['doaction'])) {
                         // if there is no requested bulk action, do nothing
                         if (empty($_REQUEST['bulkaction'])) {
@@ -260,6 +262,9 @@ class ewwwngg {
                         </form>
 <?php           }
 	        echo '</div></div>';
+		if ( ewww_image_optimizer_get_option ( 'ewww_image_optimizer_debug' ) ) {
+			echo '<div style="background-color:#ffff99;">' . $ewww_debug . '</div>';
+		}
 		if (!empty($_REQUEST['inline'])) {
 			die();
 		}
@@ -268,7 +273,11 @@ class ewwwngg {
 
 	/* prepares the javascript for a bulk operation */
 	function ewww_ngg_bulk_script($hook) {
-		$i18ngg = strtolower  ( _n( 'Gallery', 'Galleries', 1, 'nggallery' ) );
+		global $ewww_debug;
+		$ewww_debug .= "<b>ewww_ngg_bulk_script</b><br />";
+//		$i18ngg = strtolower ( _n( 'Gallery', 'Galleries', 1, 'nggallery' ) );
+		$i18ngg = strtolower ( __( 'Galleries', 'nggallery' ) );
+		$ewww_debug .= "i18n string for galleries: $i18ngg <br>";
 		// make sure we are on a legitimate page and that we have the proper POST variables if necessary
 		if ($hook != $i18ngg . '_page_ewww-ngg-bulk' && $hook != $i18ngg . '_page_nggallery-manage-gallery')
 				return;
@@ -286,6 +295,7 @@ class ewwwngg {
 		if (!empty($_REQUEST['doaction'])) {
 			// if we are optimizing a specific group of images
 			if ($_REQUEST['page'] == 'manage-images' && $_REQUEST['bulkaction'] == 'bulk_optimize') {
+				$ewww_debug .= "optimizing a group of images<br />";
 				check_admin_referer('ngg_updategallery');
 				// reset the resume status, not allowed here
 				update_option('ewww_image_optimizer_bulk_ngg_resume', '');
@@ -294,6 +304,7 @@ class ewwwngg {
 			}
 			// if we are optimizing a specific group of galleries
 			if ($_REQUEST['page'] == 'manage-galleries' && $_REQUEST['bulkaction'] == 'bulk_optimize') {
+				$ewww_debug .= "optimizing a group of galleries<br />";
 				check_admin_referer('ngg_bulkgallery');
 				global $nggdb;
 				// reset the resume status, not allowed here
@@ -312,13 +323,18 @@ class ewwwngg {
 			}
 		// otherwise, if we have an operation to resume
 		} elseif (!empty($resume)) {
+			$ewww_debug .= "resuming a previous operation (maybe)<br />";
 			// get the list of attachment IDs from the db
 			$images = get_option('ewww_image_optimizer_bulk_ngg_attachments');
 		// otherwise, if we are on the standard bulk page, get all the images in the db
 		} elseif ($hook == $i18ngg . '_page_ewww-ngg-bulk') {
+			$ewww_debug .= "starting from scratch, grabbing all the images<br />";
 			global $wpdb;
 			$images = $wpdb->get_col("SELECT pid FROM $wpdb->nggpictures ORDER BY sortorder ASC");
+		} else {
+			$ewww_debug .= "$hook <br>";
 		}
+		
 		// store the image IDs to process in the db
 		update_option('ewww_image_optimizer_bulk_ngg_attachments', $images);
 		// add the EWWW IO script
@@ -357,7 +373,7 @@ class ewwwngg {
                         wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
                 }
 		// need this file to work with metadata
-		require_once(WP_CONTENT_DIR . '/plugins/nextgen-gallery/lib/meta.php');
+		require_once(WP_CONTENT_DIR . '/plugins/nextcellent-gallery-nextgen-legacy/lib/meta.php');
 		$id = $_POST['attachment'];
 		// get the meta for the image
 		$meta = new nggMeta($id);
@@ -374,7 +390,7 @@ class ewwwngg {
                         wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
                 }
 		// need this file to work with metadata
-		require_once(WP_CONTENT_DIR . '/plugins/nextgen-gallery/lib/meta.php');
+		require_once(WP_CONTENT_DIR . '/plugins/nextcellent-gallery-nextgen-legacy/lib/meta.php');
 		// find out what time we started, in microseconds
 		$started = microtime(true);
 		$id = $_POST['attachment'];
@@ -437,4 +453,5 @@ add_action('init', 'ewwwngg');
 function ewwwngg() {
 	global $ewwwngg;
 	$ewwwngg = new ewwwngg();
+}
 }
