@@ -1,6 +1,8 @@
 <?php
 // common functions for Standard and Cloud plugins
-
+// TODO: webp: And then you can use URL with .webp version in Chrome and browsers that send Accept: image/webp, and .png for the rest (and all will get small file!)
+// http://mikevoermans.com/apache/serving-right-image-htaccess-webp 
+// http://www.stucox.com/blog/client-side-vs-server-side-detection-for-webp/
 // initialize debug global
 $disabled = ini_get('disable_functions');
 if (preg_match('/get_current_user/', $disabled)) {
@@ -884,8 +886,8 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $n
 		$error_message = $response->get_error_message();
 		$ewww_debug .= "optimize failed: $error_message <br>";
 		return array($file, false, 'cloud optimize failed', 0);
-	} elseif (empty($response['body'])) {
-		return array($file, false, 'empty server response', 0);
+//	} elseif (empty($response['body'])) {
+//		return array($file, false, '', filesize($file));
 	} else {
 		$tempfile = $file . ".tmp";
 		file_put_contents($tempfile, $response['body']);

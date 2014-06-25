@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate image optimizers into WordPress.
- * @version 1.9.2
+ * @version 1.9.2.3
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -10,7 +10,7 @@ Plugin URI: http://wordpress.org/extend/plugins/ewww-image-optimizer/
 Description: Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
 Author: Shane Bishop
 Text Domain: ewww-image-optimizer
-Version: 1.9.2
+Version: 1.9.2.3
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
@@ -23,8 +23,8 @@ define('EWWW_IMAGE_OPTIMIZER_TOOL_PATH', WP_CONTENT_DIR . '/ewww/');
 define('EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE', __FILE__);
 // this is the full system path to the plugin folder
 define('EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH', plugin_dir_path(__FILE__));
-define('EWWW_IMAGE_OPTIMIZER_VERSION', '192');
-
+define('EWWW_IMAGE_OPTIMIZER_VERSION', '192.3');
+// TODO: see if we can move more things into common by splitting out init functions further
 require_once(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'common.php');
 
 $ewww_debug .= 'EWWW IO version: ' . EWWW_IMAGE_OPTIMIZER_VERSION . '<br>';
@@ -2111,7 +2111,10 @@ function ewww_image_optimizer_options () {
 		</form></div><!-- end container left -->
 		<div id="ewww-container-right" style="border: 1px solid #ccc; padding: 0 8px; border-radius: 12px; float: right; margin-left: -200px; display: inline-block; width: 174px;">
 			<h3>Support EWWW I.O.</h3>
-			<p>Would you like to help support development of this plugin? Use any of these referral links to keep me working on this plugin:</p>
+			<p>Would you like to help support development of this plugin?<br />
+			<p>Contribute directly by <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MKMQKCBFFG3WW">donating with Paypal</a>.</p>
+			<b>OR</b><br />
+			Use any of these referral links to show your appreciation:</p>
 			<p><b>Web Hosting:</b><br>
 				<a href="http://www.dreamhost.com/r.cgi?132143">Dreamhost</a><br>
 				<a href="http://www.bluehost.com/track/nosilver4u">Bluehost</a><br>
@@ -2124,7 +2127,6 @@ function ewww_image_optimizer_options () {
 				<a href="https://clientarea.ramnode.com/aff.php?aff=1469">RamNode</a>
 			</p>
 			<p><b>CDN Networks:</b><br>Add the MaxCDN content delivery network to increase website speeds dramatically! <a target="_blank" href="http://tracking.maxcdn.com/c/91625/36539/378">Sign Up Now and Save 25%</a> (100% Money Back Guarantee for 30 days). Integrate it within Wordpress using the W3 Total Cache plugin.</p>
-<p>Contribute directly by <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MKMQKCBFFG3WW">donating with Paypal</a>.</p>
 		</div>
 	</div>
 	<?php

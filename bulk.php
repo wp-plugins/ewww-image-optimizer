@@ -49,7 +49,11 @@ function ewww_image_optimizer_bulk_preview() {
 			echo '<p>' . __('You do not appear to have uploaded any images yet.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</p>';
 		} else { ?>
 			<div id="bulk-forms">
-			<p class="media-info bulk-info"><?php printf(__('%1$d images in the Media Library have been selected (%2$d unoptimized), with %3$d resizes (%4$d unoptimized).', EWWW_IMAGE_OPTIMIZER_DOMAIN), $fullsize_count, $unoptimized_count, $resize_count, $unoptimized_resize_count); ?><br />
+<?php			if ( ! $resize_count && ! $unoptimized_count && ! $unoptimized_resize_count) { ?>
+				<p class="media-info bulk-info"><?php printf(__('%1$d images in the Media Library have been selected, unable to determine how many resizes and how many are unoptimized.', EWWW_IMAGE_OPTIMIZER_DOMAIN), $fullsize_count); ?><br />
+<?php			} else { ?>
+				<p class="media-info bulk-info"><?php printf(__('%1$d images in the Media Library have been selected (%2$d unoptimized), with %3$d resizes (%4$d unoptimized).', EWWW_IMAGE_OPTIMIZER_DOMAIN), $fullsize_count, $unoptimized_count, $resize_count, $unoptimized_resize_count); ?><br />
+<?php			} ?>
 			<?php _e('Previously optimized images will be skipped by default.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
 			<form id="bulk-start" class="bulk-form" method="post" action="">
 				<input id="bulk-first" type="submit" class="button-secondary action" value="<?php echo $button_text; ?>" />
@@ -242,6 +246,11 @@ function ewww_image_optimizer_count_optimized ($gallery) {
 				}
 			}
 			break;
+	}
+	if ( empty( $full_count ) && ! empty( $attachment_ids ) ) {
+//		return array( count( $attachment_ids ), '', '', '');
+		$ewww_debug .= "query appears to have failed, just counting total images instead<br>";
+		$full_count = count($attachment_ids);
 	}
 	$elapsed = microtime(true) - $started;
 	$ewww_debug .= "counting images took $elapsed seconds<br>";

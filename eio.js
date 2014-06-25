@@ -1,4 +1,6 @@
 jQuery(document).ready(function($) {
+	var ewww_error_counter = 30;
+	var sleep_action = 'ewww_sleep';
 	if (!ewww_vars.attachments) {
 		if (!ewww_vars.savings_todo) {
 			$('#total_savings').text('0');
@@ -372,6 +374,7 @@ jQuery(document).ready(function($) {
 			var unfinished=/^\d+$/m;
 			if (unfinished.test(response)) {
 				$('#bulk-status').html(response + '/' + import_total);
+				ewww_error_counter = 30;
 				bulkImport();
 			}
 			else {
@@ -380,7 +383,20 @@ jQuery(document).ready(function($) {
 			}
 	        })
 		.fail(function() { 
-			$('#bulk-status').html('<p style="color: red"><b>Operation Interrupted</b></p>');
+			var sleep_data = {
+				action: sleep_action,
+				sleep: 1,
+			};
+			if (ewww_error_counter == 0) {
+				$('#ewww-loading').hide();
+				$('#bulk-status').html('<p style="color: red"><b>Operation Interrupted</b></p>');
+			} else {
+				$('#bulk-status').html('<p style="color: red"><b>Temporary failure, retrying for ' + ewww_error_counter + ' more seconds.</b></p>');
+				ewww_error_counter--;
+				setTimeout(function() {
+					bulkImport();
+				}, 1000);
+			}
 		});
 	}
 	function auxCleanup() {
