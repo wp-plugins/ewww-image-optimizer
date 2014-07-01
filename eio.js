@@ -362,7 +362,15 @@ jQuery(document).ready(function($) {
 			}
 	        })
 		.fail(function() { 
-			$('#bulk-loading').html('<p style="color: red"><b>Operation Interrupted</b></p>');
+			if (ewww_error_counter == 0) {
+				$('#bulk-loading').html('<p style="color: red"><b>Operation Interrupted</b></p>');
+			} else {
+				$('#bulk-loading').html('<p style="color: red"><b>Temporary failure, retrying for ' + ewww_error_counter + ' more seconds.</b></p>');
+				ewww_error_counter--;
+				setTimeout(function() {
+					processImage();
+				}, 1000);
+			}
 		});
 	}
 	function bulkImport() {
@@ -383,10 +391,6 @@ jQuery(document).ready(function($) {
 			}
 	        })
 		.fail(function() { 
-			var sleep_data = {
-				action: sleep_action,
-				sleep: 1,
-			};
 			if (ewww_error_counter == 0) {
 				$('#ewww-loading').hide();
 				$('#bulk-status').html('<p style="color: red"><b>Operation Interrupted</b></p>');
