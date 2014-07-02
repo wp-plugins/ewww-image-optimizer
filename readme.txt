@@ -655,8 +655,7 @@ Written by [Shane Bishop](http://www.shanebishop.net). Based upon CW Image Optim
 [Hammer](http://thenounproject.com/noun/hammer/#icon-No1306) designed by [John Caserta](http://thenounproject.com/johncaserta) from The Noun Project.
 [Images](http://thenounproject.com/noun/images/#icon-No22772) designed by [Simon Henrotte](http://thenounproject.com/Gizmodesbois) from The Noun Project.
 
-----------------------------------------------------------------------
-optipng:
+= optipng =
 Copyright (C) 2001-2014 Cosmin Truta and the Contributing Authors.
 For the purpose of copyright and licensing, the list of Contributing
 Authors is available in the accompanying AUTHORS file.
@@ -664,8 +663,8 @@ Authors is available in the accompanying AUTHORS file.
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the author(s) be held liable for any damages
 arising from the use of this software.
-----------------------------------------------------------------------
-pngquant.c:
+
+= pngquant.c =
 
    © 1989, 1991 by Jef Poskanzer.
 
@@ -676,7 +675,7 @@ pngquant.c:
    documentation.  This software is provided "as is" without express or
    implied warranty.
 
-pngquant.c and rwpng.c/h:
+= pngquant.c and rwpng.c/h =
 
    © 1997-2002 by Greg Roelofs; based on an idea by Stefan Schneider.
    © 2009-2014 by Kornel Lesiński.
@@ -703,8 +702,8 @@ pngquant.c and rwpng.c/h:
    CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
    OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-----------------------------------------------------------------------
-WebP:
+
+= WebP =
 Copyright (c) 2010, Google Inc. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -734,7 +733,6 @@ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-----------------------------------------------------------------------
 
 == Webhosts ==
 
