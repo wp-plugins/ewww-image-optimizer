@@ -72,12 +72,7 @@ Romanian translation by MediasInfo.ro.
 Spanish translation by Andrew Kurtis of WebHostingHub, looking for new maintainer.
 Dutch translation by Ludo Rubben.
 
-1. Please post in the support forums announcing your intent to translate the plugin into a particular language. 
-1. Download ewww-image-optimizer.pot from the plugin /languages/ folder.
-1. Fill in the msgstr for each msgid and complete the header information as best as you can (recommended to use PoEdit).
-1. Save it as a .po file.
-1. Submit it via the form at http://www.shanebishop.net/contact-me/
-
+If you would like to translate wordpress, get more information here: http://www.shanebishop.net/ewww-io-plugin-translators/
 
 == Installation ==
 
@@ -147,6 +142,16 @@ Pngout is not enabled by default because it is resource intensive. Optipng is th
 1. If you have root access, install it with *make install*
 1. If not, copy the binary from */pngquant-2.0.2/pngquant* to the ewww tool folder (wordpress/wp-content/ewww/pngquant-custom).
 
+= Installing webp =
+
+1. WebP (cwebp) is bundled with the plugin. If it isn't working for you, keep going...
+1. Download the latest version of [libwebp](https://code.google.com/p/webp/downloads/list) to your server
+1. Uncompress libwebp: *tar xvzf libwebp-0.4.0.tar.gz && cd libwebp-0.4.0
+1. Make sure you have libjpeg && libpng installed (possibly libjpeg-dev and libpng-dev also)
+1. Configure and compile cwebp: *./configure --disable-shared && make*
+1. If you have root access, install it with *make install*
+1. If not, copy the binary from */libwebp-0.4.0/examples/cwebp* to the ewww tool folder (wordpress/wp-content/ewww/cwebp-custom).
+
 == Frequently Asked Questions ==
 
 = Does the plugin replace existing images? =
@@ -200,9 +205,13 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 = future =
 * these are current feature requests, if you see something you like here, go vote for it in the support forum
 * full GMedia support
-* webp support
 * jpegmini server integration for cloud users
-* If you would like to help translate this plugin in your language, post a thread on the support forums.
+* If you would like to help translate this plugin in your language, get more information here: http://www.shanebishop.net/ewww-io-plugin-translators/
+
+= 1.9.4 =
+* added: webp generation
+* fixed: some settings not being validated properly for multi-site
+* added: up to 30 second retry when bulk optimize is interrupted
 
 = 1.9.3 =
 * added: fallback mode when totals for resizes and unoptimized images cannot be determined by the bulk optimize tool
@@ -322,7 +331,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * changed: bulk_attachment variables are not autoloaded to improve performance
 
 = 1.7.2 =
-* added: internationalization - need volunteers to provide translations. If interested, post a support thread with the language you would like to help with.
+* added: internationalization - need volunteers to provide translations.
 * fixed: Import button not shown on Optimize More in some cases
 * fixed: Bulk Optimize for Nextgen was broken
 * changed: file comparison from md5sum to filesize for Optimize More to improve load time
@@ -642,9 +651,90 @@ Improved performance for PNGs by specifying proper optimization level
 
 == Contact and Credits ==
 
-Written by [Shane Bishop](http://www.shanebishop.net). Based upon CW Image Optimizer, which was written by [Jacob Allred](http://www.jacoballred.com/) at [Corban Works, LLC](http://www.corbanworks.com/). CW Image Optimizer was based on WP Smush.it.
+Written by [Shane Bishop](http://www.shanebishop.net). Based upon CW Image Optimizer, which was written by [Jacob Allred](http://www.jacoballred.com/) at [Corban Works, LLC](http://www.corbanworks.com/). CW Image Optimizer was based on WP Smush.it. Jpegtran is the work of the Independent JPEG Group.
 [Hammer](http://thenounproject.com/noun/hammer/#icon-No1306) designed by [John Caserta](http://thenounproject.com/johncaserta) from The Noun Project.
 [Images](http://thenounproject.com/noun/images/#icon-No22772) designed by [Simon Henrotte](http://thenounproject.com/Gizmodesbois) from The Noun Project.
+
+----------------------------------------------------------------------
+optipng:
+Copyright (C) 2001-2014 Cosmin Truta and the Contributing Authors.
+For the purpose of copyright and licensing, the list of Contributing
+Authors is available in the accompanying AUTHORS file.
+
+This software is provided 'as-is', without any express or implied
+warranty.  In no event will the author(s) be held liable for any damages
+arising from the use of this software.
+----------------------------------------------------------------------
+pngquant.c:
+
+   © 1989, 1991 by Jef Poskanzer.
+
+   Permission to use, copy, modify, and distribute this software and its
+   documentation for any purpose and without fee is hereby granted, provided
+   that the above copyright notice appear in all copies and that both that
+   copyright notice and this permission notice appear in supporting
+   documentation.  This software is provided "as is" without express or
+   implied warranty.
+
+pngquant.c and rwpng.c/h:
+
+   © 1997-2002 by Greg Roelofs; based on an idea by Stefan Schneider.
+   © 2009-2014 by Kornel Lesiński.
+
+   All rights reserved.
+
+   Redistribution and use in source and binary forms, with or without modification,
+   are permitted provided that the following conditions are met:
+
+   1. Redistributions of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+
+   2. Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
+
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+   DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+   FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+   DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+   SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+   CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+   OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+----------------------------------------------------------------------
+WebP:
+Copyright (c) 2010, Google Inc. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+  * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+
+  * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in
+    the documentation and/or other materials provided with the
+    distribution.
+
+  * Neither the name of Google nor the names of its contributors may
+    be used to endorse or promote products derived from this software
+    without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+----------------------------------------------------------------------
 
 == Webhosts ==
 

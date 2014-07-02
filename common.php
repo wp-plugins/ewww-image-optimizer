@@ -1800,7 +1800,6 @@ function ewww_image_optimizer_set_option ($option_name, $option_value) {
 function ewww_image_optimizer_savings_script($hook) {
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_savings_script()</b><br>";
-	$ewww_debug .= "here is your hook: $hook <br>";
 	global $wpdb;
 	// make sure we are being called from the bulk optimization page
 	if (strpos($hook,'settings_page_ewww-image-optimizer') !== 0) {
@@ -1811,7 +1810,6 @@ function ewww_image_optimizer_savings_script($hook) {
 	wp_enqueue_script('ewwwbulkscript', plugins_url('/eio.js', __FILE__), array('jquery', 'jquery-ui-slider', 'jquery-ui-progressbar'));
 	wp_localize_script('ewwwbulkscript', 'ewww_vars', array(
 			'_wpnonce' => wp_create_nonce('ewww-image-optimizer-savings'),
-//			'savings_counter' => 0,
 			'savings_todo' => $savings_todo,
 		)
 	);
