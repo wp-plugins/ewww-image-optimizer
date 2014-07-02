@@ -209,9 +209,12 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * If you would like to help translate this plugin in your language, get more information here: http://www.shanebishop.net/ewww-io-plugin-translators/
 
 = 1.9.4 =
-* added: webp generation
+* added: webp generation (wahooooooooo)
 * fixed: some settings not being validated properly for multi-site
 * added: up to 30 second retry when bulk optimize is interrupted
+* changed: various code cleanup
+* fixed: prevent excess warnings/notices when binaries can't be installed
+* fixed: prevent binary installer from firing on unsupported operating systems
 
 = 1.9.3 =
 * added: fallback mode when totals for resizes and unoptimized images cannot be determined by the bulk optimize tool

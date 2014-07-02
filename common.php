@@ -117,9 +117,9 @@ function ewww_image_optimizer_admin_init() {
 			if (empty($_POST['ewww_image_optimizer_webp'])) $_POST['ewww_image_optimizer_webp'] = '';
 			update_site_option('ewww_image_optimizer_webp', $_POST['ewww_image_optimizer_webp']);
 			if (empty($_POST['ewww_image_optimizer_jpg_background'])) $_POST['ewww_image_optimizer_jpg_background'] = '';
-			update_site_option('ewww_image_optimizer_jpg_background', ewww_image_optimizer_jpg_background_sanitize($_POST['ewww_image_optimizer_jpg_background']));
+			update_site_option('ewww_image_optimizer_jpg_background', ewww_image_optimizer_jpg_background($_POST['ewww_image_optimizer_jpg_background']));
 			if (empty($_POST['ewww_image_optimizer_jpg_quality'])) $_POST['ewww_image_optimizer_jpg_quality'] = '';
-			update_site_option('ewww_image_optimizer_jpg_quality', ewww_image_optimizer_jpg_quality_sanitize($_POST['ewww_image_optimizer_jpg_quality']));
+			update_site_option('ewww_image_optimizer_jpg_quality', ewww_image_optimizer_jpg_quality($_POST['ewww_image_optimizer_jpg_quality']));
 			if (empty($_POST['ewww_image_optimizer_disable_convert_links'])) $_POST['ewww_image_optimizer_disable_convert_links'] = '';
 			update_site_option('ewww_image_optimizer_disable_convert_links', $_POST['ewww_image_optimizer_disable_convert_links']);
 			if (empty($_POST['ewww_image_optimizer_cloud_key'])) $_POST['ewww_image_optimizer_cloud_key'] = '';
@@ -157,8 +157,8 @@ function ewww_image_optimizer_admin_init() {
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_png_to_jpg');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_gif_to_png');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_webp');
-	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpg_background', 'ewww_image_optimizer_jpg_background_sanitize');
-	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpg_quality', 'ewww_image_optimizer_jpg_quality_sanitize');
+	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpg_background', 'ewww_image_optimizer_jpg_background');
+	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpg_quality', 'ewww_image_optimizer_jpg_quality');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_disable_convert_links');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_resume');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_attachments');
@@ -227,12 +227,12 @@ function ewww_image_optimizer_disable_tools() {
 	define('EWWW_IMAGE_OPTIMIZER_GIFSICLE', false);
 }
 
-// determines the proper color to use for progressbars, then includes css inline
+// generates css include for progressbars to match admin style
 function ewww_image_optimizer_progressbar_style() {
-	if (function_exists('wp_add_inline_style')) {
-		$user_info = wp_get_current_user();
-		switch($user_info->admin_color) {
-			case 'midnight':
+//	if (function_exists('wp_add_inline_style')) {
+//		$user_info = wp_get_current_user();
+//		$fill_color = ewww_image_optimizer_admin_background();
+/*			case 'midnight':
 				$fill_style = ".ui-widget-header { background-color: #e14d43; }";
 				break;
 			case 'blue':
@@ -255,8 +255,33 @@ function ewww_image_optimizer_progressbar_style() {
 				break;
 			default:
 				$fill_style = ".ui-widget-header { background-color: #0074a2; }";
+		}*/
+		wp_add_inline_style('jquery-ui-progressbar', ".ui-widget-header { background-color: " . ewww_image_optimizer_admin_background() . "; }");
+//	}
+}
+
+// determines the background color to use based on the selected theme
+function ewww_image_optimizer_admin_background() {
+	if (function_exists('wp_add_inline_style')) {
+		$user_info = wp_get_current_user();
+		switch($user_info->admin_color) {
+			case 'midnight':
+				return "#e14d43";
+			case 'blue':
+				return "#096484";
+			case 'light':
+				return "#04a4cc";
+			case 'ectoplasm':
+				return "#a3b745";
+			case 'coffee':
+				return "#c7a589";
+			case 'ocean':
+				return "#9ebaa0";
+			case 'sunrise':
+				return "#dd823b";
+			default:
+				return "#0074a2";
 		}
-		wp_add_inline_style('jquery-ui-progressbar', $fill_style);
 	}
 }
 
@@ -595,17 +620,17 @@ function ewww_image_optimizer_gd_support() {
 }
 
 // makes sure the user isn't putting crap in the database
-function ewww_image_optimizer_jpg_background_sanitize ($input) {
+/*function ewww_image_optimizer_jpg_background_sanitize ($input) {
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_jpg_background_santitize()</b><br>";
 	return sanitize_text_field($input);
-}
+}*/
 
-function ewww_image_optimizer_jpg_quality_sanitize ($input) {
+/*function ewww_image_optimizer_jpg_quality_sanitize ($input) {
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_jpg_quality_santitize()</b><br>";
 	return sanitize_text_field($input);
-}
+}*/
 
 function ewww_image_optimizer_aux_paths_sanitize ($input) {
 	global $ewww_debug;
@@ -641,12 +666,14 @@ function ewww_image_optimizer_escapeshellarg( $arg ) {
 	return $safe_arg;
 }
 
-// Retrieves jpg background fill setting, or returns null for png2jpg conversions
-function ewww_image_optimizer_jpg_background () {
+// Retrieves/sanitizes jpg background fill setting or returns null for png2jpg conversions
+function ewww_image_optimizer_jpg_background ($background = null) {
 	global $ewww_debug;
-	$ewww_debug .= "<b>ewww_image_optimizer_jpeg_background()</b><br>";
-	// retrieve the user-supplied value for jpg background color
-	$background = ewww_image_optimizer_get_option('ewww_image_optimizer_jpg_background');
+	$ewww_debug .= "<b>ewww_image_optimizer_jpg_background()</b><br>";
+	if ( $background === null ) {
+		// retrieve the user-supplied value for jpg background color
+		$background = ewww_image_optimizer_get_option('ewww_image_optimizer_jpg_background');
+	}
 	//verify that the supplied value is in hex notation
 	if (preg_match('/^\#*([0-9a-fA-F]){6}$/',$background)) {
 		// we remove a leading # symbol, since we take care of it later
@@ -660,12 +687,14 @@ function ewww_image_optimizer_jpg_background () {
 	}
 }
 
-// Retrieves the jpg quality setting for png2jpg conversion or returns null
-function ewww_image_optimizer_jpg_quality () {
+// Retrieves/sanitizes the jpg quality setting for png2jpg conversion or returns null
+function ewww_image_optimizer_jpg_quality ($quality = null) {
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_jpg_quality()</b><br>";
-	// retrieve the user-supplied value for jpg quality
-	$quality = ewww_image_optimizer_get_option('ewww_image_optimizer_jpg_quality');
+	if ( $quality === null ) {
+		// retrieve the user-supplied value for jpg quality
+		$quality = ewww_image_optimizer_get_option('ewww_image_optimizer_jpg_quality');
+	}
 	// verify that the quality level is an integer, 1-100
 	if (preg_match('/^(100|[1-9][0-9]?)$/',$quality)) {
 		// send back the valid quality level
@@ -959,6 +988,7 @@ function ewww_image_optimizer_cloud_quota() {
  * @param   boolean $convert		true says we want to attempt conversion of $file
  * @param   string $newfile		filename of new converted image
  * @param   string $newtype		mimetype of $newfile
+ * @param   boolean $fullsize		is this the full-size original?
  * @param   array $jpg_params		r, g, b values and jpg quality setting for conversion
  * @returns array
 */
@@ -991,11 +1021,17 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $n
 	} else {
 		$lossy = 0;
 	}
-	$ewww_debug .= "file: $file <br>";
-	$ewww_debug .= "type: $type <br>";
-	$ewww_debug .= "convert: $convert <br>";
-	$ewww_debug .= "newfile: $newfile <br>";
-	$ewww_debug .= "newtype: $newtype <br>";
+	if ( $newtype == 'image/webp' ) {
+		$webp = 1;
+	} else {
+		$webp = 0;
+	}
+	$ewww_debug .= "file: $file<br>";
+	$ewww_debug .= "type: $type<br>";
+	$ewww_debug .= "convert: $convert<br>";
+	$ewww_debug .= "newfile: $newfile<br>";
+	$ewww_debug .= "newtype: $newtype<br>";
+	$ewww_debug .= "webp: $webp<br>";
 	$ewww_debug .= "jpg_params: " . print_r($jpg_params, true) . " <br>";
 	$api_key = ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_key');
 	$url = "http://$ewww_cloud_ip/";
@@ -1018,6 +1054,7 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $n
 		'quality' => $jpg_params['quality'],
 		'compress' => ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_png_compress'),
 		'lossy' => $lossy,
+		'webp' => $webp,
 	);
 
 	$payload = '';
@@ -1051,8 +1088,6 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $n
 		$error_message = $response->get_error_message();
 		$ewww_debug .= "optimize failed: $error_message <br>";
 		return array($file, false, 'cloud optimize failed', 0);
-//	} elseif (empty($response['body'])) {
-//		return array($file, false, '', filesize($file));
 	} else {
 		$tempfile = $file . ".tmp";
 		file_put_contents($tempfile, $response['body']);
@@ -1070,6 +1105,9 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $n
 		} elseif (ewww_image_optimizer_mimetype($tempfile, 'i') == $type) {
 			$newsize = filesize($tempfile);
 			rename($tempfile, $file);
+		} elseif (ewww_image_optimizer_mimetype($tempfile, 'i') == 'image/webp') {
+			$newsize = filesize($tempfile);
+			rename($tempfile, $newfile);
 		} elseif (ewww_image_optimizer_mimetype($tempfile, 'i') == $newtype) {
 			$converted = true;
 			$newsize = filesize($tempfile);
@@ -1726,6 +1764,15 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 				printf("<br><a href=\"admin.php?action=ewww_image_optimizer_manual_restore&amp;attachment_ID=%d\">%s</a>",
 					$id,
 					__('Restore original', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+			}
+			// determine filepath for webp
+			$webpfile = preg_replace('/\.\w+$/', '.webp', $file_path);
+			if ( file_exists( $webpfile ) ) {
+				$webpurl = preg_replace( '/\.\w+$/', '.webp', wp_get_attachment_url( $id ) );
+				// get a human readable filesize
+				$webp_size = size_format(filesize($webpfile), 2);
+				$webp_size = preg_replace('/\.00 B /', ' B', $webp_size);
+				echo "<br>WebP: <a href='$webpurl'>$webp_size</a>," . ewww_image_optimizer_mimetype($webpfile, 'i');
 			}
 		} else {
 			// otherwise, this must be an image we haven't processed

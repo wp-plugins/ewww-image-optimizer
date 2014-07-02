@@ -828,6 +828,9 @@ function ewww_image_optimizer_mimetype($path, $case) {
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_mimetype()</b><br>";
 	$ewww_debug .= "testing mimetype: $path <br>";
+	if ( $case == 'i' && preg_match( '/^RIFF.+WEBPVP8/', file_get_contents( $path, NULL, NULL, 0, 16 ) ) ) {
+			return 'image/webp';
+	}
 	if (function_exists('finfo_file') && defined('FILEINFO_MIME')) {
 		// create a finfo resource
 		$finfo = finfo_open(FILEINFO_MIME);
@@ -1399,9 +1402,9 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new, $fullsize 
 				break;
 			}
 			if ($convert) {
-				$tools = ewww_image_optimizer_path_check(true, true, false, true);
+				$tools = ewww_image_optimizer_path_check(true, true, false, true, ewww_image_optimizer_get_option('ewww_image_optimizer_png_lossy'), ewww_image_optimizer_get_option('ewww_image_optimizer_webp'));
 			} else {
-				$tools = ewww_image_optimizer_path_check(false, true, false, true);
+				$tools = ewww_image_optimizer_path_check(false, true, false, true, ewww_image_optimizer_get_option('ewww_image_optimizer_png_lossy'), ewww_image_optimizer_get_option('ewww_image_optimizer_webp'));
 			}
 			// if pngout and optipng are disabled
 			if (ewww_image_optimizer_get_option('ewww_image_optimizer_disable_optipng') && ewww_image_optimizer_get_option('ewww_image_optimizer_disable_pngout')) {
@@ -1457,7 +1460,8 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new, $fullsize 
 				}
 			// if conversion and optimization are both disabled we are done here
 			} elseif (!$convert) {
-				$ewww_debug .= "not going to process as we can neither convert or optimize<br>";
+				$ewww_debug .= "calling webp, but neither convert or optimize<br>";
+				ewww_image_optimizer_webp_create( $file, $orig_size, $type, $tools['WEBP'] );
 				break;
 			}
 			// flush the cache for filesize
@@ -1580,6 +1584,8 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new, $fullsize 
 					}
 					// update the $file location to the new JPG
 					$file = $jpgfile;
+					// let webp know what we're dealing with now
+					$type = 'image/jpeg';
 					// successful conversion, so we store the increment
 					$converted = $filenum;
 				} else {
@@ -1590,6 +1596,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new, $fullsize 
 					}
 				}
 			}
+			ewww_image_optimizer_webp_create( $file, $new_size, $type, $tools['WEBP'] );
 			break;
 		case 'image/gif':
 			// if gif2png is turned on, and the image is in the wordpress media library
@@ -1621,9 +1628,9 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new, $fullsize 
 				break;
 			}
 			if ($convert) {
-				$tools = ewww_image_optimizer_path_check(false, true, true, true);
+				$tools = ewww_image_optimizer_path_check(false, true, true, true, ewww_image_optimizer_get_option('ewww_image_optimizer_png_lossy'), ewww_image_optimizer_get_option('ewww_image_optimizer_webp'));
 			} else {
-				$tools = ewww_image_optimizer_path_check(false, false, true, false);
+				$tools = ewww_image_optimizer_path_check(false, false, true, false, false, false);
 			}
 			// if gifsicle is disabled
 			if (ewww_image_optimizer_get_option('ewww_image_optimizer_disable_gifsicle')) {
@@ -1715,6 +1722,10 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new, $fullsize 
 						}
 						// update the $file location with the new PNG
 						$file = $pngfile;
+						// let webp know what we're dealing with now
+						$type = 'image/png';
+						// normally this would be at the end of the section, but we only want to do webp if the image was successfully converted to a png
+						ewww_image_optimizer_webp_create( $file, $new_size, $type, $tools['WEBP'] );
 						// successful conversion (for now), so we store the increment
 						$converted = $filenum;
 					} else {
@@ -1749,16 +1760,23 @@ function ewww_image_optimizer_webp_create( $file, $orig_size, $type, $tool ) {
 	$ewww_debug .= '<b>ewww_image_optimizer_webp_create()</b><br>';
 	// change the file extension
 	$webpfile = preg_replace('/\.\w+$/', '.webp', $file);
-//	$webp_size = 0;
-	// check to see if 'nice' exists
-	$nice = ewww_image_optimizer_find_binary('nice', 'n');
-	switch($type) {
-		case 'image/jpeg':
-			exec( "$nice " . $tool . " -q 85 -quiet " . ewww_image_optimizer_escapeshellarg( $file ) . " -o " . ewww_image_optimizer_escapeshellarg( $webpfile ) );
-			break;
-		case 'image/png':
-			exec( "$nice " . $tool . " -lossless -quiet " . ewww_image_optimizer_escapeshellarg( $file ) . " -o " . ewww_image_optimizer_escapeshellarg( $webpfile ) );
-			break;
+	if ( file_exists( $webpfile ) ) {
+		return;
+	}
+	if ( empty( $tool ) && ewww_image_optimizer_get_option( 'ewww_image_optimizer_webp' ) ) {
+		//list($file, $converted, $result, $new_size) = ewww_image_optimizer_cloud_optimizer($file, $type, $convert, $pngfile, 'image/png', $fullsize);
+		ewww_image_optimizer_cloud_optimizer($file, $type, false, $webpfile, 'image/webp');
+	} else {
+		// check to see if 'nice' exists
+		$nice = ewww_image_optimizer_find_binary('nice', 'n');
+		switch($type) {
+			case 'image/jpeg':
+				exec( "$nice " . $tool . " -q 85 -quiet " . ewww_image_optimizer_escapeshellarg( $file ) . " -o " . ewww_image_optimizer_escapeshellarg( $webpfile ) );
+				break;
+			case 'image/png':
+				exec( "$nice " . $tool . " -lossless -quiet " . ewww_image_optimizer_escapeshellarg( $file ) . " -o " . ewww_image_optimizer_escapeshellarg( $webpfile ) );
+				break;
+		}
 	}
 	if ( file_exists( $webpfile ) && $orig_size < filesize( $webpfile ) ) {
 		$ewww_debug .= 'webp file was too big, deleting<br>';
