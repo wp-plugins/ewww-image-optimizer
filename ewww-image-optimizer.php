@@ -2119,7 +2119,49 @@ function ewww_image_optimizer_options () {
 			</table>
 			</div></div>
 			<p class="submit"><input type="submit" class="button-primary" value="<?php _e('Save Changes', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?>" /></p>
-		</form></div><!-- end container left -->
+		</form>
+<?php		if ( ewww_image_optimizer_get_option( 'ewww_image_optimizer_webp' ) ) {
+/*			$ewww_rules = array(
+				"<IfModule mod_rewrite.c>",
+				"RewriteEngine On",
+				"RewriteCond %{HTTP_ACCEPT} image/webp",
+				"RewriteCond %{REQUEST_FILENAME} (.*)\.(jpe?g|png)$",
+				"RewriteCond %1\.webp -f",
+				"RewriteRule (.+)\.(jpe?g|png)$ $1.webp [T=image/webp,E=accept:1]",
+				"</IfModule>",
+				"<IfModule mod_headers.c>",
+				"Header append Vary Accept env=REDIRECT_accept",
+				"</IfModule>",
+				"AddType image/webp .webp",
+			);*/
+?>
+		<form id="webp-rewrite">
+			<p>There are many ways to serve WebP images to visitors with supported browsers. You may choose any you wish, but it is recommended to serve them with an .htaccess file using mod_rewrite and mod_headers. The plugin can insert the rules for you if the file is writable, or you can edit .htaccess yourself.</p>
+<?php			if ( ! ewww_image_optimizer_webp_rewrite_verify() ) { ?>
+				<img id="webp-image" src="<?php echo plugins_url('/test.png', __FILE__); ?>" style="float: right; padding: 0 0 10px 10px;">
+				<p id="webp-rewrite-status"><b><?php _e('Rules verified successfully', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></b></p>
+<?php			} else { ?>
+			<pre id="webp-rewrite-rules" style="background: white; font-color: black; border: 1px solid black; clear: both; padding: 10px;">
+&lt;IfModule mod_rewrite.c&gt;
+RewriteEngine On
+RewriteCond %{HTTP_ACCEPT} image/webp
+RewriteCond %{REQUEST_FILENAME} (.*)\.(jpe?g|png)$
+RewriteCond %1\.webp -f
+RewriteRule (.+)\.(jpe?g|png)$ $1.webp [T=image/webp,E=accept:1]
+&lt;/IfModule&gt;
+&lt;IfModule mod_headers.c&gt;
+Header append Vary Accept env=REDIRECT_accept
+&lt;/IfModule&gt;
+AddType image/webp .webp</pre>
+				<img id="webp-image" src="<?php echo plugins_url('/test.png', __FILE__); ?>" style="float: right; padding-left: 10px;">
+				<p id="webp-rewrite-status">The image to the right will display a WebP image, with WEBP in white text, if your site is serving WebP images and your browser supports WebP.</p>
+			<!--	<input type="hidden" name="ewww_webp_rewrite" value="1" />-->
+				<button type="submit" class="button-secondary action"><?php _e('Insert Rewrite Rules', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></button>
+
+<?php			} ?>
+		</form>
+<?php		} ?>
+		</div><!-- end container left -->
 		<div id="ewww-container-right" style="border: 1px solid #ccc; padding: 0 8px; border-radius: 12px; float: right; margin-left: -200px; display: inline-block; width: 174px;">
 			<h3>Support EWWW I.O.</h3>
 			<p>Would you like to help support development of this plugin?<br />

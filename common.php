@@ -215,6 +215,9 @@ function ewww_image_optimizer_admin_init() {
 	if ( substr($wp_version, 0, 3) >= 3.8 ) {  
 		add_action('admin_enqueue_scripts', 'ewww_image_optimizer_progressbar_style'); 
 	}
+/*	if ( ! empty( $_POST['ewww_webp_rewrite'] ) ) {
+		ewww_image_optimizer_webp_rewrite();
+	}*/
 }
 
 // sets all the tool constants to false
@@ -1772,7 +1775,7 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 				// get a human readable filesize
 				$webp_size = size_format(filesize($webpfile), 2);
 				$webp_size = preg_replace('/\.00 B /', ' B', $webp_size);
-				echo "<br>WebP: <a href='$webpurl'>$webp_size</a>," . ewww_image_optimizer_mimetype($webpfile, 'i');
+				echo "<br>WebP: <a href='$webpurl'>$webp_size</a>";
 			}
 		} else {
 			// otherwise, this must be an image we haven't processed
@@ -1844,9 +1847,9 @@ function ewww_image_optimizer_set_option ($option_name, $option_value) {
 	return $success;
 }
 
-function ewww_image_optimizer_savings_script($hook) {
+function ewww_image_optimizer_settings_script($hook) {
 	global $ewww_debug;
-	$ewww_debug .= "<b>ewww_image_optimizer_savings_script()</b><br>";
+	$ewww_debug .= "<b>ewww_image_optimizer_settings_script()</b><br>";
 	global $wpdb;
 	// make sure we are being called from the bulk optimization page
 	if (strpos($hook,'settings_page_ewww-image-optimizer') !== 0) {
@@ -1856,7 +1859,7 @@ function ewww_image_optimizer_savings_script($hook) {
 	$ewww_debug .= "images to check for savings: $savings_todo<br>";
 	wp_enqueue_script('ewwwbulkscript', plugins_url('/eio.js', __FILE__), array('jquery', 'jquery-ui-slider', 'jquery-ui-progressbar'));
 	wp_localize_script('ewwwbulkscript', 'ewww_vars', array(
-			'_wpnonce' => wp_create_nonce('ewww-image-optimizer-savings'),
+			'_wpnonce' => wp_create_nonce('ewww-image-optimizer-settings'),
 			'savings_todo' => $savings_todo,
 		)
 	);
@@ -1865,7 +1868,7 @@ function ewww_image_optimizer_savings_script($hook) {
 
 function ewww_image_optimizer_savings_finish() {
 	// verify that an authorized user has started the optimizer
-	if (!wp_verify_nonce($_REQUEST['_wpnonce'], 'ewww-image-optimizer-savings')) {
+	if (!wp_verify_nonce($_REQUEST['_wpnonce'], 'ewww-image-optimizer-settings')) {
 		wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 	} 
 	// get a human readable filesize
@@ -1875,7 +1878,7 @@ function ewww_image_optimizer_savings_finish() {
 
 function ewww_image_optimizer_savings_loop() {
 	// verify that an authorized user has started the optimizer
-	if (!wp_verify_nonce($_REQUEST['_wpnonce'], 'ewww-image-optimizer-savings')) {
+	if (!wp_verify_nonce($_REQUEST['_wpnonce'], 'ewww-image-optimizer-settings')) {
 		wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 	} 
 	global $ewww_debug;
@@ -1890,7 +1893,47 @@ function ewww_image_optimizer_savings_loop() {
 	die();
 }
 
-add_action('admin_enqueue_scripts', 'ewww_image_optimizer_savings_script');
+function ewww_image_optimizer_webp_rewrite() {
+	// verify that an authorized user has started the optimizer
+/*	if (!wp_verify_nonce($_REQUEST['_wpnonce'], 'ewww-image-optimizer-settings')) {
+		wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+	}*/
+	if ( $ewww_rules = ewww_image_optimizer_webp_rewrite_verify() ) {
+	if ( insert_with_markers( get_home_path() . '.htaccess', 'EWWWIO', $ewww_rules ) && ! ewww_image_optimizer_webp_rewrite_verify() ) {
+		_e('Insertion successful', EWWW_IMAGE_OPTIMIZER_DOMAIN);
+	} else {
+		_e('Insertion failed', EWWW_IMAGE_OPTIMIZER_DOMAIN);
+	}
+	}
+	die();
+}
+
+// if rules are present, stay silent, otherwise, give us some rules to insert!
+function ewww_image_optimizer_webp_rewrite_verify() {
+	$current_rules = extract_from_markers( get_home_path() . '.htaccess', 'EWWWIO' ) ;
+	$ewww_rules = array(
+		"<IfModule mod_rewrite.c>",
+		"RewriteEngine On",
+		"RewriteCond %{HTTP_ACCEPT} image/webp",
+		"RewriteCond %{REQUEST_FILENAME} (.*)\.(jpe?g|png)$",
+		"RewriteCond %1\.webp -f",
+		"RewriteRule (.+)\.(jpe?g|png)$ $1.webp [T=image/webp,E=accept:1]",
+		"</IfModule>",
+		"<IfModule mod_headers.c>",
+		"Header append Vary Accept env=REDIRECT_accept",
+		"</IfModule>",
+		"AddType image/webp .webp",
+	); 
+	return array_diff( $ewww_rules, $current_rules );
+/*	if ( array_diff( $ewww_rules, $current_rules ) ) {
+		return false;
+	} else {
+		return true;
+	}*/
+}
+
+add_action('admin_enqueue_scripts', 'ewww_image_optimizer_settings_script');
 add_action('wp_ajax_ewww_savings_loop', 'ewww_image_optimizer_savings_loop');
 add_action('wp_ajax_ewww_savings_finish', 'ewww_image_optimizer_savings_finish');
+add_action('wp_ajax_ewww_webp_rewrite', 'ewww_image_optimizer_webp_rewrite');
 ?>

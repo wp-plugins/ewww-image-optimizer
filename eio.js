@@ -2,6 +2,19 @@ jQuery(document).ready(function($) {
 	var ewww_error_counter = 30;
 	var sleep_action = 'ewww_sleep';
 	if (!ewww_vars.attachments) {
+		$('#webp-rewrite').submit(function() {
+			var webp_rewrite_action = 'ewww_webp_rewrite';
+			var webp_rewrite_data = {
+				action: webp_rewrite_action,
+				_wpnonce: ewww_vars._wpnonce,
+			};
+			$.post(ajaxurl, webp_rewrite_data, function(response) {
+				$('#webp-rewrite-status').html('<b>' + response + '</b>');
+				ewww_webp_image = document.getElementById("webp-image").src;
+				document.getElementById("webp-image").src = ewww_webp_image + '#' + new Date().getTime();
+			});
+			return false;
+		});	
 		if (!ewww_vars.savings_todo) {
 			$('#total_savings').text('0');
 			return false;
