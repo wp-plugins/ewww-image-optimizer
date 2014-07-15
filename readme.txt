@@ -1,23 +1,17 @@
 === EWWW Image Optimizer ===
 Contributors: nosilver4u
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MKMQKCBFFG3WW
-Tags: images, image, attachments, attachment, optimize, optimization, nextgen, buddypress, flagallery, flash-gallery, lossless, lossy, photos, photo, picture, pictures, seo, compression, image-store, imstore, slider, image editor, gmagick, wp-symposium, meta-slider, metaslider, jpegtran, gifsicle, optipng, pngout, pngquant, gmedia
+Tags: images, image, attachments, attachment, optimize, optimization, nextgen, buddypress, flagallery, flash-gallery, lossless, lossy, photos, photo, picture, pictures, seo, compression, image-store, imstore, slider, image editor, gmagick, wp-symposium, meta-slider, metaslider, jpegtran, gifsicle, optipng, pngout, pngquant, gmedia, jpegmini, tinypng, webp, cwebp
 Requires at least: 3.5
 Tested up to: 3.9.1
 Stable tag: 1.9.3
 License: GPLv3
 
-Reduce file sizes for images within WordPress including NextGEN, GRAND FlAGallery and more. Uses jpegtran, optipng, pngout, pngquant, and gifsicle.
+Reduce file sizes for images within WordPress including NextGEN, GRAND FlAGallery and more. Uses jpegtran, optipng, pngout, pngquant, gifsicle, cwebp, and jpegmini.
 
 == Description ==
 
-The EWWW Image Optimizer is a WordPress plugin that will automatically and losslessly optimize your images as you upload them to your blog. It can also optimize the images that you have already uploaded in the past. It is also possible to convert your images automatically to the file format that will produce the smallest image size (make sure you read the WARNINGS). It can also optionally apply lossy reductions for PNG images.
-
-By default, EWWW Image Optimizer uses lossless optimization techniques, so your image quality will be exactly the same before and after the optimization. The only thing that will change is your file size. The one small exception to this is GIF animations. While the optimization is technically lossless, you will not be able to properly edit the animation again without performing an --unoptimize operation with gifsicle. The gif2png and jpg2png conversions are also lossless but the png2jpg process is not lossless. Lossy optimization is available for PNG files. While pngquant tries very hard to maintain visual quality, lossy compression always has the potential for quality loss.
-
-Images are optimized using the [jpegtran](http://jpegclub.org/jpegtran/), [optipng](http://optipng.sourceforge.net/), [pngout](http://advsys.net/ken/utils.htm), [pngquant](http://pngquant.org/), and [gifsicle](http://www.lcdf.org/gifsicle/) image tools (available for free). For PNG files, optipng or pngout can be used for lossless compression, and pngquant is available for lossy compression. If you want the best optimization, install all three, set optipng to level 3 (beyond that is just crazy and rarely yields significant gains) and pngout to level 0. Images are converted using the above tools and GD or 'convert' (ImageMagick).
-
-EWWW Image Optimizer calls optimization utilities directly which is well suited to shared hosting situations where these utilities may already be installed. Pre-compiled binaries/executables are provided for optipng, gifsicle, and jpegtran. Pngout can be installed with one-click from the settings page. If none of that works, there is a cloud option that will work for those who cannot run the optimizers on their own server.
+The EWWW Image Optimizer is a WordPress plugin that will automatically optimize your images as you upload them to your blog. It can optimize the images that you have already uploaded in the past. It is also possible to convert your images automatically to the file format that will produce the smallest image size (make sure you read the WARNINGS). It can also optionally apply lossy reductions for PNG and JPG images.
 
 **Why use EWWW Image Optimizer?**
 
@@ -25,9 +19,16 @@ EWWW Image Optimizer calls optimization utilities directly which is well suited 
 1. **Faster backups.** Smaller image sizes also means faster backups.
 1. **Less bandwidth usage.** Optimizing your images can save you hundreds of KB per image, which means significantly less bandwidth usage.
 1. **Super fast.** The plugin can run on your own server, so you don’t have to wait for a third party service to receive, process, and return your images. You can optimize hundreds of images in just a few minutes. PNG files take the longest, but you can adjust the settings for your situation.
+1. **Best JPG optimization.** With JPEGmini integration, nothing else comes close (requires an API subscription).
 1. **Better PNG optimization.** You can use pngout, optipng, and pngquant in conjunction.
 1. **Root access not needed** Pre-compiled binaries are made available to install directly within the Wordpress folder, and cloud optimization is provided for those who cannot run the binaries locally.
 1. **Optimize almost anything** Using the Optimize More tool, and the wp_image_editor class extension, any image in Wordpress can be optimized.
+
+By default, EWWW Image Optimizer uses lossless optimization techniques, so your image quality will be exactly the same before and after the optimization. The only thing that will change is your file size. The one small exception to this is GIF animations. While the optimization is technically lossless, you will not be able to properly edit the animation again without performing an --unoptimize operation with gifsicle. The gif2png and jpg2png conversions are also lossless but the png2jpg process is not lossless. Lossy optimization is available for PNG files. While pngquant tries very hard to maintain visual quality, lossy compression always has the potential for quality loss.
+
+Images are optimized using the [jpegtran](http://jpegclub.org/jpegtran/), [optipng](http://optipng.sourceforge.net/), [pngout](http://advsys.net/ken/utils.htm), [pngquant](http://pngquant.org/), and [gifsicle](http://www.lcdf.org/gifsicle/) image tools (available for free). For PNG files, optipng or pngout can be used for lossless compression, and pngquant is available for lossy compression. If you want the best optimization, install all three, set optipng to level 3 (beyond that is just crazy and rarely yields significant gains) and pngout to level 0. Images are converted using the above tools and GD or 'convert' (ImageMagick).
+
+EWWW Image Optimizer calls optimization utilities directly which is well suited to shared hosting situations where these utilities may already be installed. Pre-compiled binaries/executables are provided for optipng, gifsicle, and jpegtran. Pngout can be installed with one-click from the settings page. If none of that works, there is a cloud option that will work for those who cannot run the optimizers on their own server.
 
 If you need a version of this plugin for cloud use only, see [EWWW Image Optimizer Cloud](http://wordpress.org/plugins/ewww-image-optimizer-cloud/). It is much more compact as it does not contain any binaries or any mention of the exec() function.
 
@@ -210,6 +211,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 = 1.9.4 =
 * added: webp generation (wahooooooooo)
+* added: jpegmini support (more wahooooo, but requires a cloud subscription)
+* fixed: jpeg quality not being set properly for 4.0 on resizes
+* changed: settings page, feel free to give me feedback on the new menubar
 * fixed: some settings not being validated properly for multi-site
 * added: up to 30 second retry when bulk optimize is interrupted
 * changed: various code cleanup
