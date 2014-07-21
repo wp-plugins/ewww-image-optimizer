@@ -15,6 +15,9 @@ Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
 
+// TODO: git remote add origin git@github.com:nosilver4u/ewww-image-optimizer.git
+//	git push -u origin master
+
 // Constants
 define('EWWW_IMAGE_OPTIMIZER_DOMAIN', 'ewww-image-optimizer');
 // the folder where we install optimization tools

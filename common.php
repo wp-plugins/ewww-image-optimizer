@@ -1,6 +1,6 @@
 <?php
 // common functions for Standard and Cloud plugins
-
+// TODO: check all comments to make sure they are actually useful...
 define('EWWW_IMAGE_OPTIMIZER_VERSION', '193.4');
 
 // initialize debug global
@@ -1983,7 +1983,7 @@ function ewww_image_optimizer_options () {
 	$output[] = "<p><a href='http://wordpress.org/extend/plugins/ewww-image-optimizer/'>" . __('Plugin Home Page', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a> | " .
 		"<a href='http://wordpress.org/extend/plugins/ewww-image-optimizer/installation/'>" .  __('Installation Instructions', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a> | " .
 		"<a href='http://wordpress.org/support/plugin/ewww-image-optimizer'>" . __('Plugin Support', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a> | " .
-		"<a href='http://stats.pingdom.com/w89y81bhecp4'>" . __('Cloud Status', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a></p>\n";
+		"<a href='http://www.exactlywww.com/cloudstatus/'>" . __('Cloud Status', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a></p>\n";
 		if (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network(EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE_REL)) {
 			$bulk_link = __('Media Library') . ' -> ' . __('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 		} else {
