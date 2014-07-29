@@ -219,6 +219,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * changed: various code cleanup
 * fixed: prevent excess warnings/notices when binaries can't be installed
 * fixed: prevent binary installer from firing on unsupported operating systems
+* changed: better verification when saving settings for multi-site
 
 = 1.9.3 =
 * added: fallback mode when totals for resizes and unoptimized images cannot be determined by the bulk optimize tool

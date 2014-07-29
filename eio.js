@@ -73,17 +73,6 @@ jQuery(document).ready(function($) {
 		loopSavings();
 		return false;
 	} else {
-	// sliders for the bulk page
-	/*$(function() {
-		$("#ewww-interval-slider").slider({
-			min: 1,
-			max: 25,
-			value: $("#ewww-interval").val(),
-			slide: function(event, ui) {
-				$("#ewww-interval").val(ui.value);
-			}
-		});
-	});*/
 	$(function() {
 		$("#ewww-delay-slider").slider({
 			min: 0,
@@ -101,10 +90,7 @@ jQuery(document).ready(function($) {
 	var k = 0;
 	var import_total = 0;
 	var ewww_force = 0;
-	var ewww_interval = 0;
 	var ewww_delay = 0;
-	var ewww_countdown = 0;
-	var ewww_sleep = 0;
 	var ewww_aux = false;
 	var ewww_main = false;
 	// initialize the ajax actions for the appropriate bulk page
@@ -306,7 +292,6 @@ jQuery(document).ready(function($) {
 	function loopSavings() {
 	        $.post(ajaxurl, savings_data, function(response) {
 			savings_total = savings_total + parseInt(response);
-		//		$('#total_savings').text(savings_total + ' ' + savings_todo + ' ' + savings_counter);
 			if (savings_todo < 0) {
 				savings_action = 'ewww_savings_finish';
 				savings_data = {
@@ -337,13 +322,11 @@ jQuery(document).ready(function($) {
 			$('#bulk-stop').hide();
 			return false;
 		});
-		ewww_interval = 1;
 		if ( ! $('#ewww-delay').val().match( /^[1-9][0-9]*$/) ) {
 			ewww_delay = 0;
 		} else {
 			ewww_delay = $('#ewww-delay').val();
 		}
-		ewww_countdown = ewww_interval;
 		if ($('#ewww-force:checkbox:checked').val()) {
 			ewww_force = 1;
 		}
@@ -360,10 +343,6 @@ jQuery(document).ready(function($) {
 	        });
 	}
 	function processImage () {
-		if (ewww_countdown == 0) {
-			ewww_sleep = ewww_delay;
-			ewww_countdown = ewww_interval;
-		}
 		attachment_id = attachments[i];
 	        var filename_data = {
 	                action: filename_action,
@@ -379,7 +358,7 @@ jQuery(document).ready(function($) {
 	                action: loop_action,
 			_wpnonce: ewww_vars._wpnonce,
 			attachment: attachment_id,
-			sleep: ewww_sleep,
+			sleep: ewww_delay,
 			force: ewww_force,
 	        };
 	        var jqxhr = $.post(ajaxurl, loop_data, function(response) {
@@ -397,10 +376,6 @@ jQuery(document).ready(function($) {
 				$('#bulk-loading').html('<p style="color: red"><b>Optimization stopped, reload page to resume.</b></p>');
 			}
 			else if (i < attachments.length) {
-				if (ewww_countdown > 0) {
-					ewww_countdown--;
-				}
-				ewww_sleep = 0;
 				processImage();
 			}
 			else {

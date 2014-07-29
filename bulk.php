@@ -41,8 +41,6 @@ function ewww_image_optimizer_bulk_preview() {
 			<p><label for="ewww-force" style="font-weight: bold"><?php _e('Force re-optimize for Media Library', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label>&emsp;<input type="checkbox" id="ewww-force" name="ewww-force"></p>
 			<p><label for="ewww-delay" style="font-weight: bold"><?php _e('Choose how long to pause between images (in seconds, 0 = disabled)', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label>&emsp;<input type="text" id="ewww-delay" name="ewww-delay" value="<?php if ($delay = ewww_image_optimizer_get_option ( 'ewww_image_optimizer_delay' ) ) { echo $delay; } else { echo 0; } ?>"></p>
 			<div id="ewww-delay-slider" style="width:50%"></div>
-<!--			<p><label for="ewww-interval" style="font-weight: bold"><?php _e('Choose how many images should be processed before each delay', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label>&emsp;<input type="text" id="ewww-interval" name="ewww-interval" value="<?php if ($interval = ewww_image_optimizer_get_option ( 'ewww_image_optimizer_interval' ) ) { echo $interval; } else { echo 1; } ?>"></p>
-			<div id="ewww-interval-slider" style="width:50%"></div>-->
 		</form>
 		<h3><?php _e('Optimize Media Library', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></h3>
 <?php		if ($fullsize_count < 1) {

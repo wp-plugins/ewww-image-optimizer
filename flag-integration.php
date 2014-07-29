@@ -82,8 +82,6 @@ class ewwwflag {
 			<p><label for="ewww-force" style="font-weight: bold"><?php _e('Force re-optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label>&emsp;<input type="checkbox" id="ewww-force" name="ewww-force"></p>
 			<p><label for="ewww-delay" style="font-weight: bold"><?php _e('Choose how long to pause between images (in seconds, 0 = disabled)', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label>&emsp;<input type="text" id="ewww-delay" name="ewww-delay" value="<?php if ($delay = ewww_image_optimizer_get_option ( 'ewww_image_optimizer_delay' ) ) { echo $delay; } else { echo 0; } ?>"></p>
 			<div id="ewww-delay-slider" style="width:50%"></div>
-		<!--	<p><label for="ewww-interval" style="font-weight: bold"><?php _e('Choose how many images should be processed before each delay', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label>&emsp;<input type="text" id="ewww-interval" name="ewww-interval" value="<?php if ($interval = ewww_image_optimizer_get_option ( 'ewww_image_optimizer_interval' ) ) { echo $interval; } else { echo 1; } ?>"></p>
-			<div id="ewww-interval-slider" style="width:50%"></div>-->
 		</form>
 		<div id="bulk-forms">
 		<p class="bulk-info"><?php printf(__('%1$d images have been selected (%2$d unoptimized), with %3$d resizes (%4$d unoptimized).', EWWW_IMAGE_OPTIMIZER_DOMAIN), $fullsize_count, $unoptimized_count, $resize_count, $unoptimized_resize_count); ?><br />
