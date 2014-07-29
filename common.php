@@ -895,6 +895,7 @@ function ewww_image_optimizer_cloud_useragent ( $useragent ) {
 function ewww_image_optimizer_cloud_verify ( $cache = true, $api_key = '' ) {
 	global $ewww_debug;
 	global $ewww_cloud_ip;
+	global $ewww_cloud_transport;
 	$ewww_debug .= "<b>ewww_image_optimizer_cloud_verify()</b><br>";
 	if ( empty( $api_key ) ) {
 		$api_key = ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_key');
@@ -921,19 +922,22 @@ function ewww_image_optimizer_cloud_verify ( $cache = true, $api_key = '' ) {
 			$ewww_debug .= "unable to resolve servers<br>";
 			return false;
 		}
+		$ewww_cloud_transport = 'https';
 		foreach ($servers as $ip) {
-			$url = "http://$ip/verify/";
+			$url = "$ewww_cloud_transport://$ip/verify/";
 			$result = wp_remote_post($url, array(
-				'timeout' => 20,
+				'timeout' => 5,
+				'sslverify' => false,
 				'body' => array('api_key' => $api_key)
 			));
 			if (is_wp_error($result)) {
+				$ewww_cloud_transport = 'http';
 				$error_message = $result->get_error_message();
 				$ewww_debug .= "verification failed: $error_message <br>";
 			} elseif (!empty($result['body']) && preg_match('/(great|exceeded)/', $result['body'])) {
 				$verified = $result['body'];
 				$ewww_cloud_ip = $ip;
-				$ewww_debug .= "verification success via: $ip <br>";
+				$ewww_debug .= "verification success via: $ewww_cloud_transport://$ip <br>";
 				/*if ( preg_match ( '/exceeded/', $result['body']) ) {
 					global $ewww_exceed;
 					$ewww_exceed = true;
@@ -966,11 +970,13 @@ function ewww_image_optimizer_cloud_verify ( $cache = true, $api_key = '' ) {
 function ewww_image_optimizer_cloud_quota() {
 	global $ewww_debug;
 	global $ewww_cloud_ip;
+	global $ewww_cloud_transport;
 	$ewww_debug .= "<b>ewww_image_optimizer_cloud_quota()</b><br>";
 	$api_key = ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_key');
-	$url = "http://$ewww_cloud_ip/quota/";
+	$url = "$ewww_cloud_transport://$ewww_cloud_ip/quota/";
 	$result = wp_remote_post($url, array(
-		'timeout' => 10,
+		'timeout' => 5,
+		'sslverify' => false,
 		'body' => array('api_key' => $api_key)
 	));
 	if (is_wp_error($result)) {
@@ -1004,6 +1010,7 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $n
 	}
 	global $ewww_exceed;
 	global $ewww_cloud_ip;
+	global $ewww_cloud_transport;
 	$ewww_debug .= "<b>ewww_image_optimizer_cloud_optimizer()</b><br>";
 	if ( $ewww_exceed ) {
 		$ewww_debug .= "license exceeded, image not processed<br>";
@@ -1041,7 +1048,7 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $n
 	$ewww_debug .= "webp: $webp<br>";
 	$ewww_debug .= "jpg_params: " . print_r($jpg_params, true) . " <br>";
 	$api_key = ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_key');
-	$url = "http://$ewww_cloud_ip/";
+	$url = "$ewww_cloud_transport://$ewww_cloud_ip/";
 	$boundary = wp_generate_password(24, false);
 
 	$headers = array(
@@ -1086,11 +1093,16 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $n
 	$payload .= "Upload\r\n";
 	$payload .= '--' . $boundary . '--';
 
+	// retrieve the time when the optimizer starts
+	$started = microtime(true);
 	$response = wp_remote_post($url, array(
 		'timeout' => 90,
 		'headers' => $headers,
+		'sslverify' => false,
 		'body' => $payload,
 		));
+	$elapsed = microtime(true) - $started;
+	$ewww_debug .= "processing image via cloud took $elapsed seconds<br>";
 	if (is_wp_error($response)) {
 		$error_message = $response->get_error_message();
 		$ewww_debug .= "optimize failed: $error_message <br>";
