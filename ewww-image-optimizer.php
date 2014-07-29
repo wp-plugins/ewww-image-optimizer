@@ -40,7 +40,7 @@ function ewww_image_optimizer_cloud_init() {
 	$ewww_debug .= "<b>ewww_image_optimizer_cloud_init()</b><br>";
 	if (!defined('EWWW_IMAGE_OPTIMIZER_CLOUD') && ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_jpg') && ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_png') && ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_gif')) {
 		define('EWWW_IMAGE_OPTIMIZER_CLOUD', TRUE);
-		wp_enqueue_style('ewww-nocloud', plugins_url('nocloud.css', __FILE__));
+//		wp_enqueue_style('ewww-nocloud', plugins_url('nocloud.css', __FILE__));
 	} elseif (!defined('EWWW_IMAGE_OPTIMIZER_CLOUD')) {
 		define('EWWW_IMAGE_OPTIMIZER_CLOUD', FALSE);
 	}
