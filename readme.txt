@@ -1,7 +1,7 @@
 === EWWW Image Optimizer ===
 Contributors: nosilver4u
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MKMQKCBFFG3WW
-Tags: images, image, attachments, attachment, optimize, optimization, nextgen, buddypress, flagallery, flash-gallery, lossless, lossy, photos, photo, picture, pictures, seo, compression, image-store, imstore, slider, image editor, gmagick, wp-symposium, meta-slider, metaslider, jpegtran, gifsicle, optipng, pngout, pngquant, gmedia, jpegmini, tinypng, webp, cwebp
+Tags: image, attachment, optimize, optimization, nextgen, flagallery, lossless, lossy, photo, picture, seo, compression, image-store, imstore, slider, image editor, gmagick, wp-symposium, meta-slider, metaslider, jpegtran, gifsicle, optipng, pngout, pngquant, gmedia, jpegmini, tinypng, webp, cwebp
 Requires at least: 3.5
 Tested up to: 3.9.1
 Stable tag: 1.9.3
@@ -206,7 +206,6 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 = future =
 * these are current feature requests, if you see something you like here, go vote for it in the support forum
 * full GMedia support
-* jpegmini server integration for cloud users
 * If you would like to help translate this plugin in your language, get more information here: http://www.shanebishop.net/ewww-io-plugin-translators/
 
 = 1.9.4 =
@@ -220,6 +219,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * fixed: prevent excess warnings/notices when binaries can't be installed
 * fixed: prevent binary installer from firing on unsupported operating systems
 * changed: better verification when saving settings for multi-site
+* changed: all cloud transactions are now secured (https)
 
 = 1.9.3 =
 * added: fallback mode when totals for resizes and unoptimized images cannot be determined by the bulk optimize tool
