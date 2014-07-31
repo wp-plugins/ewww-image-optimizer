@@ -774,6 +774,7 @@ function ewww_image_optimizer_md5check($path) {
 		'1cb296a52bb5798651fa708342f11d9c', //mac
 		'8b13f121814c86e708f2a900d06c0f30', //windows
 		'039f04420548b194193fc048c18dc49a', //solaris
+		'44ae561d7b5303508a500bc7c016b735', //freebsd
 		);
 	foreach ($valid_md5sums as $md5_sum) {
 		if ($md5_sum == md5_file($path)) {
