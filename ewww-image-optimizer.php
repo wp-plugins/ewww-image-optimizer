@@ -137,20 +137,24 @@ function ewww_image_optimizer_install_paths () {
 		$optipng_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'optipng-mac';
 		$jpegtran_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'jpegtran-mac';
 		$pngquant_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngquant-mac';
+		$webp_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'cwebp-mac8';
 		$gifsicle_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle';
 		$optipng_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng';
 		$jpegtran_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran';
 		$pngquant_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngquant';
+		$webp_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'cwebp';
 	}
 	if (PHP_OS == 'SunOS') {
 		$gifsicle_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'gifsicle-sol';
 		$optipng_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'optipng-sol';
 		$jpegtran_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'jpegtran-sol';
 		$pngquant_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngquant-sol';
+		$webp_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'cwebp-sol';
 		$gifsicle_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle';
 		$optipng_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng';
 		$jpegtran_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran';
 		$pngquant_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngquant';
+		$webp_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'cwebp';
 	}
 	if (PHP_OS == 'FreeBSD') {
 		$arch_type = php_uname('m');
@@ -163,10 +167,12 @@ function ewww_image_optimizer_install_paths () {
 			$jpegtran_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'jpegtran-fbsd';
 		}
 		$pngquant_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngquant-fbsd';
+		$webp_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'cwebp-fbsd';
 		$gifsicle_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle';
 		$optipng_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng';
 		$jpegtran_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran';
 		$pngquant_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngquant';
+		$webp_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'cwebp';
 	}
 	if (PHP_OS == 'Linux') {
 		$arch_type = php_uname('m');
@@ -271,6 +277,26 @@ function ewww_image_optimizer_install_tools () {
 			$ewww_debug .= "Couldn't copy webp<br>";
 		}
 	}
+	// install special version of cwebp for Mac OSX 10.7 systems
+	if (PHP_OS == 'Darwin') {
+		$webp7_dst = $webp_dst . '-custom';
+		$webp7_src = str_replace('mac8', 'mac7', $webp_src);
+		if (!file_exists($webp7_dst) || (ewww_image_optimizer_md5check($webp7_dst) && filesize($webp7_dst) != filesize($webp7_src))) {
+			$ewww_debug .= "copying $webp7_src to $webp7_dst<br>";
+			if (!copy($webp7_src, $webp7_dst)) {
+				// this isn't a fatal error, besides we'll see it in the debug if needed
+				$ewww_debug .= "Couldn't copy OSX 10.7 cwebp to cwebp-custom<br>";
+			}
+			$webp6_perms = substr(sprintf('%o', fileperms($webp7_dst)), -4);
+			$ewww_debug .= "cwebp7-custom (OSX 10.7) permissions: $webp7_perms<br>";
+			if ($webp7_perms != '0755') {
+				if (!chmod($webp7_dst, 0755)) {
+					$ewww_debug .= "couldn't set cwebp7-custom permissions<br>";
+				}
+			}
+		}
+	}
+
 	// install libjpeg6 version of cwebp for older systems
 	if (PHP_OS == 'Linux') {
 		$webp6_dst = $webp_dst . '-custom';
