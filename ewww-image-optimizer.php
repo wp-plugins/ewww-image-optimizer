@@ -167,7 +167,11 @@ function ewww_image_optimizer_install_paths () {
 			$jpegtran_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'jpegtran-fbsd';
 		}
 		$pngquant_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngquant-fbsd';
-		$webp_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'cwebp-fbsd';
+		if ($arch_type == 'amd64') {
+			$webp_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'cwebp-fbsd64';
+		} else {
+			$webp_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'cwebp-fbsd';
+		}
 		$gifsicle_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle';
 		$optipng_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng';
 		$jpegtran_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran';
@@ -800,7 +804,8 @@ function ewww_image_optimizer_md5check($path) {
 		'1cb296a52bb5798651fa708342f11d9c', //mac
 		'8b13f121814c86e708f2a900d06c0f30', //windows
 		'039f04420548b194193fc048c18dc49a', //solaris
-		'44ae561d7b5303508a500bc7c016b735', //freebsd
+		'dc03cb3c986633ee3bd40e8359b59a25', // cwebp-fbsd
+		'0b912e6dbdcfc93cefbefc9d41af840b', // cwebp-fbsd64
 		);
 	foreach ($valid_md5sums as $md5_sum) {
 		if ($md5_sum == md5_file($path)) {
