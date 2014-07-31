@@ -956,8 +956,8 @@ function ewww_image_optimizer_tool_found($path, $tool) {
 			break;
 		case 'w': //cwebp
 			exec("$path -version 2>&1", $webp_version);
-			if (!empty($webp_version)) $ewww_debug .= "$path: $webp_version[0]<br>";
-			if (!empty($webp_version) && strpos($webp_version[0], '0.4.0') === 0) {
+			if ( !empty( $webp_version ) ) $ewww_debug .= "$path: $webp_version[0]<br>";
+			if ( !empty( $webp_version ) && preg_match( '/0.4.\d/', $webp_version[0] ) ) {
 				return $webp_version[0];
 			}
 			break;
