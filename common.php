@@ -1,7 +1,7 @@
 <?php
 // common functions for Standard and Cloud plugins
 // TODO: check all comments to make sure they are actually useful...
-define('EWWW_IMAGE_OPTIMIZER_VERSION', '193.4');
+define('EWWW_IMAGE_OPTIMIZER_VERSION', '193.5');
 
 // initialize debug global
 $disabled = ini_get('disable_functions');
@@ -40,7 +40,11 @@ add_action('admin_action_ewww_image_optimizer_manual_convert', 'ewww_image_optim
 add_action('delete_attachment', 'ewww_image_optimizer_delete');
 add_action('admin_menu', 'ewww_image_optimizer_admin_menu', 60);
 add_action('network_admin_menu', 'ewww_image_optimizer_network_admin_menu');
-add_action('admin_head-upload.php', 'ewww_image_optimizer_add_bulk_actions_via_javascript'); 
+add_action( 'load-upload.php', 'ewww_image_optimizer_load_admin_js' );
+function ewww_image_optimizer_load_admin_js() {
+	add_action('admin_print_footer_scripts', 'ewww_image_optimizer_add_bulk_actions_via_javascript'); 
+}
+//add_action('admin_head-upload.php', 'ewww_image_optimizer_add_bulk_actions_via_javascript'); 
 add_action('admin_action_bulk_optimize', 'ewww_image_optimizer_bulk_action_handler'); 
 add_action('admin_action_-1', 'ewww_image_optimizer_bulk_action_handler'); 
 add_action('admin_enqueue_scripts', 'ewww_image_optimizer_media_scripts');
@@ -1818,7 +1822,7 @@ function ewww_image_optimizer_add_bulk_actions_via_javascript() {
 		jQuery(document).ready(function($){ 
 			$('select[name^="action"] option:last-child').before('<option value="bulk_optimize"><?php _e('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></option>');
 			$('.ewww-convert').tooltip();
-			$('select option:last-child').before('<option value="bulk_optimize"><?php _e('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></option>');
+			//$('.bulk-select select option:last-child').before('<option value="bulk_optimize"><?php _e('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></option>');
 		}); 
 	</script>
 <?php } 
@@ -1974,7 +1978,7 @@ function ewww_image_optimizer_options () {
 		".ewww-tab a { font-size: 16px; color: #fff; text-decoration: none; line-height: 50px; padding: 0 1em; }\n" .
 		".ewww-tab { margin: 0px; padding: 0px; display: inline-block; }\n" .
 		".ewww-selected { background-color: #228bb7; }\n" .
-		".ewww-tab-nav { list-style: none; margin: 0 0 0 -22px; padding: 0; background-color: #1e4378; }\n" .
+		".ewww-tab-nav { list-style: none; margin: 0 0 0 -20px; padding: 0; background-color: #1e4378; }\n" .
 		".ewww-name { font-size: 1.7em; line-height: 46px; color: #fff; background: url(" . plugins_url('smashing-icon.png', __FILE__) . ") no-repeat left; margin-left: 20px; padding: 0 1em 0 60px; }\n" .
 	"</style>\n";
 	$output[] = "<a id='menu-marker'></a>\n";
@@ -2147,15 +2151,15 @@ function ewww_image_optimizer_options () {
 		        	$output[] = "<input type='hidden' name='action' value='update' />\n";
 		        	$output[] = wp_nonce_field( "ewww_image_optimizer_options-options", '_wpnonce', true, false ) . "\n";
 			$output[] = "<div id='cloud-settings'>\n";
-			$output[] = "<p>" . __('If exec() is disabled for security reasons (and enabling it is not an option), or you would like to offload image optimization to a third-party server, you may purchase an API key for our cloud optimization service. The API key should be entered below, and cloud optimization must be enabled for each image format individually.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "<a href='http://www.exactlywww.com/cloud/'>" . __('Purchase an API key.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a></p>\n";
+			$output[] = "<p>" . __('If exec() is disabled for security reasons (and enabling it is not an option), or you would like to offload image optimization to a third-party server, you may purchase an API key for our cloud optimization service. The API key should be entered below, and cloud optimization must be enabled for each image format individually.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <a href='http://www.exactlywww.com/cloud/'>" . __('Purchase an API key.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a></p>\n";
 			$output[] = "<table class='form-table'>\n";
 				$output[] = "<tr><th><label for='ewww_image_optimizer_cloud_key'>" . __('Cloud optimization API Key', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</label></th><td><input type='text' id='ewww_image_optimizer_cloud_key' name='ewww_image_optimizer_cloud_key' value='" . ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_key') . "' size='32' /> " . __('API Key will be validated when you save your settings.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <a href='http://www.exactlywww.com/cloud/'>" . __('Purchase a key.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a></td></tr>\n";
-			if (!empty( $verify_cloud) && preg_match('/great|exceeded/', $verify_cloud)) {
+//			if (!empty( $verify_cloud) && preg_match('/great|exceeded/', $verify_cloud)) {
 				$output[] = "<tr><th><label for='ewww_image_optimizer_cloud_jpg'>JPG " . __('cloud optimization', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</label></th><td><input type='checkbox' id='ewww_image_optimizer_cloud_jpg' name='ewww_image_optimizer_cloud_jpg' value='true' " . ( ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_jpg') == TRUE ? "checked='true'" : "" ) . " />&emsp;&emsp;" . __('Use the Optimization Settings tab to enable lossy compression with JPEGmini.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</td></tr>\n";
 				$output[] = "<tr><th><label for='ewww_image_optimizer_cloud_png'>PNG " . __('cloud optimization', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</label></th><td><input type='checkbox' id='ewww_image_optimizer_cloud_png' name='ewww_image_optimizer_cloud_png' value='true' " . ( ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_png') == TRUE ? "checked='true'" : "" ) . " />&emsp;&emsp;";
 					$output[] = "<label for='ewww_image_optimizer_cloud_png_compress'>" . __('extra compression (slower)', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</label> <input type='checkbox' id='ewww_image_optimizer_cloud_png_compress' name='ewww_image_optimizer_cloud_png_compress' value='true' " . ( ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_png_compress') == TRUE ? "checked='true'" : "" ) . " /></td></tr>\n";
 				$output[] = "<tr><th><label for='ewww_image_optimizer_cloud_gif'>GIF " . __('cloud optimization', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</label></th><td><input type='checkbox' id='ewww_image_optimizer_cloud_gif' name='ewww_image_optimizer_cloud_gif' value='true' " . ( ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_gif') == TRUE ? "checked='true'" : "" ) . " /></td></tr>\n";
-			}
+//			}
 			$output[] = "</table>\n</div>\n";
 			$output[] = "<div id='general-settings'>\n";
 			$output[] = "<p class='nocloud'>" . __('The plugin performs a check to make sure your system has the programs we use for optimization: jpegtran, optipng, pngout, and gifsicle. In some rare cases, these checks may falsely report that you are missing the required utilities even though you have them installed.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</p>\n";
@@ -2271,7 +2275,7 @@ function ewww_image_optimizer_options () {
 				"<a href='https://www.digitalocean.com/?refcode=89ef0197ec7e'>DigitalOcean</a><br>\n" .
 				"<a href='https://clientarea.ramnode.com/aff.php?aff=1469'>RamNode</a>\n" .
 			"</p>\n" .
-			"<p><b>CDN Networks:</b><br>Add the MaxCDN content delivery network to increase website speeds dramatically! <a target='_blank' href='http://tracking.maxcdn.com/c/91625/3982/378'>Sign Up Now and Save 25%</a> (100% Money Back Guarantee for 30 days). Integrate it within Wordpress using the W3 Total Cache plugin.</p>\n" .
+			"<p><b>CDN Networks:</b><br>Add the MaxCDN content delivery network to increase website speeds dramatically! <a target='_blank' href='http://tracking.maxcdn.com/c/91625/36539/378'>Sign Up Now and Save 25%</a> (100% Money Back Guarantee for 30 days). Integrate it within Wordpress using the W3 Total Cache plugin.</p>\n" .
 		"</div>\n" .
 	"</div>\n";
 	echo apply_filters( 'ewww_image_optimizer_settings', $output );

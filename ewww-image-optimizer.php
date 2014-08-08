@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate image optimizers into WordPress.
- * @version 1.9.3.4
+ * @version 1.9.3.5
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -10,13 +10,15 @@ Plugin URI: http://wordpress.org/extend/plugins/ewww-image-optimizer/
 Description: Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
 Author: Shane Bishop
 Text Domain: ewww-image-optimizer
-Version: 1.9.3.4
+Version: 1.9.3.5
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
 
 // TODO: git remote add origin git@github.com:nosilver4u/ewww-image-optimizer.git
 //	git push -u origin master
+// need to compile optipng & pngquant for freebsd and linux, and then everything else. and cwebp-linux 8, 864, and 664
+
 
 // Constants
 define('EWWW_IMAGE_OPTIMIZER_DOMAIN', 'ewww-image-optimizer');
@@ -748,12 +750,15 @@ function ewww_image_optimizer_md5check($path) {
 		'1c251658834162b01913702db0013c08',
 		'dabf8173725e15d866f192f77d9e3883',
 		'e4f7809c84a0722abe2b1d003c98a181',
+		'a9f10ee88569bd7e72a7c2437ea9c09b', // jpegtran.exe
+		'63d3edb0807ac1adbaefd437da8602ef', // jpegtran-sol
 		//optipng
 		'4eb91937291ce5038d0c68f5f2edbcfd',
 		'899e3c569080a55bcc5de06a01c8e23a',
 		'0467bd0c73473221d21afbc5275503e4',
 		'293e26924a274c6185a06226619d8e02',
 		'bcb27d22377f8abf3e9fe88a60030885',
+		'8359078a649aeec2bd472ec84a4f39e1', // optipng-sol
 		//gifsicle
 		'2384f770d307c42b9c1e53cdc8dd662d',
 		'24fc5f33b33c0d11fb2e88f5a93949d0',
@@ -770,6 +775,9 @@ function ewww_image_optimizer_md5check($path) {
 		'151e395e2efa0e7845b18984d0f092af',
 		'7ae972062cf3f99218057b055a4e1e9c',
 		'c0bf45a291b93fd0a52318eddeaf5791',
+		'cafa2e59b23fd1908d7fed853d70dacf', // gifsicle-fbsd
+		'0f97b1fbf1b4695bea25dbf1b1e33019', // gifsicle-linux
+		'ac8fa17a7004fa216242af2367d1a838', // gifsicle-sol
 		//pngout
 		'2b62778559e31bc750dc2dcfd249be32', 
 		'ea8655d1a1ef98833b294fb74f349c3e',
@@ -794,18 +802,20 @@ function ewww_image_optimizer_md5check($path) {
 		'79d8c4f5ff2dbb36068c3e3de42fdb1e',
 		'90ea1271c54ce010afba478c5830a75f',
 		'3ad57a9c3c9093d65664f3260f44df60',
-		'5d480fbe88ab5f732dbc5c9d8b76c2fd', //solaris
+		'5d480fbe88ab5f732dbc5c9d8b76c2fd', // solaris
+		'6fd8b12b542b9145d79925942551dbc8', // pngquant.exe
+		'b3bbc013acc8bc04d3b531809abdadbb', // pngquant-sol
+		'3c1846c084502afe5ae207314f56b05f', // pngquant-fbsd
 		//cwebp
-		'0df6d673dd39fe99dfa0130224cb94b7',
-		'7fa815376cdad2bf84d731da24e30cdf',
-		'04d98268b09a203db98ca8f9d87f8137',
-		'af40ecfe508ceb799d2ba208d2e914bf',
-		'83be9fa42517c10e4a2e317262033b99', //mac
-		'1cb296a52bb5798651fa708342f11d9c', //mac
-		'8b13f121814c86e708f2a900d06c0f30', //windows
-		'039f04420548b194193fc048c18dc49a', //solaris
-		'dc03cb3c986633ee3bd40e8359b59a25', // cwebp-fbsd
-		'0b912e6dbdcfc93cefbefc9d41af840b', // cwebp-fbsd64
+		'085ea7844800980c72fa30835d6f6044', // cwebp.exe
+		'4610c239ba00d515701c75e90efe5534', // cwebp-sol
+		'44acd143a8dac72bbf5795a10d96da98', // cwebp-fbsd
+		'038b5acbbcd43e6811850be7d51236de', // cwebp-fbsd64
+		'9429dd850cc2f976961de5fe61f05e97', // cwebp-linux6
+		'eb3a5b6eae54140269ed6dcf6f792d37', // cwebp-linux664
+		'62272b2bd33218664b2355f516b6e8fc', // cwebp-linux8
+		'9b6f13ce6ee5a028cbd2765e2d53a1d7', // cwebp-linux864
+		'd43bf5eed775695d5ecfe4eafcbd7af7', // cwebp-mac8
 		);
 	foreach ($valid_md5sums as $md5_sum) {
 		if ($md5_sum == md5_file($path)) {
