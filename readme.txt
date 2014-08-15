@@ -206,6 +206,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 = future =
 * these are current feature requests, if you see something you like here, go vote for it in the support forum
 * full GMedia support
+* mozjpeg for improved lossless jpeg optimization (cloud only)
 * If you would like to help translate this plugin in your language, get more information here: http://www.shanebishop.net/ewww-io-plugin-translators/
 
 = 2.0.0 =
@@ -221,6 +222,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * fixed: prevent binary installer from firing on unsupported operating systems
 * changed: better verification when saving settings for multi-site
 * changed: all cloud transactions are now secured (https)
+* fixed: use nextgen2's unserialize function to query metadata during bulk optimize
+* added: Polish translation
+* updated: Dutch and Romanian translations
 
 = 1.9.3 =
 * added: fallback mode when totals for resizes and unoptimized images cannot be determined by the bulk optimize tool
