@@ -208,7 +208,8 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * full GMedia support
 * If you would like to help translate this plugin in your language, get more information here: http://www.shanebishop.net/ewww-io-plugin-translators/
 
-= 1.9.4 =
+= 2.0.0 =
+* NOTE: while this is a release with new features, it is not a rewrite, only the next number in the decimal system, just like the WP numbering scheme
 * added: webp generation (wahooooooooo)
 * added: jpegmini support (more wahooooo, but requires a cloud subscription)
 * fixed: jpeg quality not being set properly for 4.0 on resizes
@@ -596,6 +597,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * First release (forked from CW Image Optimizer)
 
 == Upgrade Notice ==
+
+= 2.0.0 =
+* You must upgrade to this version before uploading JPG images in Wordpress 4.0 to avoid serious quality loss in your resizes
 
 = 1.8.2 = 
 * All cloud users must apply this update to avoid service degradation

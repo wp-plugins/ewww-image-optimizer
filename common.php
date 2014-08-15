@@ -1946,16 +1946,10 @@ function ewww_image_optimizer_webp_rewrite_verify() {
 		"AddType image/webp .webp",
 	); 
 	return array_diff( $ewww_rules, $current_rules );
-/*	if ( array_diff( $ewww_rules, $current_rules ) ) {
-		return false;
-	} else {
-		return true;
-	}*/
 }
 
 // displays the EWWW IO options and provides one-click install for the optimizer utilities
 function ewww_image_optimizer_options () {
-	// TODO: move General and Optimzation to Basic and Advanced
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_options()</b><br>";
 	$output = array();
