@@ -164,9 +164,12 @@ function ewww_image_optimizer_count_optimized ($gallery) {
 			$offset = 0;
 			while ( $attachments = $wpdb->get_col( "SELECT meta_data FROM $wpdb->nggpictures $attachment_query LIMIT $offset, $max_query" ) ) {
 				foreach ($attachments as $attachment) {
-				        $serializer = new Ngg_Serializable();
-				        $meta = $serializer->unserialize( $attachment );
-					//$meta = unserialize( $attachment );
+					if (class_exists('Ngg_Serializable')) {
+				        	$serializer = new Ngg_Serializable();
+				        	$meta = $serializer->unserialize( $attachment );
+					} else {
+						$meta = unserialize( $attachment );
+					}
 					if ( ! is_array( $meta ) ) {
 						continue;
 					}

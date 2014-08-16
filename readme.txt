@@ -72,8 +72,9 @@ Translators:
 Romanian translation by MediasInfo.ro.
 Spanish translation by Andrew Kurtis of WebHostingHub, looking for new maintainer.
 Dutch translation by Ludo Rubben.
+Polish translation by Grzegorz Janoszka
 
-If you would like to translate wordpress, get more information here: http://www.shanebishop.net/ewww-io-plugin-translators/
+If you would like to translate this plugin, get more information here: http://www.shanebishop.net/ewww-io-plugin-translators/
 
 == Installation ==
 
@@ -86,13 +87,10 @@ If you would like to translate wordpress, get more information here: http://www.
 1. *Optional* Visit the settings page to enable/disable specific tools and turn on advanced optimization features.
 1. Done!
 
-The videos below are somewhat outdated, but still give you a good idea of the capabilities and functions of the plugin.
-
 EWWW IO Installation and Configuration:
-[youtube http://www.youtube.com/watch?v=uEU4DbDm3r0]
-
+[youtube http://www.youtube.com/watch?v=CLBjjcaJ2pw]
 Using EWWW IO:
-[youtube http://www.youtube.com/watch?v=6NKBfmE00vM]
+[youtube http://www.youtube.com/watch?v=1AvyVeE4kUo]
 
 = Installing pngout =
 
@@ -161,11 +159,11 @@ Yes, but only if the optimized version is smaller. The plugin should NEVER creat
 
 = Can I resize my images with this plugin? =
 
-No, that would be a lossy operation, and we try to avoid that. Use Imsanity.
+No, we leave that to other plugins like Imsanity.
 
 = Can I lower the compression setting for JPGs to save more space? =
 
-Again, that would be a lossy operation, and we try to avoid that. Use Imsanity.
+The lossy JPG optimization using JPEGmini will determine the ideal quality setting and save even more space. You cannot manually set the quality with this plugin, but Imsanity (and many others) will do that if you really want to. But you should REALLY try JPEGmini first.
 
 = The bulk optimizer doesn't seem to be working, what can I do? =
 
@@ -187,13 +185,9 @@ There are three parts (and all are optional). First, using the command *pngquant
 
 Using the command *gifsicle -b -O3 --careful original file*. This is particularly useful for animated GIFs, and can also streamline your color palette. That said, if your GIF is not animated, you should strongly consider converting it to a PNG. PNG files are almost always smaller, they just don't do animations. The following command would do this for you on a Linux system with imagemagick: *convert somefile.gif somefile.png*
 
-= Why not just convert GIFs to PNGs then? =
-
-Go for it, version 1.2+ makes this possible so long as you have either one of the PNG optimizers available.
-
 = I want to know more about image optimization, and why you chose these options/tools. =
 
-That's not a question, but since I made it up, I'll answer it. See the Image Optimization sections for [Yslow - Yahoo](http://developer.yahoo.com/performance/rules.html#opt_images) and [Google PageSpeed](https://developers.google.com/speed/docs/best-practices/payload#CompressImages). Pngout was suggested by a user and in tests optimizes better than Optipng, and best (usually) when they are used together.
+That's not a question, but since I made it up, I'll answer it. See the Image Optimization sections for [Yslow - Yahoo](http://developer.yahoo.com/performance/rules.html#opt_images) and [Google PageSpeed](https://developers.google.com/speed/docs/best-practices/payload#CompressImages). Pngout was suggested by a user and in tests optimizes better than Optipng, and best (usually) when they are used together. Pngquant was another excellent recommendation, and is used by TinyPNG.com also.
 
 == Screenshots ==
 
@@ -225,6 +219,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * fixed: use nextgen2's unserialize function to query metadata during bulk optimize
 * added: Polish translation
 * updated: Dutch and Romanian translations
+* updated: Tutorial videos on the Installation page have updated finally
 
 = 1.9.3 =
 * added: fallback mode when totals for resizes and unoptimized images cannot be determined by the bulk optimize tool
