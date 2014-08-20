@@ -902,6 +902,7 @@ function ewww_image_optimizer_tool_found($path, $tool) {
 			if (!empty($jpegtran_version)) $ewww_debug .= "$path: $jpegtran_version[0]<br>";
 			foreach ($jpegtran_version as $jout) { 
 				if (preg_match('/Independent JPEG Group/', $jout)) {
+					$ewww_debug .= 'optimizer found<br>';
 					return $jout;
 				}
 			}
@@ -910,6 +911,7 @@ function ewww_image_optimizer_tool_found($path, $tool) {
 			exec($path . ' -v 2>&1', $optipng_version);
 			if (!empty($optipng_version)) $ewww_debug .= "$path: $optipng_version[0]<br>";
 			if (!empty($optipng_version) && strpos($optipng_version[0], 'OptiPNG') === 0) {
+				$ewww_debug .= 'optimizer found<br>';
 				return $optipng_version[0];
 			}
 			break;
@@ -917,6 +919,7 @@ function ewww_image_optimizer_tool_found($path, $tool) {
 			exec($path . ' --version 2>&1', $gifsicle_version);
 			if (!empty($gifsicle_version)) $ewww_debug .= "$path: $gifsicle_version[0]<br>";
 			if (!empty($gifsicle_version) && strpos($gifsicle_version[0], 'LCDF Gifsicle') === 0) {
+				$ewww_debug .= 'optimizer found<br>';
 				return $gifsicle_version[0];
 			}
 			break;
@@ -924,6 +927,7 @@ function ewww_image_optimizer_tool_found($path, $tool) {
 			exec("$path 2>&1", $pngout_version);
 			if (!empty($pngout_version)) $ewww_debug .= "$path: $pngout_version[0]<br>";
 			if (!empty($pngout_version) && strpos($pngout_version[0], 'PNGOUT') === 0) {
+				$ewww_debug .= 'optimizer found<br>';
 				return $pngout_version[0];
 			}
 			break;
@@ -932,6 +936,7 @@ function ewww_image_optimizer_tool_found($path, $tool) {
 			if ( ! empty( $pngquant_version ) ) $ewww_debug .= "$path: $pngquant_version[0]<br>";
 			if ( ! empty( $pngquant_version ) && substr( $pngquant_version[0], 0, 3 ) >= 2.0 ) {
 			//if (!empty($pngquant_version) && strpos($pngquant_version[0], '2.0') === 0) {
+				$ewww_debug .= 'optimizer found<br>';
 				return $pngquant_version[0];
 			}
 			break;
@@ -939,6 +944,7 @@ function ewww_image_optimizer_tool_found($path, $tool) {
 			exec("$path -version 2>&1", $convert_version);
 			if (!empty($convert_version)) $ewww_debug .= "$path: $convert_version[0]<br>";
 			if (!empty($convert_version) && strpos($convert_version[0], 'ImageMagick')) {
+				$ewww_debug .= 'imagemagick found<br>';
 				return $convert_version[0];
 			}
 			break;
@@ -946,8 +952,10 @@ function ewww_image_optimizer_tool_found($path, $tool) {
 			exec("$path -v 2>&1", $file_version);
 			if (!empty($file_version[1])) $ewww_debug .= "$path: $file_version[1]<br>";
 			if (!empty($file_version[1]) && preg_match('/magic/', $file_version[1])) {
+				$ewww_debug .= 'file binary found<br>';
 				return $file_version[0];
 			} elseif (!empty($file_version[1]) && preg_match('/usage: file/', $file_version[1])) {
+				$ewww_debug .= 'file binary found<br>';
 				return $file_version[0];
 			}
 			break;
@@ -955,8 +963,10 @@ function ewww_image_optimizer_tool_found($path, $tool) {
 			exec("$path 2>&1", $nice_output);
 			if (isset($nice_output)) $ewww_debug .= "$path: $nice_output[0]<br>";
 			if (isset($nice_output) && preg_match('/usage/', $nice_output[0])) {
+				$ewww_debug .= 'nice found<br>';
 				return TRUE;
 			} elseif (isset($nice_output) && preg_match('/^\d+$/', $nice_output[0])) {
+				$ewww_debug .= 'nice found<br>';
 				return TRUE;
 			}
 			break;
@@ -964,8 +974,10 @@ function ewww_image_optimizer_tool_found($path, $tool) {
 			exec("$path --version 2>&1", $tar_version);
 			if (!empty($tar_version[0])) $ewww_debug .= "$path: $tar_version[0]<br>";
 			if (!empty($tar_version[0]) && preg_match('/bsdtar/', $tar_version[0])) {
+				$ewww_debug .= 'tar found<br>';
 				return $tar_version[0];
 			} elseif (!empty($tar_version[0]) && preg_match('/GNU tar/i', $tar_version[0])) {
+				$ewww_debug .= 'tar found<br>';
 				return $tar_version[0];
 			}
 			break;
@@ -973,10 +985,12 @@ function ewww_image_optimizer_tool_found($path, $tool) {
 			exec("$path -version 2>&1", $webp_version);
 			if ( !empty( $webp_version ) ) $ewww_debug .= "$path: $webp_version[0]<br>";
 			if ( !empty( $webp_version ) && preg_match( '/0.4.\d/', $webp_version[0] ) ) {
+				$ewww_debug .= 'optimizer found<br>';
 				return $webp_version[0];
 			}
 			break;
 	}
+	$ewww_debug .= 'tool not found <br>';
 	return FALSE;
 }
 

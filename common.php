@@ -2099,9 +2099,9 @@ function ewww_image_optimizer_options () {
 				$output[] = '</span>&emsp;&emsp;' .
 					"Imagemagick 'convert':";
 				if (ewww_image_optimizer_find_binary('convert', 'i')) { 
-					$output[] = '<span style="color: green; font-weight: bolder">' . __('Installed', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</span>';
+					$output[] = '<span style="color: green; font-weight: bolder"> ' . __('Installed', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</span>';
 				} else { 
-					$output[] = '<span style="color: red; font-weight: bolder">' . __('Missing', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</span>';
+					$output[] = '<span style="color: red; font-weight: bolder"> ' . __('Missing', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</span>';
 				}
 				$output[] = "<br />\n";
 			}
