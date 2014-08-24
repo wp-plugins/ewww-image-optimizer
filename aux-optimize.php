@@ -208,6 +208,7 @@ function ewww_image_optimizer_import_loop() {
 		}
 		$galleries = $wpdb->get_results("SELECT gid,path FROM $wpdb->nggallery", ARRAY_N);
 		// creating the 'registry' object for working with nextgen
+		// TODO: check to be sure this class exists, might not with nextcellent or nextgen legacy
 		$registry = C_Component_Registry::get_instance();
 		// creating a database storage object from the 'registry' object
 		$storage  = $registry->get_utility('I_Gallery_Storage');

@@ -752,13 +752,22 @@ function ewww_image_optimizer_md5check($path) {
 		'e4f7809c84a0722abe2b1d003c98a181',
 		'a9f10ee88569bd7e72a7c2437ea9c09b', // jpegtran.exe
 		'63d3edb0807ac1adbaefd437da8602ef', // jpegtran-sol
+		'298e79ec273dec5dc77b98b1578dab23', // jpegtran-fbsd
+		'4e87350ccff7c483e764d479ad4f84ea', // jpegtran-fbsd64
+		'8e4a09bb04ba001f5f16651ae8594f7f', // jpegtran-linux
+		'47c39feae0712f2996c61e5ae639b706', // jpegtran-linux64
+		'9df8764bfe6a0434d436ed0cadbec8f0', // jpegtran-mac
 		//optipng
-		'4eb91937291ce5038d0c68f5f2edbcfd',
+		'4eb91937291ce5038d0c68f5f2edbcfd', // optipng-linux .7.4
 		'899e3c569080a55bcc5de06a01c8e23a',
 		'0467bd0c73473221d21afbc5275503e4',
 		'293e26924a274c6185a06226619d8e02',
 		'bcb27d22377f8abf3e9fe88a60030885',
 		'8359078a649aeec2bd472ec84a4f39e1', // optipng-sol
+		'aa20003676d1a3321032fa550a73716a', // optipng-fbsd
+		'9a9e86346590878d23ef663086ffae2b', // optipng-mac
+		'e3d154829ea57a0bdd88b080f6851265', // optipng.exe
+		'31698da4f5ca00b35e910c77acae65bb', // optipng-linux
 		//gifsicle
 		'2384f770d307c42b9c1e53cdc8dd662d',
 		'24fc5f33b33c0d11fb2e88f5a93949d0',
@@ -775,9 +784,11 @@ function ewww_image_optimizer_md5check($path) {
 		'151e395e2efa0e7845b18984d0f092af',
 		'7ae972062cf3f99218057b055a4e1e9c',
 		'c0bf45a291b93fd0a52318eddeaf5791',
-		'cafa2e59b23fd1908d7fed853d70dacf', // gifsicle-fbsd
-		'0f97b1fbf1b4695bea25dbf1b1e33019', // gifsicle-linux
 		'ac8fa17a7004fa216242af2367d1a838', // gifsicle-sol
+		'db1037b1e5e42108b48da564b8598610', // gifsicle-fbsd
+		'58f42368e86a4910d101d37fee748409', // gifsicle-linux
+		'39aca9edbb9495a241dc21fa678a09da', // gifsicle-mac
+		'32a75a5122ff9b783ed7dd76d65f6297', // gifsicle.exe
 		//pngout
 		'2b62778559e31bc750dc2dcfd249be32', 
 		'ea8655d1a1ef98833b294fb74f349c3e',
@@ -805,7 +816,9 @@ function ewww_image_optimizer_md5check($path) {
 		'5d480fbe88ab5f732dbc5c9d8b76c2fd', // solaris
 		'6fd8b12b542b9145d79925942551dbc8', // pngquant.exe
 		'b3bbc013acc8bc04d3b531809abdadbb', // pngquant-sol
-		'3c1846c084502afe5ae207314f56b05f', // pngquant-fbsd
+		'323246b9300362be24320dc72ba51af4', // pngquant-fbsd
+		'46bb066d676bf94cbfd78bdc0227e74e', // pngquant-linux
+		'3b94673f48a92cf034eb0095611966da', // pngquant-mac
 		//cwebp
 		'085ea7844800980c72fa30835d6f6044', // cwebp.exe
 		'4610c239ba00d515701c75e90efe5534', // cwebp-sol
@@ -816,6 +829,7 @@ function ewww_image_optimizer_md5check($path) {
 		'62272b2bd33218664b2355f516b6e8fc', // cwebp-linux8
 		'9b6f13ce6ee5a028cbd2765e2d53a1d7', // cwebp-linux864
 		'd43bf5eed775695d5ecfe4eafcbd7af7', // cwebp-mac8
+		'dab793f82cf6a3830898c75410583154', // cwebp-mac7
 		);
 	foreach ($valid_md5sums as $md5_sum) {
 		if ($md5_sum == md5_file($path)) {

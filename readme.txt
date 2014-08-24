@@ -220,6 +220,8 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * added: Polish translation
 * updated: Dutch and Romanian translations
 * updated: Tutorial videos on the Installation page have updated finally
+* updated: new binaries for optipng, gifsicle, and pngquant
+* updated: recompiled jpegtran binaries to be smaller
 
 = 1.9.3 =
 * added: fallback mode when totals for resizes and unoptimized images cannot be determined by the bulk optimize tool
