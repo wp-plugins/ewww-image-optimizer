@@ -3,7 +3,7 @@ Contributors: nosilver4u
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MKMQKCBFFG3WW
 Tags: image, attachment, optimize, optimization, nextgen, flagallery, lossless, lossy, photo, picture, seo, compression, image-store, imstore, slider, image editor, gmagick, wp-symposium, meta-slider, metaslider, jpegtran, gifsicle, optipng, pngout, pngquant, gmedia, jpegmini, tinypng, webp, cwebp
 Requires at least: 3.5
-Tested up to: 3.9.1
+Tested up to: 3.9.2
 Stable tag: 1.9.3
 License: GPLv3
 
@@ -222,6 +222,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * updated: Tutorial videos on the Installation page have updated finally
 * updated: new binaries for optipng, gifsicle, and pngquant
 * updated: recompiled jpegtran binaries to be smaller
+* fixed: import failed if nextgen classes aren't available during import
 
 = 1.9.3 =
 * added: fallback mode when totals for resizes and unoptimized images cannot be determined by the bulk optimize tool

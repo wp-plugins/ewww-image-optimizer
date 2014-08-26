@@ -198,7 +198,7 @@ function ewww_image_optimizer_import_loop() {
 	}
 	$import_count = $import_status['media'];
 	//nextgen import
-	if ( $import_finished && isset( $import_status['nextgen'] ) ) {
+	if ( $import_finished && isset( $import_status['nextgen'] ) && class_exists( 'C_Component_Registry' ) ) {
 		$import_finished = false;
 		$images = $wpdb->get_results("SELECT pid,meta_data,filename,galleryid FROM $wpdb->nggpictures WHERE meta_data LIKE '%ewww_image_optimizer%' LIMIT {$import_status['nextgen']}, 100", ARRAY_N);
 		if ( count( $images ) === 0 ) {
@@ -208,7 +208,6 @@ function ewww_image_optimizer_import_loop() {
 		}
 		$galleries = $wpdb->get_results("SELECT gid,path FROM $wpdb->nggallery", ARRAY_N);
 		// creating the 'registry' object for working with nextgen
-		// TODO: check to be sure this class exists, might not with nextcellent or nextgen legacy
 		$registry = C_Component_Registry::get_instance();
 		// creating a database storage object from the 'registry' object
 		$storage  = $registry->get_utility('I_Gallery_Storage');
@@ -221,7 +220,12 @@ function ewww_image_optimizer_import_loop() {
 					$gallery_path = trailingslashit($gallery[1]);
 				}
 			}
-			$meta = unserialize( $image[1] );
+			if (class_exists('Ngg_Serializable')) {
+		        	$serializer = new Ngg_Serializable();
+		        	$meta = $serializer->unserialize( $image[1] );
+			} else {
+				$meta = unserialize( $image[1] );
+			}
 			// get an array of sizes available for the $image
 			foreach ($sizes as $size) {
 				// get the absolute path
