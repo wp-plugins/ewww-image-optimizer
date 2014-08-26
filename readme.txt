@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: image, attachment, optimize, optimization, nextgen, flagallery, lossless, lossy, photo, picture, seo, compression, image-store, imstore, slider, image editor, gmagick, wp-symposium, meta-slider, metaslider, jpegtran, gifsicle, optipng, pngout, pngquant, gmedia, jpegmini, tinypng, webp, cwebp
 Requires at least: 3.5
 Tested up to: 3.9.2
-Stable tag: 1.9.3
+Stable tag: 2.0.0
 License: GPLv3
 
 Reduce file sizes for images within WordPress including NextGEN, GRAND FlAGallery and more. Uses jpegtran, optipng, pngout, pngquant, gifsicle, cwebp, and jpegmini.
