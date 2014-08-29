@@ -293,7 +293,7 @@ function ewww_image_optimizer_install_tools () {
 				// this isn't a fatal error, besides we'll see it in the debug if needed
 				$ewww_debug .= "Couldn't copy OSX 10.7 cwebp to cwebp-custom<br>";
 			}
-			$webp6_perms = substr(sprintf('%o', fileperms($webp7_dst)), -4);
+			$webp7_perms = substr(sprintf('%o', fileperms($webp7_dst)), -4);
 			$ewww_debug .= "cwebp7-custom (OSX 10.7) permissions: $webp7_perms<br>";
 			if ($webp7_perms != '0755') {
 				if (!chmod($webp7_dst, 0755)) {

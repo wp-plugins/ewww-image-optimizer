@@ -203,6 +203,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * mozjpeg for improved lossless jpeg optimization (cloud only)
 * If you would like to help translate this plugin in your language, get more information here: http://www.shanebishop.net/ewww-io-plugin-translators/
 
+= 2.0.1 =
+* fixed: folders to optimize are not retrieved properly on settings page
+
 = 2.0.0 =
 * NOTE: while this is a release with new features, it is not a rewrite, only the next number in the decimal system, just like the WP numbering scheme
 * added: webp generation (wahooooooooo)
