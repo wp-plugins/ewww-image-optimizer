@@ -205,6 +205,8 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 = 2.0.1 =
 * fixed: folders to optimize are not retrieved properly on settings page
+* fixed: undefined variable in permissions check for cwebp on Mac OSX
+* fixed: prevent excess calls for cwebp
 
 = 2.0.0 =
 * NOTE: while this is a release with new features, it is not a rewrite, only the next number in the decimal system, just like the WP numbering scheme

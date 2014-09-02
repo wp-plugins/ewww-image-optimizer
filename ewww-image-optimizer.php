@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate image optimizers into WordPress.
- * @version 2.0.0
+ * @version 2.0.0.2
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -10,7 +10,7 @@ Plugin URI: http://wordpress.org/extend/plugins/ewww-image-optimizer/
 Description: Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
 Author: Shane Bishop
 Text Domain: ewww-image-optimizer
-Version: 2.0.0
+Version: 2.0.0.2
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
@@ -566,6 +566,7 @@ function ewww_image_optimizer_path_check ( $j = true, $o = true, $g = true, $p =
 			}
 		}
 	} else {
+		// TODO: find alternative to using the -custom binary, perhaps a -alt?
 		// check to see if the user has disabled using bundled binaries
 		$use_system = ewww_image_optimizer_get_option('ewww_image_optimizer_skip_bundle');
 		if ($j) {
@@ -1803,11 +1804,14 @@ function ewww_image_optimizer_webp_create( $file, $orig_size, $type, $tool ) {
 	global $ewww_debug;
 	$ewww_debug .= '<b>ewww_image_optimizer_webp_create()</b><br>';
 	// change the file extension
-	$webpfile = preg_replace('/\.\w+$/', '.webp', $file);
+	// TODO: append instead of change the file extension, write a script to move all the webp's and report any ambiguous files
+//	$webpfile = preg_replace('/\.\w+$/', '.webp', $file);
+	$webpfile = $file . '.webp';
 	if ( file_exists( $webpfile ) ) {
 		return;
 	}
-	if ( empty( $tool ) && ewww_image_optimizer_get_option( 'ewww_image_optimizer_webp' ) ) {
+	//if ( empty( $tool ) && ewww_image_optimizer_get_option( 'ewww_image_optimizer_webp' ) ) {
+	if ( empty( $tool ) ) {
 		//list($file, $converted, $result, $new_size) = ewww_image_optimizer_cloud_optimizer($file, $type, $convert, $pngfile, 'image/png', $fullsize);
 		ewww_image_optimizer_cloud_optimizer($file, $type, false, $webpfile, 'image/webp');
 	} else {

@@ -1,7 +1,7 @@
 <?php
 // common functions for Standard and Cloud plugins
 // TODO: check all comments to make sure they are actually useful...
-define('EWWW_IMAGE_OPTIMIZER_VERSION', '200.1');
+define('EWWW_IMAGE_OPTIMIZER_VERSION', '200.2');
 
 // initialize debug global
 $disabled = ini_get('disable_functions');
@@ -84,9 +84,6 @@ if (is_plugin_active('flash-album-gallery/flag.php') || (function_exists('is_plu
 function ewww_image_optimizer_init() {
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_init()</b><br>";
-	if (preg_match('/image\/webp/', $_SERVER['HTTP_ACCEPT'])) {
-		//echo '<!-- webpsupported -->';
-	}
 	if (get_option('ewww_image_optimizer_version') < EWWW_IMAGE_OPTIMIZER_VERSION) {
 		ewww_image_optimizer_install_table();
 		ewww_image_optimizer_set_defaults();
@@ -221,9 +218,6 @@ function ewww_image_optimizer_admin_init() {
 	if ( substr($wp_version, 0, 3) >= 3.8 ) {  
 		add_action('admin_enqueue_scripts', 'ewww_image_optimizer_progressbar_style'); 
 	}
-/*	if ( ! empty( $_POST['ewww_webp_rewrite'] ) ) {
-		ewww_image_optimizer_webp_rewrite();
-	}*/
 }
 
 // sets all the tool constants to false
@@ -1790,9 +1784,10 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 					__('Restore original', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 			}
 			// determine filepath for webp
-			$webpfile = preg_replace('/\.\w+$/', '.webp', $file_path);
+			$webpfile = $file_path . '.webp';
+			//$webpfile = preg_replace('/\.\w+$/', '.webp', $file_path);
 			if ( file_exists( $webpfile ) ) {
-				$webpurl = preg_replace( '/\.\w+$/', '.webp', wp_get_attachment_url( $id ) );
+				$webpurl = wp_get_attachment_url( $id ) . '.webp';
 				// get a human readable filesize
 				$webp_size = size_format(filesize($webpfile), 2);
 				$webp_size = preg_replace('/\.00 B /', ' B', $webp_size);
