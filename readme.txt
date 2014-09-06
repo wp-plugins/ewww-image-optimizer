@@ -69,10 +69,11 @@ Uploads are automatically optimized. Look for Optimize under the Image Store (Ga
 = Translations =
 
 Translators: 
-Romanian translation by MediasInfo.ro.
-Spanish translation by Andrew Kurtis of WebHostingHub, looking for new maintainer.
-Dutch translation by Ludo Rubben.
+Romanian translation by MediasInfo.ro
+Spanish translation by Manuel Ballesta Ruiz
+Dutch translation by Ludo Rubben
 Polish translation by Grzegorz Janoszka
+Russian translation by Elvis of turkenichev.ru
 
 If you would like to translate this plugin, get more information here: http://www.shanebishop.net/ewww-io-plugin-translators/
 
@@ -212,6 +213,8 @@ The WebP naming scheme has been changed to avoid conflicts when JPGs and PNGs ha
 * fixed: undefined variable in permissions check for cwebp on Mac OSX
 * fixed: prevent excess calls for cwebp
 * fixed: wpdb->prepare should have two arguments
+* updated: Spanish translation
+* added: Russian translation
 
 = 2.0.0 =
 * NOTE: while this is a release with new features, it is not a rewrite, only the next number in the decimal system, just like the WP numbering scheme
