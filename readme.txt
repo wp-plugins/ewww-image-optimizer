@@ -215,6 +215,7 @@ The WebP naming scheme has been changed to avoid conflicts when JPGs and PNGs ha
 * fixed: wpdb->prepare should have two arguments
 * updated: Spanish translation
 * added: Russian translation
+* changed: alternative binaries for jpegtran and cwebp use -alt suffix to avoid conflict with user-compiled binaries
 
 = 2.0.0 =
 * NOTE: while this is a release with new features, it is not a rewrite, only the next number in the decimal system, just like the WP numbering scheme
