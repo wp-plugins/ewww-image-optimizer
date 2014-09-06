@@ -412,8 +412,7 @@ function ewww_image_optimizer_network_deactivate($network_wide) {
 	global $wpdb;
 	wp_clear_scheduled_hook('ewww_image_optimizer_auto');
 	if ($network_wide) {
-		// TODO: check all prepare statements to make sure they are preparing something: http://make.wordpress.org/core/2012/12/12/php-warning-missing-argument-2-for-wpdb-prepare/
-		$query = $wpdb->prepare("SELECT blog_id FROM $wpdb->blogs WHERE site_id = '$wpdb->siteid'");
+		$query = $wpdb->prepare("SELECT blog_id FROM $wpdb->blogs WHERE site_id = %d", $wpdb->siteid);
 		$blogs = $wpdb->get_results($query, ARRAY_A);
 		foreach ($blogs as $blog) {
 			switch_to_blog($blog['blog_id']);

@@ -3,15 +3,15 @@ Contributors: nosilver4u
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MKMQKCBFFG3WW
 Tags: image, attachment, optimize, optimization, nextgen, flagallery, lossless, lossy, photo, picture, seo, compression, image-store, imstore, slider, image editor, gmagick, wp-symposium, meta-slider, metaslider, jpegtran, gifsicle, optipng, pngout, pngquant, gmedia, jpegmini, tinypng, webp, cwebp
 Requires at least: 3.5
-Tested up to: 3.9.2
+Tested up to: 4.0
 Stable tag: 2.0.0
 License: GPLv3
 
-Reduce file sizes for images within WordPress including NextGEN, GRAND FlAGallery and more. Uses jpegtran, optipng, pngout, pngquant, gifsicle, cwebp, and jpegmini.
+Reduce file sizes for images in WordPress including NextGEN, GRAND FlAGallery and more using lossless/lossy methods and image format conversion.
 
 == Description ==
 
-The EWWW Image Optimizer is a WordPress plugin that will automatically optimize your images as you upload them to your blog. It can optimize the images that you have already uploaded in the past. It is also possible to convert your images automatically to the file format that will produce the smallest image size (make sure you read the WARNINGS). It can also optionally apply lossy reductions for PNG and JPG images.
+The EWWW Image Optimizer is a WordPress plugin that will automatically optimize your images as you upload them to your blog. It can optimize the images that you have already uploaded, convert your images automatically to the file format that will produce the smallest image size (make sure you read the WARNINGS), and optionally apply lossy reductions for PNG and JPG images.
 
 **Why use EWWW Image Optimizer?**
 
@@ -211,6 +211,7 @@ The WebP naming scheme has been changed to avoid conflicts when JPGs and PNGs ha
 * fixed: folders to optimize are not retrieved properly on settings page
 * fixed: undefined variable in permissions check for cwebp on Mac OSX
 * fixed: prevent excess calls for cwebp
+* fixed: wpdb->prepare should have two arguments
 
 = 2.0.0 =
 * NOTE: while this is a release with new features, it is not a rewrite, only the next number in the decimal system, just like the WP numbering scheme
