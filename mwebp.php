@@ -172,9 +172,9 @@ function ewww_image_optimizer_webp_loop() {
 			$ewww_debug .= "renaming $image with match of $replace_base<br>";
 			rename( $image, $replace_base . '.webp' );
 		}
-		if ( $images_skipped ) {
-			update_option( 'ewww_image_optimizer_webp_skipped', get_option( 'ewww_image_optimizer_webp_skipped' ) . $images_skipped );
-		}
+	}
+	if ( $images_skipped ) {
+		update_option( 'ewww_image_optimizer_webp_skipped', get_option( 'ewww_image_optimizer_webp_skipped' ) . $images_skipped );
 	}
 	// calculate how much time has elapsed since we started
 	$elapsed = microtime(true) - $started;

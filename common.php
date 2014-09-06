@@ -1035,7 +1035,7 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $n
 	} else {
 		$lossy = 0;
 	}
-	if ( $newtype == 'image/webp' ) {
+	if ( $newtype == 'image/webp' && ewww_image_optimizer_get_option( 'ewww_image_optimizer_webp' ) ) {
 		$webp = 1;
 	} else {
 		$webp = 0;
