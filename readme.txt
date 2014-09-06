@@ -216,6 +216,9 @@ NOTE: The WebP naming scheme has been changed to avoid conflicts when JPGs and P
 * updated: Spanish translation
 * added: Russian translation
 * changed: alternative binaries for jpegtran and cwebp use -alt suffix to avoid conflict with user-compiled binaries
+* removed: deprecated import process from bulk optimize page
+* removed: empty table option from bulk optimize page, use the Force checkbox instead
+* changed: force re-optimize checkbox applies to Media Library AND the Scan and Optimize function
 
 = 2.0.0 =
 * NOTE: while this is a release with new features, it is not a rewrite, only the next number in the decimal system, just like the WP numbering scheme

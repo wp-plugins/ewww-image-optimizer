@@ -2006,7 +2006,10 @@ function ewww_image_optimizer_options () {
 		}
 	$output[] = "<p>" . sprintf(__('New images uploaded to the Media Library will be optimized automatically. If you have existing images you would like to optimize, you can use the %s tool.', EWWW_IMAGE_OPTIMIZER_DOMAIN), $bulk_link) . "</p>\n";
 	$output[] = "<div id='status' style='border: 1px solid #ccc; padding: 0 8px; border-radius: 12px;'>\n" .
-		"<h3>" . __('Plugin Status', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</h3>\n" .
+		"<h3>" . __('Plugin Status', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "&emsp;" .
+			"<span id='ewww-status-ok' style='display: none; color: green;'>" . __('All Clear', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</span>" . 
+			"<span id='ewww-status-attention' style='color: red;'>" . __('Requires Attention', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</span>"  .
+		"</h3>\n" .
 			"<b>" . __('Total Savings:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</b> <span id='total_savings'>" . __('Calculating...', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</span><br>";
 			if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_key')) {
 				$output[] = '<p><b>' . __('Cloud optimization API Key', EWWW_IMAGE_OPTIMIZER_DOMAIN) . ":</b> ";
@@ -2173,7 +2176,9 @@ function ewww_image_optimizer_options () {
 				$output[] = "<script type='text/javascript'>\n" .
 					"jQuery(document).ready(function($) {\n" .
 					"$('#ewww-collapsible-status').hide();\n" .
-					"$('#ewww-status-expand').show();" .
+					"$('#ewww-status-expand').show();\n" .
+					"$('#ewww-status-attention').hide();\n" .
+					"$('#ewww-status-ok').show();\n" .
 					"});\n" .
 					"</script>\n";
 			}

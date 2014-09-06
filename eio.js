@@ -151,8 +151,12 @@ jQuery(document).ready(function($) {
 		filename_action = 'bulk_aux_images_filename';
 		loop_action = 'bulk_aux_images_loop';
 		cleanup_action = 'bulk_aux_images_cleanup';
+		if ($('#ewww-force:checkbox:checked').val()) {
+			ewww_force = 1;
+		}
 		var scan_data = {
 			action: scan_action,
+			force: ewww_force,
 			scan: true,
 		};
 		$('#aux-start').hide();
@@ -337,9 +341,6 @@ jQuery(document).ready(function($) {
 		} else {
 			ewww_delay = $('#ewww-delay').val();
 		}
-		if ($('#ewww-force:checkbox:checked').val()) {
-			ewww_force = 1;
-		}
 		$('.aux-table').hide();
 		$('#bulk-stop').show();
 		$('.bulk-form').hide();
@@ -364,6 +365,9 @@ jQuery(document).ready(function($) {
 		        	$('#bulk-loading').html(response);
 			}
 		});
+		if ($('#ewww-force:checkbox:checked').val()) {
+			ewww_force = 1;
+		}
 	        var loop_data = {
 	                action: loop_action,
 			_wpnonce: ewww_vars._wpnonce,
