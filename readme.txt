@@ -197,6 +197,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 == Changelog ==
 
+= IMPORTANT =
+The WebP naming scheme has been changed to avoid conflicts when JPGs and PNGs have identical filenames. You will need to update your rewrite rules via the settings page, and run the WebP upgrade script. Every image in the Media Library with a WebP version using the old naming scheme will have a link to the upgrade process (in list view, not grid view).
+
 = future =
 * these are current feature requests, if you see something you like here, go vote for it in the support forum
 * full GMedia support
@@ -204,6 +207,7 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * If you would like to help translate this plugin in your language, get more information here: http://www.shanebishop.net/ewww-io-plugin-translators/
 
 = 2.0.1 =
+* fixed: naming conflict with webp when jpg/png files have identical names, read NOTE above
 * fixed: folders to optimize are not retrieved properly on settings page
 * fixed: undefined variable in permissions check for cwebp on Mac OSX
 * fixed: prevent excess calls for cwebp
@@ -604,6 +608,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * First release (forked from CW Image Optimizer)
 
 == Upgrade Notice ==
+
+= 2.0.1 =
+* Webp naming scheme has changed, read changelog for more information
 
 = 2.0.0 =
 * You must upgrade to this version before uploading JPG images in Wordpress 4.0 to avoid serious quality loss in your resizes
