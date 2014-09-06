@@ -15,6 +15,16 @@ jQuery(document).ready(function($) {
 			});
 			return false;
 		});
+		$('#ewww-status-expand').click(function() {
+			$('#ewww-collapsible-status').show();
+			$('#ewww-status-expand').hide();
+			$('#ewww-status-collapse').show();
+		});
+		$('#ewww-status-collapse').click(function() {
+			$('#ewww-collapsible-status').hide();
+			$('#ewww-status-expand').show();
+			$('#ewww-status-collapse').hide();
+		});
 		$('#cloud-settings').hide();
 		$('#general-settings').show();
 		$('li.general-nav').addClass('ewww-selected');
