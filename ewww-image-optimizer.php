@@ -1825,7 +1825,7 @@ function ewww_image_optimizer_webp_create( $file, $orig_size, $type, $tool ) {
 	$ewww_debug .= '<b>ewww_image_optimizer_webp_create()</b><br>';
 	// change the file extension
 	$webpfile = $file . '.webp';
-	if ( file_exists( $webpfile ) ) {
+	if ( file_exists( $webpfile ) || ! ewww_image_optimizer_get_option('ewww_image_optimizer_webp') ) {
 		return;
 	}
 	if ( empty( $tool ) ) {

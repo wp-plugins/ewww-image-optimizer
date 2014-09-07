@@ -1035,7 +1035,7 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $n
 	} else {
 		$lossy = 0;
 	}
-	if ( $newtype == 'image/webp' && ewww_image_optimizer_get_option( 'ewww_image_optimizer_webp' ) ) {
+	if ( $newtype == 'image/webp' ) {
 		$webp = 1;
 	} else {
 		$webp = 0;
@@ -1977,20 +1977,25 @@ function ewww_image_optimizer_options () {
 		'jQuery(document).ready(function($) {$(".fade").fadeTo(5000,1).fadeOut(3000);$(".updated").fadeTo(5000,1).fadeOut(3000);});' . "\n" .
 		"</script>\n";
 	$output[] = "<style>\n" .
-		".ewww-tab a { font-size: 16px; color: #fff; text-decoration: none; line-height: 50px; padding: 0 1em; }\n" .
-		".ewww-tab { margin: 0px; padding: 0px; display: inline-block; }\n" .
-		".ewww-selected { background-color: #228bb7; }\n" .
-		".ewww-tab-nav { list-style: none; margin: 0 0 0 -20px; padding: 0; background-color: #1e4378; }\n" .
-		".ewww-name { font-size: 1.7em; line-height: 46px; color: #fff; background: url(" . plugins_url('smashing-icon.png', __FILE__) . ") no-repeat left; margin-left: 20px; padding: 0 1em 0 60px; }\n" .
+		".ewww-tab a { font-size: 15px; font-weight: 700; color: #555; text-decoration: none; line-height: 36px; padding: 0 10px; }\n" .
+		".ewww-tab a:hover { color: #464646; }\n" .
+		".ewww-tab { margin: 0 0 0 5px; padding: 0px; border-width: 1px 1px 1px; border-style: solid solid none; border-image: none; border-color: #ccc; display: inline-block; background-color: #e4e4e4 }\n" .
+		".ewww-tab:hover { background-color: #fff }\n" .
+		".ewww-selected { background-color: #f1f1f1; margin-bottom: -1px; border-bottom: 1px solid #f1f1f1 }\n" .
+		".ewww-selected a { color: #000; }\n" .
+		".ewww-selected:hover { background-color: #f1f1f1; }\n" .
+		".ewww-tab-nav { list-style: none; margin: 10px 0 0; padding-left: 5px; border-bottom: 1px solid #ccc; }\n" .
+		".ewww-name { font-size: 1.7em; line-height: 46px; color: #fff; background: #1e4378 url(" . plugins_url('smashing-icon.png', __FILE__) . ") no-repeat left; margin: 0 0 0; padding: 0 1em 0 80px; }\n" .
+		".name-spacer { background-color: #1e4378; margin: 0 0 0 -20px; padding-left: 10px; }\n" .
 	"</style>\n";
-	$output[] = "<a id='menu-marker'></a>\n";
-	$output[] = "<ul class='ewww-tab-nav'>\n" .
-		"<li class='ewww-tab ewww-name'>EWWW Image Optimizer</li>\n" .
-		"<li class='ewww-tab cloud-nav'><span class='ewww-tab-hidden'><a class='cloud-nav' href='#'>" . __('Cloud Settings', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a></span></li>\n" .
-		"<li class='ewww-tab general-nav'><span class='ewww-tab-hidden'><a class='general-nav' href='#'>" . __('Basic Settings', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a></span></li>\n" .
-		"<li class='ewww-tab optimization-nav'><span class='ewww-tab-hidden'><a class='optimization-nav' href='#'>" .  __('Advanced Settings', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a></span></li>\n" .
-		"<li class='ewww-tab conversion-nav'><span class='ewww-tab-hidden'><a class='conversion-nav' href='#'>" . __('Conversion Settings', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a></span></li>\n" .
-	"</ul>\n";
+//	$output[] = "<a id='menu-marker'></a>\n";
+	$output[] = "<!--<ul class='ewww-top-nav'>-->\n" .
+		"<div class='name-spacer'><h2 class='ewww-name'>EWWW Image Optimizer</h2></div>\n" .
+//		"<li class='ewww-tab cloud-nav'><span class='ewww-tab-hidden'><a class='cloud-nav' href='#'>" . __('Cloud Settings', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a></span></li>\n" .
+//		"<li class='ewww-tab general-nav'><span class='ewww-tab-hidden'><a class='general-nav' href='#'>" . __('Basic Settings', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a></span></li>\n" .
+//		"<li class='ewww-tab optimization-nav'><span class='ewww-tab-hidden'><a class='optimization-nav' href='#'>" .  __('Advanced Settings', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a></span></li>\n" .
+//		"<li class='ewww-tab conversion-nav'><span class='ewww-tab-hidden'><a class='conversion-nav' href='#'>" . __('Conversion Settings', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a></span></li>\n" .
+	"<!--</ul>-->\n";
 	$output[] = "<div class='wrap' style='clear: both'>\n";
 	$output[] = "<div id='icon-options-general' class='icon32'><br /></div>\n";
 	$output[] = "<h2 style='display:none'>EWWW Image Optimizer Settings</h2>\n";
@@ -2023,8 +2028,8 @@ function ewww_image_optimizer_options () {
 				}
 				$output[] = "</p>\n";
 			}
+			$collapsible = true;
 			if ( ! EWWW_IMAGE_OPTIMIZER_CLOUD ) {
-				$collapsible = true;
 				$output[] = "<div id='ewww-status-expand' style='display: none;'><a href='#'>" . __('Expand', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a></div>\n" .
 					"<div id='ewww-status-collapse' style='display: none;'><a href='#'>" . __('Collapse', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a></div>\n" .
 					"<div id='ewww-collapsible-status'>\n";
@@ -2168,6 +2173,8 @@ function ewww_image_optimizer_options () {
 					$output[] = '<span style="color: red; font-weight: bolder">tar ' . __('command not found on your system', EWWW_IMAGE_OPTIMIZER_DOMAIN) . ' (' . __('required for automatic pngout installer', EWWW_IMAGE_OPTIMIZER_DOMAIN) . ')</span><br />';
 					$collapsible = false;
 				}
+			} elseif ($file_command_check) {
+				$collapsible = false;
 			}
 			if ( ! EWWW_IMAGE_OPTIMIZER_CLOUD ) {
 				$output[] = '</div><!-- end collapsible -->';
@@ -2183,6 +2190,12 @@ function ewww_image_optimizer_options () {
 					"</script>\n";
 			}
 			$output[] = "</p>\n</div>\n";
+	$output[] = "<ul class='ewww-tab-nav'>\n" .
+		"<li class='ewww-tab cloud-nav'><span class='ewww-tab-hidden'><a class='cloud-nav' href='#'>" . __('Cloud Settings', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a></span></li>\n" .
+		"<li class='ewww-tab general-nav'><span class='ewww-tab-hidden'><a class='general-nav' href='#'>" . __('Basic Settings', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a></span></li>\n" .
+		"<li class='ewww-tab optimization-nav'><span class='ewww-tab-hidden'><a class='optimization-nav' href='#'>" .  __('Advanced Settings', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a></span></li>\n" .
+		"<li class='ewww-tab conversion-nav'><span class='ewww-tab-hidden'><a class='conversion-nav' href='#'>" . __('Conversion Settings', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a></span></li>\n" .
+	"</ul>\n";
 			if (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network(EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE_REL)) {
 				$output[] = "<form method='post' action=''>\n";
 			} else {
