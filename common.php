@@ -1,7 +1,7 @@
 <?php
 // common functions for Standard and Cloud plugins
 // TODO: check all comments to make sure they are actually useful...
-define('EWWW_IMAGE_OPTIMIZER_VERSION', '200.2');
+define('EWWW_IMAGE_OPTIMIZER_VERSION', '201');
 
 // initialize debug global
 $disabled = ini_get('disable_functions');
