@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: image, attachment, optimize, optimization, nextgen, flagallery, lossless, lossy, photo, picture, seo, compression, image-store, imstore, slider, image editor, gmagick, wp-symposium, meta-slider, metaslider, jpegtran, gifsicle, optipng, pngout, pngquant, gmedia, jpegmini, tinypng, webp, cwebp
 Requires at least: 3.5
 Tested up to: 4.0
-Stable tag: 2.0.0
+Stable tag: 2.0.1
 License: GPLv3
 
 Reduce file sizes for images in WordPress including NextGEN, GRAND FlAGallery and more using lossless/lossy methods and image format conversion.
@@ -219,6 +219,8 @@ NOTE: The WebP naming scheme has been changed to avoid conflicts when JPGs and P
 * removed: deprecated import process from bulk optimize page
 * removed: empty table option from bulk optimize page, use the Force checkbox instead
 * changed: force re-optimize checkbox applies to Media Library AND the Scan and Optimize function
+* changed: plugin status auto-collapses to save screen space, unless something needs your attention
+* changed: settings tabs have been moved below the status section (directly above the settings area) to enhance usability
 
 = 2.0.0 =
 * NOTE: while this is a release with new features, it is not a rewrite, only the next number in the decimal system, just like the WP numbering scheme
