@@ -3,15 +3,15 @@ Contributors: nosilver4u
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MKMQKCBFFG3WW
 Tags: image, attachment, optimize, optimization, nextgen, flagallery, lossless, lossy, photo, picture, seo, compression, image-store, imstore, slider, image editor, gmagick, wp-symposium, meta-slider, metaslider, jpegtran, gifsicle, optipng, pngout, pngquant, gmedia, jpegmini, tinypng, webp, cwebp
 Requires at least: 3.5
-Tested up to: 3.9.2
-Stable tag: 2.0.0
+Tested up to: 4.0
+Stable tag: 2.0.1
 License: GPLv3
 
-Reduce file sizes for images within WordPress including NextGEN, GRAND FlAGallery and more. Uses jpegtran, optipng, pngout, pngquant, gifsicle, cwebp, and jpegmini.
+Reduce file sizes for images in WordPress including NextGEN, GRAND FlAGallery and more using lossless/lossy methods and image format conversion.
 
 == Description ==
 
-The EWWW Image Optimizer is a WordPress plugin that will automatically optimize your images as you upload them to your blog. It can optimize the images that you have already uploaded in the past. It is also possible to convert your images automatically to the file format that will produce the smallest image size (make sure you read the WARNINGS). It can also optionally apply lossy reductions for PNG and JPG images.
+The EWWW Image Optimizer is a WordPress plugin that will automatically optimize your images as you upload them to your blog. It can optimize the images that you have already uploaded, convert your images automatically to the file format that will produce the smallest image size (make sure you read the WARNINGS), and optionally apply lossy reductions for PNG and JPG images.
 
 **Why use EWWW Image Optimizer?**
 
@@ -69,10 +69,11 @@ Uploads are automatically optimized. Look for Optimize under the Image Store (Ga
 = Translations =
 
 Translators: 
-Romanian translation by MediasInfo.ro.
-Spanish translation by Andrew Kurtis of WebHostingHub, looking for new maintainer.
-Dutch translation by Ludo Rubben.
+Romanian translation by MediasInfo.ro
+Spanish translation by Manuel Ballesta Ruiz
+Dutch translation by Ludo Rubben
 Polish translation by Grzegorz Janoszka
+Russian translation by Elvis of turkenichev.ru
 
 If you would like to translate this plugin, get more information here: http://www.shanebishop.net/ewww-io-plugin-translators/
 
@@ -197,11 +198,29 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 
 == Changelog ==
 
+= IMPORTANT =
+NOTE: The WebP naming scheme has been changed to avoid conflicts when JPGs and PNGs have identical filenames. You will need to update your rewrite rules via the settings page, and run the WebP upgrade script. Every image in the Media Library with a WebP version using the old naming scheme will have a link to the upgrade process (in list view, not grid view).
+
 = future =
 * these are current feature requests, if you see something you like here, go vote for it in the support forum
 * full GMedia support
 * mozjpeg for improved lossless jpeg optimization (cloud only)
 * If you would like to help translate this plugin in your language, get more information here: http://www.shanebishop.net/ewww-io-plugin-translators/
+
+= 2.0.1 =
+* fixed: naming conflict with webp when jpg/png files have identical names, read NOTE above
+* fixed: folders to optimize are not retrieved properly on settings page
+* fixed: undefined variable in permissions check for cwebp on Mac OSX
+* fixed: prevent excess calls for cwebp
+* fixed: wpdb->prepare should have two arguments
+* updated: Spanish translation
+* added: Russian translation
+* changed: alternative binaries for jpegtran and cwebp use -alt suffix to avoid conflict with user-compiled binaries
+* removed: deprecated import process from bulk optimize page
+* removed: empty table option from bulk optimize page, use the Force checkbox instead
+* changed: force re-optimize checkbox applies to Media Library AND the Scan and Optimize function
+* changed: plugin status auto-collapses to save screen space, unless something needs your attention
+* changed: settings tabs have been moved below the status section (directly above the settings area) to enhance usability
 
 = 2.0.0 =
 * NOTE: while this is a release with new features, it is not a rewrite, only the next number in the decimal system, just like the WP numbering scheme
@@ -599,6 +618,9 @@ That's not a question, but since I made it up, I'll answer it. See the Image Opt
 * First release (forked from CW Image Optimizer)
 
 == Upgrade Notice ==
+
+= 2.0.1 =
+* Webp naming scheme has changed, read changelog for more information
 
 = 2.0.0 =
 * You must upgrade to this version before uploading JPG images in Wordpress 4.0 to avoid serious quality loss in your resizes
