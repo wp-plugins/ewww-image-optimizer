@@ -1,7 +1,7 @@
 <?php
 // common functions for Standard and Cloud plugins
 // TODO: check all comments to make sure they are actually useful...
-define('EWWW_IMAGE_OPTIMIZER_VERSION', '201');
+define('EWWW_IMAGE_OPTIMIZER_VERSION', '201.1');
 
 // initialize debug global
 $disabled = ini_get('disable_functions');
@@ -2152,6 +2152,9 @@ function ewww_image_optimizer_options () {
 			}
 			if (function_exists('getimagesize')) {
 				$output[] = 'getimagesize(): <span style="color: green; font-weight: bolder">' . __('Installed', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</span>&emsp;&emsp;';
+				if ( EWWW_IMAGE_OPTIMIZER_CLOUD || EWWW_IMAGE_OPTIMIZER_NOEXEC || PHP_OS == 'WINNT' ) {
+					$file_command_check = false;
+				}
 			} else {
 				$output[] = 'getimagesize(): <span style="color: red; font-weight: bolder">' . __('Missing', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</span>&emsp;&emsp;';
 			}
