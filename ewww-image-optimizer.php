@@ -1909,8 +1909,7 @@ function ewww_image_optimizer_install_pngout() {
 		}
 	}
 	if (!empty($pngout_version)) {
-//		$sendback = add_query_arg('pngout', 'success', remove_query_arg(array('pngout', 'error'), wp_get_referer()));
-		$pngout_error = 'bammy bam bam';
+		$sendback = add_query_arg('pngout', 'success', remove_query_arg(array('pngout', 'error'), wp_get_referer()));
 	}
 	if (!isset($sendback)) {
 		$sendback = add_query_arg(array('pngout' => 'failed', 'error' => urlencode($pngout_error)), remove_query_arg(array('pngout', 'error'), wp_get_referer()));
