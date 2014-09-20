@@ -1,7 +1,7 @@
 <?php
 // common functions for Standard and Cloud plugins
 // TODO: check all comments to make sure they are actually useful...
-define('EWWW_IMAGE_OPTIMIZER_VERSION', '201.2');
+define('EWWW_IMAGE_OPTIMIZER_VERSION', '201.3');
 
 // initialize debug global
 $disabled = ini_get('disable_functions');
@@ -25,7 +25,7 @@ if (!isset($wpdb->ewwwio_images)) {
 /**
  * Hooks
  */
-add_filter('wp_generate_attachment_metadata', 'ewww_image_optimizer_resize_from_meta_data', 60, 2);
+add_filter('wp_generate_attachment_metadata', 'ewww_image_optimizer_resize_from_meta_data', 15, 2);
 add_filter('manage_media_columns', 'ewww_image_optimizer_columns');
 // variable for plugin settings link
 $plugin = plugin_basename (EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE);
@@ -1344,13 +1344,35 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = tr
 		$ewww_debug .= "processing resizes<br>";
 		// meta sizes don't contain a path, so we calculate one
 		if ($gallery_type === 6) {
-			$base_dir = dirname($file_path) . '/_resized/';
-		} else {
-			$base_dir = dirname($file_path) . '/';
+			$base_ims_dir = dirname($file_path) . '/_resized/';
 		}
+		$base_dir = dirname($file_path) . '/';
 		// process each resized version
 		$processed = array();
 		foreach($meta['sizes'] as $size => $data) {
+			if ($gallery_type === 6) {
+				$base_dir = dirname($file_path) . '/';
+				$image_path = $base_dir . $data['file'];
+				$ims_path = $base_ims_dir . $data['file'];
+				if (file_exists($ims_path)) {
+					$ewww_debug .= "ims resize already exists, wahoo<br>";
+					$ewww_debug .= "ims path: $ims_path<br>";
+					$image_size = filesize($ims_path);
+					$query = $wpdb->prepare("SELECT id FROM $wpdb->ewwwio_images WHERE BINARY path = %s AND image_size = '$image_size'", $image_path);
+					if ( $already_optimized = $wpdb->get_results($query, ARRAY_A) ) {
+						$ewww_debug .= "updating existing record, path: $ims_path, size: " . $image_size . "<br>";
+						// store info on the current image for future reference
+						$wpdb->update( $wpdb->ewwwio_images,
+							array(
+								'path' => $ims_path,
+							),
+							array(
+								'id' => $already_optimized[0]['id'],
+							));
+						$base_dir = $base_ims_dir;
+					}
+				}
+			}
 			// initialize $dup_size
 			$dup_size = false;
 			// check through all the sizes we've processed so far
@@ -1373,9 +1395,10 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = tr
 				// if the resize was converted, store the result and the original filename in the metadata for later recovery
 				if ($resize_conv) {
 					// if we don't already have the update attachment filter
-					if (FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment'))
+					if (FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment')) {
 						// add the update attachment filter
 						add_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10, 2);
+					}
 					$meta['sizes'][$size]['converted'] = 1;
 					$meta['sizes'][$size]['orig_file'] = str_replace($base_dir, '', $original);
 					$ewww_debug .= "original filename: $original<br>";

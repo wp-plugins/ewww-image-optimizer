@@ -209,11 +209,13 @@ NOTE: The WebP naming scheme has been changed to avoid conflicts when JPGs and P
 
 = 2.0.2 =
 * security: pngout error message properly sanitized to prevent XSS attack
+* changed: changed priority for processing Media Library images to run before Amazon Cloudfront plugin, this could affect other plugins that hook on wp_generate_attachment_metadata
 * fixed: cloud users seeing 'needs attention' incorrectly
 * fixed: error counter for bulk not being reset when successfully resuming
 * fixed: clarification about jpegmini and cmyk images
 * fixed: debugging errors for optipng/pngout levels should not be displayed for cloud users
 * fixed: pngout error was printing to screen prematurely
+* fixed: Image Store resizes were being double-optimized due to filename changes
 
 = 2.0.1 =
 * fixed: naming conflict with webp when jpg/png files have identical names, read NOTE above
