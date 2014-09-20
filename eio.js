@@ -390,6 +390,7 @@ jQuery(document).ready(function($) {
 				$('#bulk-loading').html('<p style="color: red"><b>Optimization stopped, reload page to resume.</b></p>');
 			}
 			else if (i < attachments.length) {
+				ewww_error_counter = 30;
 				processImage();
 			}
 			else {

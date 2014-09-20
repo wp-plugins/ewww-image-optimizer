@@ -207,6 +207,14 @@ NOTE: The WebP naming scheme has been changed to avoid conflicts when JPGs and P
 * mozjpeg for improved lossless jpeg optimization (cloud only)
 * If you would like to help translate this plugin in your language, get more information here: http://www.shanebishop.net/ewww-io-plugin-translators/
 
+= 2.0.2 =
+* security: pngout error message properly sanitized to prevent XSS attack
+* fixed: cloud users seeing 'needs attention' incorrectly
+* fixed: error counter for bulk not being reset when successfully resuming
+* fixed: clarification about jpegmini and cmyk images
+* fixed: debugging errors for optipng/pngout levels should not be displayed for cloud users
+* fixed: pngout error was printing to screen prematurely
+
 = 2.0.1 =
 * fixed: naming conflict with webp when jpg/png files have identical names, read NOTE above
 * fixed: folders to optimize are not retrieved properly on settings page
