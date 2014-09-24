@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate image optimizers into WordPress.
- * @version 2.0.0
+ * @version 2.0.2
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -10,7 +10,7 @@ Plugin URI: http://wordpress.org/extend/plugins/ewww-image-optimizer/
 Description: Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
 Author: Shane Bishop
 Text Domain: ewww-image-optimizer
-Version: 2.0.0
+Version: 2.0.2
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
@@ -58,8 +58,10 @@ function ewww_image_optimizer_exec_init() {
 			update_site_option('ewww_image_optimizer_skip_check', $_POST['ewww_image_optimizer_skip_check']);
 			if (empty($_POST['ewww_image_optimizer_skip_bundle'])) $_POST['ewww_image_optimizer_skip_bundle'] = '';
 			update_site_option('ewww_image_optimizer_skip_bundle', $_POST['ewww_image_optimizer_skip_bundle']);
-			update_site_option('ewww_image_optimizer_optipng_level', $_POST['ewww_image_optimizer_optipng_level']);
-			update_site_option('ewww_image_optimizer_pngout_level', $_POST['ewww_image_optimizer_pngout_level']);
+			if ( ! empty( $_POST['ewww_image_optimizer_optipng_level'] ) ) {
+				update_site_option('ewww_image_optimizer_optipng_level', $_POST['ewww_image_optimizer_optipng_level']);
+				update_site_option('ewww_image_optimizer_pngout_level', $_POST['ewww_image_optimizer_pngout_level']);
+			}
 			if (empty($_POST['ewww_image_optimizer_disable_jpegtran'])) $_POST['ewww_image_optimizer_disable_jpegtran'] = '';
 			update_site_option('ewww_image_optimizer_disable_jpegtran', $_POST['ewww_image_optimizer_disable_jpegtran']);
 			if (empty($_POST['ewww_image_optimizer_disable_optipng'])) $_POST['ewww_image_optimizer_disable_optipng'] = '';
@@ -233,23 +235,23 @@ function ewww_image_optimizer_install_tools () {
 			$ewww_debug .= "Couldn't copy jpegtran<br>";
 		}
 	}
-	// install 32-bit jpegtran at jpegtran-custom for some weird 64-bit hosts
+	// install 32-bit jpegtran at jpegtran-alt for some weird 64-bit hosts
 	$arch_type = php_uname('m');
 	if (PHP_OS == 'Linux' && $arch_type == 'x86_64') {
 		$ewww_debug .= "64-bit linux detected while installing tools<br>";
 		$jpegtran32_src = substr($jpegtran_src, 0, -2);
-		$jpegtran32_dst = $jpegtran_dst . '-custom';
+		$jpegtran32_dst = $jpegtran_dst . '-alt';
 		if (!file_exists($jpegtran32_dst) || (ewww_image_optimizer_md5check($jpegtran32_dst) && filesize($jpegtran32_dst) != filesize($jpegtran32_src))) {
 			$ewww_debug .= "copying $jpegtran32_src to $jpegtran32_dst<br>";
 			if (!copy($jpegtran32_src, $jpegtran32_dst)) {
 				// this isn't a fatal error, besides we'll see it in the debug if needed
-				$ewww_debug .= "Couldn't copy 32-bit jpegtran to jpegtran-custom<br>";
+				$ewww_debug .= "Couldn't copy 32-bit jpegtran to jpegtran-alt<br>";
 			}
 			$jpegtran32_perms = substr(sprintf('%o', fileperms($jpegtran32_dst)), -4);
-			$ewww_debug .= "jpegtran-custom (32-bit) permissions: $jpegtran32_perms<br>";
+			$ewww_debug .= "jpegtran-alt (32-bit) permissions: $jpegtran32_perms<br>";
 			if ($jpegtran32_perms != '0755') {
 				if (!chmod($jpegtran32_dst, 0755)) {
-					$ewww_debug .= "couldn't set jpegtran-custom permissions<br>";
+					$ewww_debug .= "couldn't set jpegtran-alt permissions<br>";
 				}
 			}
 		}
@@ -285,19 +287,19 @@ function ewww_image_optimizer_install_tools () {
 	}
 	// install special version of cwebp for Mac OSX 10.7 systems
 	if (PHP_OS == 'Darwin') {
-		$webp7_dst = $webp_dst . '-custom';
+		$webp7_dst = $webp_dst . '-alt';
 		$webp7_src = str_replace('mac8', 'mac7', $webp_src);
 		if (!file_exists($webp7_dst) || (ewww_image_optimizer_md5check($webp7_dst) && filesize($webp7_dst) != filesize($webp7_src))) {
 			$ewww_debug .= "copying $webp7_src to $webp7_dst<br>";
 			if (!copy($webp7_src, $webp7_dst)) {
 				// this isn't a fatal error, besides we'll see it in the debug if needed
-				$ewww_debug .= "Couldn't copy OSX 10.7 cwebp to cwebp-custom<br>";
+				$ewww_debug .= "Couldn't copy OSX 10.7 cwebp to cwebp-alt<br>";
 			}
-			$webp6_perms = substr(sprintf('%o', fileperms($webp7_dst)), -4);
-			$ewww_debug .= "cwebp7-custom (OSX 10.7) permissions: $webp7_perms<br>";
+			$webp7_perms = substr(sprintf('%o', fileperms($webp7_dst)), -4);
+			$ewww_debug .= "cwebp7-alt (OSX 10.7) permissions: $webp7_perms<br>";
 			if ($webp7_perms != '0755') {
 				if (!chmod($webp7_dst, 0755)) {
-					$ewww_debug .= "couldn't set cwebp7-custom permissions<br>";
+					$ewww_debug .= "couldn't set cwebp7-alt permissions<br>";
 				}
 			}
 		}
@@ -305,19 +307,19 @@ function ewww_image_optimizer_install_tools () {
 
 	// install libjpeg6 version of cwebp for older systems
 	if (PHP_OS == 'Linux') {
-		$webp6_dst = $webp_dst . '-custom';
+		$webp6_dst = $webp_dst . '-alt';
 		$webp6_src = str_replace('linux8', 'linux6', $webp_src);
 		if (!file_exists($webp6_dst) || (ewww_image_optimizer_md5check($webp6_dst) && filesize($webp6_dst) != filesize($webp6_src))) {
 			$ewww_debug .= "copying $webp6_src to $webp6_dst<br>";
 			if (!copy($webp6_src, $webp6_dst)) {
 				// this isn't a fatal error, besides we'll see it in the debug if needed
-				$ewww_debug .= "Couldn't copy libjpeg6 cwebp to cwebp-custom<br>";
+				$ewww_debug .= "Couldn't copy libjpeg6 cwebp to cwebp-alt<br>";
 			}
 			$webp6_perms = substr(sprintf('%o', fileperms($webp6_dst)), -4);
-			$ewww_debug .= "cwebp6-custom (libjpeg6) permissions: $webp6_perms<br>";
+			$ewww_debug .= "cwebp6-alt (libjpeg6) permissions: $webp6_perms<br>";
 			if ($webp6_perms != '0755') {
 				if (!chmod($webp6_dst, 0755)) {
-					$ewww_debug .= "couldn't set cwebp6-custom permissions<br>";
+					$ewww_debug .= "couldn't set cwebp6-alt permissions<br>";
 				}
 			}
 		}
@@ -591,6 +593,17 @@ function ewww_image_optimizer_path_check ( $j = true, $o = true, $g = true, $p =
 					}
 				}
 			}
+			// see if the alternative binary works
+			if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran-alt') && !$jpegtran && !$use_system) {
+				$jpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran-alt';
+				$ewww_debug .= "found $jpt, testing...<br>";
+				if (filesize($jpt) > 15000 && ewww_image_optimizer_mimetype($jpt, 'b')) {
+					$jpt = ewww_image_optimizer_escapeshellcmd ( $jpt );
+					if (ewww_image_optimizer_tool_found($jpt, 'j')) {
+						$jpegtran = $jpt;
+					}
+				}
+			}
 			// if we still haven't found a usable binary, try a system-installed version
 			if (!$jpegtran) {
 				$jpegtran = ewww_image_optimizer_find_binary('jpegtran', 'j');
@@ -703,6 +716,16 @@ function ewww_image_optimizer_path_check ( $j = true, $o = true, $g = true, $p =
 			}
 			if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'cwebp-custom') && !$webp && !$use_system) {
 				$wpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'cwebp-custom';
+				$ewww_debug .= "found $wpt, testing...<br>";
+				if (filesize($wpt) > 5000 && ewww_image_optimizer_mimetype($wpt, 'b')) {
+					$wpt = ewww_image_optimizer_escapeshellcmd ( $wpt );
+					if (ewww_image_optimizer_tool_found($wpt, 'w')) {
+						$webp = $wpt;
+					}
+				}
+			}
+			if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'cwebp-alt') && !$webp && !$use_system) {
+				$wpt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'cwebp-alt';
 				$ewww_debug .= "found $wpt, testing...<br>";
 				if (filesize($wpt) > 5000 && ewww_image_optimizer_mimetype($wpt, 'b')) {
 					$wpt = ewww_image_optimizer_escapeshellcmd ( $wpt );
@@ -1803,12 +1826,11 @@ function ewww_image_optimizer_webp_create( $file, $orig_size, $type, $tool ) {
 	global $ewww_debug;
 	$ewww_debug .= '<b>ewww_image_optimizer_webp_create()</b><br>';
 	// change the file extension
-	$webpfile = preg_replace('/\.\w+$/', '.webp', $file);
-	if ( file_exists( $webpfile ) ) {
+	$webpfile = $file . '.webp';
+	if ( file_exists( $webpfile ) || ! ewww_image_optimizer_get_option('ewww_image_optimizer_webp') ) {
 		return;
 	}
-	if ( empty( $tool ) && ewww_image_optimizer_get_option( 'ewww_image_optimizer_webp' ) ) {
-		//list($file, $converted, $result, $new_size) = ewww_image_optimizer_cloud_optimizer($file, $type, $convert, $pngfile, 'image/png', $fullsize);
+	if ( empty( $tool ) ) {
 		ewww_image_optimizer_cloud_optimizer($file, $type, false, $webpfile, 'image/webp');
 	} else {
 		// check to see if 'nice' exists
