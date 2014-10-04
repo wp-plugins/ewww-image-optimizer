@@ -207,6 +207,9 @@ NOTE: The WebP naming scheme has been changed to avoid conflicts when JPGs and P
 * mozjpeg for improved lossless jpeg optimization (cloud only)
 * If you would like to help translate this plugin in your language, get more information here: http://www.shanebishop.net/ewww-io-plugin-translators/
 
+= 2.0.3 =
+* fixed: warning when scheduled scanner doesn't have any images to optimize
+
 = 2.0.2 =
 * security: pngout error message properly sanitized to prevent XSS attack
 * changed: changed priority for processing Media Library images to run before Amazon Cloudfront plugin, this could affect other plugins that hook on wp_generate_attachment_metadata

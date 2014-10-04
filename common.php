@@ -1,7 +1,7 @@
 <?php
 // common functions for Standard and Cloud plugins
 // TODO: check all comments to make sure they are actually useful...
-define('EWWW_IMAGE_OPTIMIZER_VERSION', '202');
+define('EWWW_IMAGE_OPTIMIZER_VERSION', '202.1');
 
 // initialize debug global
 $disabled = ini_get('disable_functions');
@@ -391,16 +391,18 @@ function ewww_image_optimizer_auto() {
 		ewww_image_optimizer_aux_images_initialize(true);
 		$delay = ewww_image_optimizer_get_option('ewww_image_optimizer_delay');		
 		$attachments = get_option('ewww_image_optimizer_aux_attachments');
-		foreach ($attachments as $attachment) {
-			if (!get_option('ewww_image_optimizer_aux_resume')) {
-				ewww_image_optimizer_debug_log();
-				return;
+		if ( ! empty( $attachments ) ) {
+			foreach ($attachments as $attachment) {
+				if (!get_option('ewww_image_optimizer_aux_resume')) {
+					ewww_image_optimizer_debug_log();
+					return;
+				}
+				ewww_image_optimizer_aux_images_loop($attachment, true);
+				if (!empty($delay)) {
+					sleep($delay);
+				}
 			}
-			ewww_image_optimizer_aux_images_loop($attachment, true);
-			if (!empty($delay)) {
-				sleep($delay);
-			}
-		}	
+		}
 		ewww_image_optimizer_aux_images_cleanup(true);
 		ewww_image_optimizer_debug_log();
 	}
