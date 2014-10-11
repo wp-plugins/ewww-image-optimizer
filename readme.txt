@@ -212,6 +212,8 @@ NOTE: The WebP naming scheme has been changed to avoid conflicts when JPGs and P
 * added: WP Photo Album Plus added to list of folders auto-included in Scan & Optimize and Scheduled Optimization
 * added: option to skip PNG images over a certain size since PNG images are prone to timeouts
 * fixed: properly override _save function from Animated Gif Resize plugin to preserve animation even in resizes
+* added: optimizing previously uploaded images (via bulk or otherwise) also uploads to Amazon S3 with the Amazon Cloudfront and S3 plugin
+* added: webp images are tracked in attachment metadata to enable upload via AWS plugins, but webp images are not deleted when attachments are deleted from Media Library
 
 = 2.0.2 =
 * security: pngout error message properly sanitized to prevent XSS attack

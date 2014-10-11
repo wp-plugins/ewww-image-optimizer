@@ -26,6 +26,7 @@ if (!isset($wpdb->ewwwio_images)) {
  * Hooks
  */
 add_filter('wp_generate_attachment_metadata', 'ewww_image_optimizer_resize_from_meta_data', 15, 2);
+add_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment_metadata', 8, 2);
 add_filter('manage_media_columns', 'ewww_image_optimizer_columns');
 // variable for plugin settings link
 $plugin = plugin_basename (EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE);
@@ -1262,6 +1263,180 @@ function ewww_image_optimizer_aux_images_loop($attachment = null, $auto = false)
 	}
 }
 
+// processes metadata and looks for any webp version to insert in the meta
+function ewww_image_optimizer_update_attachment_metadata($meta, $ID) {
+	global $ewww_debug;
+//	global $wpdb;
+	// may also need to track their attachment ID as well
+	$ewww_debug .= "<b>ewww_image_optimizer_update_attachment_metadata()</b><br>";
+//	$gallery_type = 1;
+	$ewww_debug .= "attachment id: $ID<br>";
+/*	if (!metadata_exists('post', $ID, '_wp_attachment_metadata')) {
+		$ewww_debug .= "this is a newly uploaded image with no metadata yet<br>";
+		$new_image = true;
+	} else {
+		$ewww_debug .= "this image already has metadata, so it is not new<br>";
+		$new_image = false;
+	}*/
+	list($file_path, $upload_path) = ewww_image_optimizer_attachment_path($meta, $ID);
+	// if the attachment has been uploaded via the image store plugin
+/*	if ('ims_image' == get_post_type($ID)) {
+		$gallery_type = 6;
+	}*/
+	// don't do anything else if the attachment path can't be retrieved
+	if (!is_file($file_path)) {
+		$ewww_debug .= "could not retrieve path<br>";
+		return $meta;
+	}
+	$ewww_debug .= "retrieved file path: $file_path<br>";
+	// see if this is a new image and Imsanity resized it (which means it could be already optimized)
+/*	if (!empty($new_image) && function_exists('imsanity_get_max_width_height')) {
+		list($maxW,$maxH) = imsanity_get_max_width_height(IMSANITY_SOURCE_LIBRARY);
+		list($oldW, $oldH) = getimagesize($file_path);
+		list($newW, $newH) = wp_constrain_dimensions($oldW, $oldH, $maxW, $maxH);
+		$path_parts = pathinfo($file_path);
+		$imsanity_path = trailingslashit($path_parts['dirname']) . $path_parts['filename'] . '-' . $newW . 'x' . $newH . '.' . $path_parts['extension'];
+		$ewww_debug .= "imsanity path: $imsanity_path<br>";
+		$image_size = filesize($file_path);
+		$query = $wpdb->prepare("SELECT id FROM $wpdb->ewwwio_images WHERE BINARY path = %s AND image_size = '$image_size'", $imsanity_path);
+		if ( $already_optimized = $wpdb->get_results($query, ARRAY_A) ) {
+			$ewww_debug .= "updating existing record, path: $file_path, size: " . $image_size . "<br>";
+			// store info on the current image for future reference
+			$wpdb->update( $wpdb->ewwwio_images,
+				array(
+					'path' => $file_path,
+				),
+				array(
+					'id' => $already_optimized[0]['id'],
+				));
+		}
+	}*/
+	//list($file, $msg, $conv, $original) = ewww_image_optimizer($file_path, $gallery_type, false, $new_image, ewww_image_optimizer_get_option('ewww_image_optimizer_lossy_skip_full'));
+	// update the optimization results in the metadata
+//	$meta['ewww_image_optimizer'] = $msg;
+//	if ($file === false) {
+//		return $meta;
+//	}
+//	$meta['file'] = str_replace($upload_path, '', $file);
+	if ( is_file( $file_path . '.webp' ) ) {
+		$meta['sizes']['webp-full'] = array(
+			'file' => pathinfo( $file_path, PATHINFO_BASENAME ) . '.webp',
+//			'width' => $meta['width'],
+//			'height' => $meta['height'],
+			'mime-type' => 'image/webp',
+		);
+		
+	}
+	// if the file was converted
+/*	if ($conv) {
+		// update the filename in the metadata
+		$new_file = substr($meta['file'], 0, -3);
+		// change extension
+		$new_ext = substr($file, -3);
+		$meta['file'] = $new_file . $new_ext;
+		$ewww_debug .= "image was converted<br>";
+		// if we don't already have the update attachment filter
+		if (FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment'))
+			// add the update attachment filter
+			add_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10, 2);
+		// store the conversion status in the metadata
+		$meta['converted'] = 1;
+		// store the old filename in the database
+		$meta['orig_file'] = $original;
+	} else {
+		remove_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10);
+	}*/
+	// resized versions, so we can continue
+	if (isset($meta['sizes']) ) {
+		$ewww_debug .= "processing resizes<br>";
+		// meta sizes don't contain a path, so we calculate one
+/*		if ($gallery_type === 6) {
+			$base_ims_dir = dirname($file_path) . '/_resized/';
+		}*/
+		$base_dir = dirname($file_path) . '/';
+		// process each resized version
+		$processed = array();
+		foreach($meta['sizes'] as $size => $data) {
+/*			if ($gallery_type === 6) {
+				$base_dir = dirname($file_path) . '/';
+				$image_path = $base_dir . $data['file'];
+				$ims_path = $base_ims_dir . $data['file'];
+				if (file_exists($ims_path)) {
+					$ewww_debug .= "ims resize already exists, wahoo<br>";
+					$ewww_debug .= "ims path: $ims_path<br>";
+					$image_size = filesize($ims_path);
+					$query = $wpdb->prepare("SELECT id FROM $wpdb->ewwwio_images WHERE BINARY path = %s AND image_size = '$image_size'", $image_path);
+					if ( $already_optimized = $wpdb->get_results($query, ARRAY_A) ) {
+						$ewww_debug .= "updating existing record, path: $ims_path, size: " . $image_size . "<br>";
+						// store info on the current image for future reference
+						$wpdb->update( $wpdb->ewwwio_images,
+							array(
+								'path' => $ims_path,
+							),
+							array(
+								'id' => $already_optimized[0]['id'],
+							));
+						$base_dir = $base_ims_dir;
+					}
+				}
+			}*/
+			// initialize $dup_size
+		/*	$dup_size = false;
+			// check through all the sizes we've processed so far
+			foreach($processed as $proc => $scan) {
+				// if a previous resize had identical dimensions
+				if ($scan['height'] == $data['height'] && $scan['width'] == $data['width']) {
+					// found a duplicate resize
+					$dup_size = true;
+					// point this resize at the same image as the previous one
+					$meta['sizes'][$size]['file'] = $meta['sizes'][$proc]['file'];
+					// and tell the user we didn't do any further optimization
+					$meta['sizes'][$size]['ewww_image_optimizer'] = __('No savings', EWWW_IMAGE_OPTIMIZER_DOMAIN);
+				}
+			}*/
+			// if this is a unique size
+	//		if (!$dup_size) {
+				$resize_path = $base_dir . $data['file'];
+				// run the optimization and store the results
+//				list($optimized_file, $results, $resize_conv, $original) = ewww_image_optimizer($resize_path, $gallery_type, $conv, $new_image);
+				// if the resize was converted, store the result and the original filename in the metadata for later recovery
+/*				if ($resize_conv) {
+					// if we don't already have the update attachment filter
+					if (FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment')) {
+						// add the update attachment filter
+						add_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10, 2);
+					}
+					$meta['sizes'][$size]['converted'] = 1;
+					$meta['sizes'][$size]['orig_file'] = str_replace($base_dir, '', $original);
+					$ewww_debug .= "original filename: $original<br>";
+					$meta['sizes'][$size]['real_orig_file'] = str_replace($base_dir, '', $resize_path);
+					$ewww_debug .= "resize path: $resize_path<br>";
+				}
+				if ($optimized_file !== false) {
+					// update the filename
+					$meta['sizes'][$size]['file'] = str_replace($base_dir, '', $optimized_file);
+				}*/
+				// update the optimization results
+			if ( is_file( $resize_path . '.webp' ) ) {
+				$meta['sizes']['webp-' . $size] = array(
+					'file' => $data['file'] . '.webp',
+			//		'width' => $data['width'],
+			//		'height' => $data['height'],
+					'mime-type' => 'image/webp',
+				);
+			}
+			// store info on the sizes we've processed, so we can check the list for duplicate sizes
+	//		$processed[$size]['width'] = $data['width'];
+	//		$processed[$size]['height'] = $data['height'];
+		}
+	}
+	if ( $log ) {
+		ewww_image_optimizer_debug_log();
+	}
+	// send back the updated metadata
+	return $meta;
+}
+
 /**
  * Read the image paths from an attachment's meta data and process each image
  * with ewww_image_optimizer().
@@ -1355,6 +1530,9 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = tr
 		// process each resized version
 		$processed = array();
 		foreach($meta['sizes'] as $size => $data) {
+			if ( preg_match('/webp/', $size) ) {
+				continue;
+			}
 			if ($gallery_type === 6) {
 				$base_dir = dirname($file_path) . '/';
 				$image_path = $base_dir . $data['file'];
@@ -1423,6 +1601,9 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = tr
 		}
 	}
 	
+	if ( ! empty( $new_image) ) {
+		$meta = ewww_image_optimizer_update_attachment_metadata($meta, $ID);
+	}
 	if ( ! preg_match( '/' . __( 'Previously Optimized', EWWW_IMAGE_OPTIMIZER_DOMAIN ) . '/', $meta['ewww_image_optimizer'] ) && class_exists( 'Amazon_S3_And_CloudFront' ) ) {
  		global $as3cf;
 		$as3cf->wp_generate_attachment_metadata($meta, $ID);
