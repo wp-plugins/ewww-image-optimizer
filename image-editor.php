@@ -1,9 +1,81 @@
 <?php
+if ( class_exists( 'Bbpp_Animated_Gif' ) ) {
+	class EWWWIO_GD_Editor extends Bbpp_Animated_Gif {
+	protected function _save_animated_gif($image, $filename = null, $mime_type = null) {
+		global $ewww_debug;
+//		if (!defined('EWWW_IMAGE_OPTIMIZER_DOMAIN'))
+//			require_once(plugin_dir_path(__FILE__) . 'ewww-image-optimizer.php');
+		if (!defined('EWWW_IMAGE_OPTIMIZER_JPEGTRAN'))
+			ewww_image_optimizer_init();
+		$ewww_debug .= 'using AGR class replacement';
+		// save it
+		list( $filename, $extension, $mime_type ) = $this->get_output_format( $filename, $mime_type );
+		
+		if ( ! $filename )
+			$filename = $this->generate_filename( null, null, $extension );
+			
+//		if (!$this->make_image($filename, array($this, "_save_animated_gif_file"), array($image, $filename)))
+//			return new WP_Error( 'image_save_error', __('Image Editor Save Failed') );
+		
+                if ( 'image/gif' == $mime_type ) {
+                        if ( ! $this->make_image( $filename, array($this, "_save_animated_gif_file"), array( $image, $filename ) ) )
+                                return new WP_Error( 'image_save_error', __('Image Editor Save Failed') );
+                }
+                elseif ( 'image/png' == $mime_type ) {
+                        // convert from full colors to index colors, like original PNG.
+                        if ( function_exists('imageistruecolor') && ! imageistruecolor( $image ) )
+                                imagetruecolortopalette( $image, false, imagecolorstotal( $image ) );
+
+			if ( property_exists( 'WP_Image_Editor', 'quality' ) ) {
+				$compression_level = floor( ( 101 - $this->quality ) * 0.09 );
+				$ewww_debug .= "png quality = " . $this->quality . "<br>";
+			} else {
+				$compression_level = floor( ( 101 - false ) * 0.09 );
+			}
+
+                        if ( ! $this->make_image( $filename, 'imagepng', array( $image, $filename, $compression_level ) ) ) {
+                                return new WP_Error( 'image_save_error', __('Image Editor Save Failed') );
+			}
+                }
+                elseif ( 'image/jpeg' == $mime_type ) {
+			if ( method_exists( $this, 'get_quality' ) ) {
+				if ( ! $this->make_image( $filename, 'imagejpeg', array( $image, $filename, $this->get_quality() ) ) ) {
+					return new WP_Error( 'image_save_error', __('Image Editor Save Failed') );
+				}
+			} else {
+	                        if ( ! $this->make_image( $filename, 'imagejpeg', array( $image, $filename, apply_filters( 'jpeg_quality', $this->quality, 'image_resize' ) ) ) ) {
+        	                        return new WP_Error( 'image_save_error', __('Image Editor Save Failed') );
+				}
+			}
+                }
+                else {
+                        return new WP_Error( 'image_save_error', __('Image Editor Save Failed') );
+                }
+
+                // Set correct file permissions
+                $stat = stat( dirname( $filename ) );
+                $perms = $stat['mode'] & 0000666; //same permissions as parent folder, strip off the executable bits
+                @ chmod( $filename, $perms );
+		ewww_image_optimizer_aux_images_loop($filename, true);
+		$ewww_debug = "$ewww_debug image editor (gd) saved: $filename <br>";
+		$image_size = filesize($filename);
+		$ewww_debug = "$ewww_debug image editor size: $image_size <br>";
+		ewww_image_optimizer_debug_log();
+                return array(
+                        'path'      => $filename,
+                        'file'      => wp_basename( apply_filters( 'image_make_intermediate_size', $filename ) ),
+                        'width'     => $this->size['width'],
+                        'height'    => $this->size['height'],
+                        'mime-type' => $mime_type,
+                );
+	}
+	}
+} else {
 class EWWWIO_GD_Editor extends WP_Image_Editor_GD {
 	protected function _save ($image, $filename = null, $mime_type = null) {
 		global $ewww_debug;
-		if (!defined('EWWW_IMAGE_OPTIMIZER_DOMAIN'))
-			require_once(plugin_dir_path(__FILE__) . 'ewww-image-optimizer.php');
+		//if (!defined('EWWW_IMAGE_OPTIMIZER_DOMAIN'))
+		//	require_once(plugin_dir_path(__FILE__) . 'ewww-image-optimizer.php');
 		if (!defined('EWWW_IMAGE_OPTIMIZER_JPEGTRAN'))
 			ewww_image_optimizer_init();
 		list( $filename, $extension, $mime_type ) = $this->get_output_format( $filename, $mime_type );
@@ -64,12 +136,12 @@ class EWWWIO_GD_Editor extends WP_Image_Editor_GD {
                 );
 	}
 }
-
+}
 class EWWWIO_Imagick_Editor extends WP_Image_Editor_Imagick {
 	protected function _save( $image, $filename = null, $mime_type = null ) {
 		global $ewww_debug;
-		if (!defined('EWWW_IMAGE_OPTIMIZER_DOMAIN'))
-			require_once(plugin_dir_path(__FILE__) . 'ewww-image-optimizer.php');
+	//	if (!defined('EWWW_IMAGE_OPTIMIZER_DOMAIN'))
+	//		require_once(plugin_dir_path(__FILE__) . 'ewww-image-optimizer.php');
 		if (!defined('EWWW_IMAGE_OPTIMIZER_JPEGTRAN'))
 			ewww_image_optimizer_init();
 	        list( $filename, $extension, $mime_type ) = $this->get_output_format( $filename, $mime_type );
@@ -114,8 +186,8 @@ if (class_exists('WP_Image_Editor_Gmagick')) {
 	class EWWWIO_Gmagick_Editor extends WP_Image_Editor_Gmagick {
 		protected function _save( $image, $filename = null, $mime_type = null ) {
 			global $ewww_debug;
-			if (!defined('EWWW_IMAGE_OPTIMIZER_DOMAIN'))
-				require_once(plugin_dir_path(__FILE__) . 'ewww-image-optimizer.php');
+		//	if (!defined('EWWW_IMAGE_OPTIMIZER_DOMAIN'))
+		//		require_once(plugin_dir_path(__FILE__) . 'ewww-image-optimizer.php');
 			if (!defined('EWWW_IMAGE_OPTIMIZER_JPEGTRAN'))
 				ewww_image_optimizer_init();
 			list( $filename, $extension, $mime_type ) = $this->get_output_format( $filename, $mime_type );

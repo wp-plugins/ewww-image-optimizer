@@ -211,6 +211,7 @@ NOTE: The WebP naming scheme has been changed to avoid conflicts when JPGs and P
 * fixed: warning when scheduled scanner doesn't have any images to optimize
 * added: WP Photo Album Plus added to list of folders auto-included in Scan & Optimize and Scheduled Optimization
 * added: option to skip PNG images over a certain size since PNG images are prone to timeouts
+* fixed: properly override _save function from Animated Gif Resize plugin to preserve animation even in resizes
 
 = 2.0.2 =
 * security: pngout error message properly sanitized to prevent XSS attack
