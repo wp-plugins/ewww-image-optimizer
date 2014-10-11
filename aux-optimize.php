@@ -604,6 +604,11 @@ function ewww_image_optimizer_aux_images_script($hook) {
 			}
 			$attachments = array_merge($attachments, $slide_paths);
 		}
+		if ( defined( 'WPPA_UPLOAD_PATH' ) ) {
+			$attachments = array_merge($attachments, ewww_image_optimizer_image_scan(WPPA_UPLOAD_PATH));
+			global $wppa_opt;
+			$attachments = array_merge($attachments, ewww_image_optimizer_image_scan($wppa_opt['wppa_source_dir']));
+		}
 		// collect a list of images in auxiliary folders provided by user
 		if ( $aux_paths = ewww_image_optimizer_get_option( 'ewww_image_optimizer_aux_paths' ) ) {
 			foreach ($aux_paths as $aux_path) {

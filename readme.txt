@@ -209,6 +209,8 @@ NOTE: The WebP naming scheme has been changed to avoid conflicts when JPGs and P
 
 = 2.0.3 =
 * fixed: warning when scheduled scanner doesn't have any images to optimize
+* added: WP Photo Album Plus added to list of folders auto-included in Scan & Optimize and Scheduled Optimization
+* added: option to skip PNG images over a certain size since PNG images are prone to timeouts
 
 = 2.0.2 =
 * security: pngout error message properly sanitized to prevent XSS attack

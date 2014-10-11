@@ -147,6 +147,8 @@ function ewww_image_optimizer_admin_init() {
 			update_site_option('ewww_image_optimizer_delay', intval($_POST['ewww_image_optimizer_delay']));
 			if (empty($_POST['ewww_image_optimizer_skip_size'])) $_POST['ewww_image_optimizer_skip_size'] = '';
 			update_site_option('ewww_image_optimizer_skip_size', intval($_POST['ewww_image_optimizer_skip_size']));
+			if (empty($_POST['ewww_image_optimizer_skip_png_size'])) $_POST['ewww_image_optimizer_skip_png_size'] = '';
+			update_site_option('ewww_image_optimizer_skip_png_size', intval($_POST['ewww_image_optimizer_skip_png_size']));
 			add_action('network_admin_notices', 'ewww_image_optimizer_network_settings_saved');
 		}
 	}
@@ -179,6 +181,7 @@ function ewww_image_optimizer_admin_init() {
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_enable_cloudinary');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_delay', 'intval');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_skip_size', 'intval');
+	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_skip_png_size', 'intval');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_import_status');
 	ewww_image_optimizer_exec_init();
 	// setup scheduled optimization if the user has enabled it, and it isn't already scheduled
@@ -2282,7 +2285,8 @@ function ewww_image_optimizer_options () {
 					$output[] = "<textarea id='ewww_image_optimizer_aux_paths' name='ewww_image_optimizer_aux_paths' rows='3' cols='60'>" . ( ( $aux_paths = ewww_image_optimizer_get_option( 'ewww_image_optimizer_aux_paths' ) ) ? implode( "\n", $aux_paths ) : "" ) . "</textarea>\n";
 					$output[] = "<p class='description'>Provide paths containing images to be optimized using scheduled optimization or 'Optimize More' in the Tools menu.<br>\n";
 					$output[] = "<b><a href='http://wordpress.org/support/plugin/ewww-image-optimizer'>" . __('Please submit a support request in the forums to have folders created by a particular plugin auto-included in the future.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a></b></p></td></tr>\n";
-				$output[] = "<tr><th><label for='ewww_image_optimizer_skip_size'>" . __('Skip Images', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</label></th><td><input type='text' id='ewww_image_optimizer_skip_size' name='ewww_image_optimizer_skip_size' size='8' value='" . ewww_image_optimizer_get_option('ewww_image_optimizer_skip_size') . "'> " . __('Do not optimize images smaller than this (in bytes)', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</td></tr>\n";
+				$output[] = "<tr><th><label for='ewww_image_optimizer_skip_size'>" . __('Skip Small Images', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</label></th><td><input type='text' id='ewww_image_optimizer_skip_size' name='ewww_image_optimizer_skip_size' size='8' value='" . ewww_image_optimizer_get_option('ewww_image_optimizer_skip_size') . "'> " . __('Do not optimize images smaller than this (in bytes)', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</td></tr>\n";
+				$output[] = "<tr><th><label for='ewww_image_optimizer_skip_png_size'>" . __('Skip Large PNG Images', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</label></th><td><input type='text' id='ewww_image_optimizer_skip_png_size' name='ewww_image_optimizer_skip_png_size' size='8' value='" . ewww_image_optimizer_get_option('ewww_image_optimizer_skip_png_size') . "'> " . __('Do not optimize PNG images larger than this (in bytes)', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</td></tr>\n";
 				$output[] = "<tr><th><label for='ewww_image_optimizer_lossy_skip_full'>" . __('Exclude full-size images from lossy optimization', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</label></th><td><input type='checkbox' id='ewww_image_optimizer_lossy_skip_full' name='ewww_image_optimizer_lossy_skip_full' value='true' " . ( ewww_image_optimizer_get_option('ewww_image_optimizer_lossy_skip_full') == TRUE ? "checked='true'" : "" ) . " /></td></tr>\n";
 				$output[] = "<tr class='nocloud'><th><label for='ewww_image_optimizer_skip_bundle'>" . __('Use System Paths', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</label></th><td><input type='checkbox' id='ewww_image_optimizer_skip_bundle' name='ewww_image_optimizer_skip_bundle' value='true' " . ( ewww_image_optimizer_get_option('ewww_image_optimizer_skip_bundle') == TRUE ? "checked='true'" : "" ) . " /> " . sprintf(__('If you have already installed the utilities in a system location, such as %s or %s, use this to force the plugin to use those versions and skip the auto-installers.', EWWW_IMAGE_OPTIMIZER_DOMAIN), '/usr/local/bin', '/usr/bin') . "</td></tr>\n";
 				$output[] = "<tr class='nocloud'><th><label for='ewww_image_optimizer_disable_jpegtran'>" . __('disable', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " jpegtran</label></th><td><input type='checkbox' id='ewww_image_optimizer_disable_jpegtran' name='ewww_image_optimizer_disable_jpegtran' " . ( ewww_image_optimizer_get_option('ewww_image_optimizer_disable_jpegtran') == TRUE ? "checked='true'" : "" ) . " /></td></tr>\n";
