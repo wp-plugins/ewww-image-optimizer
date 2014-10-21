@@ -1,7 +1,7 @@
 <?php
 // common functions for Standard and Cloud plugins
 // TODO: check all comments to make sure they are actually useful...
-define('EWWW_IMAGE_OPTIMIZER_VERSION', '202.1');
+define('EWWW_IMAGE_OPTIMIZER_VERSION', '202.3');
 
 // initialize debug global
 $disabled = ini_get('disable_functions');
@@ -1594,6 +1594,10 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = tr
 				}
 				// update the optimization results
 				$meta['sizes'][$size]['ewww_image_optimizer'] = $results;
+				// optimize retina images, if they exist
+				if ( function_exists( 'wr2x_get_retina' ) && $retina_path = wr2x_get_retina( $resize_path ) ) {
+					ewww_image_optimizer( $retina_path, 4, false, false );
+				}
 			}
 			// store info on the sizes we've processed, so we can check the list for duplicate sizes
 			$processed[$size]['width'] = $data['width'];

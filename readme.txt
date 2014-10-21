@@ -208,12 +208,13 @@ NOTE: The WebP naming scheme has been changed to avoid conflicts when JPGs and P
 * If you would like to help translate this plugin in your language, get more information here: http://www.shanebishop.net/ewww-io-plugin-translators/
 
 = 2.0.3 =
+* security: ssl strengthened for cloud users, no more SSLv3 (thanks POODLE), and other additional encryption tweaks, please report related errors ASAP
 * fixed: warning when scheduled scanner doesn't have any images to optimize
-* added: WP Photo Album Plus added to list of folders auto-included in Scan & Optimize and Scheduled Optimization
 * added: option to skip PNG images over a certain size since PNG images are prone to timeouts
 * fixed: properly override _save function from Animated Gif Resize plugin to preserve animation even in resizes
 * added: optimizing previously uploaded images (via bulk or otherwise) also uploads to Amazon S3 with the Amazon Cloudfront and S3 plugin
 * added: webp images are tracked in attachment metadata to enable upload via AWS plugins, but webp images are not deleted when attachments are deleted from Media Library
+* added: previously generated retina images are processed by standard Media Library routine, instead of via Folders to Optimize
 
 = 2.0.2 =
 * security: pngout error message properly sanitized to prevent XSS attack
