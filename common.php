@@ -405,6 +405,7 @@ function ewww_image_optimizer_auto() {
 				if (!empty($delay)) {
 					sleep($delay);
 				}
+			ewww_image_optimizer_debug_log();
 			}
 		}
 		ewww_image_optimizer_aux_images_cleanup(true);
@@ -595,8 +596,8 @@ function ewww_image_optimizer_debug_log() {
 			touch(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'debug.log');
 		$ewww_debug_log = preg_replace('/<br>/', "\n", $ewww_debug);
 		file_put_contents(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'debug.log', $timestamp . $ewww_debug_log, FILE_APPEND);
-		$ewww_debug = '';
 	}
+	$ewww_debug = '';
 }
 
 // adds a link on the Plugins page for the EWWW IO settings
