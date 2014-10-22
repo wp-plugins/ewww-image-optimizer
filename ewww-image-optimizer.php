@@ -15,9 +15,7 @@ Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
 
-// TODO: git remote add origin git@github.com:nosilver4u/ewww-image-optimizer.git
-//	git push -u origin master
-// need to compile optipng & pngquant for freebsd and linux, and then everything else. and cwebp-linux 8, 864, and 664
+// TODO: make mention of wp-plugins/ewwwio repo on github
 
 
 // Constants

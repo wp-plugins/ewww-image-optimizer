@@ -2,10 +2,10 @@
 # This file is distributed under the same license as the EWWW Image Optimizer package.
 msgid ""
 msgstr ""
-"Project-Id-Version: EWWW Image Optimizer 1.7.2.9\n"
+"Project-Id-Version: EWWW Image Optimizer 2.1.0\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/ewww-image-optimizer\n"
-"POT-Creation-Date: 2014-08-20 03:50:03+00:00\n"
-"PO-Revision-Date: 2014-08-25 11:43+0200\n"
+"POT-Creation-Date: 2014-10-13 23:31:53+00:00\n"
+"PO-Revision-Date: 2014-10-15 07:35+0200\n"
 "Last-Translator: MediasInfo <redactia@mediasinfo.ro>\n"
 "Language-Team: Romanian / MediasInfo Romania <LL@li.org>\n"
 "Language: ro\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1?0:(((n%100>19)||((n%100==0)&&(n!=0)))?"
 "2:1));\n"
-"X-Generator: Poedit 1.6.8\n"
+"X-Generator: Poedit 1.6.9\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 
 #: aux-optimize.php:10
@@ -65,11 +65,11 @@ msgstr ""
 "Cea mai recentă optimizare a fost finalizată pe %1$s la %2$s, când au fost "
 "optimizate %3$d imagini"
 
-#: aux-optimize.php:47 bulk.php:58
+#: aux-optimize.php:47 bulk.php:59
 msgid "Optimize Again"
 msgstr "Repetă Optimizarea"
 
-#: aux-optimize.php:52 bulk.php:64 flag-integration.php:96
+#: aux-optimize.php:52 bulk.php:65 flag-integration.php:96
 #: nextcellent-integration.php:255 nextgen-integration.php:253
 #: nextgen2-integration.php:281
 msgid ""
@@ -79,7 +79,7 @@ msgstr ""
 "Dacă vrei să reiei operațiunea, apasă butonul Resetează Statusul, pentru a "
 "reseta starea operațiunii de import."
 
-#: aux-optimize.php:56 bulk.php:68 flag-integration.php:100
+#: aux-optimize.php:56 bulk.php:69 flag-integration.php:100
 #: nextcellent-integration.php:259 nextgen-integration.php:257
 #: nextgen2-integration.php:285
 msgid "Reset Status"
@@ -97,72 +97,81 @@ msgstr ""
 "golești acest tabel, indiferent de motiv, apasă butonul Golește Tabelul. %d "
 "imagini au fost deja optimizate."
 
-#: aux-optimize.php:69
+#: aux-optimize.php:66
+msgid ""
+"The plugin keeps track of already optimized images to prevent re-"
+"optimization. There are %d images that have been optimized so far."
+msgstr ""
+"Acest plugin urmărește imaginile care au fost deja optimizate, pentru a "
+"preveni re-optimizarea. %d imagini au fost deja optimizate."
+
+#: aux-optimize.php:70
 msgid "Empty Table"
 msgstr "Golește Tabelul"
 
-#: aux-optimize.php:72
+#: aux-optimize.php:73
 msgid "Show Optimized Images"
 msgstr "Arată Imaginile Optimizate"
 
-#: aux-optimize.php:80
+#: aux-optimize.php:81
 msgid "page"
 msgstr "pagina"
 
-#: aux-optimize.php:80
+#: aux-optimize.php:81
 msgid "of"
 msgstr "din"
 
-#: aux-optimize.php:97 aux-optimize.php:129 aux-optimize.php:378
-#: aux-optimize.php:416 aux-optimize.php:630 aux-optimize.php:652
-#: aux-optimize.php:667 bulk.php:380 bulk.php:395 bulk.php:413 bulk.php:470
-#: common.php:1228 common.php:1893 common.php:1903 flag-integration.php:250
+#: aux-optimize.php:98 aux-optimize.php:130 aux-optimize.php:384
+#: aux-optimize.php:422 aux-optimize.php:642 aux-optimize.php:664
+#: aux-optimize.php:679 bulk.php:381 bulk.php:396 bulk.php:414 bulk.php:471
+#: common.php:1230 common.php:2112 common.php:2122 flag-integration.php:250
 #: flag-integration.php:263 flag-integration.php:281 flag-integration.php:331
-#: nextcellent-integration.php:65 nextcellent-integration.php:358
-#: nextcellent-integration.php:371 nextcellent-integration.php:388
-#: nextcellent-integration.php:428 nextgen-integration.php:64
-#: nextgen-integration.php:342 nextgen-integration.php:355
-#: nextgen-integration.php:372 nextgen-integration.php:412
-#: nextgen2-integration.php:373 nextgen2-integration.php:386
-#: nextgen2-integration.php:406 nextgen2-integration.php:453
+#: mwebp.php:84 mwebp.php:102 mwebp.php:193 nextcellent-integration.php:65
+#: nextcellent-integration.php:358 nextcellent-integration.php:371
+#: nextcellent-integration.php:388 nextcellent-integration.php:428
+#: nextgen-integration.php:64 nextgen-integration.php:342
+#: nextgen-integration.php:355 nextgen-integration.php:372
+#: nextgen-integration.php:412 nextgen2-integration.php:373
+#: nextgen2-integration.php:386 nextgen2-integration.php:406
+#: nextgen2-integration.php:453
 msgid "Cheatin&#8217; eh?"
 msgstr "Trișezi :) ?"
 
-#: aux-optimize.php:248 aux-optimize.php:290 aux-optimize.php:293
+#: aux-optimize.php:254 aux-optimize.php:296 aux-optimize.php:299
 msgid "Unknown Savings"
 msgstr "Îmbunătățiri necunoscute"
 
-#: aux-optimize.php:314
+#: aux-optimize.php:320
 msgid "Finished importing"
 msgstr "Import finalizat"
 
-#: aux-optimize.php:331 common.php:1158
+#: aux-optimize.php:337 common.php:1160 common.php:1607
 msgid "Previously Optimized"
 msgstr "Optimizat anterior"
 
-#: aux-optimize.php:334 common.php:1179 common.php:1369
+#: aux-optimize.php:340 common.php:1181 common.php:1570
 msgid "No savings"
 msgstr "Nicio salvare"
 
-#: aux-optimize.php:341 common.php:1154 ewww-image-optimizer.php:1762
+#: aux-optimize.php:347 common.php:1156 ewww-image-optimizer.php:1820
 msgid "License exceeded"
 msgstr "Licență expirată"
 
-#: aux-optimize.php:386
+#: aux-optimize.php:392
 msgid "Filename"
 msgstr "Nume fișier"
 
-#: aux-optimize.php:386
+#: aux-optimize.php:392
 msgid "Image Type"
 msgstr "Tip imagine"
 
-#: aux-optimize.php:386 common.php:515 common.php:547 flag-integration.php:343
+#: aux-optimize.php:392 common.php:517 common.php:549 flag-integration.php:343
 #: nextcellent-integration.php:138 nextgen-integration.php:137
 #: nextgen2-integration.php:108 nextgen2-integration.php:111
 msgid "Image Optimizer"
 msgstr "Optimizare Imagini"
 
-#: aux-optimize.php:403 common.php:1762 common.php:1804
+#: aux-optimize.php:409 common.php:1973 common.php:2023
 #: flag-integration.php:400 flag-integration.php:407
 #: nextcellent-integration.php:194 nextcellent-integration.php:201
 #: nextgen-integration.php:193 nextgen-integration.php:200
@@ -170,15 +179,15 @@ msgstr "Optimizare Imagini"
 msgid "Image Size: %s"
 msgstr "Dimensiune imagine: %s"
 
-#: aux-optimize.php:403
+#: aux-optimize.php:409
 msgid "Remove from table"
 msgstr "Șterge din tabel"
 
-#: aux-optimize.php:614
+#: aux-optimize.php:626
 msgid "Nothing to optimize"
 msgstr "Nimic de optimizat"
 
-#: aux-optimize.php:641 aux-optimize.php:657 bulk.php:387 bulk.php:404
+#: aux-optimize.php:653 aux-optimize.php:669 bulk.php:388 bulk.php:405
 #: flag-integration.php:256 flag-integration.php:274
 #: nextcellent-integration.php:364 nextcellent-integration.php:381
 #: nextgen-integration.php:348 nextgen-integration.php:365
@@ -186,13 +195,13 @@ msgstr "Nimic de optimizat"
 msgid "Optimizing"
 msgstr "Se optimizează"
 
-#: aux-optimize.php:676 bulk.php:476 nextcellent-integration.php:102
-#: nextgen-integration.php:101
+#: aux-optimize.php:688 bulk.php:477 mwebp.php:204
+#: nextcellent-integration.php:102 nextgen-integration.php:101
 msgid "Finished"
 msgstr "Finalizat"
 
-#: bulk.php:12 common.php:449 common.php:1823 common.php:1825 common.php:1995
-#: common.php:1997 flag-integration.php:27 flag-integration.php:32
+#: bulk.php:13 common.php:450 common.php:2042 common.php:2044 common.php:2223
+#: common.php:2225 flag-integration.php:27 flag-integration.php:32
 #: flag-integration.php:37 flag-integration.php:64
 #: nextcellent-integration.php:27 nextcellent-integration.php:231
 #: nextgen-integration.php:26 nextgen-integration.php:229
@@ -200,25 +209,25 @@ msgstr "Finalizat"
 msgid "Bulk Optimize"
 msgstr "Optimizare Bulk"
 
-#: bulk.php:16 flag-integration.php:69 nextcellent-integration.php:236
+#: bulk.php:17 flag-integration.php:69 nextcellent-integration.php:236
 #: nextgen-integration.php:234 nextgen2-integration.php:255
 msgid "Start optimizing"
 msgstr "Pornește optimizarea"
 
-#: bulk.php:18 flag-integration.php:71 nextcellent-integration.php:238
+#: bulk.php:19 flag-integration.php:71 nextcellent-integration.php:238
 #: nextgen-integration.php:236 nextgen2-integration.php:257
 msgid "Resume previous bulk operation"
 msgstr "Reia operațiunea anterioară de optimizare bulk"
 
-#: bulk.php:24
+#: bulk.php:25
 msgid "Importing"
 msgstr "Se importă"
 
-#: bulk.php:29 flag-integration.php:78 nextgen2-integration.php:264
+#: bulk.php:30 flag-integration.php:78 nextgen2-integration.php:264
 msgid "Stop Optimizing"
 msgstr "Oprește optimizarea"
 
-#: bulk.php:33
+#: bulk.php:34
 msgid ""
 "You should import Media Library images into the table to prevent duplicate "
 "optimization."
@@ -226,29 +235,29 @@ msgstr ""
 "Este necesar să imporți imaginile din Librăria Media în tabel, pentru a "
 "preveni duplicarea."
 
-#: bulk.php:35
+#: bulk.php:36
 msgid "Import Images"
 msgstr "Importă Imagini"
 
-#: bulk.php:41
-msgid "Force re-optimize for Media Library"
-msgstr "Forțează reoptimizarea Bibliotecii Media"
+#: bulk.php:42 flag-integration.php:82 nextgen2-integration.php:268
+msgid "Force re-optimize"
+msgstr "Forțează reoptimizarea"
 
-#: bulk.php:42 common.php:2167 flag-integration.php:83
+#: bulk.php:43 common.php:2444 flag-integration.php:83
 #: nextgen2-integration.php:269
 msgid "Choose how long to pause between images (in seconds, 0 = disabled)"
 msgstr "Alege perioada de pauză între imagini (în secunde, 0 = dezactivat)"
 
-#: bulk.php:45
+#: bulk.php:46
 msgid "Optimize Media Library"
 msgstr "Optimizează Biblioteca Media"
 
-#: bulk.php:47 flag-integration.php:59 nextcellent-integration.php:226
+#: bulk.php:48 flag-integration.php:59 nextcellent-integration.php:226
 #: nextgen-integration.php:224 nextgen2-integration.php:244
 msgid "You do not appear to have uploaded any images yet."
 msgstr "Se pare că nu ai încărcat nicio imagine."
 
-#: bulk.php:51
+#: bulk.php:52
 msgid ""
 "%1$d images in the Media Library have been selected, unable to determine how "
 "many resizes and how many are unoptimized."
@@ -256,7 +265,7 @@ msgstr ""
 "Ai selectat %1$d imagini din Biblioteca Media, nu se poate determina câte "
 "din aceste imagini sunt redimensionate și câte sunt neoptimizate."
 
-#: bulk.php:53
+#: bulk.php:54
 msgid ""
 "%1$d images in the Media Library have been selected (%2$d unoptimized), with "
 "%3$d resizes (%4$d unoptimized)."
@@ -264,126 +273,130 @@ msgstr ""
 "Ai selectat %1$d imagini din Biblioteca Media (%2$d neoptimizate), cu %3$d "
 "redimensionări (%4$d neoptimizate)."
 
-#: bulk.php:55 flag-integration.php:88 nextcellent-integration.php:247
+#: bulk.php:56 flag-integration.php:88 nextcellent-integration.php:247
 #: nextgen-integration.php:245 nextgen2-integration.php:274
 msgid "Previously optimized images will be skipped by default."
 msgstr "Imaginile optimizate anterior vor fi omise automat."
 
-#: bulk.php:431 common.php:1252 flag-integration.php:298
+#: bulk.php:432 common.php:1254 flag-integration.php:298
 #: nextcellent-integration.php:404 nextgen-integration.php:388
 #: nextgen2-integration.php:422
 msgid "Optimized image:"
 msgstr "Imagine optimizată:"
 
-#: bulk.php:433
+#: bulk.php:434
 msgid "Skipped image, ID:"
 msgstr "Imagine omisă, ID:"
 
-#: bulk.php:437 flag-integration.php:299
+#: bulk.php:438 flag-integration.php:299
 msgid "Full size – %s"
 msgstr "Dimensiune integrală - %s"
 
-#: bulk.php:450 common.php:1258 flag-integration.php:317
+#: bulk.php:451 common.php:1260 flag-integration.php:317
 #: nextcellent-integration.php:96 nextcellent-integration.php:414
 #: nextgen-integration.php:95 nextgen-integration.php:398
 #: nextgen2-integration.php:439
 msgid "Elapsed: %.3f seconds"
 msgstr "Au trecut: %.3f secunde"
 
-#: bulk.php:476
+#: bulk.php:477
 msgid "Return to Media Library"
 msgstr "Înapoi la Librăria Media"
 
-#: common.php:366
+#: common.php:365
 msgid "Settings saved"
 msgstr "Setări salvate"
 
-#: common.php:464
+#: common.php:451 mwebp.php:5
+msgid "Migrate WebP Images"
+msgstr "Migrează imaginile WebP"
+
+#: common.php:466
 msgid "Image Store Optimize"
 msgstr "Optimizează Imaginile Magazinului"
 
-#: common.php:464
+#: common.php:466
 msgid "Optimize"
 msgstr "Optimizează"
 
-#: common.php:504
+#: common.php:506
 msgid "Image Store Optimization"
 msgstr "Optimizare Imagini Magazin"
 
-#: common.php:514
+#: common.php:516
 msgid "Choose a gallery or"
 msgstr "Alege o galerie sau"
 
-#: common.php:514
+#: common.php:516
 msgid "optimize all galleries"
 msgstr "optimizează toate galeriile"
 
-#: common.php:515
+#: common.php:517
 msgid "Gallery ID"
 msgstr "ID Galerie"
 
-#: common.php:515
+#: common.php:517
 msgid "Gallery Name"
 msgstr "Nume Galerie"
 
-#: common.php:515
+#: common.php:517
 msgid "Images"
 msgstr "Imagini"
 
-#: common.php:531 common.php:546
+#: common.php:533 common.php:548
 msgid "Optimize Gallery"
 msgstr "Optimizează Galerie"
 
-#: common.php:547
+#: common.php:549
 msgid "Title"
 msgstr "Titlu"
 
-#: common.php:547 nextcellent-integration.php:11 nextgen-integration.php:10
+#: common.php:549 nextcellent-integration.php:11 nextgen-integration.php:10
 #: nextgen-integration.php:269 nextgen2-integration.php:12
 #: nextgen2-integration.php:300
 msgid "Gallery"
 msgstr "Galerie"
 
-#: common.php:603
+#: common.php:605
 msgid "Settings"
 msgstr "Setări"
 
-#: common.php:725 flag-integration.php:211 nextcellent-integration.php:109
+#: common.php:727 flag-integration.php:211 nextcellent-integration.php:109
 #: nextgen-integration.php:108 nextgen2-integration.php:76
 msgid "You don't have permission to work with uploaded files."
 msgstr "Nu ai drepturile necesare pentru a administra fișierele încărcate."
 
-#: common.php:730 flag-integration.php:215 nextcellent-integration.php:113
+#: common.php:732 flag-integration.php:215 nextcellent-integration.php:113
 #: nextgen-integration.php:112 nextgen2-integration.php:80
 msgid "No attachment ID was provided."
 msgstr "Nu există ID pentru acest fișier."
 
-#: common.php:769 common.php:802
+#: common.php:771 common.php:804
 msgid "Original Restored"
 msgstr "S-a restaurat originalul"
 
-#: common.php:993
+#: common.php:995
 msgid "used %1$d of %2$d, usage will reset in %3$d day."
 msgid_plural "used %1$d of %2$d, usage will reset in %3$d days."
 msgstr[0] "%1$d din %2$d utilizate. Rata de utilizare se resetează în %3$d zi."
 msgstr[1] "%1$d din %2$d utilizate. Datele se resetează în %3$d zile."
 msgstr[2] "%1$d din %2$d utilizate. Datele se resetează în %3$d zile."
 
-#: common.php:1191
+#: common.php:1193
 msgid "Reduced by %01.1f%% (%s)"
 msgstr "Redus cu %01.1f%% (%s)"
 
-#: common.php:1692
+#: common.php:1903
 msgid "Cloudinary image"
 msgstr "Imagine din Cloudinary"
 
-#: common.php:1708
+#: common.php:1919
 msgid "Could not retrieve file path."
 msgstr "Nu se poate prelua URL-ul fișierului."
 
-#: common.php:1723 common.php:1734 common.php:1745
-#: ewww-image-optimizer.php:1179 ewww-image-optimizer.php:1429
-#: ewww-image-optimizer.php:1433 ewww-image-optimizer.php:1658
+#: common.php:1934 common.php:1945 common.php:1956
+#: ewww-image-optimizer.php:1237 ewww-image-optimizer.php:1487
+#: ewww-image-optimizer.php:1491 ewww-image-optimizer.php:1716
 #: flag-integration.php:374 flag-integration.php:380 flag-integration.php:386
 #: nextcellent-integration.php:173 nextcellent-integration.php:180
 #: nextgen-integration.php:172 nextgen-integration.php:179
@@ -392,11 +405,11 @@ msgstr "Nu se poate prelua URL-ul fișierului."
 msgid "%s is missing"
 msgstr "lipsește %s"
 
-#: common.php:1725
+#: common.php:1936
 msgid "JPG to PNG"
 msgstr "JPG în PNG"
 
-#: common.php:1727
+#: common.php:1938
 msgid ""
 "WARNING: Removes metadata. Requires GD or ImageMagick. PNG is generally much "
 "better than JPG for logos and other images with a limited range of colors."
@@ -405,11 +418,11 @@ msgstr ""
 "general un format mai bun decât JPG pentru logo-uri și alte imagini cu o "
 "gamă restrânsă de culori."
 
-#: common.php:1736
+#: common.php:1947
 msgid "PNG to JPG"
 msgstr "PNG în JPG"
 
-#: common.php:1738
+#: common.php:1949
 msgid ""
 "WARNING: This is not a lossless conversion and requires GD or ImageMagick. "
 "JPG is much better than PNG for photographic use because it compresses the "
@@ -422,11 +435,11 @@ msgstr ""
 "Imaginile transparente vor fi convertite numai dacă se definește culoarea de "
 "fundal. "
 
-#: common.php:1747
+#: common.php:1958
 msgid "GIF to PNG"
 msgstr "GIF în PNG"
 
-#: common.php:1749
+#: common.php:1960
 msgid ""
 "PNG is generally better than GIF, but does not support animation. Animated "
 "images will not be converted."
@@ -434,39 +447,39 @@ msgstr ""
 "PNG este, în general, un format mai bun decât GIF, dar nu suportă animații. "
 "Imaginile animate nu vor fi convertite."
 
-#: common.php:1754 flag-integration.php:394 nextcellent-integration.php:188
+#: common.php:1965 flag-integration.php:394 nextcellent-integration.php:188
 #: nextgen-integration.php:187 nextgen2-integration.php:173
 msgid "Unsupported file type"
 msgstr "Tip de fișier nesuportat"
 
-#: common.php:1766 flag-integration.php:403 nextcellent-integration.php:197
+#: common.php:1977 flag-integration.php:403 nextcellent-integration.php:197
 #: nextgen-integration.php:196 nextgen2-integration.php:212
 msgid "Re-optimize"
 msgstr "Re-optimizează"
 
-#: common.php:1789
+#: common.php:2000
 msgid "Restore original"
 msgstr "Înlocuiește cu fișierul original"
 
-#: common.php:1802 flag-integration.php:406 nextcellent-integration.php:200
+#: common.php:2021 flag-integration.php:406 nextcellent-integration.php:200
 #: nextgen-integration.php:199 nextgen2-integration.php:186
 msgid "Not processed"
 msgstr "Nu a fost procesat"
 
-#: common.php:1808 flag-integration.php:410 nextcellent-integration.php:204
+#: common.php:2027 flag-integration.php:410 nextcellent-integration.php:204
 #: nextgen-integration.php:203 nextgen2-integration.php:216
 msgid "Optimize now!"
 msgstr "Optimizează acum!"
 
-#: common.php:1924
+#: common.php:2143
 msgid "Insertion successful"
 msgstr "Inserare reușită"
 
-#: common.php:1926
+#: common.php:2145
 msgid "Insertion failed"
 msgstr "Inserare eșuată"
 
-#: common.php:1959
+#: common.php:2182
 msgid ""
 "Pngout was successfully installed, check the Plugin Status area for version "
 "information."
@@ -474,49 +487,33 @@ msgstr ""
 "Am instalat cu succes Pngout, vezi informațiile despre versiune în secțiunea "
 "Status Plugin"
 
-#: common.php:1964
+#: common.php:2187
 msgid "Pngout was not installed: %1$s. Make sure this folder is writable: %2$s"
 msgstr ""
 "Pngout nu a fost instalat: %1$s. Asigură-te că există drepturi de scriere "
 "pentru directorul: %2$s"
 
-#: common.php:1981
-msgid "Cloud Settings"
-msgstr "Setări Cloud"
-
-#: common.php:1982
-msgid "Basic Settings"
-msgstr "Setări de bază"
-
-#: common.php:1983
-msgid "Advanced Settings"
-msgstr "Setări Avansate"
-
-#: common.php:1984
-msgid "Conversion Settings"
-msgstr "Setări pentru Conversie"
-
-#: common.php:1990
+#: common.php:2218
 msgid "Plugin Home Page"
 msgstr "Pagina Pluginului"
 
-#: common.php:1991 ewww-image-optimizer.php:370 ewww-image-optimizer.php:478
+#: common.php:2219 ewww-image-optimizer.php:372 ewww-image-optimizer.php:480
 msgid "Installation Instructions"
 msgstr "Instrucțiuni Instalare"
 
-#: common.php:1992
+#: common.php:2220
 msgid "Plugin Support"
 msgstr "Suport Plugin"
 
-#: common.php:1993
+#: common.php:2221
 msgid "Cloud Status"
 msgstr "Status Cloud"
 
-#: common.php:1995
+#: common.php:2223
 msgid "Media Library"
 msgstr "Biblioteca Media"
 
-#: common.php:1999
+#: common.php:2227
 msgid ""
 "New images uploaded to the Media Library will be optimized automatically. If "
 "you have existing images you would like to optimize, you can use the %s tool."
@@ -524,31 +521,47 @@ msgstr ""
 "Imaginile nou încărcate în Biblioteca Media vor fi optimizate automat. Dacă "
 "sunt imagini mai vechi pe care vrei să le optimizezi, folosește funcția %s."
 
-#: common.php:2001
+#: common.php:2229
 msgid "Plugin Status"
 msgstr "Status Plugin"
 
-#: common.php:2002
+#: common.php:2230
+msgid "All Clear"
+msgstr "Totul e în regulă"
+
+#: common.php:2231
+msgid "Requires Attention"
+msgstr "Necesită atenție"
+
+#: common.php:2233
 msgid "Total Savings:"
 msgstr "Salvări totale:"
 
-#: common.php:2002
+#: common.php:2233
 msgid "Calculating..."
 msgstr "Se calculează..."
 
-#: common.php:2004 common.php:2151
+#: common.php:2235 common.php:2428
 msgid "Cloud optimization API Key"
 msgstr "Cheie API pentru optimizare în Cloud"
 
-#: common.php:2007 common.php:2009
+#: common.php:2238 common.php:2240
 msgid "Verified,"
 msgstr "Verificat,"
 
-#: common.php:2011
+#: common.php:2242
 msgid "Not Verified"
 msgstr "Neverificat"
 
-#: common.php:2016
+#: common.php:2248
+msgid "Expand"
+msgstr "Extinde"
+
+#: common.php:2249
+msgid "Collapse"
+msgstr "Restrânge"
+
+#: common.php:2253
 msgid ""
 "If updated versions are available below you may either download the newer "
 "versions and install them yourself, or uncheck \"Use System Paths\" and use "
@@ -558,7 +571,7 @@ msgstr ""
 "instalezi chiar tu. În caz contract, debifează  \"Folosește Căile de Sistem"
 "\" și utilizează uneltele predefinite."
 
-#: common.php:2017 common.php:2020
+#: common.php:2254 common.php:2257
 msgid ""
 "Updates are optional, but may contain increased optimization or security "
 "patches"
@@ -566,7 +579,7 @@ msgstr ""
 "Actualizările sunt opționale, dar pot conține mai multe optimizări sau "
 "corecții de securitate."
 
-#: common.php:2019
+#: common.php:2256
 msgid ""
 "If updated versions are available below, you may need to enable write "
 "permission on the %s folder to use the automatic installs."
@@ -574,36 +587,36 @@ msgstr ""
 "Dacă există versiuni mai noi, ar putea fi nevoie să acorzi drepturi de "
 "scriere pe directorul %s pentru a putea folosi instalările automate."
 
-#: common.php:2030 common.php:2039 common.php:2048 common.php:2057
-#: common.php:2066 common.php:2075 common.php:2095 common.php:2102
-#: common.php:2112 common.php:2118 common.php:2123
+#: common.php:2267 common.php:2277 common.php:2287 common.php:2297
+#: common.php:2307 common.php:2317 common.php:2341 common.php:2349
+#: common.php:2363 common.php:2369 common.php:2377
 msgid "Installed"
 msgstr "Instalat"
 
-#: common.php:2030 common.php:2039 common.php:2048 common.php:2057
-#: common.php:2066 common.php:2075
+#: common.php:2267 common.php:2277 common.php:2287 common.php:2297
+#: common.php:2307 common.php:2317
 msgid "version"
 msgstr "versiunea"
 
-#: common.php:2032 common.php:2041 common.php:2050 common.php:2059
-#: common.php:2068 common.php:2077 common.php:2097 common.php:2104
-#: common.php:2115 common.php:2120 common.php:2126
+#: common.php:2269 common.php:2279 common.php:2289 common.php:2299
+#: common.php:2309 common.php:2319 common.php:2344 common.php:2352
+#: common.php:2366 common.php:2374 common.php:2380
 msgid "Missing"
 msgstr "Lipsește"
 
-#: common.php:2059
+#: common.php:2299
 msgid "Install"
 msgstr "Instalează"
 
-#: common.php:2059
+#: common.php:2299
 msgid "automatically"
 msgstr "automat"
 
-#: common.php:2059
+#: common.php:2299
 msgid "manually"
 msgstr "manual"
 
-#: common.php:2059
+#: common.php:2299
 msgid ""
 "Pngout is free closed-source software that can produce drastically reduced "
 "filesizes for PNGs, but can be very time consuming to process images"
@@ -612,49 +625,65 @@ msgstr ""
 "diminuarea drastică a dimensiunii fișierelor PNG, însă optimizarea poate "
 "dura foarte mult. "
 
-#: common.php:2082
+#: common.php:2325
 msgid "On"
 msgstr "Pornit"
 
-#: common.php:2084
+#: common.php:2328
 msgid "Off"
 msgstr "Oprit"
 
-#: common.php:2087
+#: common.php:2331
 msgid "Disabled"
 msgstr "Dezactivat"
 
-#: common.php:2089
+#: common.php:2334
 msgid "Enabled"
 msgstr "Activat"
 
-#: common.php:2092
+#: common.php:2337
 msgid "%s only need one, used for conversion, not optimization"
 msgstr ""
 "%s au nevoie doar de una dintre ele, pentru conversie, nu și pentru "
 "optimizare: "
 
-#: common.php:2092
+#: common.php:2337
 msgid "Graphics libraries"
 msgstr "Librării grafice"
 
-#: common.php:2108
+#: common.php:2359
 msgid "Only need one of these:"
 msgstr "Doar una dintre cele de mai jos:"
 
-#: common.php:2130 common.php:2133 common.php:2136
+#: common.php:2384 common.php:2388 common.php:2391
 msgid "command not found on your system"
 msgstr "comanda nu a fost găsită în sistemul tău"
 
-#: common.php:2133
+#: common.php:2388
 msgid "not required"
 msgstr "nu este obligatoriu"
 
-#: common.php:2136
+#: common.php:2391
 msgid "required for automatic pngout installer"
 msgstr "obligatoriu pentru instalarea automată a pngout"
 
-#: common.php:2149
+#: common.php:2412
+msgid "Cloud Settings"
+msgstr "Setări Cloud"
+
+#: common.php:2413
+msgid "Basic Settings"
+msgstr "Setări de bază"
+
+#: common.php:2414
+msgid "Advanced Settings"
+msgstr "Setări Avansate"
+
+#: common.php:2415
+msgid "Conversion Settings"
+msgstr "Setări pentru Conversie"
+
+#: common.php:2426
 msgid ""
 "If exec() is disabled for security reasons (and enabling it is not an "
 "option), or you would like to offload image optimization to a third-party "
@@ -668,45 +697,45 @@ msgstr ""
 "cloud. Cheia API se introduce mai jos, iar optimizarea în cloud se activează "
 "pentru fiecare format de imagine, individual."
 
-#: common.php:2149
+#: common.php:2426
 msgid "Purchase an API key."
 msgstr "Obține o cheie API."
 
-#: common.php:2151
+#: common.php:2428
 msgid "API Key will be validated when you save your settings."
 msgstr "Cheia API va fi validată atunci când salvezi setările."
 
-#: common.php:2151
+#: common.php:2428
 msgid "Purchase a key."
 msgstr "Obține o cheie"
 
-#: common.php:2153
+#: common.php:2430
 msgid "JPG cloud optimization"
 msgstr "Optimizare JPG în cloud"
 
-#: common.php:2153
+#: common.php:2430
 msgid "Use the Basic Settings tab to enable lossy compression with JPEGmini."
 msgstr ""
 "Folosește tabul Setări Optimizare pentru a activa compresia cu pierderi de "
 "calitate cu JPEGmini"
 
-#: common.php:2154
+#: common.php:2431
 msgid "PNG cloud optimization"
 msgstr "Optimizare PNG în cloud"
 
-#: common.php:2155
-msgid "extra compression (slower)"
-msgstr "compresie suplimentară (încet)"
+#: common.php:2432
+msgid "extra PNG compression (slower)"
+msgstr "compresie suplimentară PNG (încet)"
 
-#: common.php:2156
+#: common.php:2433
 msgid "GIF cloud optimization"
 msgstr "Optimizare GIF în cloud"
 
-#: common.php:2161
+#: common.php:2438
 msgid "Debugging"
 msgstr "Debugging"
 
-#: common.php:2161
+#: common.php:2438
 msgid ""
 "Use this to provide information for support purposes, or if you feel "
 "comfortable digging around in the code to fix a problem you are experiencing."
@@ -714,24 +743,24 @@ msgstr ""
 "Activează dacă vrei să trimiți informații pentru suport sau dacă ești "
 "obișnuit să verifici coduri și să repari problemele pe care le-ai găsit. "
 
-#: common.php:2162
+#: common.php:2439
 msgid "Remove metadata"
 msgstr "Șterge metadatele"
 
-#: common.php:2163
+#: common.php:2440
 msgid "This will remove ALL metadata: EXIF and comments."
 msgstr "TOATE datele meta vor fi șterse: EXIF și comentariile."
 
-#: common.php:2164
+#: common.php:2441
 msgid "Lossy JPG optimization"
 msgstr "Optimizare JPG cu scăderea calității"
 
-#: common.php:2164 common.php:2166 common.php:2213 common.php:2215
-#: common.php:2217
+#: common.php:2441 common.php:2443 common.php:2491 common.php:2493
+#: common.php:2495
 msgid "WARNING:"
 msgstr "AVERTISMENT:"
 
-#: common.php:2164 common.php:2166
+#: common.php:2441 common.php:2443
 msgid ""
 "While most users will not notice a difference in image quality, lossy means "
 "there IS a loss in image quality."
@@ -739,24 +768,28 @@ msgstr ""
 "Deși majoritatea utilizatorilor nu vor observa o diferență de calitate, "
 "modul - calitate redusă - înseamnă chiar CALITATE REDUSĂ. "
 
-#: common.php:2165
+#: common.php:2442
 msgid "Uses JPEGmini, and requires an EWWW Image Optimizer Cloud Subscription."
 msgstr ""
 "Utilizează JPEGmini și necesită un cont activ în EWWW Image Optimizer Cloud."
 
-#: common.php:2166
+#: common.php:2442
+msgid "CMYK images cannot be processed by JPEGmini"
+msgstr "Imaginile CMYK nu pot fi procesate de JPEGmini"
+
+#: common.php:2443
 msgid "Lossy PNG optimization"
 msgstr "Optimizare PNG cu scăderea calității"
 
-#: common.php:2167
+#: common.php:2444
 msgid "Bulk Delay"
 msgstr "Pauză Optimizare grup"
 
-#: common.php:2169
+#: common.php:2446
 msgid "Automatic Cloudinary upload"
 msgstr "Încarcă automat în Cloudinary"
 
-#: common.php:2169
+#: common.php:2446
 msgid ""
 "When enabled, uploads to the Media Library will be transferred to Cloudinary "
 "after optimization. Cloudinary generates resizes, so only the full-size "
@@ -767,30 +800,30 @@ msgstr ""
 "redimensionate ale imaginii, așa că nu se va transfera decât fișierul "
 "original în format integral."
 
-#: common.php:2174
+#: common.php:2451
 msgid "optipng optimization level"
 msgstr "nivel de optimizare optipng"
 
-#: common.php:2176 common.php:2177 common.php:2178 common.php:2179
-#: common.php:2180 common.php:2181 common.php:2182 common.php:2187
-#: common.php:2188 common.php:2189 common.php:2190
+#: common.php:2453 common.php:2454 common.php:2455 common.php:2456
+#: common.php:2457 common.php:2458 common.php:2459 common.php:2464
+#: common.php:2465 common.php:2466 common.php:2467
 msgid "Level %d"
 msgstr "Nivel %d"
 
-#: common.php:2176
+#: common.php:2453
 msgid "%d trial"
 msgstr "%d încercare"
 
-#: common.php:2177 common.php:2178 common.php:2179 common.php:2180
-#: common.php:2181 common.php:2182
+#: common.php:2454 common.php:2455 common.php:2456 common.php:2457
+#: common.php:2458 common.php:2459
 msgid "%d trials"
 msgstr "%d încercări"
 
-#: common.php:2183 common.php:2191
+#: common.php:2460 common.php:2468
 msgid "default"
 msgstr "implicit"
 
-#: common.php:2184
+#: common.php:2461
 msgid ""
 "According to the author of optipng, 10 trials should satisfy most people, 30 "
 "trials should satisfy everyone."
@@ -798,35 +831,35 @@ msgstr ""
 "Potrivit autorului optipng, 10 încercări vor mulțumi majoritatea "
 "utilizatorilor, 30 de încercări îi vor mulțumi pe toți. "
 
-#: common.php:2185
+#: common.php:2462
 msgid "pngout optimization level"
 msgstr "nivel de optimizare pnout"
 
-#: common.php:2187
+#: common.php:2464
 msgid "Xtreme! (Slowest)"
 msgstr "Xtreme! (Cel mai încet)"
 
-#: common.php:2188
+#: common.php:2465
 msgid "Intense (Slow)"
 msgstr "Intens (Încet)"
 
-#: common.php:2189
+#: common.php:2466
 msgid "Longest Match (Fast)"
 msgstr "Cea mai bună potrivire (Rapid)"
 
-#: common.php:2190
+#: common.php:2467
 msgid "Huffman Only (Faster)"
 msgstr "Doar Huffman (Mai rapid)"
 
-#: common.php:2192
+#: common.php:2469
 msgid "If you have CPU cycles to spare, go with level %d"
 msgstr "Dacă ai CPU de rezervă, alege nivelul %d"
 
-#: common.php:2193
+#: common.php:2470
 msgid "Scheduled optimization"
 msgstr "Optimizare programată"
 
-#: common.php:2193
+#: common.php:2470
 msgid ""
 "This will enable scheduled optimization of unoptimized images for your "
 "theme, buddypress, and any additional folders you have configured below. "
@@ -838,18 +871,18 @@ msgstr ""
 "Rulează în fiecare oră: wp_cron rulează doar atunci când site-ul este "
 "vizitat, deci este posibil să dureze mai multe între optimizări."
 
-#: common.php:2194
+#: common.php:2471
 msgid "Folders to optimize"
 msgstr "Directoare de optimizat"
 
-#: common.php:2194
+#: common.php:2471
 msgid ""
 "One path per line, must be within %s. Use full paths, not relative paths."
 msgstr ""
 "Introdu o singură cale de sistem pe linie, încadrată de %s. Scrie toată "
 "calea de sistem, nu folosi căi relative. "
 
-#: common.php:2197
+#: common.php:2474
 msgid ""
 "Please submit a support request in the forums to have folders created by a "
 "particular plugin auto-included in the future."
@@ -857,24 +890,32 @@ msgstr ""
 "Adaugă o cerere de suport în forum dacă vrei ca și folderele create de un "
 "anumit plugin să fie incluse automat pe viitor."
 
-#: common.php:2198
-msgid "Skip Images"
-msgstr "Omite Imagini"
+#: common.php:2475
+msgid "Skip Small Images"
+msgstr "Omite imaginile mici"
 
-#: common.php:2198
+#: common.php:2475
 msgid "Do not optimize images smaller than this (in bytes)"
 msgstr "Nu optimiza imagini cu dimensiunea mai mică de (în bytes)"
 
-#: common.php:2199
+#: common.php:2476
+msgid "Skip Large PNG Images"
+msgstr "Omite Imaginile PNG Mari"
+
+#: common.php:2476
+msgid "Do not optimize PNG images larger than this (in bytes)"
+msgstr "Nu optimiza imagini PNG cu dimensiunea mai mare de (în bytes)"
+
+#: common.php:2477
 msgid "Exclude full-size images from lossy optimization"
 msgstr ""
 "Exclude imaginile integrale din procesul de optimizare cu scăderea calității"
 
-#: common.php:2200 ewww-image-optimizer.php:370
+#: common.php:2478 ewww-image-optimizer.php:372
 msgid "Use System Paths"
 msgstr "Folosește URL-urile de Sistem"
 
-#: common.php:2200
+#: common.php:2478
 msgid ""
 "If you have already installed the utilities in a system location, such as %s "
 "or %s, use this to force the plugin to use those versions and skip the auto-"
@@ -884,11 +925,11 @@ msgstr ""
 "folosește această funcție pentru a forța pluginul să utilizele acele "
 "versiuni și să sară peste fișierele de auto-install."
 
-#: common.php:2201 common.php:2202 common.php:2203 common.php:2204
+#: common.php:2479 common.php:2480 common.php:2481 common.php:2482
 msgid "disable"
 msgstr "dezactivează"
 
-#: common.php:2207
+#: common.php:2485
 msgid ""
 "Conversion is only available for images in the Media Library (except WebP). "
 "By default, all images have a link available in the Media Library for one-"
@@ -901,11 +942,11 @@ msgstr ""
 "atunci filtrele de conversie vor fi active ori de câte ori încarci sau "
 "modifici o imagine."
 
-#: common.php:2208
+#: common.php:2486
 msgid "NOTE:"
 msgstr "NOTĂ:"
 
-#: common.php:2208
+#: common.php:2486
 msgid ""
 "The plugin will attempt to update image locations for any posts that contain "
 "the images. You may still need to manually update locations/urls for "
@@ -915,11 +956,11 @@ msgstr ""
 "articol care conține imagini. Este posibil să fie nevoie să actualizezi și "
 "manual URL-urile imaginilor convertite."
 
-#: common.php:2211
+#: common.php:2489
 msgid "Hide Conversion Links"
 msgstr "Ascunde Linkurile de Conversie"
 
-#: common.php:2211
+#: common.php:2489
 msgid ""
 "Site or Network admins can use this to prevent other users from using the "
 "conversion links in the Media Library which bypass the settings below."
@@ -928,21 +969,21 @@ msgstr ""
 "a interzice altor utilizator să folosească linkurile de conversie din "
 "Librăria Media, suprascriind astfel setările de mai jos. "
 
-#: common.php:2212
+#: common.php:2490
 msgid "Delete originals"
 msgstr "Șterge imaginile originale"
 
-#: common.php:2212
+#: common.php:2490
 msgid ""
 "This will remove the original image from the server after a successful "
 "conversion."
 msgstr "Șterge definitiv imaginea de pe server după o conversie reușită."
 
-#: common.php:2213
+#: common.php:2491
 msgid "JPG/PNG to WebP"
 msgstr "JPG/PNG în WebP"
 
-#: common.php:2213
+#: common.php:2491
 msgid ""
 "JPG to WebP conversion is lossy, but quality loss is minimal. PNG to WebP "
 "conversion is lossless."
@@ -950,7 +991,7 @@ msgstr ""
 "Conversia JPG în WebP duce la o minimă scădere a calității. Conversia PNG în "
 "WebP nu influențează calitatea imaginilor. "
 
-#: common.php:2214
+#: common.php:2492
 msgid ""
 "Originals are never deleted, and WebP images should only be served to "
 "supported browsers."
@@ -958,22 +999,22 @@ msgstr ""
 "Fișierele originale nu sunt șterse niciodata, iar imaginile WebP vor fi "
 "afișate numai în browserele care suportă acest tip de fișier."
 
-#: common.php:2214
+#: common.php:2492
 msgid "You can use the rewrite rules below to serve WebP images with Apache."
 msgstr ""
 "Poți folosi regulile de mai jos pentru a afișa imagini WebP din Apache."
 
-#: common.php:2215 common.php:2217 common.php:2223
+#: common.php:2493 common.php:2495 common.php:2501
 msgid "enable %s to %s conversion"
 msgstr "activează conversia din %s în %s"
 
-#: common.php:2215
+#: common.php:2493
 msgid "Removes metadata and increases cpu usage dramatically."
 msgstr ""
 "Înlătură metadatele din fișiere și crește foarte mult utilizarea resurselor "
 "(CPU)."
 
-#: common.php:2216
+#: common.php:2494
 msgid ""
 "PNG is generally much better than JPG for logos and other images with a "
 "limited range of colors. Checking this option will slow down JPG processing "
@@ -984,11 +1025,11 @@ msgstr ""
 "considerabil procesarea imaginilor JPG. Activarea opțiunii poate fi făcută "
 "temporar, de exemplu. "
 
-#: common.php:2217
+#: common.php:2495
 msgid "This is not a lossless conversion."
 msgstr "Această conversie nu va duce la pierderea calității imaginilor. "
 
-#: common.php:2218
+#: common.php:2496
 msgid ""
 "JPG is generally much better than PNG for photographic use because it "
 "compresses the image and discards data. PNGs with transparency are not "
@@ -998,15 +1039,15 @@ msgstr ""
 "fiincă elimină informațiile suplimentare și comprimă imaginea. PNG-urile "
 "transparente nu se optimizează."
 
-#: common.php:2219
+#: common.php:2497
 msgid "JPG background color:"
 msgstr "Culoare fundal JPG:"
 
-#: common.php:2219
+#: common.php:2497
 msgid "HEX format (#123def)"
 msgstr "Format HEX (#123def)"
 
-#: common.php:2220
+#: common.php:2498
 msgid ""
 "Background color is used only if the PNG has transparency. Leave this value "
 "blank to skip PNGs with transparency."
@@ -1014,15 +1055,15 @@ msgstr ""
 "Culoare de fundal este folosită numai dacă PNG-ul este transparent. Nu "
 "completa această valoare dacă vrei să nu optimizezi PNG-urile transparente. "
 
-#: common.php:2221
+#: common.php:2499
 msgid "JPG quality level:"
 msgstr "Calitate JPG:"
 
-#: common.php:2221
+#: common.php:2499
 msgid "Valid values are 1-100."
 msgstr "Valori valide, între 1 și 100."
 
-#: common.php:2222
+#: common.php:2500
 msgid ""
 "If JPG quality is blank, the plugin will attempt to set the optimal quality "
 "level or default to 92. Remember, this is a lossy conversion, so you are "
@@ -1034,22 +1075,22 @@ msgstr ""
 "calitatea imaginilor și nu este recomandat să setezi această calitate decât "
 "dacă vrei așa ceva în mod expres. "
 
-#: common.php:2223
+#: common.php:2501
 msgid "No warnings here, just do it."
 msgstr "Niciun avertisment aici, poți porni procesul."
 
-#: common.php:2224
+#: common.php:2502
 msgid ""
 "PNG is generally better than GIF, but animated images cannot be converted."
 msgstr ""
 "PNG este, de obicei, un format mai bun, dar imaginile animate nu pot fi "
 "convertite în acest format."
 
-#: common.php:2226
+#: common.php:2504
 msgid "Save Changes"
 msgstr "Salvează modificările"
 
-#: common.php:2230
+#: common.php:2508
 msgid ""
 "There are many ways to serve WebP images to visitors with supported "
 "browsers. You may choose any you wish, but it is recommended to serve them "
@@ -1063,11 +1104,11 @@ msgstr ""
 "insera regulile automat dacă fișierul .htaccess poate fi scris sau poți "
 "introduce regulile manual, direct în fișierul .htaccess."
 
-#: common.php:2233
+#: common.php:2511
 msgid "Rules verified successfully"
 msgstr "Regulile au fost verificate cu succes."
 
-#: common.php:2248
+#: common.php:2526
 msgid ""
 "The image to the right will display a WebP image with WEBP in white text, if "
 "your site is serving WebP images and your browser supports WebP."
@@ -1076,33 +1117,33 @@ msgstr ""
 "alb, dacă site-ul tău poate să afișeze acest tip de imagine și dacă și "
 "browser-ul tău suportă formatul WebP."
 
-#: common.php:2249
+#: common.php:2527
 msgid "Insert Rewrite Rules"
 msgstr "Inserează Regulile de Rewrite"
 
-#: ewww-image-optimizer.php:118
+#: ewww-image-optimizer.php:120
 msgid ""
 "EWWW Image Optimizer is supported on Linux, FreeBSD, Mac OSX, and Windows"
 msgstr ""
 "EWWW Optimizare Imagini este suportat pe Linux, FreeBSD, Mac OSX și Windows"
 
-#: ewww-image-optimizer.php:118
+#: ewww-image-optimizer.php:120
 msgid "Unfortunately, the EWWW Image Optimizer plugin does not work with %s"
 msgstr "Din păcate, EWWW Optimizare Imagini nu funcționează împreună cu %s"
 
-#: ewww-image-optimizer.php:215
+#: ewww-image-optimizer.php:217
 msgid "EWWW Image Optimizer could not create the tool folder"
 msgstr "EWWW Optimizare Imagini nu a putut crea directorul de unelte"
 
-#: ewww-image-optimizer.php:215
+#: ewww-image-optimizer.php:217
 msgid "Please adjust permissions or create the folder"
 msgstr "Te rugăm să actualizezi permisiunile sau să creezi directorul"
 
-#: ewww-image-optimizer.php:370
+#: ewww-image-optimizer.php:372
 msgid "EWWW Image Optimizer could not install tools in %s"
 msgstr "EWWW Optimizare Imagini nu a putut instala uneltele în %s"
 
-#: ewww-image-optimizer.php:370
+#: ewww-image-optimizer.php:372
 msgid ""
 "Please adjust permissions or create the folder. If you have installed the "
 "tools elsewhere on your system, check the option to %s."
@@ -1110,15 +1151,15 @@ msgstr ""
 "Modifică permisiunile sau creează directorul. Dacă ai instalat uneltele în "
 "alt director din sistem, bifează opțiunea %s."
 
-#: ewww-image-optimizer.php:370
+#: ewww-image-optimizer.php:372
 msgid "For more details, visit the %1$s or the %2$s."
 msgstr "Pentru mai multe detalii, vizitează %1$s sau %2$s."
 
-#: ewww-image-optimizer.php:370 ewww-image-optimizer.php:478
+#: ewww-image-optimizer.php:372 ewww-image-optimizer.php:480
 msgid "Settings Page"
 msgstr "Pagină Setări"
 
-#: ewww-image-optimizer.php:381
+#: ewww-image-optimizer.php:383
 msgid ""
 "EWWW Image Optimizer requires exec(). Your system administrator has disabled "
 "this function."
@@ -1126,13 +1167,13 @@ msgstr ""
 "EWWW Image Optimizer funcționează doar cu exec(). Administratorul sistemul "
 "tău a dezactivat această funcție. "
 
-#: ewww-image-optimizer.php:388
+#: ewww-image-optimizer.php:390
 msgid ""
 "Safe Mode is turned on for PHP. This plugin cannot operate in Safe Mode."
 msgstr ""
 "Safe Mode este activat pentru PHP. Pluginul nu funcționează în Safe Mode. "
 
-#: ewww-image-optimizer.php:478
+#: ewww-image-optimizer.php:480
 msgid ""
 "EWWW Image Optimizer uses %1$s, %2$s, %3$s, %4$s, %5$s, and %6$s. You are "
 "missing: %7$s. Please install via the %8$s or the %9$s."
@@ -1140,62 +1181,59 @@ msgstr ""
 "EWWW Image Optimizer are nevoie de %1$s, %2$s, %3$s, %4$s, %5$s și %6$s. "
 "Lipsește / lipsesc:  %7$s. Te rog instalează via %8$s sau %9$s."
 
-#: ewww-image-optimizer.php:1021 ewww-image-optimizer.php:1118
+#: ewww-image-optimizer.php:1072 ewww-image-optimizer.php:1169
+#: ewww-image-optimizer.php:1176
 msgid "Optimization skipped"
 msgstr "Optimizare omisă"
 
-#: ewww-image-optimizer.php:1032
+#: ewww-image-optimizer.php:1083
 msgid "Could not find <span class='code'>%s</span>"
 msgstr "Nu am găsit  <span class='code'>%s</span>"
 
-#: ewww-image-optimizer.php:1040
+#: ewww-image-optimizer.php:1091
 msgid "<span class='code'>%s</span> is not writable"
 msgstr " <span class='code'>%s</span> nu poate fi rescris"
 
-#: ewww-image-optimizer.php:1061
+#: ewww-image-optimizer.php:1112
 msgid ""
 "Missing finfo_file(), getimagesize() and mime_content_type() PHP functions"
 msgstr ""
 "Lipsesc funcțiile PHP: finfo_file(), getimagesize() și mime_content_type()"
 
-#: ewww-image-optimizer.php:1175 ewww-image-optimizer.php:1654
+#: ewww-image-optimizer.php:1233 ewww-image-optimizer.php:1712
 msgid "%s is disabled"
 msgstr "%s este dezactivat."
 
-#: ewww-image-optimizer.php:1218
+#: ewww-image-optimizer.php:1276
 msgid "Unable to write file"
 msgstr "Nu se poate scrie fișierul"
 
-#: ewww-image-optimizer.php:1221
+#: ewww-image-optimizer.php:1279
 msgid "Optimization failed"
 msgstr "Optimizare eșuată"
 
-#: ewww-image-optimizer.php:1425
+#: ewww-image-optimizer.php:1483
 msgid "png tools are disabled"
 msgstr "uneltele png sunt dezactivate"
 
-#: ewww-image-optimizer.php:1809
+#: ewww-image-optimizer.php:1866
 msgid "You don't have permission to install image optimizer utilities."
 msgstr ""
 "Nu ai drepturile necesare pentru a instala fișierele pentru optimizarea "
 "imaginilor"
 
-#: ewww-image-optimizer.php:1814
+#: ewww-image-optimizer.php:1871
 msgid "tar command not found"
 msgstr "comanda tar nu a fost găsită"
 
-#: ewww-image-optimizer.php:1831 ewww-image-optimizer.php:1844
-#: ewww-image-optimizer.php:1857
+#: ewww-image-optimizer.php:1888 ewww-image-optimizer.php:1901
+#: ewww-image-optimizer.php:1914
 msgid "could not move pngout"
 msgstr "nu am putut muta pngout"
 
-#: ewww-image-optimizer.php:1833 ewww-image-optimizer.php:1846
+#: ewww-image-optimizer.php:1890 ewww-image-optimizer.php:1903
 msgid "could not set permissions"
 msgstr "nu am putut seta drepturile"
-
-#: flag-integration.php:82 nextgen2-integration.php:268
-msgid "Force re-optimize"
-msgstr "Forțează reoptimizarea"
 
 #: flag-integration.php:87 nextgen2-integration.php:273
 msgid ""
@@ -1219,10 +1257,38 @@ msgstr "Miniatură - %s"
 msgid "Finished Optimization!"
 msgstr "Optimizare finalizată!"
 
-#: image-editor.php:16 image-editor.php:31 image-editor.php:37
-#: image-editor.php:41 image-editor.php:46
+#: image-editor.php:22 image-editor.php:37 image-editor.php:43
+#: image-editor.php:47 image-editor.php:52 image-editor.php:88
+#: image-editor.php:103 image-editor.php:109 image-editor.php:113
+#: image-editor.php:118
 msgid "Image Editor Save Failed"
 msgstr "Salvarea editorului de imagine a eșuat."
+
+#: mwebp.php:6
+msgid ""
+"The migration is split into two parts. First, the plugin needs to scan all "
+"folders for webp images. Once it has obtained the list of images to rename, "
+"it will proceed with the renaming"
+msgstr ""
+"Migrarea este împărțită în două etape. Mai întâi, modulul trebuie să scaneze "
+"toate directoarele pentru a găsi imaginile webp. Odată obținută imaginile "
+"care vor fi redenumite, va trece la procesul de redenumire."
+
+#: mwebp.php:7
+msgid "Start Migration"
+msgstr "Începe migrarea"
+
+#: mwebp.php:93
+msgid "Scanning"
+msgstr "Se scanează"
+
+#: mwebp.php:114
+msgid "%d Webp images left to rename."
+msgstr "au mai rămas %d imagini Webp de redenumit"
+
+#: mwebp.php:200
+msgid "Skipped:"
+msgstr "Imagine omisă:"
 
 #: nextcellent-integration.php:28 nextcellent-integration.php:68
 #: nextgen-integration.php:27 nextgen-integration.php:67
@@ -1263,6 +1329,9 @@ msgstr "Format integral - %s"
 #: nextgen2-integration.php:431
 msgid "Thumbnail - %s"
 msgstr "Miniatură - %s"
+
+#~ msgid "Force re-optimize for Media Library"
+#~ msgstr "Forțează reoptimizarea Bibliotecii Media"
 
 #~ msgid ""
 #~ "The plugin performs a check to make sure your system has the programs we "

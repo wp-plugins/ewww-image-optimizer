@@ -1,4 +1,6 @@
 <?php
+// TODO: append instead of replacing classes
+// TODO: extend wpthumb classes, in particular for hammy plugin 
 if ( class_exists( 'Bbpp_Animated_Gif' ) ) {
 	class EWWWIO_GD_Editor extends Bbpp_Animated_Gif {
 	protected function _save_animated_gif($image, $filename = null, $mime_type = null) {
