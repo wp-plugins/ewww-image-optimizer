@@ -3,7 +3,6 @@
 function ewww_image_optimizer_bulk_preview() {
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_bulk_preview()</b><br>";
-//	ewww_image_optimizer_cloud_verify(false); 
 	// retrieve the attachment IDs that were pre-loaded in the database
 	list($fullsize_count, $unoptimized_count, $resize_count, $unoptimized_resize_count) = ewww_image_optimizer_count_optimized ('media');
 //	$upload_import = get_option('ewww_image_optimizer_imported');
@@ -101,9 +100,6 @@ function ewww_image_optimizer_count_optimized ($gallery) {
 					$attachment_query .= "'" . array_pop( $attachment_ids ) . "',";
 					$attachment_query_count++;
 				}
-				/*foreach ($attachment_ids as $id) {
-					$attachment_query .= "'" . $id . "',";
-				}*/
 				$attachment_query = 'AND metas.post_id IN (' . substr( $attachment_query, 0, -1 ) . ')';
 			}
 			$offset = 0;
@@ -151,9 +147,6 @@ function ewww_image_optimizer_count_optimized ($gallery) {
 					$attachment_query .= "'" . array_pop( $attachment_ids ) . "',";
 					$attachment_query_count++;
 				}
-/*				foreach ($attachment_ids as $id) {
-					$attachment_query .= "'" . $id . "',";
-				}*/
 				$attachment_query = 'WHERE pid IN (' . substr( $attachment_query, 0, -1 ) . ')';
 			}
 			// creating the 'registry' object for working with nextgen
@@ -208,9 +201,6 @@ function ewww_image_optimizer_count_optimized ($gallery) {
 					$attachment_query .= "'" . array_pop( $attachment_ids ) . "',";
 					$attachment_query_count++;
 				}
-				/*foreach ($attachment_ids as $id) {
-					$attachment_query .= "'" . $id . "',";
-				}*/
 				$attachment_query = 'WHERE pid IN (' . substr( $attachment_query, 0, -1 ) . ')';
 			}
 			$offset = 0;

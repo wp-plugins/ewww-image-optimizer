@@ -217,7 +217,7 @@ NOTE: The WebP naming scheme has been changed to avoid conflicts when JPGs and P
 * added: compatibility with Animated Gif Resize plugin to preserve animation even in resizes
 * added: compatibility with Hammy plugin to generate dynamic resize versions on demand (and any other plugin/theme that uses WPThumb)
 * added: optimizing previously uploaded images (via bulk or otherwise) also uploads to Amazon S3 with the Amazon Cloudfront and S3 plugin
-* added: webp images are tracked in attachment metadata to enable upload via AWS plugins, but webp images are not deleted when attachments are deleted from Media Library
+* added: webp images are tracked in attachment metadata to enable upload via AWS plugins, but webp images are not deleted when attachments are deleted from Media Library (yet)
 * added: previously generated retina images (WP Retina 2x) are processed by standard Media Library routine, instead of via Folders to Optimize
 * changed: streamlined wp_image_editor extensions to be more future-proof
 * updated: all translations have been updated

@@ -320,22 +320,6 @@ function ewww_image_optimizer_install_table() {
 	require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 	dbDelta($sql);
 	
-	// remove extra decimals in ewwwio_images table
-	/*$query = "SELECT id,results FROM $wpdb->ewwwio_images WHERE results LIKE '%.0&nbsp;B)%'";
-	$old_records = $wpdb->get_results($query, ARRAY_A);
-	foreach ($old_records as $record) {
-			$ewww_debug .= 'converting record: ' . $record['id'] . '<br>';
-			$savings = preg_replace('/\.0&nbsp;B/', '&nbsp;B', $record['results']);
-			$ewww_debug .= 'using string: ' . $savings . '<br>';
-			$wpdb->update($wpdb->ewwwio_images,
-				array(
-					'results' => $savings,
-				),
-				array(
-					'id' => $record['id'],
-				));
-	}*/
-			//	ewww_image_optimizer_debug_log();
 	// make sure some of our options are not autoloaded (since they can be huge)
 	$bulk_attachments = get_option('ewww_image_optimizer_bulk_attachments', '');
 	delete_option('ewww_image_optimizer_bulk_attachments');
@@ -398,7 +382,7 @@ function ewww_image_optimizer_auto() {
 		if ( ! empty( $attachments ) ) {
 			foreach ($attachments as $attachment) {
 				if (!get_option('ewww_image_optimizer_aux_resume')) {
-					ewww_image_optimizer_debug_log();
+				//	ewww_image_optimizer_debug_log();
 					return;
 				}
 				ewww_image_optimizer_aux_images_loop($attachment, true);
@@ -409,7 +393,7 @@ function ewww_image_optimizer_auto() {
 			}
 		}
 		ewww_image_optimizer_aux_images_cleanup(true);
-		ewww_image_optimizer_debug_log();
+//		ewww_image_optimizer_debug_log();
 	}
 	return;
 }

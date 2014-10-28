@@ -1,5 +1,5 @@
 <?php
-// displays the 'auxiliary images' optimizer page
+// displays the 'Optimize Everything Else' section of the Bulk Optimize page
 function ewww_image_optimizer_aux_images () {
 	global $ewww_debug;
 	global $wpdb;
@@ -62,13 +62,7 @@ function ewww_image_optimizer_aux_images () {
 			$display = '';
 		}
 ?>
-			<!--<p id="table-info" class="bulk-info"<?php echo "$display>"; printf( __('The plugin keeps track of already optimized images to prevent re-optimization. If you would like to re-optimize images, or flush the table for some reason, press the Empty Table button to reset the bulk operation status. There are %d images that have been optimized so far.'), $already_optimized); ?></p>-->
 			<p id="table-info" class="bulk-info"<?php echo "$display>"; printf( __('The plugin keeps track of already optimized images to prevent re-optimization. There are %d images that have been optimized so far.'), $already_optimized); ?></p>
-			<!--<form id="empty-table" class="bulk-form" method="post" action=""<?php echo $display; ?>>
-				<?php wp_nonce_field( 'ewww-image-optimizer-aux-images', '_wpnonce'); ?>
-				<input type="hidden" name="empty" value="1">
-				<button type="submit" class="button-secondary action"><?php _e('Empty Table', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></button>
-			</form><br />-->
 			<form id="show-table" class="bulk-form" method="post" action=""<?php echo $display; ?>>
 				<button type="submit" class="button-secondary action"><?php _e('Show Optimized Images', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></button>
 			</form>
@@ -604,11 +598,6 @@ function ewww_image_optimizer_aux_images_script($hook) {
 			}
 			$attachments = array_merge($attachments, $slide_paths);
 		}
-/*		if ( defined( 'WPPA_UPLOAD_PATH' ) ) {
-			$attachments = array_merge($attachments, ewww_image_optimizer_image_scan(WPPA_UPLOAD_PATH));
-			global $wppa_opt;
-			$attachments = array_merge($attachments, ewww_image_optimizer_image_scan($wppa_opt['wppa_source_dir']));
-		}*/
 		// collect a list of images in auxiliary folders provided by user
 		if ( $aux_paths = ewww_image_optimizer_get_option( 'ewww_image_optimizer_aux_paths' ) ) {
 			foreach ($aux_paths as $aux_path) {
