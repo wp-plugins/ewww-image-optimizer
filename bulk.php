@@ -3,10 +3,10 @@
 function ewww_image_optimizer_bulk_preview() {
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_bulk_preview()</b><br>";
-//	ewww_image_optimizer_cloud_verify(false); 
 	// retrieve the attachment IDs that were pre-loaded in the database
 	list($fullsize_count, $unoptimized_count, $resize_count, $unoptimized_resize_count) = ewww_image_optimizer_count_optimized ('media');
-	$upload_import = get_option('ewww_image_optimizer_imported');
+//	$upload_import = get_option('ewww_image_optimizer_imported');
+	$upload_import = true;
 ?>
 	<div class="wrap"> 
 	<div id="icon-upload" class="icon32"><br /></div><h2><?php _e('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></h2>
@@ -38,7 +38,7 @@ function ewww_image_optimizer_bulk_preview() {
 <?php			return;
 		} ?>
 		<form class="bulk-form">
-			<p><label for="ewww-force" style="font-weight: bold"><?php _e('Force re-optimize for Media Library', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label>&emsp;<input type="checkbox" id="ewww-force" name="ewww-force"></p>
+			<p><label for="ewww-force" style="font-weight: bold"><?php _e('Force re-optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label>&emsp;<input type="checkbox" id="ewww-force" name="ewww-force"></p>
 			<p><label for="ewww-delay" style="font-weight: bold"><?php _e('Choose how long to pause between images (in seconds, 0 = disabled)', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label>&emsp;<input type="text" id="ewww-delay" name="ewww-delay" value="<?php if ($delay = ewww_image_optimizer_get_option ( 'ewww_image_optimizer_delay' ) ) { echo $delay; } else { echo 0; } ?>"></p>
 			<div id="ewww-delay-slider" style="width:50%"></div>
 		</form>
@@ -100,9 +100,6 @@ function ewww_image_optimizer_count_optimized ($gallery) {
 					$attachment_query .= "'" . array_pop( $attachment_ids ) . "',";
 					$attachment_query_count++;
 				}
-				/*foreach ($attachment_ids as $id) {
-					$attachment_query .= "'" . $id . "',";
-				}*/
 				$attachment_query = 'AND metas.post_id IN (' . substr( $attachment_query, 0, -1 ) . ')';
 			}
 			$offset = 0;
@@ -150,9 +147,6 @@ function ewww_image_optimizer_count_optimized ($gallery) {
 					$attachment_query .= "'" . array_pop( $attachment_ids ) . "',";
 					$attachment_query_count++;
 				}
-/*				foreach ($attachment_ids as $id) {
-					$attachment_query .= "'" . $id . "',";
-				}*/
 				$attachment_query = 'WHERE pid IN (' . substr( $attachment_query, 0, -1 ) . ')';
 			}
 			// creating the 'registry' object for working with nextgen
@@ -207,9 +201,6 @@ function ewww_image_optimizer_count_optimized ($gallery) {
 					$attachment_query .= "'" . array_pop( $attachment_ids ) . "',";
 					$attachment_query_count++;
 				}
-				/*foreach ($attachment_ids as $id) {
-					$attachment_query .= "'" . $id . "',";
-				}*/
 				$attachment_query = 'WHERE pid IN (' . substr( $attachment_query, 0, -1 ) . ')';
 			}
 			$offset = 0;
