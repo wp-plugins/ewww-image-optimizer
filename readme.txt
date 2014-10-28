@@ -1,10 +1,10 @@
 === EWWW Image Optimizer ===
 Contributors: nosilver4u
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MKMQKCBFFG3WW
-Tags: image, attachment, optimize, optimization, nextgen, flagallery, lossless, lossy, photo, picture, seo, compression, image-store, imstore, slider, image editor, gmagick, wp-symposium, meta-slider, metaslider, jpegtran, gifsicle, optipng, pngout, pngquant, gmedia, jpegmini, tinypng, webp, cwebp
+Tags: image, attachment, optimize, optimization, lossless, lossy, photo, picture, seo, compression, image editor, gmagick, jpegtran, gifsicle, optipng, pngout, pngquant, jpegmini, tinypng, webp, cwebp
 Requires at least: 3.5
 Tested up to: 4.0
-Stable tag: 2.0.2
+Stable tag: 2.1.0
 License: GPLv3
 
 Reduce file sizes for images in WordPress including NextGEN, GRAND FlAGallery and more using lossless/lossy methods and image format conversion.
@@ -210,7 +210,7 @@ NOTE: The WebP naming scheme has been changed to avoid conflicts when JPGs and P
 * mozjpeg for improved lossless jpeg optimization (cloud only)
 * If you would like to help translate this plugin in your language, get more information here: http://www.shanebishop.net/ewww-io-plugin-translators/
 
-= 2.0.3 =
+= 2.1.0 =
 * security: ssl strengthened for cloud users, no more SSLv3 (thanks POODLE), and other additional encryption tweaks, please report related errors ASAP
 * fixed: warning when scheduled scanner doesn't have any images to optimize
 * added: option to skip PNG images over a certain size since PNG images are prone to timeouts
