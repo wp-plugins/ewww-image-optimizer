@@ -210,6 +210,9 @@ NOTE: The WebP naming scheme has been changed to avoid conflicts when JPGs and P
 * mozjpeg for improved lossless jpeg optimization (cloud only)
 * If you would like to help translate this plugin in your language, get more information here: http://www.shanebishop.net/ewww-io-plugin-translators/
 
+= 2.1.1 =
+* fixed: undefined variable $log when uploading images
+
 = 2.1.0 =
 * security: ssl strengthened for cloud users, no more SSLv3 (thanks POODLE), and other additional encryption tweaks, please report related errors ASAP
 * fixed: warning when scheduled scanner doesn't have any images to optimize
