@@ -1,7 +1,7 @@
 <?php
 // common functions for Standard and Cloud plugins
 // TODO: check all comments to make sure they are actually useful...
-define('EWWW_IMAGE_OPTIMIZER_VERSION', '210');
+define('EWWW_IMAGE_OPTIMIZER_VERSION', '210.1');
 
 // initialize debug global
 $disabled = ini_get('disable_functions');
@@ -1415,9 +1415,7 @@ function ewww_image_optimizer_update_attachment_metadata($meta, $ID) {
 	//		$processed[$size]['height'] = $data['height'];
 		}
 	}
-	if ( $log ) {
-		ewww_image_optimizer_debug_log();
-	}
+	ewww_image_optimizer_debug_log();
 	// send back the updated metadata
 	return $meta;
 }

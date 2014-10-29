@@ -608,6 +608,7 @@ function ewww_image_optimizer_aux_images_script($hook) {
 		update_option('ewww_image_optimizer_aux_attachments', $attachments);
 	}
 	ewww_image_optimizer_debug_log();
+	// TODO: possibly replace json_encode with wp_json_encode (need to find out why they are different)
 	// submit a couple variables to the javascript to work with
 	$attachments = json_encode($attachments);
 	if (!empty($_REQUEST['scan'])) {
