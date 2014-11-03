@@ -604,7 +604,7 @@ function ewww_image_optimizer_gd_support() {
 		foreach ($gd_support as $supports => $supported) {
 			 $ewww_debug .= "$supports: $supported<br>";
 		}
-		if (($gd_support["JPEG Support"] || $gd_support["JPG Support"]) && $gd_support["PNG Support"]) {
+		if ( ( ! empty( $gd_support["JPEG Support"] ) || ! empty( $gd_support["JPG Support"] ) ) && ! empty( $gd_support["PNG Support"] ) ) {
 			return TRUE;
 		} else {
 			return FALSE;

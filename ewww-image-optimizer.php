@@ -84,6 +84,7 @@ function ewww_image_optimizer_exec_init() {
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_disable_pngout');
 	// If cloud is fully enabled, we're going to skip all the checks related to the bundled tools
 	if(EWWW_IMAGE_OPTIMIZER_CLOUD) {
+		$ewww_debug .= 'cloud options enabled, shutting off binaries<br';
 		ewww_image_optimizer_disable_tools();
 	// Check if this is an unsupported OS (not Linux or Mac OSX or FreeBSD or Windows or SunOS)
 	} elseif('Linux' != PHP_OS && 'Darwin' != PHP_OS && 'FreeBSD' != PHP_OS && 'WINNT' != PHP_OS && 'SunOS' != PHP_OS) {
@@ -91,6 +92,7 @@ function ewww_image_optimizer_exec_init() {
 		add_action('network_admin_notices', 'ewww_image_optimizer_notice_os');
 		add_action('admin_notices', 'ewww_image_optimizer_notice_os');
 		// turn off all the tools
+		$ewww_debug .= 'unsupported OS, disabling tools: ' . PHP_OS . '<br>';
 		ewww_image_optimizer_disable_tools();
 	} else {
 		// make sure the bundled tools are installed
@@ -380,6 +382,7 @@ function ewww_image_optimizer_notice_utils() {
 		//display a warning if exec() is disabled, can't run much of anything without it
 		echo "<div id='ewww-image-optimizer-warning-opt-png' class='error'><p>" . __('EWWW Image Optimizer requires exec(). Your system administrator has disabled this function.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</p></div>";
 		define('EWWW_IMAGE_OPTIMIZER_NOEXEC', true);
+		$ewww_debug .= 'exec seems to be disabled<br>';
 		ewww_image_optimizer_disable_tools();
 		return;
 		// otherwise, query the php settings for safe mode
@@ -387,6 +390,7 @@ function ewww_image_optimizer_notice_utils() {
 		// display a warning to the user
 		echo "<div id='ewww-image-optimizer-warning-opt-png' class='error'><p>" . __('Safe Mode is turned on for PHP. This plugin cannot operate in Safe Mode.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</p></div>";
 		define('EWWW_IMAGE_OPTIMIZER_NOEXEC', true);
+		$ewww_debug .= 'safe mode appears to be enabled<br>';
 		ewww_image_optimizer_disable_tools();
 		return;
 	} else {

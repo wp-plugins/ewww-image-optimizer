@@ -514,7 +514,9 @@ function ewww_image_optimizer_aux_images_script($hook) {
 	global $ewww_debug;
 	global $wpdb;
 	$ewww_debug .= "<b>ewww_image_optimizer_aux_images_script()</b><br>";
-	$ewww_debug .= "forcing re-optimize: " . $_REQUEST['force'] . "<br>";
+	if ( ! empty( $_REQUEST['force'] ) ) {
+		$ewww_debug .= "forcing re-optimize: true<br>";
+	}
 	// initialize the $attachments variable for auxiliary images
 	$attachments = null;
 	// check the 'bulk resume' option
