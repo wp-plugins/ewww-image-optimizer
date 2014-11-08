@@ -69,6 +69,7 @@ function ewww_image_optimizer_bulk_preview() {
 			</form>
 <?php		endif;
 	echo '</div>';
+	ewwwio_memory( __FUNCTION__ );
 	ewww_image_optimizer_aux_images();
 //	$ewww_debug .= "ending (roughly) memory usage: " . memory_get_usage(true) . "<br>";
 }
@@ -251,6 +252,7 @@ function ewww_image_optimizer_count_optimized ($gallery) {
 	$ewww_debug .= "found $full_count fullsize ($unoptimized_full unoptimized), and $resize_count resizes ($unoptimized_re unoptimized)<br>";
 //	$ewww_debug .= "memory allowed: " . ini_get('memory_limit') . "<br>";
 //	$ewww_debug .= "after counting memory usage: " . memory_get_usage(true) . "<br>";
+	ewwwio_memory( __FUNCTION__ );
 	return array( $full_count, $unoptimized_full, $resize_count, $unoptimized_re );
 }
 
@@ -350,6 +352,7 @@ function ewww_image_optimizer_bulk_script($hook) {
 	);
 	// load the stylesheet for the jquery progressbar
 	wp_enqueue_style('jquery-ui-progressbar', plugins_url('jquery-ui-1.10.1.custom.css', __FILE__));
+	ewwwio_memory( __FUNCTION__ );
 }
 
 // find the number of images in the ewwwio_images table
@@ -358,8 +361,10 @@ function ewww_image_optimizer_aux_images_table_count() {
 	$count = $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->ewwwio_images");
 	if (!empty($_REQUEST['inline'])) {
 		echo $count;
+	ewwwio_memory( __FUNCTION__ );
 		die();
 	}
+	ewwwio_memory( __FUNCTION__ );
 	return $count;
 	
 }
@@ -376,6 +381,7 @@ function ewww_image_optimizer_bulk_initialize() {
 	$loading_image = plugins_url('/wpspin.gif', __FILE__);
 	// let the user know that we are beginning
 	echo "<p>" . __('Optimizing', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "&nbsp;<img src='$loading_image' /></p>";
+	ewwwio_memory( __FUNCTION__ );
 	die();
 }
 
@@ -393,6 +399,7 @@ function ewww_image_optimizer_bulk_filename() {
 	if(!empty($meta['file']))
 		// let the user know the file we are currently optimizing
 		echo "<p>" . __('Optimizing', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <b>" . $meta['file'] . "</b>&nbsp;<img src='$loading_image' /></p>";
+	ewwwio_memory( __FUNCTION__ );
 	die();
 }
  
@@ -451,6 +458,7 @@ function ewww_image_optimizer_bulk_loop() {
 	}
 //	$ewww_debug .= "peak memory usage: " . memory_get_peak_usage(true) . "<br>";
 	ewww_image_optimizer_debug_log();
+	ewwwio_memory( __FUNCTION__ );
 	die();
 }
 
@@ -465,6 +473,7 @@ function ewww_image_optimizer_bulk_cleanup() {
 	update_option('ewww_image_optimizer_bulk_attachments', '');
 	// and let the user know we are done
 	echo '<p><b>' . __('Finished', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</b> - <a href="upload.php">' . __('Return to Media Library', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</a></p>';
+	ewwwio_memory( __FUNCTION__ );
 	die();
 }
 add_action('admin_enqueue_scripts', 'ewww_image_optimizer_bulk_script');

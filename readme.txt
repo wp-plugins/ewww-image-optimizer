@@ -214,6 +214,8 @@ NOTE: The WebP naming scheme has been changed to avoid conflicts when JPGs and P
 * fixed: undefined variable $log when uploading images
 * fixed: undefined variable $force when running scheduled optimize
 * fixed: undefined index JPG Support when GD is missing
+* added: memory logging in memory.log when WP_DEBUG is turned on in wp-config.php
+* changed: prefixed javascript variables to avoid potential js conflicts
 
 = 2.1.0 =
 * security: ssl strengthened for cloud users, no more SSLv3 (thanks POODLE), and other additional encryption tweaks, please report related errors ASAP

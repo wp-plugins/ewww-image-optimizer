@@ -84,6 +84,7 @@ function ewww_image_optimizer_aux_images () {
 		</div>
 	</div>
 <?php
+	ewwwio_memory( __FUNCTION__ );
 }
 
 function ewww_image_optimizer_import_init() {
@@ -406,6 +407,7 @@ function ewww_image_optimizer_aux_images_table() {
 		}
 	}
 	echo '</table>';
+	ewwwio_memory( __FUNCTION__ );
 	die();
 }
 
@@ -419,6 +421,7 @@ function ewww_image_optimizer_aux_images_remove() {
 	if ($wpdb->delete($wpdb->ewwwio_images, array('id' => $_POST['image_id']))) {
 		echo "1";
 	}
+	ewwwio_memory( __FUNCTION__ );
 	die();
 }
 
@@ -470,6 +473,7 @@ function ewww_image_optimizer_image_scan($dir) {
 	}
 	$end = microtime(true) - $start;
         $ewww_debug .= "query time for $file_counter files (seconds): $end <br>";
+	ewwwio_memory( __FUNCTION__ );
 	return $images;
 }
 
@@ -503,6 +507,7 @@ function ewww_image_optimizer_aux_images_convert() {
 				));
 		}
 	}
+	ewwwio_memory( __FUNCTION__ );
 }
  
 // prepares the bulk operation and includes the javascript functions
@@ -619,8 +624,10 @@ function ewww_image_optimizer_aux_images_script($hook) {
 		} else {
 			echo $attachments;
 		}
+	ewwwio_memory( __FUNCTION__ );
 		die();
 	} else {
+	ewwwio_memory( __FUNCTION__ );
 		return;
 	}
 }
@@ -643,6 +650,7 @@ function ewww_image_optimizer_aux_images_initialize($auto = false) {
 		// generate the WP spinner image for display
 		$loading_image = plugins_url('/wpspin.gif', __FILE__);
 		echo "<p>" . __('Optimizing', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "&nbsp;<img src='$loading_image' alt='loading'/></p>";
+	ewwwio_memory( __FUNCTION__ );
 		die();
 	}
 }
@@ -659,6 +667,7 @@ function ewww_image_optimizer_aux_images_filename() {
 	$loading_image = plugins_url('/wpspin.gif', __FILE__);
 	// let the user know that we are beginning
 	echo "<p>" . __('Optimizing', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <b>" . preg_replace( ":\\\':", "'", $_POST['attachment'] ) . "</b>&nbsp;<img src='$loading_image' alt='loading'/></p>";
+	ewwwio_memory( __FUNCTION__ );
 	die();
 }
  
@@ -678,6 +687,7 @@ function ewww_image_optimizer_aux_images_cleanup($auto = false) {
 	if (!$auto) {
 		// and let the user know we are done
 		echo '<p><b>' . __('Finished', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</b></p>';
+	ewwwio_memory( __FUNCTION__ );
 		die();
 	}
 }

@@ -44,6 +44,7 @@ function ewww_image_optimizer_cloud_init() {
 	} elseif (!defined('EWWW_IMAGE_OPTIMIZER_CLOUD')) {
 		define('EWWW_IMAGE_OPTIMIZER_CLOUD', FALSE);
 	}
+	ewwwio_memory( __FUNCTION__ );
 }
 
 function ewww_image_optimizer_exec_init() {
@@ -103,6 +104,7 @@ function ewww_image_optimizer_exec_init() {
 		add_action('network_admin_notices', 'ewww_image_optimizer_notice_utils');
 		add_action('admin_notices', 'ewww_image_optimizer_notice_utils');
 	} 
+	ewwwio_memory( __FUNCTION__ );
 }
 
 // set some default option values
@@ -202,6 +204,7 @@ function ewww_image_optimizer_install_paths () {
 		$webp_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'cwebp';
 	}
 	$ewww_debug .= "generated paths:<br>$jpegtran_src<br>$optipng_src<br>$gifsicle_src<br>$pngquant_src<br>$webp_src<br>$jpegtran_dst<br>$optipng_dst<br>$gifsicle_dst<br>$pngquant_dst<br>$webp_dst<br>";
+	ewwwio_memory( __FUNCTION__ );
 	return array($jpegtran_src, $optipng_src, $gifsicle_src, $pngquant_src, $webp_src, $jpegtran_dst, $optipng_dst, $gifsicle_dst, $pngquant_dst, $webp_dst);
 }
 
@@ -371,6 +374,7 @@ function ewww_image_optimizer_install_tools () {
 	if ($toolfail) {
 		echo "<div id='ewww-image-optimizer-warning-tool-install' class='error'><p><strong>" . sprintf(__('EWWW Image Optimizer could not install tools in %s', EWWW_IMAGE_OPTIMIZER_DOMAIN), htmlentities(EWWW_IMAGE_OPTIMIZER_TOOL_PATH)) . ".</strong> " . sprintf(__('Please adjust permissions or create the folder. If you have installed the tools elsewhere on your system, check the option to %s.', EWWW_IMAGE_OPTIMIZER_DOMAIN), __('Use System Paths', EWWW_IMAGE_OPTIMIZER_DOMAIN)) . " " . sprintf(__('For more details, visit the %1$s or the %2$s.', EWWW_IMAGE_OPTIMIZER_DOMAIN), "<a href='options-general.php?page=" . EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE_REL . "'>" . __('Settings Page', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a>", "<a href='http://wordpress.org/extend/plugins/ewww-image-optimizer/installation/'>" . __('Installation Instructions', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a>.</p></div>");
 	}
+	ewwwio_memory( __FUNCTION__ );
 }
 
 // we check for safe mode and exec, then also direct the user where to go if they don't have the tools installed
@@ -480,6 +484,7 @@ function ewww_image_optimizer_notice_utils() {
 	// if there is a message, display the warning
 	if(!empty($msg)){
 		echo "<div id='ewww-image-optimizer-warning-opt-png' class='error'><p>" . sprintf(__('EWWW Image Optimizer uses %1$s, %2$s, %3$s, %4$s, %5$s, and %6$s. You are missing: %7$s. Please install via the %8$s or the %9$s.', EWWW_IMAGE_OPTIMIZER_DOMAIN), "<a href='http://jpegclub.org/jpegtran/'>jpegtran</a>", "<a href='http://optipng.sourceforge.net/'>optipng</a>", "<a href='http://advsys.net/ken/utils.htm'>pngout</a>", "<a href='http://pngquant.org/'>pngquant</a>", "<a href='http://www.lcdf.org/gifsicle/'>gifsicle</a>", "<a href='https://developers.google.com/speed/webp/'>cwebp</a>", $msg, "<a href='options-general.php?page=" . EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE_REL . "'>" . __('Settings Page', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a>", "<a href='http://wordpress.org/extend/plugins/ewww-image-optimizer/installation/'>" . __('Installation Instructions', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a>") . "</p></div>";
+	ewwwio_memory( __FUNCTION__ );
 	}
 }
 
@@ -492,8 +497,10 @@ function ewww_image_optimizer_exec_check() {
 	$suhosin_disabled = ini_get('suhosin.executor.func.blacklist');
 	$ewww_debug .= "suhosin_blacklist = $suhosin_disabled <br>";
 	if(preg_match('/([\s,]+exec|^exec)/', $disabled) || preg_match('/([\s,]+exec|^exec)/', $suhosin_disabled)) {
+	ewwwio_memory( __FUNCTION__ );
 		return true;
 	} else {
+	ewwwio_memory( __FUNCTION__ );
 		return false;
 	}
 }
@@ -506,11 +513,14 @@ function ewww_image_optimizer_safemode_check() {
 	$ewww_debug .= "safe_mode = $safe_mode<br>";
 	switch (strtolower($safe_mode)) {
 		case 'off':
+	ewwwio_memory( __FUNCTION__ );
 			return false;
 		case 'on':
 		case true:
+	ewwwio_memory( __FUNCTION__ );
 			return true;
 		default:
+	ewwwio_memory( __FUNCTION__ );
 			return false;
 	}
 }
@@ -747,6 +757,7 @@ function ewww_image_optimizer_path_check ( $j = true, $o = true, $g = true, $p =
 	if ($pngout) $ewww_debug .= "using: $pngout<br>";
 	if ($pngquant) $ewww_debug .= "using: $pngquant<br>";
 	if ($webp) $ewww_debug .= "using: $webp<br>";
+	ewwwio_memory( __FUNCTION__ );
 	return array(
 		'JPEGTRAN' => $jpegtran,
 		'OPTIPNG' => $optipng,
@@ -858,9 +869,11 @@ function ewww_image_optimizer_md5check($path) {
 		);
 	foreach ($valid_md5sums as $md5_sum) {
 		if ($md5_sum == md5_file($path)) {
+	ewwwio_memory( __FUNCTION__ );
 			return TRUE;
 		}
 	}
+	ewwwio_memory( __FUNCTION__ );
 	return FALSE;
 }
 
@@ -914,12 +927,15 @@ function ewww_image_optimizer_mimetype($path, $case) {
 	}
 	// if we are dealing with a binary, and found an executable
 	if ($case == 'b' && preg_match('/executable|octet-stream/', $type)) {
+	ewwwio_memory( __FUNCTION__ );
 		return $type;
 	// otherwise, if we are dealing with an image
 	} elseif ($case == 'i') {
+	ewwwio_memory( __FUNCTION__ );
 		return $type;
 	// if all else fails, bail
 	} else {
+	ewwwio_memory( __FUNCTION__ );
 		return false;
 	}
 }
@@ -1030,6 +1046,7 @@ function ewww_image_optimizer_tool_found($path, $tool) {
 			break;
 	}
 	$ewww_debug .= 'tool not found <br>';
+	ewwwio_memory( __FUNCTION__ );
 	return FALSE;
 }
 
@@ -1823,8 +1840,10 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new, $fullsize 
 	}
 	if (!empty($new_size)) {
 		$results_msg = ewww_image_optimizer_update_table ($file, $new_size, $orig_size, $new);
+	ewwwio_memory( __FUNCTION__ );
 		return array($file, $results_msg, $converted, $original);
 	}
+	ewwwio_memory( __FUNCTION__ );
 	// otherwise, send back the filename, the results (some sort of error message), the $converted flag, and the name of the original image
 	return array($file, $result, $converted, $original);
 }
@@ -1857,6 +1876,7 @@ function ewww_image_optimizer_webp_create( $file, $orig_size, $type, $tool ) {
 		$ewww_debug .= 'webp file was too big, deleting<br>';
 		unlink( $webpfile );
 	}
+	ewwwio_memory( __FUNCTION__ );
 }
 
 // retrieves the pngout linux package with wget, unpacks it with tar, 
@@ -1924,6 +1944,6 @@ function ewww_image_optimizer_install_pngout() {
 		$sendback = add_query_arg(array('pngout' => 'failed', 'error' => urlencode($pngout_error)), remove_query_arg(array('pngout', 'error'), wp_get_referer()));
 	}
 	wp_redirect($sendback);
+	ewwwio_memory( __FUNCTION__ );
 	exit(0);
 }
-
