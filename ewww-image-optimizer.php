@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate image optimizers into WordPress.
- * @version 2.1.0.1
+ * @version 2.1.0.2
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -10,7 +10,7 @@ Plugin URI: http://wordpress.org/extend/plugins/ewww-image-optimizer/
 Description: Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
 Author: Shane Bishop
 Text Domain: ewww-image-optimizer
-Version: 2.1.0.1
+Version: 2.1.0.2
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
@@ -76,9 +76,6 @@ function ewww_image_optimizer_exec_init() {
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_skip_bundle');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_optipng_level');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_pngout_level');
-//	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_jpegtran_path');
-//	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_optipng_path');
-//	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_gifsicle_path');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_disable_jpegtran');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_disable_optipng');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_disable_gifsicle');
@@ -1077,7 +1074,7 @@ function ewww_image_optimizer_find_binary ($binary, $switch) {
  * @param   boolean $converted		tells us if this is a resize and the full image was converted to a new format
  * @returns array
  */
-function ewww_image_optimizer($file, $gallery_type, $converted, $new, $fullsize = false) {
+function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new = false, $fullsize = false) {
 //	global $wpdb;
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer()</b><br>";
@@ -1209,7 +1206,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new, $fullsize 
 		case 'image/jpeg':
 			$png_size = 0;
 			// if jpg2png conversion is enabled, and this image is in the wordpress media library
-			if ((ewww_image_optimizer_get_option('ewww_image_optimizer_jpg_to_png') && $gallery_type == 1) || !empty($_GET['convert'])) {
+			if ((ewww_image_optimizer_get_option('ewww_image_optimizer_jpg_to_png') && $gallery_type == 1) || !empty($_GET['ewww_convert'])) {
 				// generate the filename for a PNG
 				// if this is a resize version
 				if ($converted) {
@@ -1226,7 +1223,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new, $fullsize 
 				$pngfile = '';
 			}
 			// check for previous optimization, so long as the force flag is on and this isn't a new image that needs converting
-			if ( empty( $_REQUEST['force'] ) && ! ( $new && $convert ) ) {
+			if ( empty( $_REQUEST['ewww_force'] ) && ! ( $new && $convert ) ) {
 				if ( $results_msg = ewww_image_optimizer_check_table( $file, $orig_size ) ) {
 					return array( $file, $results_msg, $converted, $original );
 				}
@@ -1430,7 +1427,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new, $fullsize 
 			break;
 		case 'image/png':
 			// png2jpg conversion is turned on, and the image is in the wordpress media library
-			if ( ( ewww_image_optimizer_get_option( 'ewww_image_optimizer_png_to_jpg' ) || ! empty( $_GET['convert'] ) ) && $gallery_type == 1 && ! $fullsize ) {
+			if ( ( ewww_image_optimizer_get_option( 'ewww_image_optimizer_png_to_jpg' ) || ! empty( $_GET['ewww_convert'] ) ) && $gallery_type == 1 && ! $fullsize ) {
 				$ewww_debug .= "PNG to JPG conversion turned on<br>";
 				// if the user set a fill background for transparency
 				$background = '';
@@ -1476,7 +1473,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new, $fullsize 
 				$gquality = null;
 			}
 			// check for previous optimization, so long as the force flag is on and this isn't a new image that needs converting
-			if ( empty( $_REQUEST['force'] ) && ! ( $new && $convert ) ) {
+			if ( empty( $_REQUEST['ewww_force'] ) && ! ( $new && $convert ) ) {
 				if ( $results_msg = ewww_image_optimizer_check_table( $file, $orig_size ) ) {
 					return array( $file, $results_msg, $converted, $original );
 				}
@@ -1690,7 +1687,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new, $fullsize 
 			break;
 		case 'image/gif':
 			// if gif2png is turned on, and the image is in the wordpress media library
-			if ((ewww_image_optimizer_get_option('ewww_image_optimizer_gif_to_png') && $gallery_type == 1) || !empty($_GET['convert'])) {
+			if ((ewww_image_optimizer_get_option('ewww_image_optimizer_gif_to_png') && $gallery_type == 1) || !empty($_GET['ewww_convert'])) {
 				// generate the filename for a PNG
 				// if this is a resize version
 				if ($converted) {
@@ -1707,7 +1704,7 @@ function ewww_image_optimizer($file, $gallery_type, $converted, $new, $fullsize 
 				$pngfile = '';
 			}
 			// check for previous optimization, so long as the force flag is on and this isn't a new image that needs converting
-			if ( empty( $_REQUEST['force'] ) && ! ( $new && $convert ) ) {
+			if ( empty( $_REQUEST['ewww_force'] ) && ! ( $new && $convert ) ) {
 				if ( $results_msg = ewww_image_optimizer_check_table( $file, $orig_size ) ) {
 					return array( $file, $results_msg, $converted, $original );
 				}
@@ -1938,10 +1935,10 @@ function ewww_image_optimizer_install_pngout() {
 		}
 	}
 	if (!empty($pngout_version)) {
-		$sendback = add_query_arg('pngout', 'success', remove_query_arg(array('pngout', 'error'), wp_get_referer()));
+		$sendback = add_query_arg('ewww_pngout', 'success', remove_query_arg(array('ewww_pngout', 'ewww_error'), wp_get_referer()));
 	}
 	if (!isset($sendback)) {
-		$sendback = add_query_arg(array('pngout' => 'failed', 'error' => urlencode($pngout_error)), remove_query_arg(array('pngout', 'error'), wp_get_referer()));
+		$sendback = add_query_arg(array('ewww_pngout' => 'failed', 'ewww_error' => urlencode($pngout_error)), remove_query_arg(array('ewww_pngout', 'ewww_error'), wp_get_referer()));
 	}
 	wp_redirect($sendback);
 	ewwwio_memory( __FUNCTION__ );

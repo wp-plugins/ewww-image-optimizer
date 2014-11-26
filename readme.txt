@@ -211,11 +211,13 @@ NOTE: The WebP naming scheme has been changed to avoid conflicts when JPGs and P
 * If you would like to help translate this plugin in your language, get more information here: http://www.shanebishop.net/ewww-io-plugin-translators/
 
 = 2.1.1 =
+* deprecated: NextGEN legacy support will be removed in 2.2 unless I hear from anyone still using it, Nextcellent will continue to be supported
+* changed: prefixed javascript/request variables to avoid potential conflicts
 * fixed: undefined variable $log when uploading images
 * fixed: undefined variable $force when running scheduled optimize
 * fixed: undefined index JPG Support when GD is missing
 * added: memory logging in memory.log when WP_DEBUG is turned on in wp-config.php
-* changed: prefixed javascript variables to avoid potential js conflicts
+* fixed: bulk actions for Nextcellent were missing
 
 = 2.1.0 =
 * security: ssl strengthened for cloud users, no more SSLv3 (thanks POODLE), and other additional encryption tweaks, please report related errors ASAP

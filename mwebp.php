@@ -72,7 +72,7 @@ function ewww_image_optimizer_webp_script($hook) {
 	$image_count = count($images);
 	// submit a couple variables to the javascript to work with
 	wp_localize_script('ewwwwebpscript', 'ewww_vars', array(
-			'_wpnonce' => wp_create_nonce('ewww-image-optimizer-webp'),
+			'ewww_wpnonce' => wp_create_nonce('ewww-image-optimizer-webp'),
 		)
 	);
 }
@@ -80,7 +80,7 @@ function ewww_image_optimizer_webp_script($hook) {
 // called by javascript to initialize some output
 function ewww_image_optimizer_webp_initialize() {
 	// verify that an authorized user has started the migration
-	if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-webp' ) || !current_user_can( 'edit_others_posts' ) ) {
+	if (!wp_verify_nonce( $_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-webp' ) || !current_user_can( 'edit_others_posts' ) ) {
 		wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 	}
 	if ( get_option( 'ewww_image_optimizer_webp_skipped' ) ) {
@@ -98,7 +98,7 @@ function ewww_image_optimizer_webp_initialize() {
 function ewww_image_optimizer_webp_loop() {
 	global $ewww_debug;
 	// verify that an authorized user has started the migration
-	if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-webp' ) || !current_user_can( 'edit_others_posts' ) ) {
+	if (!wp_verify_nonce( $_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-webp' ) || !current_user_can( 'edit_others_posts' ) ) {
 		wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 	} 
 	// retrieve the time when the migration starts
@@ -189,7 +189,7 @@ function ewww_image_optimizer_webp_loop() {
 // called by javascript to cleanup after ourselves
 function ewww_image_optimizer_webp_cleanup() {
 	// verify that an authorized user has started the migration
-	if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-webp' ) || !current_user_can( 'edit_others_posts' ) ) {
+	if (!wp_verify_nonce( $_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-webp' ) || !current_user_can( 'edit_others_posts' ) ) {
 		wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 	}
 	$skipped = get_option( 'ewww_image_optimizer_webp_skipped' );
