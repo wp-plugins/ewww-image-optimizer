@@ -1,7 +1,6 @@
 <?php
 // common functions for Standard and Cloud plugins
 // TODO: check all comments to make sure they are actually useful...
-// TODO: can we delay checks unless we are on specific pages?? Please???
 // TODO: webp fallback mode for CDN users: http://css-tricks.com/webp-with-fallback/
 
 define('EWWW_IMAGE_OPTIMIZER_VERSION', '210.2');
@@ -29,7 +28,7 @@ if (!isset($wpdb->ewwwio_images)) {
 	$wpdb->ewwwio_images = $wpdb->prefix . "ewwwio_images";
 }
 
-add_action( 'contextual_help', 'wptuts_screen_help', 10, 3 );
+/*add_action( 'contextual_help', 'wptuts_screen_help', 10, 3 );
 function wptuts_screen_help( $contextual_help, $screen_id, $screen ) {
  
     // The add_help_tab function for screen was introduced in WordPress 3.3.
@@ -77,7 +76,7 @@ function wptuts_screen_help( $contextual_help, $screen_id, $screen ) {
     ));
  
     return $contextual_help;
-}
+}*/
 
 /**
  * Hooks
@@ -308,36 +307,8 @@ function ewww_image_optimizer_disable_tools() {
 
 // generates css include for progressbars to match admin style
 function ewww_image_optimizer_progressbar_style() {
-//	if (function_exists('wp_add_inline_style')) {
-//		$user_info = wp_get_current_user();
-//		$fill_color = ewww_image_optimizer_admin_background();
-/*			case 'midnight':
-				$fill_style = ".ui-widget-header { background-color: #e14d43; }";
-				break;
-			case 'blue':
-				$fill_style = ".ui-widget-header { background-color: #096484; }";
-				break;
-			case 'light':
-				$fill_style = ".ui-widget-header { background-color: #04a4cc; }";
-				break;
-			case 'ectoplasm':
-				$fill_style = ".ui-widget-header { background-color: #a3b745; }";
-				break;
-			case 'coffee':
-				$fill_style = ".ui-widget-header { background-color: #c7a589; }";
-				break;
-			case 'ocean':
-				$fill_style = ".ui-widget-header { background-color: #9ebaa0; }";
-				break;
-			case 'sunrise':
-				$fill_style = ".ui-widget-header { background-color: #dd823b; }";
-				break;
-			default:
-				$fill_style = ".ui-widget-header { background-color: #0074a2; }";
-		}*/
-		wp_add_inline_style('jquery-ui-progressbar', ".ui-widget-header { background-color: " . ewww_image_optimizer_admin_background() . "; }");
+	wp_add_inline_style('jquery-ui-progressbar', ".ui-widget-header { background-color: " . ewww_image_optimizer_admin_background() . "; }");
 	ewwwio_memory( __FUNCTION__ );
-//	}
 }
 
 // determines the background color to use based on the selected theme
@@ -1942,8 +1913,6 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 				_e('Unsupported file type', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 				return;
 		}
-		// TODO: when should this be done, and are all the checks above still valid, doesn't seem like they are...
-//		echo $msg;
 		// if the optimizer metadata exists
 		if ( ! empty($meta['ewww_image_optimizer']) ) {
 			// output the optimizer results
