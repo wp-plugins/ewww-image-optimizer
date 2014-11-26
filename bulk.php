@@ -438,8 +438,10 @@ function ewww_image_optimizer_bulk_loop() {
 	if (isset($meta['sizes']) && is_array($meta['sizes'])) {
 		// cycle through each resize
 		foreach ($meta['sizes'] as $size) {
-			// output the results for the current resized version
-			printf("%s – %s<br>", $size['file'], $size['ewww_image_optimizer']);
+			if ( ! empty( $size['ewww_image_optimizer']) ) {
+				// output the results for the current resized version
+				printf("%s – %s<br>", $size['file'], $size['ewww_image_optimizer']);
+			}
 		}
 	}
 	// calculate how much time has elapsed since we started

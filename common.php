@@ -2,7 +2,6 @@
 // common functions for Standard and Cloud plugins
 // TODO: check all comments to make sure they are actually useful...
 // TODO: can we delay checks unless we are on specific pages?? Please???
-// TODO: supress height and width warning for webp metadata, set it to 0 maybe?
 // TODO: webp fallback mode for CDN users: http://css-tricks.com/webp-with-fallback/
 
 define('EWWW_IMAGE_OPTIMIZER_VERSION', '210.2');
@@ -29,6 +28,57 @@ global $wpdb;
 if (!isset($wpdb->ewwwio_images)) {
 	$wpdb->ewwwio_images = $wpdb->prefix . "ewwwio_images";
 }
+
+add_action( 'contextual_help', 'wptuts_screen_help', 10, 3 );
+function wptuts_screen_help( $contextual_help, $screen_id, $screen ) {
+ 
+    // The add_help_tab function for screen was introduced in WordPress 3.3.
+    if ( ! method_exists( $screen, 'add_help_tab' ) )
+        return $contextual_help;
+ 
+    global $hook_suffix;
+ 
+    // List screen properties
+    $variables = '<ul style="width:50%;float:left;"> <strong>Screen variables </strong>'
+        . sprintf( '<li> Screen id : %s</li>', $screen_id )
+        . sprintf( '<li> Screen base : %s</li>', $screen->base )
+        . sprintf( '<li>Parent base : %s</li>', $screen->parent_base )
+        . sprintf( '<li> Parent file : %s</li>', $screen->parent_file )
+        . sprintf( '<li> Hook suffix : %s</li>', $hook_suffix )
+        . '</ul>';
+ 
+    // Append global $hook_suffix to the hook stems
+    $hooks = array(
+        "load-$hook_suffix",
+        "admin_print_styles-$hook_suffix",
+        "admin_print_scripts-$hook_suffix",
+        "admin_head-$hook_suffix",
+        "admin_footer-$hook_suffix"
+    );
+ 
+    // If add_meta_boxes or add_meta_boxes_{screen_id} is used, list these too
+    if ( did_action( 'add_meta_boxes_' . $screen_id ) )
+        $hooks[] = 'add_meta_boxes_' . $screen_id;
+ 
+    if ( did_action( 'add_meta_boxes' ) )
+        $hooks[] = 'add_meta_boxes';
+ 
+    // Get List HTML for the hooks
+    $hooks = '<ul style="width:50%;float:left;"> <strong>Hooks </strong> <li>' . implode( '</li><li>', $hooks ) . '</li></ul>';
+ 
+    // Combine $variables list with $hooks list.
+    $help_content = $variables . $hooks;
+ 
+    // Add help panel
+    $screen->add_help_tab( array(
+        'id'      => 'wptuts-screen-help',
+        'title'   => 'Screen Information',
+        'content' => $help_content,
+    ));
+ 
+    return $contextual_help;
+}
+
 /**
  * Hooks
  */
@@ -561,7 +611,11 @@ function ewww_image_optimizer_ims() {
 			$alternate = true;
 			foreach ($attachments as $ID) {
 				$meta = get_metadata('post', $ID);
-				$meta = unserialize($meta['_wp_attachment_metadata'][0]);
+				if ( is_array( $meta['_wp_attachment_metadata'][0] ) ) {
+					$meta = $meta['_wp_attachment_metadata'][0];
+				} else {
+					$meta = unserialize($meta['_wp_attachment_metadata'][0]);
+				}
 				$image_name = get_the_title($ID);
 				$gallery_name = get_the_title($gid);
 				$image_url = $meta['sizes']['mini']['url'];
@@ -1301,7 +1355,6 @@ function ewww_image_optimizer_aux_images_loop($attachment = null, $auto = false)
 
 // processes metadata and looks for any webp version to insert in the meta
 function ewww_image_optimizer_update_attachment_metadata($meta, $ID) {
-	// TODO: see if we can avoid the undefined index notices, perhaps set dimensions to 0?
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_update_attachment_metadata()</b><br>";
 	$ewww_debug .= "attachment id: $ID<br>";
@@ -1315,8 +1368,8 @@ function ewww_image_optimizer_update_attachment_metadata($meta, $ID) {
 	if ( is_file( $file_path . '.webp' ) ) {
 		$meta['sizes']['webp-full'] = array(
 			'file' => pathinfo( $file_path, PATHINFO_BASENAME ) . '.webp',
-//			'width' => $meta['width'],
-//			'height' => $meta['height'],
+			'width' => 0,
+			'height' => 0,
 			'mime-type' => 'image/webp',
 		);
 		
@@ -1335,8 +1388,8 @@ function ewww_image_optimizer_update_attachment_metadata($meta, $ID) {
 			if ( is_file( $resize_path . '.webp' ) ) {
 				$meta['sizes']['webp-' . $size] = array(
 					'file' => $data['file'] . '.webp',
-			//		'width' => $data['width'],
-			//		'height' => $data['height'],
+					'width' => 0,
+					'height' => 0,
 					'mime-type' => 'image/webp',
 				);
 			}
@@ -1853,7 +1906,7 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 		switch($type) {
 			case 'image/jpeg':
 				// if jpegtran is missing, tell them that
-				if(!EWWW_IMAGE_OPTIMIZER_JPEGTRAN && !EWWW_IMAGE_OPTIMIZER_CLOUD) {
+				if(!EWWW_IMAGE_OPTIMIZER_JPEGTRAN && !ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_jpg')) {
 					$valid = false;
 					$msg = '<br>' . sprintf(__('%s is missing', EWWW_IMAGE_OPTIMIZER_DOMAIN), '<em>jpegtran</em>');
 				} else {
@@ -1864,7 +1917,7 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 				break; 
 			case 'image/png':
 				// if pngout and optipng are missing, tell the user
-				if(!EWWW_IMAGE_OPTIMIZER_PNGOUT && !EWWW_IMAGE_OPTIMIZER_OPTIPNG && !EWWW_IMAGE_OPTIMIZER_CLOUD) {
+				if(!EWWW_IMAGE_OPTIMIZER_PNGOUT && !EWWW_IMAGE_OPTIMIZER_OPTIPNG && !ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_png')) {
 					$valid = false;
 					$msg = '<br>' . sprintf(__('%s is missing', EWWW_IMAGE_OPTIMIZER_DOMAIN), '<em>optipng/pngout</em>');
 				} else {
@@ -1875,7 +1928,7 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 				break;
 			case 'image/gif':
 				// if gifsicle is missing, tell the user
-				if(!EWWW_IMAGE_OPTIMIZER_GIFSICLE && !EWWW_IMAGE_OPTIMIZER_CLOUD) {
+				if(!EWWW_IMAGE_OPTIMIZER_GIFSICLE && !ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_gif')) {
 					$valid = false;
 					$msg = '<br>' . sprintf(__('%s is missing', EWWW_IMAGE_OPTIMIZER_DOMAIN), '<em>gifsicle</em>');
 				} else {
@@ -1890,19 +1943,24 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 				return;
 		}
 		// TODO: when should this be done, and are all the checks above still valid, doesn't seem like they are...
-		echo $msg;
+//		echo $msg;
 		// if the optimizer metadata exists
-		if (isset($meta['ewww_image_optimizer']) && !empty($meta['ewww_image_optimizer']) ) {
+		if ( ! empty($meta['ewww_image_optimizer']) ) {
 			// output the optimizer results
 			echo $meta['ewww_image_optimizer'];
 			// output the filesize
 			echo "<br>" . sprintf(__('Image Size: %s', EWWW_IMAGE_OPTIMIZER_DOMAIN), $file_size);
-			// output a link to re-optimize manually
-			printf("<br><a href=\"admin.php?action=ewww_image_optimizer_manual_optimize&amp;ewww_force=1&amp;ewww_attachment_ID=%d\">%s</a>",
-				$id,
-				__('Re-optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN));
-			if (!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_convert_links') && 'ims_image' != get_post_type($id))
-				echo " | <a class='ewww-convert' title='$convert_desc' href='admin.php?action=ewww_image_optimizer_manual_optimize&amp;ewww_attachment_ID=$id&amp;ewww_convert=1&amp;ewww_force=1'>$convert_link</a>";
+			if ( empty( $msg ) ) {
+				// output a link to re-optimize manually
+				printf("<br><a href=\"admin.php?action=ewww_image_optimizer_manual_optimize&amp;ewww_force=1&amp;ewww_attachment_ID=%d\">%s</a>",
+					$id,
+					__('Re-optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+				if (!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_convert_links') && 'ims_image' != get_post_type($id)) {
+					echo " | <a class='ewww-convert' title='$convert_desc' href='admin.php?action=ewww_image_optimizer_manual_optimize&amp;ewww_attachment_ID=$id&amp;ewww_convert=1&amp;ewww_force=1'>$convert_link</a>";
+				}
+			} else {
+				echo $msg;
+			}
 			$restorable = false;
 			if (!empty($meta['converted'])) {
 				if (!empty($meta['orig_file']) && file_exists($meta['orig_file'])) {
@@ -1947,12 +2005,15 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 			_e('Not processed', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 			// tell them the filesize
 			echo "<br>" . sprintf(__('Image Size: %s', EWWW_IMAGE_OPTIMIZER_DOMAIN), $file_size);
-			// and give the user the option to optimize the image right now
-			printf("<br><a href=\"admin.php?action=ewww_image_optimizer_manual_optimize&amp;ewww_attachment_ID=%d\">%s</a>",
-				$id,
-				__('Optimize now!', EWWW_IMAGE_OPTIMIZER_DOMAIN));
-			if (!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_convert_links') && 'ims_image' != get_post_type($id))
-				echo " | <a class='ewww-convert' title='$convert_desc' href='admin.php?action=ewww_image_optimizer_manual_optimize&amp;ewww_attachment_ID=$id&amp;ewww_convert=1&amp;ewww_force=1'>$convert_link</a>";
+			if ( empty( $msg ) ) {
+				// and give the user the option to optimize the image right now
+				printf("<br><a href=\"admin.php?action=ewww_image_optimizer_manual_optimize&amp;ewww_attachment_ID=%d\">%s</a>", $id, __('Optimize now!', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+				if (!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_convert_links') && 'ims_image' != get_post_type( $id ) ) {
+					echo " | <a class='ewww-convert' title='$convert_desc' href='admin.php?action=ewww_image_optimizer_manual_optimize&amp;ewww_attachment_ID=$id&amp;ewww_convert=1&amp;ewww_force=1'>$convert_link</a>";
+				}
+			} else {
+				echo $msg;
+			}
 		}
 	}
 	ewwwio_memory( __FUNCTION__ );

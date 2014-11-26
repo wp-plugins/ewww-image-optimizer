@@ -93,15 +93,31 @@ function ewww_image_optimizer_exec_init() {
 		$ewww_debug .= 'unsupported OS, disabling tools: ' . PHP_OS . '<br>';
 		ewww_image_optimizer_disable_tools();
 	} else {
-		// make sure the bundled tools are installed
-		if(!ewww_image_optimizer_get_option('ewww_image_optimizer_skip_bundle')) {
-			ewww_image_optimizer_install_tools ();
-		}
+		add_action( 'load-upload.php', 'ewww_image_optimizer_tool_init' );
+		add_action( 'load-media-new.php', 'ewww_image_optimizer_tool_init' );
+		add_action( 'load-media_page_ewww-image-optimizer-bulk', 'ewww_image_optimizer_tool_init' );
+		add_action( 'load-settings_page_ewww-image-optimizer/ewww-image-optimizer', 'ewww_image_optimizer_tool_init' );
+		add_action( 'load-plugins.php', 'ewww_image_optimizer_tool_init' );
+		add_action( 'load-ims_gallery_page_ewww-ims-optimize', 'ewww_image_optimizer_tool_init' );
+//		add_action( 'load-', 'ewww_image_optimizer_tool_init' );
+//		add_action( 'load-', 'ewww_image_optimizer_tool_init' );
+	} 
+	ewwwio_memory( __FUNCTION__ );
+}
+
+// check for binary installation and availability
+function ewww_image_optimizer_tool_init( $admin = true ) {
+	// make sure the bundled tools are installed
+	if(!ewww_image_optimizer_get_option('ewww_image_optimizer_skip_bundle')) {
+		ewww_image_optimizer_install_tools ();
+	}
+	if ($admin) {
 		//then we run the function to check for optimization utilities
 		add_action('network_admin_notices', 'ewww_image_optimizer_notice_utils');
 		add_action('admin_notices', 'ewww_image_optimizer_notice_utils');
-	} 
-	ewwwio_memory( __FUNCTION__ );
+	} else {
+		ewww_image_optimizer_notice_utils();
+	}
 }
 
 // set some default option values

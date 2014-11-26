@@ -218,6 +218,10 @@ NOTE: The WebP naming scheme has been changed to avoid conflicts when JPGs and P
 * fixed: undefined index JPG Support when GD is missing
 * added: memory logging in memory.log when WP_DEBUG is turned on in wp-config.php
 * fixed: bulk actions for Nextcellent were missing
+* fixed: notices generated because webp versions do not have height and width when WP is scanning resizes
+* fixed: notices generated due to no optimization status during bulk optimization for webp versions
+* fixed: error when trying to unserialize an array for Image Store Optimize page
+* changed: binary installation and checking only on specific admin pages instead of all admin pages, please report breakages ASAP
 
 = 2.1.0 =
 * security: ssl strengthened for cloud users, no more SSLv3 (thanks POODLE), and other additional encryption tweaks, please report related errors ASAP
