@@ -512,7 +512,6 @@ function ewww_image_optimizer_retina ( $id, $retina_path ) {
 	$temp_path = $no_ext_path . $extension;
 	$ewww_debug .= "temp path: $temp_path<br>";
 	$ewww_debug .= "retina path: $retina_path<br>";
-//	$retina_path = $no_ext_path . "@2x" . $extension;
 	$opt_size = filesize($retina_path);
 	$ewww_debug .= "retina size: $opt_size<br>";
 	$query = $wpdb->prepare("SELECT id FROM $wpdb->ewwwio_images WHERE BINARY path = %s AND image_size = '$opt_size'", $temp_path);
@@ -667,19 +666,6 @@ function ewww_image_optimizer_gd_support() {
 		return FALSE;
 	}
 }
-
-// makes sure the user isn't putting crap in the database
-/*function ewww_image_optimizer_jpg_background_sanitize ($input) {
-	global $ewww_debug;
-	$ewww_debug .= "<b>ewww_image_optimizer_jpg_background_santitize()</b><br>";
-	return sanitize_text_field($input);
-}*/
-
-/*function ewww_image_optimizer_jpg_quality_sanitize ($input) {
-	global $ewww_debug;
-	$ewww_debug .= "<b>ewww_image_optimizer_jpg_quality_santitize()</b><br>";
-	return sanitize_text_field($input);
-}*/
 
 function ewww_image_optimizer_aux_paths_sanitize ($input) {
 	global $ewww_debug;
@@ -919,26 +905,26 @@ function ewww_image_optimizer_delete ($id) {
 	return;
 }
 
-// tells the user we could not verify the cloud api key
-/*function ewww_image_optimizer_notice_cloud_failed() {
-	global $ewww_debug;
-	$ewww_debug .= "<b>ewww_image_optimizer_notice_cloud_failed()</b><br>";
-	echo "<div id='ewww-image-optimizer-warning-cloud' class='error'><p><strong>" . __('EWWW Image Optimizer was not able to verify your Cloud API Key.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</strong></p></div>";
-}*/
-
 function ewww_image_optimizer_cloud_key_sanitize ( $key ) {
 	global $ewww_debug;
 	$key = trim( $key );
 	$ewww_debug .= "<b>ewww_image_optimizer_cloud_key_sanitize()</b><br>";
 	if ( ewww_image_optimizer_cloud_verify( false, $key ) ) {
 		$ewww_debug .= "sanitize (verification) successful<br>";
-	ewwwio_memory( __FUNCTION__ );
+		ewwwio_memory( __FUNCTION__ );
 		return $key;
 	} else {
 		$ewww_debug .= "sanitize (verification) failed<br>";
-	ewwwio_memory( __FUNCTION__ );
+		ewwwio_memory( __FUNCTION__ );
 		return '';
 	}
+}
+
+// turns on the cloud settings when they are all disabled
+function ewww_image_optimizer_cloud_enable () {
+	ewww_image_optimizer_set_option('ewww_image_optimizer_cloud_jpg', true);
+	ewww_image_optimizer_set_option('ewww_image_optimizer_cloud_png', true);
+	ewww_image_optimizer_set_option('ewww_image_optimizer_cloud_gif', true);
 }
 
 // adds our version to the useragent for http requests
@@ -972,6 +958,9 @@ function ewww_image_optimizer_cloud_verify ( $cache = true, $api_key = '' ) {
 	$ewww_cloud_ip = get_option('ewww_image_optimizer_cloud_ip');
 	if ($cache && $prev_verified && $last_checked + 86400 > time() && !empty($ewww_cloud_ip)) {
 		$ewww_debug .= "using cached IP: $ewww_cloud_ip<br>";
+		if ( ! ewww_image_optimizer_get_option( 'ewww_image_optimizer_cloud_jpg' )  && ! ewww_image_optimizer_get_option( 'ewww_image_optimizer_cloud_png' ) && ! ewww_image_optimizer_get_option( 'ewww_image_optimizer_cloud_gif' ) ) {
+			ewww_image_optimizer_cloud_enable();
+		}
 		return $prev_verified;	
 	} else {
 		$servers = gethostbynamel('optimize.exactlywww.com');
@@ -1006,21 +995,17 @@ function ewww_image_optimizer_cloud_verify ( $cache = true, $api_key = '' ) {
 		}
 	}
 	if (empty($verified)) {
-	//	update_option ( 'ewww_image_optimizer_cloud_verified', '' );
-/*		update_site_option('ewww_image_optimizer_cloud_jpg', '');
-		update_site_option('ewww_image_optimizer_cloud_png', '');
-		update_site_option('ewww_image_optimizer_cloud_gif', '');
-		update_option('ewww_image_optimizer_cloud_jpg', '');
-		update_option('ewww_image_optimizer_cloud_png', '');
-		update_option('ewww_image_optimizer_cloud_gif', '');*/
-	ewwwio_memory( __FUNCTION__ );
+		ewwwio_memory( __FUNCTION__ );
 		return FALSE;
 	} else {
+		if ( ! ewww_image_optimizer_get_option( 'ewww_image_optimizer_cloud_jpg' )  && ! ewww_image_optimizer_get_option( 'ewww_image_optimizer_cloud_png' ) && ! ewww_image_optimizer_get_option( 'ewww_image_optimizer_cloud_gif' ) ) {
+			ewww_image_optimizer_cloud_enable();
+		}
 		update_option ( 'ewww_image_optimizer_cloud_verified', $verified );
 		update_option ( 'ewww_image_optimizer_cloud_last', time() );
 		update_option ( 'ewww_image_optimizer_cloud_ip', $ewww_cloud_ip );
 		$ewww_debug .= "verification body contents: " . $result['body'] . "<br>";
-	ewwwio_memory( __FUNCTION__ );
+		ewwwio_memory( __FUNCTION__ );
 		return $verified;
 	}
 }

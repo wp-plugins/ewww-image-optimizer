@@ -212,6 +212,7 @@ NOTE: The WebP naming scheme has been changed to avoid conflicts when JPGs and P
 
 = 2.1.1 =
 * deprecated: NextGEN legacy support will be removed in 2.2 unless I hear from anyone still using it, Nextcellent will continue to be supported
+* changed: all image types are enabled when cloud API key is validated (but only if you do not choose individual options)
 * changed: prefixed javascript/request variables to avoid potential conflicts
 * fixed: undefined variable $log when uploading images
 * fixed: undefined variable $force when running scheduled optimize
