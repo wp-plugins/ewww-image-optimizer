@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: image, attachment, optimize, optimization, lossless, lossy, photo, picture, seo, compression, image editor, gmagick, jpegtran, gifsicle, optipng, pngout, pngquant, jpegmini, tinypng, webp, cwebp
 Requires at least: 3.5
 Tested up to: 4.1
-Stable tag: 2.1.1
+Stable tag: 2.1.2
 License: GPLv3
 
 Reduce file sizes for images in WordPress including NextGEN, GRAND FlAGallery and more using lossless/lossy methods and image format conversion.

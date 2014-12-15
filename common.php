@@ -3,7 +3,7 @@
 // TODO: check all comments to make sure they are actually useful...
 // TODO: webp fallback mode for CDN users: http://css-tricks.com/webp-with-fallback/
 
-define('EWWW_IMAGE_OPTIMIZER_VERSION', '211');
+define('EWWW_IMAGE_OPTIMIZER_VERSION', '212');
 
 // initialize debug global
 $disabled = ini_get('disable_functions');
