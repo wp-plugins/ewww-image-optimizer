@@ -1530,7 +1530,11 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = tr
 	}
 	if ( ! preg_match( '/' . __( 'Previously Optimized', EWWW_IMAGE_OPTIMIZER_DOMAIN ) . '/', $meta['ewww_image_optimizer'] ) && class_exists( 'Amazon_S3_And_CloudFront' ) ) {
  		global $as3cf;
-		$as3cf->wp_generate_attachment_metadata($meta, $ID);
+		if ( method_exists( $as3cf, 'wp_update_attachment_metadata' ) ) {
+			$as3cf->wp_update_attachment_metadata( $meta, $ID );
+		} elseif ( method_exists( $as3cf, 'wp_generate_attachment_metadata' ) ) {
+			$as3cf->wp_generate_attachment_metadata( $meta, $ID );
+		}
 		$ewww_debug .= 'uploading to Amazon S3<br>';
 	}
 

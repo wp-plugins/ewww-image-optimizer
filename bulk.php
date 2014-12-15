@@ -338,6 +338,7 @@ function ewww_image_optimizer_bulk_script($hook) {
 			'fields' => 'ids'
                 ));
         }
+	// TODO: is there a reason both the js and the database need to know the attachments we are working on?
 	// store the attachment IDs we retrieved in the 'bulk_attachments' option so we can keep track of our progress in the database
 	update_option('ewww_image_optimizer_bulk_attachments', $attachments);
 	wp_enqueue_script('ewwwbulkscript', plugins_url('/eio.js', __FILE__), array('jquery', 'jquery-ui-slider', 'jquery-ui-progressbar'));
