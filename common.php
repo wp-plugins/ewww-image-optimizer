@@ -3,7 +3,7 @@
 // TODO: check all comments to make sure they are actually useful...
 // TODO: webp fallback mode for CDN users: http://css-tricks.com/webp-with-fallback/
 
-define('EWWW_IMAGE_OPTIMIZER_VERSION', '212');
+define('EWWW_IMAGE_OPTIMIZER_VERSION', '212.1');
 
 // initialize debug global
 $disabled = ini_get('disable_functions');
@@ -866,6 +866,15 @@ function ewww_image_optimizer_delete ($id) {
 		$file_path = $meta['orig_file'];
 		// get the filename
 		$filename = basename($file_path);
+		// delete any residual webp versions
+		$webpfile = $filename . '.webp';
+		$webpfileold = preg_replace( '/\.\w+$/', '.webp', $filename );
+		if ( file_exists( $webpfile) ) {
+			unlink( $webpfile );
+		}
+		if ( file_exists( $webpfileold) ) {
+			unlink( $webpfileold );
+		}
 		// retrieve any posts that link the original image
 		$esql = "SELECT ID, post_content FROM $wpdb->posts WHERE post_content LIKE '%$filename%'";
 		$rows = $wpdb->get_row($esql);
@@ -882,6 +891,15 @@ function ewww_image_optimizer_delete ($id) {
 	if (isset($meta['sizes']) ) {
 		// one way or another, $file_path is now set, and we can get the base folder name
 		$base_dir = dirname($file_path) . '/';
+		// delete any residual webp versions
+		$webpfile = $base_dir . $data['file'] . '.webp';
+		$webpfileold = preg_replace( '/\.\w+$/', '.webp', $base_dir . $data['file'] );
+		if ( file_exists( $webpfile) ) {
+			unlink( $webpfile );
+		}
+		if ( file_exists( $webpfileold) ) {
+			unlink( $webpfileold );
+		}
 		// check each resized version
 		foreach($meta['sizes'] as $size => $data) {
 			$wpdb->delete($wpdb->ewwwio_images, array('path' => $base_dir . $data['file']));
@@ -2489,6 +2507,7 @@ function ewww_image_optimizer_options () {
 			"<b>OR</b><br />\n" .
 			"Use any of these referral links to show your appreciation:</p>\n" .
 			"<p><b>Web Hosting:</b><br>\n" .
+				"<a href='https://partners.a2hosting.com/solutions.php?id=5959&url=638'>A2 Hosting</a> with automatic EWWW IO setup<br>\n" .
 				"<a href='http://www.dreamhost.com/r.cgi?132143'>Dreamhost</a><br>\n" .
 				"<a href='http://www.bluehost.com/track/nosilver4u'>Bluehost</a><br>\n" .
 				"<a href='http://www.liquidweb.com/?RID=nosilver4u'>liquidweb</a><br>\n" .

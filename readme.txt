@@ -212,6 +212,9 @@ NOTE: The WebP naming scheme has been changed to avoid conflicts when JPGs and P
 * mozjpeg for improved lossless jpeg optimization (cloud only)
 * If you would like to help translate this plugin in your language, get more information here: http://translate.ewww.io/projects/ewww-image-optimizer/
 
+= 2.1.3 =
+* changed: webp images are checked during deletion of images, though WP already removes any newer webp versions that are in the attachment metadata
+
 = 2.1.2 =
 *fixed: post-processing call to Amazon S3 and Cloudfront was broken when upgrading it to .7 or higher, fixed to allow both .6 and .7 to work with EWWW IO
 
