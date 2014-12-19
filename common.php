@@ -3,7 +3,7 @@
 // TODO: check all comments to make sure they are actually useful...
 // TODO: webp fallback mode for CDN users: http://css-tricks.com/webp-with-fallback/
 
-define('EWWW_IMAGE_OPTIMIZER_VERSION', '212.1');
+define('EWWW_IMAGE_OPTIMIZER_VERSION', '212.2');
 
 // initialize debug global
 $disabled = ini_get('disable_functions');
@@ -2060,7 +2060,29 @@ function ewww_image_optimizer_settings_script($hook) {
 	if (strpos($hook,'settings_page_ewww-image-optimizer') !== 0) {
 		return;
 	}
-	$savings_todo = $wpdb->get_var("SELECT COUNT(id) FROM $wpdb->ewwwio_images");
+	if (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network(EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE_REL)) {
+		$savings_todo = 0;
+		if (function_exists('wp_get_sites')) {
+			add_filter('wp_is_large_network', 'ewww_image_optimizer_large_network', 20, 0);
+			$blogs = wp_get_sites(array(
+				'network_id' => $wpdb->siteid,
+				'limit' => 10000
+			));
+			remove_filter('wp_is_large_network', 'ewww_image_optimizer_large_network', 20, 0);
+		} else {
+			$query = "SELECT blog_id FROM {$wpdb->blogs} WHERE site_id = '{$wpdb->siteid}' ";
+			$blogs = $wpdb->get_results($query, ARRAY_A);
+		}
+		foreach ($blogs as $blog) {
+			switch_to_blog($blog['blog_id']);
+			$savings_todo += $wpdb->get_var("SELECT COUNT(id) FROM $wpdb->ewwwio_images");
+		}
+		restore_current_blog();
+	} else {
+		$savings_todo = $wpdb->get_var("SELECT COUNT(id) FROM $wpdb->ewwwio_images");
+	}
+	// require the files that do the bulk processing 
+		
 	$ewww_debug .= "images to check for savings: $savings_todo<br>";
 	wp_enqueue_script('ewwwbulkscript', plugins_url('/eio.js', __FILE__), array('jquery', 'jquery-ui-slider', 'jquery-ui-progressbar'));
 	wp_localize_script('ewwwbulkscript', 'ewww_vars', array(
@@ -2085,20 +2107,95 @@ function ewww_image_optimizer_savings_finish() {
 
 function ewww_image_optimizer_savings_loop() {
 	// verify that an authorized user has started the optimizer
-	if (!wp_verify_nonce($_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-settings')) {
-		wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+	if ( ! wp_verify_nonce( $_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-settings' ) ) {
+		wp_die( __( 'Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN ) );
 	} 
 	global $ewww_debug;
 	global $wpdb;
-	$total_query = "SELECT orig_size-image_size FROM $wpdb->ewwwio_images LIMIT {$_REQUEST['ewww_savings_counter']}, 1000";
-	$savings = $wpdb->get_results($total_query, ARRAY_N);
-	$total_savings = 0;
-	foreach ($savings as $saved) {
-		$total_savings += $saved[0];
+	if ( $_REQUEST['ewww_savings_todo'] < 1000 ) {
+		$records_needed = $_REQUEST['ewww_savings_todo'];
+	} else {
+		$records_needed = 1000;
 	}
+	if ( function_exists('is_plugin_active_for_network') && is_plugin_active_for_network( EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE_REL ) ) {	
+		if (function_exists('wp_get_sites')) {
+			add_filter('wp_is_large_network', 'ewww_image_optimizer_large_network', 20, 0);
+			$blogs = wp_get_sites(array(
+				'network_id' => $wpdb->siteid,
+				'limit' => 10000
+			));
+			remove_filter('wp_is_large_network', 'ewww_image_optimizer_large_network', 20, 0);
+		} else {
+			$query = "SELECT blog_id FROM {$wpdb->blogs} WHERE site_id = '{$wpdb->siteid}' ";
+			$blogs = $wpdb->get_results($query, ARRAY_A);
+		}
+		$total_savings = 0;
+		$savings_done = $_REQUEST['ewww_savings_counter'];
+		foreach ($blogs as $blog) {
+			switch_to_blog($blog['blog_id']);
+			$total_query = "SELECT orig_size-image_size FROM $wpdb->ewwwio_images LIMIT {$_REQUEST['ewww_savings_counter']}, $records_needed";
+		$ewww_debug .= "querying $records_needed records, starting at {$_REQUEST['ewww_savings_counter']}<br>";
+			$savings = $wpdb->get_results($total_query, ARRAY_N);
+			$records_needed -= count($savings);
+			foreach ( $savings as $saved ) {
+				$total_savings += $saved[0];
+			}
+			if ( $records_needed ) {
+				$savings_done -= $wpdb->get_var("SELECT COUNT(id) FROM $wpdb->ewwwio_images");
+			} else {
+				break;
+			}
+		}
+		restore_current_blog();
+	} else {
+		$total_query = "SELECT orig_size-image_size FROM $wpdb->ewwwio_images LIMIT {$_REQUEST['ewww_savings_counter']}, $records_needed";
+		$ewww_debug .= "querying $records_needed records, starting at {$_REQUEST['ewww_savings_counter']}<br>";
+		$savings = $wpdb->get_results($total_query, ARRAY_N);
+		$total_savings = 0;
+		foreach ( $savings as $saved ) {
+			$total_savings += $saved[0];
+		}
+	}
+	ewww_image_optimizer_debug_log();
+	
 	echo $total_savings;
 	ewwwio_memory( __FUNCTION__ );
 	die();
+}
+
+function ewwwio_savings_loop_dc() {
+	global $wpdb;
+	if ( function_exists('is_plugin_active_for_network') && is_plugin_active_for_network( EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE_REL ) ) {	
+		if (function_exists('wp_get_sites')) {
+			add_filter('wp_is_large_network', 'ewww_image_optimizer_large_network', 20, 0);
+			$blogs = wp_get_sites(array(
+				'network_id' => $wpdb->siteid,
+				'limit' => 10000
+			));
+			remove_filter('wp_is_large_network', 'ewww_image_optimizer_large_network', 20, 0);
+		} else {
+			$query = "SELECT blog_id FROM {$wpdb->blogs} WHERE site_id = '{$wpdb->siteid}' ";
+			$blogs = $wpdb->get_results($query, ARRAY_A);
+		}
+		$total_savings = 0;
+		foreach ($blogs as $blog) {
+			switch_to_blog($blog['blog_id']);
+			$total_query = "SELECT orig_size-image_size FROM $wpdb->ewwwio_images";
+			$savings = $wpdb->get_results($total_query, ARRAY_N);
+			foreach ( $savings as $saved ) {
+				$total_savings += $saved[0];
+			}
+		}
+		restore_current_blog();
+	} else {
+		$total_query = "SELECT orig_size-image_size FROM $wpdb->ewwwio_images";
+		$savings = $wpdb->get_results($total_query, ARRAY_N);
+		$total_savings = 0;
+		foreach ( $savings as $saved ) {
+			$total_savings += $saved[0];
+		}
+	}
+	return $total_savings;
 }
 
 function ewww_image_optimizer_webp_rewrite() {

@@ -214,6 +214,8 @@ NOTE: The WebP naming scheme has been changed to avoid conflicts when JPGs and P
 
 = 2.1.3 =
 * changed: webp images are checked during deletion of images, though WP already removes any newer webp versions that are in the attachment metadata
+* fixed: Total Savings calculates properly on multi-site installs when network-activated
+* fixed: Total Savings was double-counting the first 1000 image query
 
 = 2.1.2 =
 *fixed: post-processing call to Amazon S3 and Cloudfront was broken when upgrading it to .7 or higher, fixed to allow both .6 and .7 to work with EWWW IO

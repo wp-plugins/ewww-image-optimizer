@@ -331,14 +331,14 @@ jQuery(document).ready(function($) {
 					$('#ewww-total-savings').text(response);
 				});
 			} else {
+				ewww_savings_todo -= 1000;
+				ewww_savings_counter += 1000;
 				ewww_savings_data = {
 				        action: ewww_savings_action,
 					ewww_wpnonce: ewww_vars._wpnonce,
 					ewww_savings_counter: ewww_savings_counter,
 					ewww_savings_todo: ewww_savings_todo,
 				};
-				ewww_savings_todo -= 1000;
-				ewww_savings_counter += 1000;
 				ewwwLoopSavings();
 			}
 	        });
