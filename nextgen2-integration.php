@@ -44,7 +44,7 @@ class ewwwngg {
 		$sizes = $storage->get_image_sizes();
 		// run the optimizer on the image for each $size
 		foreach ($sizes as $size) {
-			if ( $size === 'full' && ewww_image_optimizer_get_option('ewww_image_optimizer_lossy_skip_full')) {
+			if ( $size === 'full' ) {
 				$full_size = true;
 			} else {
 				$full_size = false;

@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate image optimizers into WordPress.
- * @version 2.1.2.2
+ * @version 2.1.2.3
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -10,7 +10,7 @@ Plugin URI: http://wordpress.org/extend/plugins/ewww-image-optimizer/
 Description: Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
 Author: Shane Bishop
 Text Domain: ewww-image-optimizer
-Version: 2.1.2.2
+Version: 2.1.2.3
 Author URI: http://www.shanebishop.net/
 License: GPLv3
 */
@@ -1088,6 +1088,8 @@ function ewww_image_optimizer_find_binary ($binary, $switch) {
  * @param   string $file		Full absolute path to the image file
  * @param   int $gallery_type		1=wordpress, 2=nextgen, 3=flagallery, 4=aux_images, 5=image editor, 6=imagestore, 7=retina
  * @param   boolean $converted		tells us if this is a resize and the full image was converted to a new format
+ * @param   boolean $new		tells the optimizer that this is a new image, so it should attempt conversion regardless of previous results
+ * @param   boolean $fullsize		tells the optimizer this is a full size image
  * @returns array
  */
 function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new = false, $fullsize = false) {
@@ -1171,7 +1173,17 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 	}	
 	if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_gif')) {
 		$skip_gifsicle_check = true;
-	}	
+	}
+	if ( ewww_image_optimizer_get_option( 'ewww_image_optimizer_metadata_skip_full' ) && $fullsize ) {
+		$keep_metadata = true;
+	} else {
+		$keep_metadata = false;
+	}
+	if ( ewww_image_optimizer_get_option( 'ewww_image_optimizer_lossy_skip_full' ) && $fullsize ) {
+		$skip_lossy = true;
+	} else {
+		$skip_lossy = false;
+	}
 	// if the full-size image was converted
 	if ($converted) {
 		$ewww_debug .= "full-size image was converted, need to rebuild filename for meta<br>";
@@ -1245,7 +1257,7 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 				}
 			}
 			if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_jpg')) {
-				list($file, $converted, $result, $new_size) = ewww_image_optimizer_cloud_optimizer($file, $type, $convert, $pngfile, 'image/png', $fullsize);
+				list($file, $converted, $result, $new_size) = ewww_image_optimizer_cloud_optimizer($file, $type, $convert, $pngfile, 'image/png', $skip_lossy);
 				if ($converted) {
 					$converted = $filenum;
 					ewww_image_optimizer_webp_create( $file, $new_size, 'image/png', null );
@@ -1279,7 +1291,7 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 				$tempfile = $file . ".tmp"; //non-progressive jpeg
 				$progfile = $file . ".prog"; // progressive jpeg
 				// check to see if we are supposed to strip metadata (badly named)
-				if(ewww_image_optimizer_get_option('ewww_image_optimizer_jpegtran_copy') == TRUE){
+				if ( ewww_image_optimizer_get_option( 'ewww_image_optimizer_jpegtran_copy' ) && ! $keep_metadata){
 					// don't copy metadata
 					$copy_opt = 'none';
 				} else {
@@ -1366,7 +1378,7 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 					imagepng(imagecreatefromjpeg($file), $pngfile);
 				}
 				// if lossy optimization is ON and full-size exclusion is not active
-				if (ewww_image_optimizer_get_option('ewww_image_optimizer_png_lossy') && $tools['PNGQUANT'] && !$fullsize) {
+				if (ewww_image_optimizer_get_option('ewww_image_optimizer_png_lossy') && $tools['PNGQUANT'] && !$skip_lossy ) {
 					$ewww_debug .= "attempting lossy reduction<br>";
 					exec( "$nice " . $tools['PNGQUANT'] . " " . ewww_image_optimizer_escapeshellarg( $pngfile ) );
 					$quantfile = preg_replace('/\.\w+$/', '-fs8.png', $pngfile);
@@ -1384,7 +1396,7 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 				if (!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_optipng')) {
 					// retrieve the optipng optimization level
 					$optipng_level = ewww_image_optimizer_get_option('ewww_image_optimizer_optipng_level');
-					if (ewww_image_optimizer_get_option('ewww_image_optimizer_jpegtran_copy') && preg_match('/0.7/', ewww_image_optimizer_tool_found($tools['OPTIPNG'], 'o'))) {
+					if (ewww_image_optimizer_get_option( 'ewww_image_optimizer_jpegtran_copy' ) && preg_match( '/0.7/', ewww_image_optimizer_tool_found( $tools['OPTIPNG'], 'o' ) ) && ! $keep_metadata ) {
 						$strip = '-strip all ';
 					} else {
 						$strip = '';
@@ -1443,7 +1455,7 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 			break;
 		case 'image/png':
 			// png2jpg conversion is turned on, and the image is in the wordpress media library
-			if ( ( ewww_image_optimizer_get_option( 'ewww_image_optimizer_png_to_jpg' ) || ! empty( $_GET['ewww_convert'] ) ) && $gallery_type == 1 && ! $fullsize ) {
+			if ( ( ewww_image_optimizer_get_option( 'ewww_image_optimizer_png_to_jpg' ) || ! empty( $_GET['ewww_convert'] ) ) && $gallery_type == 1 && ! $skip_lossy ) {
 				$ewww_debug .= "PNG to JPG conversion turned on<br>";
 				// if the user set a fill background for transparency
 				$background = '';
@@ -1495,7 +1507,7 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 				}
 			}
 			if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_png')) {
-				list($file, $converted, $result, $new_size) = ewww_image_optimizer_cloud_optimizer($file, $type, $convert, $jpgfile, 'image/jpeg', $fullsize, array('r' => $r, 'g' => $g, 'b' => $b, 'quality' => $gquality));
+				list($file, $converted, $result, $new_size) = ewww_image_optimizer_cloud_optimizer($file, $type, $convert, $jpgfile, 'image/jpeg', $skip_lossy, array('r' => $r, 'g' => $g, 'b' => $b, 'quality' => $gquality));
 				if ($converted) {
 					$converted = $filenum;
 					ewww_image_optimizer_webp_create( $file, $new_size, 'image/jpeg', null );
@@ -1528,7 +1540,7 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 			// if optimization is turned on
 			if ($optimize) {
 				// if lossy optimization is ON and full-size exclusion is not active
-				if ( ewww_image_optimizer_get_option( 'ewww_image_optimizer_png_lossy' ) && $tools['PNGQUANT'] && !$fullsize) {
+				if ( ewww_image_optimizer_get_option( 'ewww_image_optimizer_png_lossy' ) && $tools['PNGQUANT'] && ! $skip_lossy ) {
 					$ewww_debug .= "attempting lossy reduction<br>";
 					exec( "$nice " . $tools['PNGQUANT'] . " " . ewww_image_optimizer_escapeshellarg( $file ) );
 					$quantfile = preg_replace( '/\.\w+$/', '-fs8.png', $file );
@@ -1546,7 +1558,7 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 				if(!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_optipng')) {
 					// retrieve the optimization level for optipng
 					$optipng_level = ewww_image_optimizer_get_option('ewww_image_optimizer_optipng_level');
-					if (ewww_image_optimizer_get_option('ewww_image_optimizer_jpegtran_copy') && preg_match('/0.7/', ewww_image_optimizer_tool_found($tools['OPTIPNG'], 'o'))) {
+					if ( ewww_image_optimizer_get_option( 'ewww_image_optimizer_jpegtran_copy' ) && preg_match( '/0.7/', ewww_image_optimizer_tool_found( $tools['OPTIPNG'], 'o' ) ) && ! $keep_metadata ) {
 						$strip = '-strip all ';
 					} else {
 						$strip = '';
@@ -1615,12 +1627,12 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 					$ewww_debug .= "unable to convert to JPG<br>";
 				}
 				// next we need to optimize that JPG if jpegtran is enabled
-				if (!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_jpegtran') && file_exists($jpgfile)) {
+				if ( ! ewww_image_optimizer_get_option( 'ewww_image_optimizer_disable_jpegtran' ) && file_exists( $jpgfile ) ) {
 					// generate temporary file-names:
 					$tempfile = $jpgfile . ".tmp"; //non-progressive jpeg
 					$progfile = $jpgfile . ".prog"; // progressive jpeg
 					// check to see if we are supposed to strip metadata (badly named)
-					if(ewww_image_optimizer_get_option('ewww_image_optimizer_jpegtran_copy') == TRUE){
+					if ( ewww_image_optimizer_get_option( 'ewww_image_optimizer_jpegtran_copy' ) && ! $keep_metadata ){
 						// don't copy metadata
 						$copy_opt = 'none';
 					} else {
@@ -1726,7 +1738,7 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 				}
 			}
 			if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_gif')) {
-				list($file, $converted, $result, $new_size) = ewww_image_optimizer_cloud_optimizer($file, $type, $convert, $pngfile, 'image/png', $fullsize);
+				list($file, $converted, $result, $new_size) = ewww_image_optimizer_cloud_optimizer($file, $type, $convert, $pngfile, 'image/png', $skip_lossy);
 				if ($converted) {
 					$converted = $filenum;
 					ewww_image_optimizer_webp_create( $file, $new_size, 'image/png', null ); 
@@ -1792,7 +1804,7 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 				if (!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_optipng') && $tools['OPTIPNG']) {
 					// retrieve the optipng optimization level
 					$optipng_level = ewww_image_optimizer_get_option('ewww_image_optimizer_optipng_level');
-					if (ewww_image_optimizer_get_option('ewww_image_optimizer_jpegtran_copy') && preg_match('/0.7/', ewww_image_optimizer_tool_found($tools['OPTIPNG'], 'o'))) {
+					if ( ewww_image_optimizer_get_option( 'ewww_image_optimizer_jpegtran_copy' ) && preg_match( '/0.7/', ewww_image_optimizer_tool_found( $tools['OPTIPNG'], 'o' ) ) && ! $keep_metadata ) {
 						$strip = '-strip all ';
 					} else {
 						$strip = '';

@@ -213,6 +213,7 @@ NOTE: The WebP naming scheme has been changed to avoid conflicts when JPGs and P
 * If you would like to help translate this plugin in your language, get more information here: http://translate.ewww.io/projects/ewww-image-optimizer/
 
 = 2.1.3 =
+* added: advanced option to preserve metadata for full-size originals
 * changed: webp images are checked during deletion of images, though WP already removes any newer webp versions that are in the attachment metadata
 * fixed: Total Savings calculates properly on multi-site installs when network-activated
 * fixed: Total Savings was double-counting the first 1000 image query
