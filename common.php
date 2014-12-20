@@ -3,7 +3,7 @@
 // TODO: check all comments to make sure they are actually useful...
 // TODO: webp fallback mode for CDN users: http://css-tricks.com/webp-with-fallback/
 
-define('EWWW_IMAGE_OPTIMIZER_VERSION', '212.3');
+define('EWWW_IMAGE_OPTIMIZER_VERSION', '212.4');
 
 // initialize debug global
 $disabled = ini_get('disable_functions');
@@ -81,13 +81,16 @@ function wptuts_screen_help( $contextual_help, $screen_id, $screen ) {
 /**
  * Hooks
  */
-add_filter('wp_generate_attachment_metadata', 'ewww_image_optimizer_resize_from_meta_data', 15, 2);
+if ( ! ewww_image_optimizer_get_option( 'ewww_image_optimizer_noauto' ) ) {
+	add_filter('wp_generate_attachment_metadata', 'ewww_image_optimizer_resize_from_meta_data', 15, 2);
+	add_filter('wp_image_editors', 'ewww_image_optimizer_load_editor', 60);
+}
+// this hook is used to ensure we populate the metadata with webp images
 add_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment_metadata', 8, 2);
 add_filter('manage_media_columns', 'ewww_image_optimizer_columns');
 // variable for plugin settings link
 $plugin = plugin_basename (EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE);
 add_filter("plugin_action_links_$plugin", 'ewww_image_optimizer_settings_link');
-add_filter('wp_image_editors', 'ewww_image_optimizer_load_editor', 60);
 add_filter('ewww_image_optimizer_settings', 'ewww_image_optimizer_filter_settings_page');
 add_action('manage_media_custom_column', 'ewww_image_optimizer_custom_column', 10, 2);
 add_action('admin_init', 'ewww_image_optimizer_admin_init');
@@ -220,6 +223,8 @@ function ewww_image_optimizer_admin_init() {
 			update_site_option('ewww_image_optimizer_skip_size', intval($_POST['ewww_image_optimizer_skip_size']));
 			if (empty($_POST['ewww_image_optimizer_skip_png_size'])) $_POST['ewww_image_optimizer_skip_png_size'] = '';
 			update_site_option('ewww_image_optimizer_skip_png_size', intval($_POST['ewww_image_optimizer_skip_png_size']));
+			if (empty($_POST['ewww_image_optimizer_noauto'])) $_POST['ewww_image_optimizer_noauto'] = '';
+			update_site_option('ewww_image_optimizer_noauto', $_POST['ewww_image_optimizer_noauto']);
 			add_action('network_admin_notices', 'ewww_image_optimizer_network_settings_saved');
 		}
 	}
@@ -255,6 +260,7 @@ function ewww_image_optimizer_admin_init() {
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_skip_size', 'intval');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_skip_png_size', 'intval');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_import_status');
+	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_noauto');
 	ewww_image_optimizer_exec_init();
 	// setup scheduled optimization if the user has enabled it, and it isn't already scheduled
 	if (ewww_image_optimizer_get_option('ewww_image_optimizer_auto') == TRUE && !wp_next_scheduled('ewww_image_optimizer_auto')) {
@@ -2546,6 +2552,7 @@ function ewww_image_optimizer_options () {
 					$output[] = "<textarea id='ewww_image_optimizer_aux_paths' name='ewww_image_optimizer_aux_paths' rows='3' cols='60'>" . ( ( $aux_paths = ewww_image_optimizer_get_option( 'ewww_image_optimizer_aux_paths' ) ) ? implode( "\n", $aux_paths ) : "" ) . "</textarea>\n";
 					$output[] = "<p class='description'>Provide paths containing images to be optimized using scheduled optimization or 'Optimize More' in the Tools menu.<br>\n";
 					$output[] = "<b><a href='http://wordpress.org/support/plugin/ewww-image-optimizer'>" . __('Please submit a support request in the forums to have folders created by a particular plugin auto-included in the future.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a></b></p></td></tr>\n";
+				$output[] = "<tr><th><label for='ewww_image_optimizer_noauto'>" . __('Disable Automatic Optimization', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</label></th><td><input type='checkbox' id='ewww_image_optimizer_noauto' name='ewww_image_optimizer_noauto' value='true' " . ( ewww_image_optimizer_get_option('ewww_image_optimizer_noauto') == TRUE ? "checked='true'" : "" ) . " /> " . __('Images will not be optimized on upload. Images may be optimized with the Bulk Optimize tools or with Scheduled optimization.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</td></tr>\n";
 				$output[] = "<tr><th><label for='ewww_image_optimizer_skip_size'>" . __('Skip Small Images', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</label></th><td><input type='text' id='ewww_image_optimizer_skip_size' name='ewww_image_optimizer_skip_size' size='8' value='" . ewww_image_optimizer_get_option('ewww_image_optimizer_skip_size') . "'> " . __('Do not optimize images smaller than this (in bytes)', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</td></tr>\n";
 				$output[] = "<tr><th><label for='ewww_image_optimizer_skip_png_size'>" . __('Skip Large PNG Images', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</label></th><td><input type='text' id='ewww_image_optimizer_skip_png_size' name='ewww_image_optimizer_skip_png_size' size='8' value='" . ewww_image_optimizer_get_option('ewww_image_optimizer_skip_png_size') . "'> " . __('Do not optimize PNG images larger than this (in bytes)', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</td></tr>\n";
 				$output[] = "<tr><th><label for='ewww_image_optimizer_lossy_skip_full'>" . __('Exclude full-size images from lossy optimization', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</label></th><td><input type='checkbox' id='ewww_image_optimizer_lossy_skip_full' name='ewww_image_optimizer_lossy_skip_full' value='true' " . ( ewww_image_optimizer_get_option('ewww_image_optimizer_lossy_skip_full') == TRUE ? "checked='true'" : "" ) . " /></td></tr>\n";
