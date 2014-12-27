@@ -2,8 +2,9 @@
 // common functions for Standard and Cloud plugins
 // TODO: check all comments to make sure they are actually useful...
 // TODO: webp fallback mode for CDN users: http://css-tricks.com/webp-with-fallback/
+// TODO: this could be useful: http://codex.wordpress.org/Function_Reference/maybe_unserialize
 
-define('EWWW_IMAGE_OPTIMIZER_VERSION', '212.4');
+define('EWWW_IMAGE_OPTIMIZER_VERSION', '212.5');
 
 // initialize debug global
 $disabled = ini_get('disable_functions');
@@ -137,6 +138,10 @@ if (is_plugin_active('nextcellent-gallery-nextgen-legacy/nggallery.php') || (fun
 // include the file that loads the grand flagallery optimization functions
 if (is_plugin_active('flash-album-gallery/flag.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('flash-album-gallery/flag.php'))) {
 	require( EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'flag-integration.php' );
+}
+
+if ( defined( 'WP_CLI' ) && WP_CLI ) {
+	include( EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'iocli.php' );
 }
 
 function ewwwio_memory( $function ) {
@@ -488,6 +493,7 @@ function ewww_image_optimizer_network_admin_menu() {
 function ewww_image_optimizer_admin_menu() {
 	// adds bulk optimize to the media library menu
 	$ewww_bulk_page = add_media_page(__('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), __('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), 'edit_others_posts', 'ewww-image-optimizer-bulk', 'ewww_image_optimizer_bulk_preview');
+	$ewww_unoptimized_page = add_media_page(__('Unoptimized Images', EWWW_IMAGE_OPTIMIZER_DOMAIN), __('Unoptimized Images', EWWW_IMAGE_OPTIMIZER_DOMAIN), 'edit_others_posts', 'ewww-image-optimizer-unoptimized', 'ewww_image_optimizer_display_unoptimized_media');
 	$ewww_webp_migrate_page = add_submenu_page( null, __( 'Migrate WebP Images', EWWW_IMAGE_OPTIMIZER_DOMAIN ), __('Migrate WebP Images', EWWW_IMAGE_OPTIMIZER_DOMAIN), 'edit_others_posts', 'ewww-image-optimizer-webp-migrate', 'ewww_image_optimizer_webp_migrate_preview');
 	add_action('admin_footer-' . $ewww_bulk_page, 'ewww_image_optimizer_debug');
 	if ( ! function_exists( 'is_plugin_active_for_network' ) || ! is_plugin_active_for_network( plugin_basename( EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE ) ) ) { 
@@ -589,6 +595,7 @@ function ewww_image_optimizer_ims() {
 			echo '<table class="wp-list-table widefat media" cellspacing="0"><thead><tr><th>ID</th><th>&nbsp;</th><th>' . __('Title', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</th><th>' . __('Gallery', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</th><th>' . __('Image Optimizer', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</th></tr></thead>';
 			$alternate = true;
 			foreach ($attachments as $ID) {
+				// TODO: for what do we need the meta?
 				$meta = get_metadata('post', $ID);
 				if ( is_array( $meta['_wp_attachment_metadata'][0] ) ) {
 					$meta = $meta['_wp_attachment_metadata'][0];
@@ -598,10 +605,6 @@ function ewww_image_optimizer_ims() {
 				$image_name = get_the_title($ID);
 				$gallery_name = get_the_title($gid);
 				$image_url = $meta['sizes']['mini']['url'];
-				$echo_meta = print_r($meta, true);
-				$echo_meta = preg_replace('/\n/', '<br>', $echo_meta);
-				$echo_meta = preg_replace('/ /', '&nbsp;', $echo_meta);
-				$echo_meta = '';
 ?>				<tr<?php if($alternate) echo " class='alternate'"; ?>><td><?php echo $ID; ?></td>
 <?php				echo "<td style='width:80px' class='column-icon'><img src='$image_url' /></td>";
 				echo "<td class='title'>$image_name</td>";
@@ -1310,7 +1313,12 @@ function ewww_image_optimizer_aux_images_loop($attachment = null, $auto = false)
 	// retrieve the time when the optimizer starts
 	$started = microtime(true);
 	// allow 50 seconds for each image (this doesn't include any exec calls, only php processing time)
-	set_time_limit (50);
+				if ( ! set_time_limit (0) ) {
+					$limit = 320;
+					while ( ! set_time_limit( $limit ) ) {
+						$limit--;
+					}
+				}
 	// get the path of the current attachment
 	if (empty($attachment)) $attachment = $_POST['ewww_attachment'];
 	$attachment = preg_replace( ":\\\':", "'", $attachment);
@@ -1844,7 +1852,7 @@ function ewww_image_optimizer_is_animated($filename) {
 function ewww_image_optimizer_columns($defaults) {
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_optimizer_columns()</b><br>";
-	$defaults['ewww-image-optimizer'] = 'Image Optimizer';
+	$defaults['ewww-image-optimizer'] = __( 'Image Optimizer', EWWW_IMAGE_OPTIMIZER_DOMAIN );
 	ewwwio_memory( __FUNCTION__ );
 	return $defaults;
 }
@@ -2043,6 +2051,52 @@ function ewww_image_optimizer_bulk_action_handler() {
 	wp_redirect(add_query_arg(array('page' => 'ewww-image-optimizer-bulk', '_wpnonce' => wp_create_nonce('ewww-image-optimizer-bulk'), 'goback' => 1, 'ids' => $ids), admin_url('upload.php'))); 
 	ewwwio_memory( __FUNCTION__ );
 	exit(); 
+}
+
+// display a page of unprocessed images from Media library
+function ewww_image_optimizer_display_unoptimized_media() {
+	global $ewww_debug;
+	$ewww_debug .= "<b>ewww_image_optimizer_display_unoptimized_media()</b><br>";
+	$attachments = ewww_image_optimizer_count_optimized ( 'media', true );
+//	$ims_columns = get_column_headers('ims_gallery');
+	echo "<h3>" . __('Unoptimized Images', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</h3>";
+	printf( '<p>' . __( 'We have %d images to optimize.', EWWW_IMAGE_OPTIMIZER_DOMAIN ) . '</p>', count( $attachments ) ); 
+	sort($attachments, SORT_NUMERIC);
+	$image_string = implode(',', $attachments);
+	echo '<form method="post" action="upload.php?page=ewww-image-optimizer-bulk">'
+		. "<input type='hidden' name='ids' value='$image_string' />"
+		. '<input type="submit" class="button-secondary action" value="' . __('Optimize All Images', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '" />'
+		. '</form>';
+	if ( count( $attachments ) < 500 ) {
+		sort($attachments, SORT_NUMERIC);
+		$image_string = implode(',', $attachments);
+//		echo "<p><a href='upload.php?page=ewww-image-optimizer-bulk&ids=$image_string'>" . __('Optimize Gallery', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a></p>";
+		echo '<table class="wp-list-table widefat media" cellspacing="0"><thead><tr><th>ID</th><th>&nbsp;</th><th>' . __('Title', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</th><th>' . __('Image Optimizer', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</th></tr></thead>';
+		$alternate = true;
+		foreach ($attachments as $ID) {
+			/*$meta = get_metadata('post', $ID);
+			if ( is_array( $meta['_wp_attachment_metadata'][0] ) ) {
+				$meta = $meta['_wp_attachment_metadata'][0];
+			} else {
+				$meta = unserialize($meta['_wp_attachment_metadata'][0]);
+			}*/
+			$image_name = get_the_title($ID);
+//			$gallery_name = get_the_title($gid);
+//			$image_url = $meta['sizes']['mini']['url'];
+?>			<tr<?php if($alternate) echo " class='alternate'"; ?>><td><?php echo $ID; ?></td>
+<?php			echo "<td style='width:80px' class='column-icon'>" . wp_get_attachment_image( $ID, 'thumbnail' ) . "</td>";
+			echo "<td class='title'>$image_name</td>";
+//			echo "<td>$gallery_name</td><td>";
+			echo "<td>";
+			ewww_image_optimizer_custom_column('ewww-image-optimizer', $ID);
+			echo "</td></tr>";
+			$alternate = !$alternate;
+		}
+		echo '</table>';
+	} else {
+		echo '<p>' . __( 'There are too many images to display.', EWWW_IMAGE_OPTIMIZER_DOMAIN ) . '</p>'; 
+	}
+	return;	
 }
 
 // retrieve an option: use 'site' setting if plugin is network activated, otherwise use 'blog' setting
@@ -2633,6 +2687,7 @@ function ewww_image_optimizer_options () {
 			"<p><b>CDN Networks:</b><br>Add the MaxCDN content delivery network to increase website speeds dramatically! <a target='_blank' href='http://tracking.maxcdn.com/c/91625/36539/378'>Sign Up Now and Save 25%</a> (100% Money Back Guarantee for 30 days). Integrate it within Wordpress using the W3 Total Cache plugin.</p>\n" .
 		"</div>\n" .
 	"</div>\n";
+	$ewww_debug .= '--' . ini_get('max_execution_time') . '--<br>';
 	echo apply_filters( 'ewww_image_optimizer_settings', $output );
 	ewwwio_memory( __FUNCTION__ );
 }

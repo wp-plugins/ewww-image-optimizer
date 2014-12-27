@@ -213,11 +213,14 @@ NOTE: The WebP naming scheme has been changed to avoid conflicts when JPGs and P
 * If you would like to help translate this plugin in your language, get more information here: http://translate.ewww.io/projects/ewww-image-optimizer/
 
 = 2.1.3 =
+* added: wp-cli command to optimize via command-line, 'wp-cli help ewwwio optimize' for more details
+* added: Unoptimized Images page to show ONLY images that have not been processed by EWWW (under Media Library)
 * added: advanced option to preserve metadata for full-size originals
 * added: disable automatic optimization on upload under advanced options if you prefer to manually optimize in batches, or by scheduled optimization
 * changed: webp images are checked during deletion of images, though WP already removes any newer webp versions that are in the attachment metadata
 * fixed: Total Savings calculates properly on multi-site installs when network-activated
 * fixed: Total Savings was double-counting the first 1000 image query
+* FlaGallery 4.27 resolves the optimize on upload issue, and fixes problems with the new wp-cli functions
 
 = 2.1.2 =
 *fixed: post-processing call to Amazon S3 and Cloudfront was broken when upgrading it to .7 or higher, fixed to allow both .6 and .7 to work with EWWW IO

@@ -76,8 +76,15 @@ class ewwwngg {
 		ob_end_flush();
 		// process each image
 		foreach ($images as $id) {
-			// give each image 50 seconds (php only, doesn't include any commands issued by exec()
-			set_time_limit (50);
+			if ( ini_get( 'max_execution_time' ) < 60 ) {
+				// give each image 50 seconds (php only, doesn't include any commands issued by exec()
+				if ( ! set_time_limit (0) ) {
+					$limit = 320;
+					while ( ! set_time_limit( $limit ) ) {
+						$limit--;
+					}
+				}
+			}
 			$current++;
 			echo "<p>" . __('Processing', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " $current/$total: ";
 			// get the metadata

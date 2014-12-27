@@ -75,7 +75,7 @@ function ewww_image_optimizer_bulk_preview() {
 }
 
 // retrieve image counts for the bulk process
-function ewww_image_optimizer_count_optimized ($gallery) {
+function ewww_image_optimizer_count_optimized ( $gallery, $return_ids = false ) {
 	global $ewww_debug;
 	global $wpdb;
 	$ewww_debug .= "<b>ewww_image_optimizer_count_optmized()</b><br>";
@@ -92,6 +92,7 @@ function ewww_image_optimizer_count_optimized ($gallery) {
 	$attachment_query_count = 0;
 	switch ($gallery) {
 		case 'media':
+			$ids = array();
 			// see if we were given attachment IDs to work with via GET/POST
 		        if ( ! empty($_REQUEST['ids']) || get_option('ewww_image_optimizer_bulk_resume')) {
 				$ewww_debug .= 'we have preloaded attachment ids<br>';
@@ -105,7 +106,7 @@ function ewww_image_optimizer_count_optimized ($gallery) {
 			}
 			$offset = 0;
 			// retrieve all the image attachment metadata from the database
-			while ( $attachments = $wpdb->get_results( "SELECT metas.meta_value FROM $wpdb->postmeta metas INNER JOIN $wpdb->posts posts ON posts.ID = metas.post_id WHERE posts.post_mime_type LIKE '%image%' AND metas.meta_key = '_wp_attachment_metadata' $attachment_query LIMIT $offset, $max_query", ARRAY_N ) ) {
+			while ( $attachments = $wpdb->get_results( "SELECT metas.meta_value,post_id FROM $wpdb->postmeta metas INNER JOIN $wpdb->posts posts ON posts.ID = metas.post_id WHERE posts.post_mime_type LIKE '%image%' AND metas.meta_key = '_wp_attachment_metadata' $attachment_query LIMIT $offset, $max_query", ARRAY_N ) ) {
 				$ewww_debug .= "fetched " . count( $attachments ) . " attachments starting at $offset<br>";
 				foreach ($attachments as $attachment) {
 					$meta = unserialize($attachment[0]);
@@ -114,6 +115,7 @@ function ewww_image_optimizer_count_optimized ($gallery) {
 					}
 					if (empty($meta['ewww_image_optimizer'])) {
 						$unoptimized_full++;
+						$ids[] = $attachment[1];
 					}
 					// resized versions, so we can continue
 					if (isset($meta['sizes']) ) {
@@ -253,13 +255,16 @@ function ewww_image_optimizer_count_optimized ($gallery) {
 //	$ewww_debug .= "memory allowed: " . ini_get('memory_limit') . "<br>";
 //	$ewww_debug .= "after counting memory usage: " . memory_get_usage(true) . "<br>";
 	ewwwio_memory( __FUNCTION__ );
-	return array( $full_count, $unoptimized_full, $resize_count, $unoptimized_re );
+	if ( $return_ids ) {
+		return $ids;
+	} else {
+		return array( $full_count, $unoptimized_full, $resize_count, $unoptimized_re );
+	}
 }
 
 // prepares the bulk operation and includes the javascript functions
 function ewww_image_optimizer_bulk_script($hook) {
 	global $ewww_debug;
-	global $wpdb;
 	// make sure we are being called from the bulk optimization page
 	if ('media_page_ewww-image-optimizer-bulk' != $hook) {
 		return;
@@ -277,13 +282,6 @@ function ewww_image_optimizer_bulk_script($hook) {
 		// set the 'bulk resume' option to an empty string to reset the bulk operation
 		update_option('ewww_image_optimizer_aux_resume', '');
 	}
-        // check to see if we are supposed to empty the auxiliary images table and verify we are authorized to do so
-	/*if (!empty($_REQUEST['empty']) && wp_verify_nonce( $_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-aux-images' )) {
-		// empty the ewwwio_images table to allow re-optimization
-    		$wpdb->query( "TRUNCATE $wpdb->ewwwio_images" ); 
-		update_option('ewww_image_optimizer_aux_last', '');
-		update_option('ewww_image_optimizer_imported', '');
-	}*/
         // check to see if we are supposed to convert the auxiliary images table and verify we are authorized to do so
 	if (!empty($_REQUEST['ewww_convert']) && wp_verify_nonce( $_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-aux-images' )) {
 		ewww_image_optimizer_aux_images_convert();
@@ -417,7 +415,15 @@ function ewww_image_optimizer_bulk_loop() {
 	// retrieve the time when the optimizer starts
 	$started = microtime(true);
 	// allow 50 seconds for each image (this doesn't include any exec calls, only php processing time)
-	set_time_limit (50);
+			if ( ini_get( 'max_execution_time' ) < 60 ) {
+				// give each image 50 seconds (php only, doesn't include any commands issued by exec()
+				if ( ! set_time_limit (0) ) {
+					$limit = 320;
+					while ( ! set_time_limit( $limit ) ) {
+						$limit--;
+					}
+				}
+			}
 	// get the attachment ID of the current attachment
 	$attachment = $_POST['ewww_attachment'];
 	// get the 'bulk attachments' with a list of IDs remaining
