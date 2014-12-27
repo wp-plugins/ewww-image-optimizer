@@ -549,7 +549,7 @@ function ewww_image_optimizer_retina ( $id, $retina_path ) {
 // list IMS images and optimization status
 function ewww_image_optimizer_ims() {
 	$ims_columns = get_column_headers('ims_gallery');
-	echo "<h3>" . __('Image Store Optimization', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</h3>";
+	echo "<div class='wrap'><h3>" . __('Image Store Optimization', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</h3>";
 	if (empty($_REQUEST['ewww_gid'])) {
 		$galleries = get_posts( array(
 	                'numberposts' => -1,
@@ -615,6 +615,7 @@ function ewww_image_optimizer_ims() {
 			}
 			echo '</table>';
 		}
+	echo '</div>';
 	return;	
 }
 
@@ -2059,7 +2060,7 @@ function ewww_image_optimizer_display_unoptimized_media() {
 	$ewww_debug .= "<b>ewww_image_optimizer_display_unoptimized_media()</b><br>";
 	$attachments = ewww_image_optimizer_count_optimized ( 'media', true );
 //	$ims_columns = get_column_headers('ims_gallery');
-	echo "<h3>" . __('Unoptimized Images', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</h3>";
+	echo "<div class='wrap'><h3>" . __('Unoptimized Images', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</h3>";
 	printf( '<p>' . __( 'We have %d images to optimize.', EWWW_IMAGE_OPTIMIZER_DOMAIN ) . '</p>', count( $attachments ) ); 
 	sort($attachments, SORT_NUMERIC);
 	$image_string = implode(',', $attachments);
@@ -2096,6 +2097,7 @@ function ewww_image_optimizer_display_unoptimized_media() {
 	} else {
 		echo '<p>' . __( 'There are too many images to display.', EWWW_IMAGE_OPTIMIZER_DOMAIN ) . '</p>'; 
 	}
+	echo '</div>';
 	return;	
 }
 
