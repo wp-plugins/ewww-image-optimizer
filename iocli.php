@@ -458,7 +458,7 @@ function ewww_image_optimizer_scan_ngg() {
 	return $images;
 }
 
-function ewww_image_optimizer_bulk_nextgen( $delay = 0 ) {
+function ewww_image_optimizer_bulk_ngg( $delay = 0 ) {
 	if ( get_option('ewww_image_optimizer_bulk_ngg_resume') ) {
 		// get the list of attachment IDs from the db
 		$images = get_option('ewww_image_optimizer_bulk_ngg_attachments');
