@@ -169,7 +169,7 @@ class ewwwngg {
 					// if jpegtran is missing, tell the user
                 	                if(!EWWW_IMAGE_OPTIMIZER_JPEGTRAN && !EWWW_IMAGE_OPTIMIZER_CLOUD) {
                         	                $valid = false;
-	     	                                $msg = '<br>' . sprintf(__('% is missing', EWWW_IMAGE_OPTIMIZER_DOMAIN), '<em>jpegtran</em>');
+	     	                                $msg = '<br>' . sprintf(__('%s is missing', EWWW_IMAGE_OPTIMIZER_DOMAIN), '<em>jpegtran</em>');
 	                                }
 					break;
 				case 'image/png':
