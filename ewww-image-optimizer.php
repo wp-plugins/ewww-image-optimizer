@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate image optimizers into WordPress.
- * @version 2.1.2.5
+ * @version 2.1.3
  * @package EWWW_Image_Optimizer
  */
 /*

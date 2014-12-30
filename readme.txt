@@ -1,7 +1,7 @@
 === EWWW Image Optimizer ===
 Contributors: nosilver4u
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MKMQKCBFFG3WW
-Tags: image, attachment, optimize, optimization, lossless, lossy, photo, picture, seo, compression, image editor, gmagick, jpegtran, gifsicle, optipng, pngout, pngquant, jpegmini, tinypng, webp, cwebp
+Tags: image, attachment, optimize, optimization, lossless, lossy, photo, picture, seo, compression, gmagick, jpegtran, gifsicle, optipng, pngout, pngquant, jpegmini, tinypng, webp, wp-cli 
 Requires at least: 3.5
 Tested up to: 4.1
 Stable tag: 2.1.2
@@ -22,13 +22,13 @@ The EWWW Image Optimizer is a WordPress plugin that will automatically optimize 
 1. **Best JPG optimization.** With JPEGmini integration, nothing else comes close (requires an API subscription).
 1. **Better PNG optimization.** You can use pngout, optipng, and pngquant in conjunction.
 1. **Root access not needed** Pre-compiled binaries are made available to install directly within the Wordpress folder, and cloud optimization is provided for those who cannot run the binaries locally.
-1. **Optimize almost anything** Using the Optimize More tool, and the wp_image_editor class extension, any image in Wordpress can be optimized.
+1. **Optimize everything** With the wp_image_editor class extension, and the ability to specify your own folders for scanning, any image in Wordpress can be optimized.
 
 By default, EWWW Image Optimizer uses lossless optimization techniques, so your image quality will be exactly the same before and after the optimization. The only thing that will change is your file size. The one small exception to this is GIF animations. While the optimization is technically lossless, you will not be able to properly edit the animation again without performing an --unoptimize operation with gifsicle. The gif2png and jpg2png conversions are also lossless but the png2jpg process is not lossless. The lossy optimization for JPG and PNG files uses sophisticated algorithms to minimize perceptual quality loss, which is vastly different than setting a static quality/compression level.
 
 The tools used for optimization are [jpegtran](http://jpegclub.org/jpegtran/), [jpegmini](http://www.jpegmini.com), [optipng](http://optipng.sourceforge.net/), [pngout](http://advsys.net/ken/utils.htm), [pngquant](http://pngquant.org/), and [gifsicle](http://www.lcdf.org/gifsicle/). All of these are freely available except JPEGmini. Images are converted using the above tools and GD or 'convert' (ImageMagick).
 
-EWWW Image Optimizer calls optimization utilities directly which is well suited to shared hosting situations where these utilities may already be installed. Pre-compiled binaries/executables are provided for optipng, gifsicle, pngquant, cwebp, and jpegtran. Pngout can be installed with one-click from the settings page. If none of that works, there is a cloud option that will work for those who cannot run the optimizers on their own server.
+EWWW Image Optimizer calls optimization utilities directly which is well suited to shared hosting situations where these utilities may already be installed. Pre-compiled binaries/executables are provided for optipng, gifsicle, pngquant, cwebp, and jpegtran. Pngout can be installed with one-click from the settings page. If none of that works, there is a cloud option that will work for any site.
 
 If you need a version of this plugin for cloud use only, see [EWWW Image Optimizer Cloud](http://wordpress.org/plugins/ewww-image-optimizer-cloud/). It is much more compact as it does not contain any binaries or any mention of the exec() function.
 
@@ -42,11 +42,11 @@ All optimized images are stored in the database so that the plugin does not atte
 
 = WP Image Editor = 
 
-All images created by the built-in WP_Image_Editor class will be automatically optimized. Current implementations are GD, Imagick, and Gmagick. Images optimized via this class include Meta Slider, BuddyPress Activity Plus (thumbs), WP Retina 2x, Imsanity, Simple Image Sizes, Hammy, Animated GIF Resize and probably countless others. If you have a plugin that uses WP_Image_Editor (or are not sure) and would like EWWW IO to be able to optimize previous uploads, post a thread in the support forums.
+All images created by the built-in WP_Image_Editor class will be automatically optimized. Current implementations are GD, Imagick, and Gmagick. Images optimized via this class include Meta Slider, BuddyPress Activity Plus (thumbs), WP Retina 2x, Imsanity, Simple Image Sizes, Hammy, Animated GIF Resize and probably countless others. If you are not sure if a plugin uses WP_Image_Editor, post your question in the support forums.
 
 = Optimize Everything Else =
 
-Site admins can specify any folder within their wordpress folder to be optimized. The 'Scan and Optimize' option under Media->Bulk Optimize will optimize theme images, BuddyPress avatars, BuddyPress Activity Plus images, Meta Slider slides, WP Symposium images, GD bbPress attachments, Grand Media Galleries, and any user-specified folders. Additionally, this tool can run on an hourly basis via wp_cron to keep newly uploaded images optimized. Scheduled optimization should not be used for any plugin that uses the built-in Wordpress image functions and it does NOT include Media Library images, because they are already optimized on upload.
+Site admins can specify any folder within their wordpress folder to be optimized. The 'Scan and Optimize' option under Media->Bulk Optimize will optimize theme images, BuddyPress avatars, BuddyPress Activity Plus images, Meta Slider slides, WP Symposium images, GD bbPress attachments, Grand Media Galleries, and any user-specified folders. Additionally, this tool can run on an hourly basis via wp_cron to keep newly uploaded images optimized. Scheduled optimization should not be used for any plugin that uses the built-in Wordpress image functions unless you have disabled automatica optimization.
 
 = WP-CLI =
 
@@ -73,13 +73,13 @@ Uploads are automatically optimized. Look for Optimize under the Image Store (Ga
 
 Huge thanks to all our translators: 
 Romanian translation by MediasInfo.ro
-Spanish translation by Manuel Ballesta Ruiz
+Spanish translation by Manuel Ballesta Ruiz and Adrián López Galera
 Dutch translation by Ludo Rubben
 Polish translation by Grzegorz Janoszka
 Russian translation by Elvis of turkenichev.ru
 Portuguese translation by Pedro Marcelo de Sá Alves
 
-If you would like to translate this plugin, get more information here: http://www.shanebishop.net/ewww-io-plugin-translators/
+If you would like to help translate this plugin (new or existing translations), register for an account at our online translation hub: http://translate.ewww.io/
 
 == Installation ==
 
@@ -106,57 +106,15 @@ Pngout is not enabled by default because it is resource intensive. Optipng is th
 1. Click the link in the Plugin Status area to install pngout for your server, and the plugin will download the pngout archive, unpack it, and install the appropriate version for your server.
 1. Adjust the pngout level according to your needs. Level 0 gives the best results, but can take up to a minute or more on a single image.
 
-= Installing optipng =
+= Installing (Compiling) other tools =
 
-1. Optipng is now bundled with the plugin. If it isn't working for some reason, keep going...
-1. If you have root access to your server, you can install optipng from the standard repositories (yum/rpm or apt/deb). If you are on shared hosting, read on... These steps can/should generally all be done via the command line
-1. Download the latest stable version of [optipng](http://optipng.sourceforge.net/) to your home directory
-1. Ensure libpng and zlib are installed. If they are not, you're on your own there (but maybe you need a new web host...)
-1. Uncompress optipng: *tar xvzf optipng-0.7.4.tar.gz && cd optipng-0.7.4*
-1. Configure and compile optipng: *./configure && make*
-1. If you have root access, install it with *make install*
-1. If not, copy the binary from */optipng-0.7.4/src/optipng/optipng* to the ewww tool folder (wordpress/wp-content/ewww/optipng-custom).
-
-= Installing jpegtran =
-
-1. Jpegtran is now bundled with the plugin. If it isn't working for some reason, keep going...
-1. If you have root access to your server, jpegtran is part of the libjpeg-turbo-progs on Debian/Ubuntu, and likely something similar on rpm distros (Fedora, CentOS, RHEL, SuSE). If you are on shared hosting, read on... These steps can/should generally all be done via the command line
-1. Download the latest stable version of [jpegtran](http://www.ijg.org/) to your home directory
-1. Uncompress jpegtran: *tar xvzf jpegsrc.v9.tar.gz && cd jpeg-9*
-1. Configure and compile jpegtran: *./configure --disable-shared && make*
-1. If you have root access, install it with *make install*
-1. If not, copy the binary from */jpeg-9/jpegtran* to the ewww tool folder (wordpress/wp-content/ewww/jpegtran-custom).
-
-= Installing gifsicle =
-
-1. Gifsicle is now bundled with the plugin. If it isn't working for you, keep going...
-1. If you have root access to your server, you can install gifsicle from the standard repositories (yum/rpm or apt/deb). If you are on shared hosting, read on... These steps can/should generally all be done via the command line
-1. Download the latest version of [gifsicle](http://www.lcdf.org/gifsicle/) to your home directory
-1. Uncompress gifsicle: *tar xvzf gifsicle-1.78.tar.gz && cd gifsicle-1.78*
-1. Configure and compile gifsicle (we disable gifview and gifdiff as they are not needed): *./configure --disable-gifdiff --disable-gifview && make*
-1. If you have root access, install it with *make install*
-1. If not, copy the binary from */gifsicle-1.78/src/gifsicle* to the ewww tool folder (wordpress/wp-content/ewww/gifsicle-custom).
-
-= Installing pngquant =
-
-1. Pngquant is bundled with the plugin. If it isn't working for you, keep going...
-1. Download the latest version of [pngquant](http://pngquant.org/) to your server
-1. Uncompress pngquant: *tar xvjf pngquant-2.0.2-src.tar.bz2 && cd pngquant-2.0.2*
-1. Compile pngquant: *make*
-1. If you have root access, install it with *make install*
-1. If not, copy the binary from */pngquant-2.0.2/pngquant* to the ewww tool folder (wordpress/wp-content/ewww/pngquant-custom).
-
-= Installing webp =
-
-1. WebP (cwebp) is bundled with the plugin. If it isn't working for you, keep going...
-1. Download the latest version of [libwebp](https://code.google.com/p/webp/downloads/list) to your server
-1. Uncompress libwebp: *tar xvzf libwebp-0.4.0.tar.gz && cd libwebp-0.4.0
-1. Make sure you have libjpeg && libpng installed (possibly libjpeg-dev and libpng-dev also)
-1. Configure and compile cwebp: *./configure --disable-shared && make*
-1. If you have root access, install it with *make install*
-1. If not, copy the binary from */libwebp-0.4.0/examples/cwebp* to the ewww tool folder (wordpress/wp-content/ewww/cwebp-custom).
+http://ewww.io/2014/12/06/the-plugin-says-im-missing-something/
 
 == Frequently Asked Questions ==
+
+= Google Pagespeed says my images need compressing or resizing, but I already optimized all my images. What do I do?
+
+http://ewww.io/2014/12/05/pagespeed-says-my-images-need-more-work/
 
 = Does the plugin replace existing images? =
 
@@ -172,11 +130,11 @@ The lossy JPG optimization using JPEGmini will determine the ideal quality setti
 
 = The bulk optimizer doesn't seem to be working, what can I do? =
 
-Each image is given 50 seconds to complete (which actually doesn't include time used by the optimization utilities). If that doesn't seem to do the trick, you can also increase the setting max_execution_time in your php.ini file. That said, there are other timeouts with Apache, and possibly other limitations of your webhost. If you've tried everything else, the last thing to look for is large PNG files. In my tests on a shared hosting setup, "large" is anything over 300 KB. You can first try decreasing the PNG optimization level in the settings. If that doesn't work, perhaps you ought to convert that PNG to JPG or set a max PNG optimization size. Screenshots are often done as PNG files, but that is a poor choice for anything with photographic elements.
+If it doesn't seem to work at all, check for javascript problems using the developer console in Firefox or Chrome. If it is not working just on some images, you may need to increase the setting max_execution_time in your php.ini file. There are also other timeouts with Apache, and possibly other limitations of your webhost. If you've tried everything else, the last thing to look for is large PNG files. In my tests on a shared hosting setup, "large" is anything over 300 KB. You can first try decreasing the PNG optimization level in the settings. If that doesn't work, perhaps you ought to convert that PNG to JPG or set a max PNG optimization size. Screenshots are often done as PNG files, but that is a poor choice for anything with photographic elements.
 
 = What are the supported operating systems? =
 
-I've tested it on Windows (with Apache), Linux, Mac OSX, FreeBSD, and Solaris (v10). The cloud service will run on any OS.
+I've tested it on Windows (with Apache), Linux, Mac OSX, FreeBSD (8 and 9), and Solaris (v10). The cloud service will run on any OS.
 
 = How are JPGs optimized? =
 
@@ -196,7 +154,7 @@ That's not a question, but since I made it up, I'll answer it. See these resourc
 http://developer.yahoo.com/performance/rules.html#opt_images
 https://developers.google.com/speed/docs/best-practices/payload#CompressImages
 https://developers.google.com/speed/docs/insights/OptimizeImages
-Pngout, JPEGmini, and Pngquant were recommended by EWWW IO users. Pngout (usually) optimizes better than Optipng, and best when they are used together. JPEGmini is the best lossy compression tool that I have found for JPG images. Pngquant is an excellent lossy optimizer for PNGs, and is used by TinyPNG.com.
+Pngout, JPEGmini, and Pngquant were recommended by EWWW IO users. Pngout (usually) optimizes better than Optipng, and best when they are used together. JPEGmini is the best lossy compression tool that I have found for JPG images. Pngquant is an excellent lossy optimizer for PNGs, and is one of the tools used by TinyPNG.com.
 
 == Screenshots ==
 
@@ -211,10 +169,9 @@ NOTE: The WebP naming scheme has been changed to avoid conflicts when JPGs and P
 
 = future =
 * these are current feature requests, if you see something you like here, go vote for it in the support forum
-* option to disable real-time hooks
-* full GMedia support
-* mozjpeg for improved lossless jpeg optimization (cloud only)
-* If you would like to help translate this plugin in your language, get more information here: http://translate.ewww.io/projects/ewww-image-optimizer/
+* full GMedia support (still waiting for more votes)
+* option to scan Media Library folders for current/previous month during scheduled optimization (already on roadmap)
+* If you would like to help translate this plugin in your language, get started here: http://translate.ewww.io/projects/ewww-image-optimizer/
 
 = 2.1.3 =
 * added: wp-cli command to optimize via command-line, 'wp-cli help ewwwio optimize' for more details
@@ -836,6 +793,7 @@ In general, these lists only apply to shared hosting services. If the providers 
 
 Webhosts where things work out of the box.
 
+* [A2 Hosting](https://partners.a2hosting.com/solutions.php?id=5959&url=638): EWWW IO is installed automatically for new sites, and is fully supported by A2 (referral link). Their Prime+SSD hosting is very nice (and still cheap).
 * [Bluehost](http://www.bluehost.com)
 * [Dreamhost](http://www.dreamhost.com)
 * [GoDaddy](http://www.godaddy.com) (only with PHP 5.3)
