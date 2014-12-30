@@ -50,7 +50,7 @@ class EWWWIO_CLI extends WP_CLI_Command {
 			WP_CLI::line( __('Forcing re-optimization of previously processed images.', EWWW_IMAGE_OPTIMIZER_DOMAIN ) );
 			$_REQUEST['ewww_force'] = true;
 		}
-		WP_CLI::line( _x('Optimizing $library with a $delay second pause between images.', 'string will be something like "media" or "nextgen"', EWWW_IMAGE_OPTIMIZER_DOMAIN ) );
+		WP_CLI::line( sprintf( _x('Optimizing %1$s with a %2$d second pause between images.', 'string will be something like "media" or "nextgen"', EWWW_IMAGE_OPTIMIZER_DOMAIN ), $library, $delay ) );
 		// let's get started, shall we?
 		ewww_image_optimizer_admin_init();
 		// and what shall we do?
