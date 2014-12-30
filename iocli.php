@@ -44,14 +44,13 @@ class EWWWIO_CLI extends WP_CLI_Command {
 		}
 		$ewww_reset = false;
 		if ( ! empty( $assoc_args['reset'] ) ) {
-			WP_CLI::line( "Resetting bulk progress to beginning." );
 			$ewww_reset = true;
 		}
 		if ( ! empty( $assoc_args['force'] ) ) {
-			WP_CLI::line( "Forcing re-optimization of previously processed images." );
+			WP_CLI::line( __('Forcing re-optimization of previously processed images.', EWWW_IMAGE_OPTIMIZER_DOMAIN ) );
 			$_REQUEST['ewww_force'] = true;
 		}
-		WP_CLI::line( "Optimizing $library with a $delay second pause between images." );
+		WP_CLI::line( _x('Optimizing $library with a $delay second pause between images.', 'string will be something like "media" or "nextgen"', EWWW_IMAGE_OPTIMIZER_DOMAIN ) );
 		// let's get started, shall we?
 		ewww_image_optimizer_admin_init();
 		// and what shall we do?
@@ -62,7 +61,7 @@ class EWWWIO_CLI extends WP_CLI_Command {
 					update_option('ewww_image_optimizer_aux_resume', '');
 					update_option('ewww_image_optimizer_bulk_ngg_resume', '');
 					update_option('ewww_image_optimizer_bulk_flag_resume', '');
-					WP_CLI::line( 'Bulk status has been reset, starting from the beginning.' );
+					WP_CLI::line( __('Bulk status has been reset, starting from the beginning.', EWWW_IMAGE_OPTIMIZER_DOMAIN ) );
 				}
 				WP_CLI::line( __( 'Scanning, this could take a while', EWWW_IMAGE_OPTIMIZER_DOMAIN ) );
 				list( $fullsize_count, $unoptimized_count, $resize_count, $unoptimized_resize_count ) = ewww_image_optimizer_count_optimized ('media');
@@ -101,7 +100,7 @@ class EWWWIO_CLI extends WP_CLI_Command {
 			case 'media':
 				if ( $ewww_reset ) {
 					update_option('ewww_image_optimizer_bulk_resume', '');
-					WP_CLI::line( 'Bulk status has been reset, starting from the beginning.' );
+					WP_CLI::line( __('Bulk status has been reset, starting from the beginning.', EWWW_IMAGE_OPTIMIZER_DOMAIN ) );
 				}
 				list( $fullsize_count, $unoptimized_count, $resize_count, $unoptimized_resize_count ) = ewww_image_optimizer_count_optimized ('media');
 				WP_CLI::confirm( sprintf( __( '%1$d images in the Media Library have been selected (%2$d unoptimized), with %3$d resizes (%4$d unoptimized).', EWWW_IMAGE_OPTIMIZER_DOMAIN ), $fullsize_count, $unoptimized_count, $resize_count, $unoptimized_resize_count ) );
@@ -110,7 +109,7 @@ class EWWWIO_CLI extends WP_CLI_Command {
 			case 'nextgen':
 				if ( $ewww_reset ) {
 					update_option('ewww_image_optimizer_bulk_ngg_resume', '');
-					WP_CLI::line( 'Bulk status has been reset, starting from the beginning.' );
+					WP_CLI::line( __('Bulk status has been reset, starting from the beginning.', EWWW_IMAGE_OPTIMIZER_DOMAIN ) );
 				}
 				if ( class_exists( 'ewwwngg' ) ) {
 					global $ngg;
@@ -130,7 +129,7 @@ class EWWWIO_CLI extends WP_CLI_Command {
 			case 'flagallery':
 				if ( $ewww_reset ) {
 					update_option('ewww_image_optimizer_bulk_flag_resume', '');
-					WP_CLI::line( 'Bulk status has been reset, starting from the beginning.' );
+					WP_CLI::line( __('Bulk status has been reset, starting from the beginning.', EWWW_IMAGE_OPTIMIZER_DOMAIN ) );
 				}
 				if ( class_exists( 'ewwwflag' ) ) {
 					list( $fullsize_count, $unoptimized_count, $resize_count, $unoptimized_resize_count ) = ewww_image_optimizer_count_optimized ('flag');
@@ -143,7 +142,7 @@ class EWWWIO_CLI extends WP_CLI_Command {
 			case 'other':
 				if ( $ewww_reset ) {
 					update_option('ewww_image_optimizer_aux_resume', '');
-					WP_CLI::line( 'Bulk status has been reset, starting from the beginning.' );
+					WP_CLI::line( __('Bulk status has been reset, starting from the beginning.', EWWW_IMAGE_OPTIMIZER_DOMAIN ) );
 				}
 				WP_CLI::line( __( 'Scanning, this could take a while', EWWW_IMAGE_OPTIMIZER_DOMAIN ) );
 				$other_attachments = ewww_image_optimizer_scan_other();
@@ -156,9 +155,9 @@ class EWWWIO_CLI extends WP_CLI_Command {
 					update_option('ewww_image_optimizer_aux_resume', '');
 					update_option('ewww_image_optimizer_bulk_ngg_resume', '');
 					update_option('ewww_image_optimizer_bulk_flag_resume', '');
-					WP_CLI::success( 'Bulk status has been reset, the next bulk operation will start from the beginning.' );
+					WP_CLI::success( __('Bulk status has been reset, the next bulk operation will start from the beginning.', EWWW_IMAGE_OPTIMIZER_DOMAIN ) );
 				} else {
-					WP_CLI::line( 'Please specify a valid library option, see "wp-cli help ewwwio optimize" for more information.' );
+					WP_CLI::line( __('Please specify a valid library option, see "wp-cli help ewwwio optimize" for more information.', EWWW_IMAGE_OPTIMIZER_DOMAIN ) );
 				}
 		}
 	}
