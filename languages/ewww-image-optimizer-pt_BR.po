@@ -2,13 +2,34 @@
 # This file is distributed under the same license as the EWWW Image Optimizer package.
 msgid ""
 msgstr ""
-"PO-Revision-Date: 2014-12-29 19:00:50+0000\n"
+"PO-Revision-Date: 2014-12-31 11:49:21+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: GlotPress/0.1\n"
 "Project-Id-Version: EWWW Image Optimizer\n"
+
+#: iocli.php:53
+msgctxt "string will be something like \"media\" or \"nextgen\""
+msgid "Optimizing %1$s with a %2$d second pause between images."
+msgstr "Otimizando %1$s com um intervalo de %2$d segundo entre as imagens."
+
+#: iocli.php:50
+msgid "Forcing re-optimization of previously processed images."
+msgstr "Forçando re-otimização de imagens previamente processadas."
+
+#: iocli.php:64 iocli.php:103 iocli.php:112 iocli.php:132 iocli.php:145
+msgid "Bulk status has been reset, starting from the beginning."
+msgstr "A pilha de status foi redefinida a partir do início."
+
+#: iocli.php:158
+msgid "Bulk status has been reset, the next bulk operation will start from the beginning."
+msgstr "A pilha de status foi redefinida. A próxima operação em massa começará do início."
+
+#: iocli.php:160
+msgid "Please specify a valid library option, see \"wp-cli help ewwwio optimize\" for more information."
+msgstr "Por favor, especifique uma opção de biblioteca válida. Veja \"wp-cli help ewwwio optimize\" para mais informações."
 
 #: common.php:496 common.php:2063
 msgid "Unoptimized Images"
@@ -22,15 +43,15 @@ msgstr "Otimizar todas a imagens"
 msgid "There are too many images to display."
 msgstr "Há muitas imagens para mostrar."
 
-#: iocli.php:85 iocli.php:150
+#: iocli.php:84 iocli.php:149
 msgid "%1$d images in other folders need optimizing."
 msgstr "%1$d imagens em outras pastas precisam de otimização."
 
-#: iocli.php:127
+#: iocli.php:126
 msgid "NextGEN/Nextcellent not installed."
 msgstr "NextGEN/Nextcellent não instalado."
 
-#: iocli.php:140
+#: iocli.php:139
 msgid "Grand Flagallery not installed."
 msgstr "Grand Flagallery não instalado."
 
@@ -74,7 +95,7 @@ msgstr "Converter tabela"
 msgid "There are no images to optimize."
 msgstr "Não existem imagens para otimizar."
 
-#: aux-optimize.php:41 iocli.php:67 iocli.php:148
+#: aux-optimize.php:41 iocli.php:66 iocli.php:147
 msgid "Scanning, this could take a while"
 msgstr "Escaneando imagens. Isso pode levar algum tempo"
 
@@ -182,7 +203,7 @@ msgid "Nothing to optimize"
 msgstr "Nada para otimizar"
 
 #: aux-optimize.php:658 aux-optimize.php:675 bulk.php:382 bulk.php:400
-#: flag-integration.php:257 flag-integration.php:275 iocli.php:199
+#: flag-integration.php:257 flag-integration.php:275 iocli.php:198
 #: nextcellent-integration.php:373 nextcellent-integration.php:390
 #: nextgen-integration.php:355 nextgen-integration.php:372
 #: nextgen2-integration.php:399
@@ -252,7 +273,7 @@ msgstr "Parece que você não carregou nenhuma imagem ainda."
 msgid "%1$d images in the Media Library have been selected, unable to determine how many resizes and how many are unoptimized."
 msgstr "%1$d imagens na Biblioteca de mídia foram selecionadas. Incapaz de determinar quantos redimensionamentos e quantos não estão otimizadas."
 
-#: bulk.php:53 iocli.php:69 iocli.php:107
+#: bulk.php:53 iocli.php:68 iocli.php:106
 msgid "%1$d images in the Media Library have been selected (%2$d unoptimized), with %3$d resizes (%4$d unoptimized)."
 msgstr "%1$d imagens na Biblioteca de mídia foram selecionadas (%2$d não otimizadas), com %3$d redimensionamentos (%4$d não otimizadas)."
 
@@ -261,22 +282,22 @@ msgstr "%1$d imagens na Biblioteca de mídia foram selecionadas (%2$d não otimi
 msgid "Previously optimized images will be skipped by default."
 msgstr "Imagens otimizadas anteriormente serão ignorados por padrão."
 
-#: bulk.php:436 common.php:1338 flag-integration.php:299 iocli.php:363
-#: iocli.php:407 iocli.php:487 iocli.php:560 nextcellent-integration.php:413
+#: bulk.php:436 common.php:1338 flag-integration.php:299 iocli.php:362
+#: iocli.php:406 iocli.php:486 iocli.php:559 nextcellent-integration.php:413
 #: nextgen-integration.php:395 nextgen2-integration.php:422
 msgid "Optimized image:"
 msgstr "Imagem otimizada"
 
-#: bulk.php:438 iocli.php:207
+#: bulk.php:438 iocli.php:206
 msgid "Skipped image, ID:"
 msgstr "Imagem ignorada, ID:"
 
-#: bulk.php:442 flag-integration.php:300 iocli.php:211 iocli.php:408
+#: bulk.php:442 flag-integration.php:300 iocli.php:210 iocli.php:407
 msgid "Full size – %s"
 msgstr "Tamanho completo - %s"
 
-#: bulk.php:457 common.php:1344 flag-integration.php:318 iocli.php:226
-#: iocli.php:369 iocli.php:426 iocli.php:504 iocli.php:570
+#: bulk.php:457 common.php:1344 flag-integration.php:318 iocli.php:225
+#: iocli.php:368 iocli.php:425 iocli.php:503 iocli.php:569
 #: nextcellent-integration.php:102 nextcellent-integration.php:423
 #: nextgen-integration.php:102 nextgen-integration.php:405
 #: nextgen2-integration.php:439
@@ -380,7 +401,8 @@ msgstr "Não foi possível recuperar o caminho do arquivo."
 #: ewww-image-optimizer.php:1281 ewww-image-optimizer.php:1531
 #: ewww-image-optimizer.php:1535 ewww-image-optimizer.php:1760
 #: flag-integration.php:375 flag-integration.php:381 flag-integration.php:387
-#: nextcellent-integration.php:179 nextcellent-integration.php:186
+#: nextcellent-integration.php:172 nextcellent-integration.php:179
+#: nextcellent-integration.php:186 nextgen-integration.php:172
 #: nextgen-integration.php:179 nextgen-integration.php:186
 #: nextgen2-integration.php:151 nextgen2-integration.php:158
 #: nextgen2-integration.php:165
@@ -683,7 +705,7 @@ msgstr "Enquanto a maioria dos usuários não vão notar uma diferença na quali
 
 #: common.php:2578
 msgid "Uses JPEGmini, and requires an EWWW Image Optimizer Cloud Subscription."
-msgstr "Usa JPEGmini, e requer um EWWW Imagem Optimizer Nuvem de subscrição."
+msgstr "Usa JPEGmini e requer uma assinatura EWWW Imagem Optimizer Cloud."
 
 #: common.php:2578
 msgid "CMYK images cannot be processed by JPEGmini"
@@ -1018,22 +1040,22 @@ msgstr "não pode mover pngout"
 msgid "could not set permissions"
 msgstr "não foi possível definir permissões"
 
-#: flag-integration.php:87 iocli.php:74 iocli.php:82 iocli.php:119
-#: iocli.php:137 nextgen2-integration.php:273
+#: flag-integration.php:87 iocli.php:73 iocli.php:81 iocli.php:118
+#: iocli.php:136 nextgen2-integration.php:273
 msgid "%1$d images have been selected (%2$d unoptimized), with %3$d resizes (%4$d unoptimized)."
 msgstr "%1$d imagens foram selecionadas (%2$d não otimizadas), com %3$d redimensionamentos (%4$d não otimizadas)."
 
-#: flag-integration.php:306 iocli.php:414
+#: flag-integration.php:306 iocli.php:413
 msgid "Optimized size – %s"
 msgstr "Tamanho otimizados - %s"
 
-#: flag-integration.php:313 iocli.php:421 nextcellent-integration.php:99
+#: flag-integration.php:313 iocli.php:420 nextcellent-integration.php:99
 #: nextgen-integration.php:99
 msgid "Thumbnail – %s"
 msgstr "Thumbnail – %s"
 
-#: flag-integration.php:338 iocli.php:240 iocli.php:377 iocli.php:439
-#: iocli.php:518 iocli.php:583 nextcellent-integration.php:443
+#: flag-integration.php:338 iocli.php:239 iocli.php:376 iocli.php:438
+#: iocli.php:517 iocli.php:582 nextcellent-integration.php:443
 #: nextgen-integration.php:425 nextgen2-integration.php:459
 msgid "Finished Optimization!"
 msgstr "Otimização finalizada"
@@ -1076,11 +1098,7 @@ msgstr "Otimizar miniaturas"
 msgid "Processing"
 msgstr "Processando"
 
-#: nextcellent-integration.php:172 nextgen-integration.php:172
-msgid "% is missing"
-msgstr "% está faltando"
-
-#: common.php:2064 iocli.php:77 iocli.php:123 nextcellent-integration.php:255
+#: common.php:2064 iocli.php:76 iocli.php:122 nextcellent-integration.php:255
 #: nextgen-integration.php:251
 msgid "We have %d images to optimize."
 msgstr "Temos %d imagens para otimizar."
@@ -1089,12 +1107,12 @@ msgstr "Temos %d imagens para otimizar."
 msgid "Galleries"
 msgstr "Galerias"
 
-#: iocli.php:493 iocli.php:561 nextcellent-integration.php:414
+#: iocli.php:492 iocli.php:560 nextcellent-integration.php:414
 #: nextgen-integration.php:396 nextgen2-integration.php:428
 msgid "Full size - %s"
 msgstr "Tamanho completo - %s"
 
-#: iocli.php:496 iocli.php:567 nextcellent-integration.php:420
+#: iocli.php:495 iocli.php:566 nextcellent-integration.php:420
 #: nextgen-integration.php:402 nextgen2-integration.php:431
 msgid "Thumbnail - %s"
 msgstr "Miniatura - %s"
