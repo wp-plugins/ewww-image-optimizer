@@ -62,7 +62,7 @@ function ewww_image_optimizer_aux_images () {
 			$display = '';
 		}
 ?>
-			<p id="ewww-table-info" class="ewww-bulk-info"<?php echo "$display>"; printf( __('The plugin keeps track of already optimized images to prevent re-optimization. There are %d images that have been optimized so far.'), $already_optimized); ?></p>
+			<p id="ewww-table-info" class="ewww-bulk-info"<?php echo "$display>"; printf( __( 'The plugin keeps track of already optimized images to prevent re-optimization. There are %d images that have been optimized so far.', EWWW_IMAGE_OPTIMIZER_DOMAIN ), $already_optimized ); ?></p>
 			<form id="ewww-show-table" class="ewww-bulk-form" method="post" action=""<?php echo $display; ?>>
 				<button type="submit" class="button-secondary action"><?php _e('Show Optimized Images', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></button>
 			</form>
