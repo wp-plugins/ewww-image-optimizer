@@ -339,7 +339,7 @@ function ewww_image_optimizer_bulk_script($hook) {
 	// TODO: is there a reason both the js and the database need to know the attachments we are working on?
 	// store the attachment IDs we retrieved in the 'bulk_attachments' option so we can keep track of our progress in the database
 	update_option('ewww_image_optimizer_bulk_attachments', $attachments);
-	wp_enqueue_script('ewwwbulkscript', plugins_url('/eio.js', __FILE__), array('jquery', 'jquery-ui-slider', 'jquery-ui-progressbar'));
+	wp_enqueue_script( 'ewwwbulkscript', plugins_url( '/eio.js', __FILE__ ), array( 'jquery', 'jquery-ui-slider', 'jquery-ui-progressbar' ) );
 	$image_count = ewww_image_optimizer_aux_images_table_count();
 	// submit a couple variables to the javascript to work with
 	$attachments = json_encode($attachments);
@@ -347,6 +347,7 @@ function ewww_image_optimizer_bulk_script($hook) {
 			'_wpnonce' => wp_create_nonce('ewww-image-optimizer-bulk'),
 			'attachments' => $attachments,
 			'image_count' => $image_count,
+			'count_string' => sprintf( __( '%d images', EWWW_IMAGE_OPTIMIZER_DOMAIN ), $image_count ),
 		)
 	);
 	// load the stylesheet for the jquery progressbar

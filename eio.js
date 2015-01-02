@@ -220,7 +220,7 @@ jQuery(document).ready(function($) {
 			ewww_wpnonce: ewww_vars._wpnonce,
 			ewww_offset: ewww_pointer,
 	        };
-		$('.displaying-num').text(ewww_vars.image_count + ' total images');
+		$('.displaying-num').text(ewww_vars.count_string);
 		$.post(ajaxurl, ewww_table_data, function(response) {
 			$('#ewww-bulk-table').html(response);
 		});
