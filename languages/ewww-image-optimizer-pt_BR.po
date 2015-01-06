@@ -2,7 +2,7 @@
 # This file is distributed under the same license as the EWWW Image Optimizer package.
 msgid ""
 msgstr ""
-"PO-Revision-Date: 2014-12-31 11:49:21+0000\n"
+"PO-Revision-Date: 2015-01-02 21:56:38+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -10,9 +10,13 @@ msgstr ""
 "X-Generator: GlotPress/0.1\n"
 "Project-Id-Version: EWWW Image Optimizer\n"
 
+#: bulk.php:350
+msgid "%d images"
+msgstr "%d imagens"
+
 #: common.php:2613
 msgid "Provide paths containing images to be optimized using \"Scan and Optimize\" on the Bulk Optimize page or by Scheduled Optimization."
-msgstr ""
+msgstr "Forneça caminhos de diretórios contendo imagens para serem otimizadas usando \"Escanear e otimizar\" na página Otimização em massa ou pela Otimização programada."
 
 #: iocli.php:53
 msgctxt "string will be something like \"media\" or \"nextgen\""
@@ -141,7 +145,7 @@ msgstr "de"
 
 #: aux-optimize.php:93 aux-optimize.php:125 aux-optimize.php:379
 #: aux-optimize.php:420 aux-optimize.php:647 aux-optimize.php:670
-#: aux-optimize.php:686 bulk.php:375 bulk.php:391 bulk.php:410 bulk.php:478
+#: aux-optimize.php:686 bulk.php:376 bulk.php:392 bulk.php:411 bulk.php:479
 #: common.php:1313 common.php:2173 common.php:2184 common.php:2277
 #: flag-integration.php:251 flag-integration.php:264 flag-integration.php:282
 #: flag-integration.php:332 mwebp.php:84 mwebp.php:102 mwebp.php:193
@@ -206,7 +210,7 @@ msgstr "Remover da tabela"
 msgid "Nothing to optimize"
 msgstr "Nada para otimizar"
 
-#: aux-optimize.php:658 aux-optimize.php:675 bulk.php:382 bulk.php:400
+#: aux-optimize.php:658 aux-optimize.php:675 bulk.php:383 bulk.php:401
 #: flag-integration.php:257 flag-integration.php:275 iocli.php:198
 #: nextcellent-integration.php:373 nextcellent-integration.php:390
 #: nextgen-integration.php:355 nextgen-integration.php:372
@@ -214,7 +218,7 @@ msgstr "Nada para otimizar"
 msgid "Optimizing"
 msgstr "Otimizando"
 
-#: aux-optimize.php:695 bulk.php:484 mwebp.php:204
+#: aux-optimize.php:695 bulk.php:485 mwebp.php:204
 #: nextcellent-integration.php:108 nextgen-integration.php:108
 msgid "Finished"
 msgstr "Finalizado"
@@ -286,21 +290,21 @@ msgstr "%1$d imagens na Biblioteca de mídia foram selecionadas (%2$d não otimi
 msgid "Previously optimized images will be skipped by default."
 msgstr "Imagens otimizadas anteriormente serão ignorados por padrão."
 
-#: bulk.php:436 common.php:1342 flag-integration.php:299 iocli.php:362
+#: bulk.php:437 common.php:1342 flag-integration.php:299 iocli.php:362
 #: iocli.php:406 iocli.php:486 iocli.php:559 nextcellent-integration.php:413
 #: nextgen-integration.php:395 nextgen2-integration.php:422
 msgid "Optimized image:"
 msgstr "Imagem otimizada"
 
-#: bulk.php:438 iocli.php:206
+#: bulk.php:439 iocli.php:206
 msgid "Skipped image, ID:"
 msgstr "Imagem ignorada, ID:"
 
-#: bulk.php:442 flag-integration.php:300 iocli.php:210 iocli.php:407
+#: bulk.php:443 flag-integration.php:300 iocli.php:210 iocli.php:407
 msgid "Full size – %s"
 msgstr "Tamanho completo - %s"
 
-#: bulk.php:457 common.php:1348 flag-integration.php:318 iocli.php:225
+#: bulk.php:458 common.php:1348 flag-integration.php:318 iocli.php:225
 #: iocli.php:368 iocli.php:425 iocli.php:503 iocli.php:569
 #: nextcellent-integration.php:102 nextcellent-integration.php:423
 #: nextgen-integration.php:102 nextgen-integration.php:405
@@ -308,7 +312,7 @@ msgstr "Tamanho completo - %s"
 msgid "Elapsed: %.3f seconds"
 msgstr "Tempo decorrido: %.3f segundos"
 
-#: bulk.php:484
+#: bulk.php:485
 msgid "Return to Media Library"
 msgstr "Voltar à Biblioteca de mídia"
 
