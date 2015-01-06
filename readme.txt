@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: image, attachment, optimize, optimization, lossless, lossy, photo, picture, seo, compression, gmagick, jpegtran, gifsicle, optipng, pngout, pngquant, jpegmini, tinypng, webp, wp-cli 
 Requires at least: 3.5
 Tested up to: 4.1
-Stable tag: 2.1.2
+Stable tag: 2.2.0
 License: GPLv3
 
 Reduce file sizes for images in WordPress including NextGEN, GRAND FlAGallery and more using lossless/lossy methods and image format conversion.
@@ -173,7 +173,7 @@ NOTE: The WebP naming scheme has been changed to avoid conflicts when JPGs and P
 * option to scan Media Library folders for current/previous month during scheduled optimization (already on roadmap)
 * If you would like to help translate this plugin in your language, get started here: http://translate.ewww.io/projects/ewww-image-optimizer/
 
-= 2.1.3 =
+= 2.2.0 =
 * added: wp-cli command to optimize via command-line, 'wp-cli help ewwwio optimize' for more details
 * added: Unoptimized Images page to show ONLY images that have not been processed by EWWW (under Media Library)
 * added: advanced option to preserve metadata for full-size originals
