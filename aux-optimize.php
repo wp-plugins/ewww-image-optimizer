@@ -443,12 +443,9 @@ function ewww_image_optimizer_image_scan($dir) {
 	$already_optimized = $wpdb->get_results($query, ARRAY_A);
 	$file_counter = 0;
 	foreach ($iterator as $path) {
-				if ( ! set_time_limit (0) ) {
-					$limit = 320;
-					while ( ! set_time_limit( $limit ) ) {
-						$limit--;
-					}
-				}
+		if ( ini_get( 'max_execution_time' ) < 60 ) {
+			set_time_limit (0);
+		}
 		$file_counter++;
 		$skip_optimized = false;
 		if ($path->isDir()) {

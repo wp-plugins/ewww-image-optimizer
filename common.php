@@ -4,7 +4,7 @@
 // TODO: webp fallback mode for CDN users: http://css-tricks.com/webp-with-fallback/
 // TODO: this could be useful: http://codex.wordpress.org/Function_Reference/maybe_unserialize
 
-define('EWWW_IMAGE_OPTIMIZER_VERSION', '220');
+define('EWWW_IMAGE_OPTIMIZER_VERSION', '221');
 
 // initialize debug global
 $disabled = ini_get('disable_functions');
@@ -1317,13 +1317,9 @@ function ewww_image_optimizer_aux_images_loop($attachment = null, $auto = false)
 	}
 	// retrieve the time when the optimizer starts
 	$started = microtime(true);
-	// allow 50 seconds for each image (this doesn't include any exec calls, only php processing time)
-				if ( ! set_time_limit (0) ) {
-					$limit = 320;
-					while ( ! set_time_limit( $limit ) ) {
-						$limit--;
-					}
-				}
+	if ( ini_get( 'max_execution_time' ) < 60 ) {
+		set_time_limit (0);
+	}
 	// get the path of the current attachment
 	if (empty($attachment)) $attachment = $_POST['ewww_attachment'];
 	$attachment = preg_replace( ":\\\':", "'", $attachment);

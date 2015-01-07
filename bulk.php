@@ -415,16 +415,9 @@ function ewww_image_optimizer_bulk_loop() {
 	}
 	// retrieve the time when the optimizer starts
 	$started = microtime(true);
-	// allow 50 seconds for each image (this doesn't include any exec calls, only php processing time)
-			if ( ini_get( 'max_execution_time' ) < 60 ) {
-				// give each image 50 seconds (php only, doesn't include any commands issued by exec()
-				if ( ! set_time_limit (0) ) {
-					$limit = 320;
-					while ( ! set_time_limit( $limit ) ) {
-						$limit--;
-					}
-				}
-			}
+	if ( ini_get( 'max_execution_time' ) < 60 ) {
+		set_time_limit (0);
+	}
 	// get the attachment ID of the current attachment
 	$attachment = $_POST['ewww_attachment'];
 	// get the 'bulk attachments' with a list of IDs remaining

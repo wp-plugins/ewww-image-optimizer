@@ -31,7 +31,7 @@ function ewww_image_optimizer_webp_scan() {
 	$start = microtime(true);
 	$file_counter = 0;
 	foreach ($iterator as $path) {
-		set_time_limit (50);
+		set_time_limit (0);
 		$skip_optimized = false;
 		if ($path->isDir()) {
 			continue;
