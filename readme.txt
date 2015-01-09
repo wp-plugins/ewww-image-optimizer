@@ -173,6 +173,9 @@ NOTE: The WebP naming scheme was changed in 2.0.1 to avoid filename conflicts. Y
 * option to scan Media Library folders for current/previous month during scheduled optimization (already on roadmap)
 * If you would like to help translate this plugin in your language, get started here: http://translate.ewww.io/projects/ewww-image-optimizer/
 
+= 2.2.2 =
+* fixed: previous fix for deleting webp images was not working properly
+
 = 2.2.1 =
 * fixed: infinite loop on hosts where set_time_limit does not work
 

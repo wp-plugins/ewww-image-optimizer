@@ -908,17 +908,17 @@ function ewww_image_optimizer_delete ($id) {
 	if (isset($meta['sizes']) ) {
 		// one way or another, $file_path is now set, and we can get the base folder name
 		$base_dir = dirname($file_path) . '/';
-		// delete any residual webp versions
-		$webpfile = $base_dir . $data['file'] . '.webp';
-		$webpfileold = preg_replace( '/\.\w+$/', '.webp', $base_dir . $data['file'] );
-		if ( file_exists( $webpfile) ) {
-			unlink( $webpfile );
-		}
-		if ( file_exists( $webpfileold) ) {
-			unlink( $webpfileold );
-		}
 		// check each resized version
 		foreach($meta['sizes'] as $size => $data) {
+			// delete any residual webp versions
+			$webpfile = $base_dir . $data['file'] . '.webp';
+			$webpfileold = preg_replace( '/\.\w+$/', '.webp', $base_dir . $data['file'] );
+			if ( file_exists( $webpfile) ) {
+				unlink( $webpfile );
+			}
+			if ( file_exists( $webpfileold) ) {
+				unlink( $webpfileold );
+			}
 			$wpdb->delete($wpdb->ewwwio_images, array('path' => $base_dir . $data['file']));
 			// if the original resize is set, and still exists
 			if (!empty($data['orig_file']) && file_exists($base_dir . $data['orig_file'])) {
