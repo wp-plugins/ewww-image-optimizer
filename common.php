@@ -4,7 +4,7 @@
 // TODO: webp fallback mode for CDN users: http://css-tricks.com/webp-with-fallback/
 // TODO: this could be useful: http://codex.wordpress.org/Function_Reference/maybe_unserialize
 
-define('EWWW_IMAGE_OPTIMIZER_VERSION', '221');
+define('EWWW_IMAGE_OPTIMIZER_VERSION', '222');
 
 // initialize debug global
 $disabled = ini_get('disable_functions');
