@@ -177,6 +177,7 @@ NOTE: The WebP naming scheme was changed in 2.0.1 to avoid filename conflicts. Y
 * changed: added index to ewwwio_images table and modified queries for substantial speed-up (and less load on database servers)
 * added: option to include last two months of Media Library images in Scheduled Optimization (for those that have disabled Automatic Optimization)
 * fixed: Folders to Optimize was not being validated properly
+* fixed: notice on Unoptimized Images page
 
 = 2.2.2 =
 * fixed: previous fix for deleting webp images was not working properly

@@ -629,7 +629,7 @@ function ewww_image_optimizer_aux_images_script($hook) {
 			// retrieve the location of the wordpress upload folder
 			$upload_dir = wp_upload_dir();
 			// retrieve the path of the upload folder
-			$upload_path = trailingslashit($upload_dir['basedir']);
+			$upload_path = $upload_dir['basedir'];
 			$this_month = date('m');
 			$this_year = date('Y');
 			$attachments = array_merge($attachments, ewww_image_optimizer_image_scan("$upload_path/$this_year/$this_month/"));

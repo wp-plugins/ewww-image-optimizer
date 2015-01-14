@@ -99,7 +99,7 @@ function ewww_image_optimizer_exec_init() {
 		add_action( 'load-settings_page_ewww-image-optimizer/ewww-image-optimizer', 'ewww_image_optimizer_tool_init' );
 		add_action( 'load-plugins.php', 'ewww_image_optimizer_tool_init' );
 		add_action( 'load-ims_gallery_page_ewww-ims-optimize', 'ewww_image_optimizer_tool_init' );
-//		add_action( 'load-', 'ewww_image_optimizer_tool_init' );
+		add_action( 'load-media_page_ewww-image-optimizer-unoptimized', 'ewww_image_optimizer_tool_init' );
 //		add_action( 'load-', 'ewww_image_optimizer_tool_init' );
 	} 
 	ewwwio_memory( __FUNCTION__ );
@@ -1123,7 +1123,7 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 	if ( FALSE === is_writable($file) ) {
 		// tell the user we can't write to the file
 		$msg = sprintf(__("<span class='code'>%s</span> is not writable", EWWW_IMAGE_OPTIMIZER_DOMAIN), $file);
-		$ewww_debug .= "couldn't write to the file<br>";
+		$ewww_debug .= "couldn't write to the file $file<br>";
 		// send back the above message
 		return array(false, $msg, $converted, $original);
 	}
