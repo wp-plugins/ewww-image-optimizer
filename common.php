@@ -4,7 +4,7 @@
 // TODO: webp fallback mode for CDN users: http://css-tricks.com/webp-with-fallback/
 // TODO: this could be useful: http://codex.wordpress.org/Function_Reference/maybe_unserialize
 
-define('EWWW_IMAGE_OPTIMIZER_VERSION', '222');
+define('EWWW_IMAGE_OPTIMIZER_VERSION', '222.1');
 
 // initialize debug global
 $disabled = ini_get('disable_functions');
@@ -375,7 +375,8 @@ function ewww_image_optimizer_install_table() {
 		gallery VARCHAR(30),
 		image_size int UNSIGNED,
 		orig_size int UNSIGNED,
-		UNIQUE KEY id (id)
+		UNIQUE KEY id (id),
+		INDEX path_image_size (path(255), image_size),
 	);";
 
 	// include the upgrade library to initialize a table
@@ -1231,8 +1232,11 @@ function ewww_image_optimizer_check_table ($file, $orig_size) {
 	global $ewww_debug;
 	$already_optimized = false;
 	$ewww_debug .= "<b>ewww_image_optimizer_check_table()</b><br>";
+	$started = microtime(true);
 	$query = $wpdb->prepare("SELECT results FROM $wpdb->ewwwio_images WHERE BINARY path = %s AND image_size = '$orig_size'", $file);
 	$already_optimized = $wpdb->get_var($query);
+	$elapsed = microtime(true) - $started;
+	$ewww_debug .= "elapsed during query: $elapsed<br>";
 	if ( preg_match( '/' . __('License exceeded', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '/', $already_optimized ) ) {
 		return;
 	}

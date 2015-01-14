@@ -114,7 +114,7 @@ http://ewww.io/2014/12/06/the-plugin-says-im-missing-something/
 
 = Google Pagespeed says my images need compressing or resizing, but I already optimized all my images. What do I do?
 
-http://ewww.io/2014/12/05/pagespeed-says-my-images-need-more-work/
+Try this for starters: http://ewww.io/2014/12/05/pagespeed-says-my-images-need-more-work/
 
 = Does the plugin replace existing images? =
 
