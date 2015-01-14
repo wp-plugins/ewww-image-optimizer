@@ -596,8 +596,17 @@ function ewww_image_optimizer_aux_images_script($hook) {
 							if (preg_match('/resized-/', $backup_size)) {
 								$path = $meta['path'];
 								$image_size = filesize($path);
-								$query = $wpdb->prepare("SELECT id FROM $wpdb->ewwwio_images WHERE BINARY path LIKE %s AND image_size LIKE '$image_size'", $path);
-								$already_optimized = $wpdb->get_results($query);
+								$query = $wpdb->prepare("SELECT id FROM $wpdb->ewwwio_images WHERE path LIKE %s AND image_size LIKE '$image_size'", $path);
+								$optimized_query = $wpdb->get_results($query);
+								if (!empty($optimized_query)) {
+									foreach ( $optimized_query as $image ) {
+										if ( $image['path'] != $path ) {
+											$ewww_debug .= "{$image['path']} does not match $path, continuing our search<br>";
+										} else {
+											$already_optimized = $image;
+										}
+									}
+								}
 								$mimetype = ewww_image_optimizer_mimetype($path, 'i');
 								if (preg_match('/^image\/(jpeg|png|gif)/', $mimetype) && empty($already_optimized)) {
 									$slide_paths[] = $path;

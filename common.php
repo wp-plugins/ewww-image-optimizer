@@ -537,8 +537,17 @@ function ewww_image_optimizer_retina ( $id, $retina_path ) {
 	$ewww_debug .= "retina path: $retina_path<br>";
 	$opt_size = filesize($retina_path);
 	$ewww_debug .= "retina size: $opt_size<br>";
-	$query = $wpdb->prepare("SELECT id FROM $wpdb->ewwwio_images WHERE BINARY path = %s AND image_size = '$opt_size'", $temp_path);
-	$already_optimized = $wpdb->get_var($query);
+	$query = $wpdb->prepare("SELECT id,path FROM $wpdb->ewwwio_images WHERE path = %s AND image_size = '$opt_size'", $temp_path);
+	$optimized_query = $wpdb->get_results($query);
+	if (!empty($optimized_query)) {
+		foreach ( $optimized_query as $image ) {
+			if ( $image['path'] != $temp_path ) {
+				$ewww_debug .= "{$image['path']} does not match $temp_path, continuing our search<br>";
+			} else {
+				$already_optimized = $image;
+			}
+		}
+	}
 	if (!empty($already_optimized)) {
 		// store info on the current image for future reference
 		$wpdb->update( $wpdb->ewwwio_images,
@@ -546,7 +555,7 @@ function ewww_image_optimizer_retina ( $id, $retina_path ) {
 				'path' => $retina_path,
 			),
 			array(
-				'id' => $already_optimized,
+				'id' => $already_optimized['id'],
 			));
 	} else {
 		ewww_image_optimizer($retina_path, 7, false, false);
@@ -1263,7 +1272,6 @@ function ewww_image_optimizer_check_table ($file, $orig_size) {
 	global $ewww_debug;
 	$already_optimized = false;
 	$ewww_debug .= "<b>ewww_image_optimizer_check_table()</b><br>";
-	$started = microtime(true);
 	$query = $wpdb->prepare("SELECT path,results FROM $wpdb->ewwwio_images WHERE path = %s AND image_size = '$orig_size'", $file);
 	$already_optimized = $wpdb->get_results($query, ARRAY_A);
 	if (!empty($already_optimized) && empty($_REQUEST['ewww_force'])) {
@@ -1279,14 +1287,10 @@ function ewww_image_optimizer_check_table ($file, $orig_size) {
 				$already_optimized = $already_optimized . $prev_string;
 				$ewww_debug .= "already optimized: {$image['path']} - $already_optimized<br>";
 				ewwwio_memory( __FUNCTION__ );
-	$elapsed = microtime(true) - $started;
-	$ewww_debug .= "elapsed during query: $elapsed<br>";
 				return $already_optimized;
 			}
 		}
 	}
-	$elapsed = microtime(true) - $started;
-	$ewww_debug .= "elapsed during query: $elapsed<br>";
 }
 
 // receives a path, results, optimized size, and an original size to insert into ewwwwio_images table
@@ -1295,8 +1299,17 @@ function ewww_image_optimizer_update_table ($attachment, $opt_size, $orig_size, 
 	global $wpdb;
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_update_table()</b><br>";
-	$query = $wpdb->prepare("SELECT id,orig_size,results FROM $wpdb->ewwwio_images WHERE BINARY path = %s", $attachment);
-	$already_optimized = $wpdb->get_row($query, ARRAY_A);
+	$query = $wpdb->prepare("SELECT id,orig_size,results,path FROM $wpdb->ewwwio_images WHERE path = %s", $attachment);
+	$optimized_query = $wpdb->get_results($query, ARRAY_A);
+	if (!empty($optimized_query)) {
+		foreach ( $optimized_query as $image ) {
+			if ( $image['path'] != $attachment ) {
+				$ewww_debug .= "{$image['path']} does not match $attachment, continuing our search<br>";
+			} else {
+				$already_optimized = $image;
+			}
+		}
+	}
 	$ewww_debug .= "savings: $opt_size (new) vs. $orig_size (orig)<br>";
 	if (!empty($already_optimized['results']) && $preserve_results && $opt_size === $orig_size) {
 		$results_msg = $already_optimized['results'];
@@ -1483,8 +1496,18 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = tr
 		$imsanity_path = trailingslashit($path_parts['dirname']) . $path_parts['filename'] . '-' . $newW . 'x' . $newH . '.' . $path_parts['extension'];
 		$ewww_debug .= "imsanity path: $imsanity_path<br>";
 		$image_size = filesize($file_path);
-		$query = $wpdb->prepare("SELECT id FROM $wpdb->ewwwio_images WHERE BINARY path = %s AND image_size = '$image_size'", $imsanity_path);
-		if ( $already_optimized = $wpdb->get_results($query, ARRAY_A) ) {
+		$query = $wpdb->prepare("SELECT id,path FROM $wpdb->ewwwio_images WHERE path = %s AND image_size = '$image_size'", $imsanity_path);
+		$optimized_query = $wpdb->get_results($query, ARRAY_A);
+		if (!empty($optimized_query)) {
+			foreach ( $optimized_query as $image ) {
+				if ( $image['path'] != $imsanity_path ) {
+					$ewww_debug .= "{$image['path']} does not match $imsanity_path, continuing our search<br>";
+				} else {
+					$already_optimized = $image;
+				}
+			}
+		}
+		if ( ! empty ( $already_optimized ) ) {
 			$ewww_debug .= "updating existing record, path: $file_path, size: " . $image_size . "<br>";
 			// store info on the current image for future reference
 			$wpdb->update( $wpdb->ewwwio_images,
@@ -1492,7 +1515,7 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = tr
 					'path' => $file_path,
 				),
 				array(
-					'id' => $already_optimized[0]['id'],
+					'id' => $already_optimized['id'],
 				));
 		}
 	}
@@ -1544,8 +1567,18 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = tr
 					$ewww_debug .= "ims resize already exists, wahoo<br>";
 					$ewww_debug .= "ims path: $ims_path<br>";
 					$image_size = filesize($ims_path);
-					$query = $wpdb->prepare("SELECT id FROM $wpdb->ewwwio_images WHERE BINARY path = %s AND image_size = '$image_size'", $image_path);
-					if ( $already_optimized = $wpdb->get_results($query, ARRAY_A) ) {
+					$query = $wpdb->prepare("SELECT id,path FROM $wpdb->ewwwio_images WHERE path = %s AND image_size = '$image_size'", $image_path);
+					$optimized_query = $wpdb->get_results($query, ARRAY_A);
+					if (!empty($optimized_query)) {
+						foreach ( $optimized_query as $image ) {
+							if ( $image['path'] != $image_path ) {
+								$ewww_debug .= "{$image['path']} does not match $image_path, continuing our search<br>";
+							} else {
+								$already_optimized = $image;
+							}
+						}
+					}
+					if ( ! empty( $already_optimized ) ) {
 						$ewww_debug .= "updating existing record, path: $ims_path, size: " . $image_size . "<br>";
 						// store info on the current image for future reference
 						$wpdb->update( $wpdb->ewwwio_images,
@@ -1553,7 +1586,7 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = tr
 								'path' => $ims_path,
 							),
 							array(
-								'id' => $already_optimized[0]['id'],
+								'id' => $already_optimized['id'],
 							));
 						$base_dir = $base_ims_dir;
 					}
