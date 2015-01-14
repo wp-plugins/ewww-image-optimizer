@@ -1180,15 +1180,15 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $n
 	$payload .= '--' . $boundary . '--';
 
 	// retrieve the time when the optimizer starts
-	$started = microtime(true);
+//	$started = microtime(true);
 	$response = wp_remote_post($url, array(
 		'timeout' => 90,
 		'headers' => $headers,
 		'sslverify' => false,
 		'body' => $payload,
 		));
-	$elapsed = microtime(true) - $started;
-	$ewww_debug .= "processing image via cloud took $elapsed seconds<br>";
+//	$elapsed = microtime(true) - $started;
+//	$ewww_debug .= "processing image via cloud took $elapsed seconds<br>";
 	if (is_wp_error($response)) {
 		$error_message = $response->get_error_message();
 		$ewww_debug .= "optimize failed: $error_message <br>";
@@ -1232,11 +1232,11 @@ function ewww_image_optimizer_check_table ($file, $orig_size) {
 	global $ewww_debug;
 	$already_optimized = false;
 	$ewww_debug .= "<b>ewww_image_optimizer_check_table()</b><br>";
-	$started = microtime(true);
+//	$started = microtime(true);
 	$query = $wpdb->prepare("SELECT results FROM $wpdb->ewwwio_images WHERE BINARY path = %s AND image_size = '$orig_size'", $file);
 	$already_optimized = $wpdb->get_var($query);
-	$elapsed = microtime(true) - $started;
-	$ewww_debug .= "elapsed during query: $elapsed<br>";
+//	$elapsed = microtime(true) - $started;
+//	$ewww_debug .= "elapsed during query: $elapsed<br>";
 	if ( preg_match( '/' . __('License exceeded', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '/', $already_optimized ) ) {
 		return;
 	}
