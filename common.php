@@ -2262,6 +2262,9 @@ function ewww_image_optimizer_savings_loop() {
 	} else {
 		$records_needed = 1000;
 	}
+	if ( $records_needed < 0 ) {
+		$records_needed = 0;
+	}
 	if ( function_exists('is_plugin_active_for_network') && is_plugin_active_for_network( EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE_REL ) ) {	
 		if (function_exists('wp_get_sites')) {
 			add_filter('wp_is_large_network', 'ewww_image_optimizer_large_network', 20, 0);

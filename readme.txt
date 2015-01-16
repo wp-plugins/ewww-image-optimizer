@@ -178,6 +178,7 @@ NOTE: The WebP naming scheme was changed in 2.0.1 to avoid filename conflicts. Y
 * added: option to include last two months of Media Library images in Scheduled Optimization (for those that have disabled Automatic Optimization)
 * fixed: Folders to Optimize was not being validated properly
 * fixed: notice on Unoptimized Images page
+* fixed: mysql error when attempting to query negative number of records on settings page
 
 = 2.2.2 =
 * fixed: previous fix for deleting webp images was not working properly
