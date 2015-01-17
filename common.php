@@ -1,7 +1,6 @@
 <?php
 // common functions for Standard and Cloud plugins
 // TODO: check all comments to make sure they are actually useful...
-// TODO: webp fallback mode for CDN users: http://css-tricks.com/webp-with-fallback/
 // TODO: this could be useful: http://codex.wordpress.org/Function_Reference/maybe_unserialize
 
 define('EWWW_IMAGE_OPTIMIZER_VERSION', '222.11');
@@ -118,7 +117,25 @@ add_action( 'wp_ajax_ewww_savings_finish', 'ewww_image_optimizer_savings_finish'
 add_action( 'wp_ajax_ewww_webp_rewrite', 'ewww_image_optimizer_webp_rewrite' );
 register_deactivation_hook( EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE, 'ewww_image_optimizer_network_deactivate' );
 add_action( 'shutdown', 'ewwwio_memory_output' );
+// TODO: make these conditional on the option
+if ( ewww_image_optimizer_get_option( 'ewww_image_optimizer_webp_for_cdn' ) ) {
+	add_action('wp_head', 'ewww_image_optimizer_buffer_start');
+	add_action('wp_footer', 'ewww_image_optimizer_buffer_end');
+}
 
+// functions to capture all page output, replace image urls with webp derivatives, and add webp fallback 
+function ewww_image_optimizer_buffer_start() {
+	ob_start('ewww_image_optimizer_filter_page_output');
+}
+function ewww_image_optimizer_buffer_end() {
+	ob_end_flush();
+}
+function ewww_image_optimizer_filter_page_output( $buffer ) {
+	// modify buffer here, and then return the updated code
+	$buffer = preg_replace('/src=(["\'])?([^="\']+\.)(png|jpg|jpeg)["\']?/i', 'src=$1$2$3.webp$1 onerror="this.onerror=null; this.src=\'$2$3\'"', $buffer);
+	return $buffer;
+}
+ 
 // need to include the plugin library for the is_plugin_active function
 require_once(ABSPATH . 'wp-admin/includes/plugin.php');
 // include the file that loads the nextgen gallery optimization functions
@@ -236,6 +253,8 @@ function ewww_image_optimizer_admin_init() {
 			update_site_option('ewww_image_optimizer_noauto', $_POST['ewww_image_optimizer_noauto']);
 			if (empty($_POST['ewww_image_optimizer_include_media_paths'])) $_POST['ewww_image_optimizer_include_media_paths'] = '';
 			update_site_option('ewww_image_optimizer_include_media_paths', $_POST['ewww_image_optimizer_include_media_paths']);
+			if (empty($_POST['ewww_image_optimizer_webp_for_cdn'])) $_POST['ewww_image_optimizer_webp_for_cdn'] = '';
+			update_site_option('ewww_image_optimizer_webp_for_cdn', $_POST['ewww_image_optimizer_webp_for_cdn']);
 			add_action('network_admin_notices', 'ewww_image_optimizer_network_settings_saved');
 		}
 	}
@@ -273,6 +292,7 @@ function ewww_image_optimizer_admin_init() {
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_import_status');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_noauto');
 	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_include_media_paths');
+	register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_webp_for_cdn');
 	ewww_image_optimizer_exec_init();
 	// setup scheduled optimization if the user has enabled it, and it isn't already scheduled
 	if (ewww_image_optimizer_get_option('ewww_image_optimizer_auto') == TRUE && !wp_next_scheduled('ewww_image_optimizer_auto')) {
@@ -2708,6 +2728,7 @@ function ewww_image_optimizer_options () {
 				$output[] = "<tr><th><label for='ewww_image_optimizer_delete_originals'>" . __('Delete originals', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</label></th><td><input type='checkbox' id='ewww_image_optimizer_delete_originals' name='ewww_image_optimizer_delete_originals' " . ( ewww_image_optimizer_get_option('ewww_image_optimizer_delete_originals') == TRUE ? "checked='true'" : "" ) . " /> " . __('This will remove the original image from the server after a successful conversion.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</td></tr>\n";
 				$output[] = "<tr><th><label for='ewww_image_optimizer_webp'>" . __('JPG/PNG to WebP', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</label></th><td><span><input type='checkbox' id='ewww_image_optimizer_webp' name='ewww_image_optimizer_webp' value='true' " . ( ewww_image_optimizer_get_option('ewww_image_optimizer_webp') == TRUE ? "checked='true'" : "" ) . " /> <b>" . __('WARNING:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</b> ' . __('JPG to WebP conversion is lossy, but quality loss is minimal. PNG to WebP conversion is lossless.', EWWW_IMAGE_OPTIMIZER_DOMAIN) .  "</span>\n" .
 				"<p class='description'>" . __('Originals are never deleted, and WebP images should only be served to supported browsers.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <a href='#webp-rewrite'>" .  __('You can use the rewrite rules below to serve WebP images with Apache.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a></td></tr>\n";
+				$output[] = "<tr><th><label for='ewww_image_optimizer_webp_for_cdn'>" . __('WebP for CDN', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</label></th><td><span><input type='checkbox' id='ewww_image_optimizer_webp_for_cdn' name='ewww_image_optimizer_webp_for_cdn' value='true' " . ( ewww_image_optimizer_get_option('ewww_image_optimizer_webp_for_cdn') == TRUE ? "checked='true'" : "" ) . " /> " . __('Uses output buffering functionality from PHP, and may require changes to some themes.', EWWW_IMAGE_OPTIMIZER_DOMAIN) .  "</span></td></tr>";
 				$output[] = "<tr><th><label for='ewww_image_optimizer_jpg_to_png'>" . sprintf(__('enable %s to %s conversion', EWWW_IMAGE_OPTIMIZER_DOMAIN), 'JPG', 'PNG') . "</label></th><td><span><input type='checkbox' id='ewww_image_optimizer_jpg_to_png' name='ewww_image_optimizer_jpg_to_png' " . ( ewww_image_optimizer_get_option('ewww_image_optimizer_jpg_to_png') == TRUE ? "checked='true'" : "" ) . " /> <b>" . __('WARNING:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</b> " . __('Removes metadata and increases cpu usage dramatically.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</span>\n" .
 				"<p class='description'>" . __('PNG is generally much better than JPG for logos and other images with a limited range of colors. Checking this option will slow down JPG processing significantly, and you may want to enable it only temporarily.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</p></td></tr>\n";
 				$output[] = "<tr><th><label for='ewww_image_optimizer_png_to_jpg'>" . sprintf(__('enable %s to %s conversion', EWWW_IMAGE_OPTIMIZER_DOMAIN), 'PNG', 'JPG') . "</label></th><td><span><input type='checkbox' id='ewww_image_optimizer_png_to_jpg' name='ewww_image_optimizer_png_to_jpg' " . ( ewww_image_optimizer_get_option('ewww_image_optimizer_png_to_jpg') == TRUE ? "checked='true'" : "" ) . " /> <b>" . __('WARNING:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</b> " . __('This is not a lossless conversion.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</span>\n" .

@@ -170,12 +170,12 @@ NOTE: The WebP naming scheme was changed in 2.0.1 to avoid filename conflicts. Y
 = future =
 * these are current feature requests, if you see something you like here, go vote for it in the support forum
 * full GMedia support (still waiting for more votes)
-* option to scan Media Library folders for current/previous month during scheduled optimization (already on roadmap)
 * If you would like to help translate this plugin in your language, get started here: http://translate.ewww.io/projects/ewww-image-optimizer/
 
 = 2.3.0 =
-* changed: added index to ewwwio_images table and modified queries for substantial speed-up (and less load on database servers)
+* added: WebP url rewriting for sites using CDNs, requires output buffering in PHP, and may require modifications for some themes
 * added: option to include last two months of Media Library images in Scheduled Optimization (for those that have disabled Automatic Optimization)
+* changed: added index to ewwwio_images table and modified queries for substantial speed-up (and less load on database servers)
 * fixed: Folders to Optimize was not being validated properly
 * fixed: notice on Unoptimized Images page
 * fixed: mysql error when attempting to query negative number of records on settings page
