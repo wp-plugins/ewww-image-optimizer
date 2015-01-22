@@ -3,6 +3,7 @@ if (!function_exists('ewwwngg')) {
 class ewwwngg {
 	/* initializes the nextgen integration functions */
 	function ewwwngg() {
+		add_action('admin_init', array(&$this, 'admin_init'));
 		add_filter('ngg_manage_images_columns', array(&$this, 'ewww_manage_images_columns'));
 		add_action('ngg_manage_image_custom_column', array(&$this, 'ewww_manage_image_custom_column'), 10, 2);
 		add_action('ngg_added_new_image', array(&$this, 'ewww_added_new_image'));
@@ -19,6 +20,9 @@ class ewwwngg {
 		add_action('wp_ajax_bulk_ngg_cleanup', array(&$this, 'ewww_ngg_bulk_cleanup'));
 		add_action('wp_ajax_ewww_ngg_thumbs', array(&$this, 'ewww_ngg_thumbs_only'));
 		add_action('ngg_after_new_images_added', array(&$this, 'ewww_ngg_new_thumbs'), 10, 2);
+	}
+
+	function admin_init() {
 		register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_ngg_resume');
 		register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_ngg_attachments');
 	}

@@ -2,6 +2,7 @@
 class ewwwflag {
 	/* initializes the flagallery integration functions */
 	function ewwwflag() {
+		add_action('admin_init', array(&$this, 'admin_init'));
 		add_filter('flag_manage_images_columns', array(&$this, 'ewww_manage_images_columns'));
 		add_action('flag_manage_gallery_custom_column', array(&$this, 'ewww_manage_image_custom_column'), 10, 2);
 		add_action('flag_manage_images_bulkaction', array(&$this, 'ewww_manage_images_bulkaction'));
@@ -18,6 +19,9 @@ class ewwwflag {
 		add_action('wp_ajax_bulk_flag_filename', array(&$this, 'ewww_flag_bulk_filename'));
 		add_action('wp_ajax_bulk_flag_loop', array(&$this, 'ewww_flag_bulk_loop'));
 		add_action('wp_ajax_bulk_flag_cleanup', array(&$this, 'ewww_flag_bulk_cleanup'));
+	}
+
+	function admin_init() {
 		register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_flag_resume');
 		register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_flag_attachments');
 	}

@@ -93,7 +93,7 @@ $plugin = plugin_basename ( EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE );
 add_filter( "plugin_action_links_$plugin", 'ewww_image_optimizer_settings_link' );
 add_filter( 'ewww_image_optimizer_settings', 'ewww_image_optimizer_filter_settings_page' );
 add_action( 'manage_media_custom_column', 'ewww_image_optimizer_custom_column', 10, 2 );
-add_action( 'plugins_loaded', 'ewww_image_optimizer_load_textdomain' );
+add_action( 'plugins_loaded', 'ewww_image_optimizer_preinit' );
 add_action( 'admin_init', 'ewww_image_optimizer_admin_init' );
 add_action( 'admin_action_ewww_image_optimizer_manual_optimize', 'ewww_image_optimizer_manual' );
 add_action( 'admin_action_ewww_image_optimizer_manual_restore', 'ewww_image_optimizer_manual' );
@@ -117,7 +117,6 @@ add_action( 'wp_ajax_ewww_savings_finish', 'ewww_image_optimizer_savings_finish'
 add_action( 'wp_ajax_ewww_webp_rewrite', 'ewww_image_optimizer_webp_rewrite' );
 register_deactivation_hook( EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE, 'ewww_image_optimizer_network_deactivate' );
 add_action( 'shutdown', 'ewwwio_memory_output' );
-// TODO: make these conditional on the option
 if ( ewww_image_optimizer_get_option( 'ewww_image_optimizer_webp_for_cdn' ) ) {
 	add_action('wp_head', 'ewww_image_optimizer_buffer_start');
 	add_action('wp_footer', 'ewww_image_optimizer_buffer_end');
@@ -135,28 +134,6 @@ function ewww_image_optimizer_filter_page_output( $buffer ) {
 	$buffer = preg_replace('/src=(["\'])?([^="\']+\.)(png|jpg|jpeg)["\']?/i', 'src=$1$2$3.webp$1 onerror="this.onerror=null; this.src=\'$2$3\'"', $buffer);
 	return $buffer;
 }
- 
-// need to include the plugin library for the is_plugin_active function
-require_once(ABSPATH . 'wp-admin/includes/plugin.php');
-// include the file that loads the nextgen gallery optimization functions
-if (is_plugin_active('nextgen-gallery/nggallery.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('nextgen-gallery/nggallery.php'))) {
-	$nextgen_data = get_plugin_data(trailingslashit(WP_PLUGIN_DIR) . 'nextgen-gallery/nggallery.php', false, false);
-		$ewww_debug .= 'Nextgen version: ' . $nextgen_data['Version'] . '<br>';
-	if (preg_match('/^2\./', $nextgen_data['Version'])) { // for Nextgen 2
-		require(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'nextgen2-integration.php');
-	} else {
-		require(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'nextgen-integration.php');
-	}
-}
-
-// include the file that loads the nextcellent (nextgen legacy) optimization functions
-if (is_plugin_active('nextcellent-gallery-nextgen-legacy/nggallery.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('nextcellent-gallery-nextgen-legacy/nggallery.php'))) {
-	require(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'nextcellent-integration.php');
-}
-// include the file that loads the grand flagallery optimization functions
-if (is_plugin_active('flash-album-gallery/flag.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('flash-album-gallery/flag.php'))) {
-	require( EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'flag-integration.php' );
-}
 
 if ( defined( 'WP_CLI' ) && WP_CLI ) {
 	include( EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'iocli.php' );
@@ -169,8 +146,40 @@ function ewwwio_memory( $function ) {
 	}
 }
 
-function ewww_image_optimizer_load_textdomain() {
+function ewww_image_optimizer_preinit() {
+	global $ewww_debug;
+	$ewww_debug .= '<b>ewww_image_optimizer_preinit()</b><br>';
 	load_plugin_textdomain(EWWW_IMAGE_OPTIMIZER_DOMAIN, false, dirname(plugin_basename(__FILE__)) . '/languages/');
+	// need to include the plugin library for the is_plugin_active function
+//	require_once(ABSPATH . 'wp-admin/includes/plugin.php');
+	if ( defined('NGGFOLDER')) {
+// include the file that loads the nextgen gallery optimization functions
+//if (is_plugin_active( NGGFOLDER . '/nggallery.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network( NGGFOLDER . '/nggallery.php'))) {
+		global $ngg;
+//		$nextgen_data = get_plugin_data(trailingslashit(WP_PLUGIN_DIR) . NGGFOLDER . '/nggallery.php', false, false);
+		$ewww_debug .= 'Nextgen version: ' . $ngg->version . '<br>';
+		if (preg_match('/^2\./', $ngg->version)) { // for Nextgen 2
+			require(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'nextgen2-integration.php');
+		} else {
+			preg_match( '/\d+\.\d+\.(\d+)/', $ngg->version, $nextgen_minor_version);
+			if ( ! empty( $nextgen_minor_version[1] ) && $nextgen_minor_version[1] < 14 ) {
+				require(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'nextgen-integration.php');
+			} elseif ( ! empty( $nextgen_minor_version[1] ) && $nextgen_minor_version[1] > 13 ) {
+				require(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'nextcellent-integration.php');
+			}
+		}
+//}
+
+// include the file that loads the nextcellent (nextgen legacy) optimization functions
+//if (is_plugin_active('nextcellent-gallery-nextgen-legacy/nggallery.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('nextcellent-gallery-nextgen-legacy/nggallery.php'))) {
+//	require(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'nextcellent-integration.php');
+//}
+	}
+	// include the file that loads the grand flagallery optimization functions
+	if ( defined( 'FLAGFOLDER' ) ) {
+//if (is_plugin_active('flash-album-gallery/flag.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('flash-album-gallery/flag.php'))) {
+		require( EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'flag-integration.php' );
+	}
 }
 
 /**
@@ -2742,7 +2751,7 @@ function ewww_image_optimizer_options () {
 			$output[] = "</table>\n</div>\n";
 			$output[] = "<p class='submit'><input type='submit' class='button-primary' value='" . __('Save Changes', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "' /></p>\n";
 		$output[] = "</form>\n";
-		if ( ewww_image_optimizer_get_option( 'ewww_image_optimizer_webp' ) ) {
+		if ( ewww_image_optimizer_get_option( 'ewww_image_optimizer_webp' ) && ! ewww_image_optimizer_get_option( 'ewww_image_optimizer_webp_for_cdn' ) ) {
 		$output[] = "<form id='ewww-webp-rewrite'>\n";
 			$output[] = "<p>" . __('There are many ways to serve WebP images to visitors with supported browsers. You may choose any you wish, but it is recommended to serve them with an .htaccess file using mod_rewrite and mod_headers. The plugin can insert the rules for you if the file is writable, or you can edit .htaccess yourself.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</p>\n";
 			if ( ! ewww_image_optimizer_webp_rewrite_verify() ) {

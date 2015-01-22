@@ -179,6 +179,7 @@ NOTE: The WebP naming scheme was changed in 2.0.1 to avoid filename conflicts. Y
 * fixed: Folders to Optimize was not being validated properly
 * fixed: notice on Unoptimized Images page
 * fixed: mysql error when attempting to query negative number of records on settings page
+* changed: cleaned up flagallery and nextgen integration loading and made it folder-agnostic
 
 = 2.2.2 =
 * fixed: previous fix for deleting webp images was not working properly

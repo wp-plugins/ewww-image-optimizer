@@ -2,6 +2,7 @@
 class ewwwngg {
 	/* initializes the nextgen integration functions */
 	function ewwwngg() {
+		add_action('admin_init', array(&$this, 'admin_init'));
 		add_filter('ngg_manage_images_columns', array(&$this, 'ewww_manage_images_columns'));
 		add_filter('ngg_manage_images_number_of_columns', array(&$this, 'ewww_manage_images_number_of_columns'));
 		add_filter('ngg_manage_images_row_actions', array(&$this, 'ewww_manage_images_row_actions'));
@@ -17,6 +18,9 @@ class ewwwngg {
 		add_action('wp_ajax_bulk_ngg_filename', array(&$this, 'ewww_ngg_bulk_filename'));
 		add_action('wp_ajax_bulk_ngg_loop', array(&$this, 'ewww_ngg_bulk_loop'));
 		add_action('wp_ajax_bulk_ngg_cleanup', array(&$this, 'ewww_ngg_bulk_cleanup'));
+	}
+
+	function admin_init() {
 		register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_ngg_resume');
 		register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_ngg_attachments');
 	}
