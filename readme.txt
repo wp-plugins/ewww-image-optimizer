@@ -126,7 +126,7 @@ No, we leave that to other plugins like Imsanity.
 
 = Can I lower the compression setting for JPGs to save more space? =
 
-The lossy JPG optimization using JPEGmini will determine the ideal quality setting and save even more space. You cannot manually set the quality with this plugin, but Imsanity (and many others) will do that if you really want to. But you should REALLY try JPEGmini first.
+The lossy JPG optimization using the EWWW IO Cloud service will determine the ideal quality setting and save even more space. You cannot manually set the quality with this plugin, but Imsanity (and many others) will do that if you really want to. But you should REALLY try EWWW IO Cloud first.
 
 = The bulk optimizer doesn't seem to be working, what can I do? =
 
@@ -170,16 +170,19 @@ NOTE: The WebP naming scheme was changed in 2.0.1 to avoid filename conflicts. Y
 = future =
 * these are current feature requests, if you see something you like here, go vote for it in the support forum
 * full GMedia support (still waiting for more votes)
+* copy metadata from original images to webp variants
 * If you would like to help translate this plugin in your language, get started here: http://translate.ewww.io/projects/ewww-image-optimizer/
 
 = 2.3.0 =
-* added: WebP url rewriting for sites using CDNs, requires output buffering in PHP, and may require modifications for some themes
+* added: WebP url rewriting for sites using CDNs, requires output buffering and libxml in PHP, and may require modifications for some themes
 * added: option to include last two months of Media Library images in Scheduled Optimization (for those that have disabled Automatic Optimization)
 * changed: added index to ewwwio_images table and modified queries for substantial speed-up (and less load on database servers)
 * fixed: Folders to Optimize was not being validated properly
 * fixed: notice on Unoptimized Images page
 * fixed: mysql error when attempting to query negative number of records on settings page
 * changed: cleaned up flagallery and nextgen integration loading and made it folder-agnostic
+* fixed: disabling cloud api no longer sets optipng/pngout levels to max
+* fixed: bug with image savings string in Spanish translation
 
 = 2.2.2 =
 * fixed: previous fix for deleting webp images was not working properly
@@ -717,9 +720,35 @@ Improved optimization for JPGs significantly, by adding -progressive flag. May w
 = 1.0.1 =
 Improved performance for PNGs by specifying proper optimization level
 
+== Webhosts ==
+
+In general, these lists only apply to shared hosting services. If the providers below have VPS or dedicated server options, those will likely work just fine. If you have any contributions or corrections to these lists, please contact me via the form at https://ewww.io
+
+Webhosts where things work out of the box.
+
+* [A2 Hosting](https://partners.a2hosting.com/solutions.php?id=5959&url=638): EWWW IO is installed automatically for new sites, and is fully supported by A2 (referral link). Their Prime+SSD hosting is very nice (and still cheap).
+* [Bluehost](http://www.bluehost.com)
+* [Dreamhost](http://www.dreamhost.com)
+* [GoDaddy](http://www.godaddy.com) (only with PHP 5.3)
+* [gPowerHost](https://gpowerhost.com/)
+* [HostGator](http://www.hostgator.com)
+* [Hetzner Online](http://www.hetzner.de)
+* [Hosterdam](http://www.hosterdam.com) (FreeBSD)
+* [iFastNet](https://ifastnet.com/portal/) (with custom php.ini from customer support)
+* [Namecheap](http://www.namecheap.com)
+* [OVH](http://www.ovh.co.uk)
+* [WebFaction](http://www.webfaction.com)
+
+Webhosts where the plugin will only work in cloud mode or only some tools are installed locally.
+
+* ipower
+* Gandi
+* ipage (JPG only)
+* WP Engine - use EWWW Image Optimizer Cloud fork: http://wordpress.org/plugins/ewww-image-optimizer-cloud/
+
 == Contact and Credits ==
 
-Written by [Shane Bishop](http://www.shanebishop.net). Based upon CW Image Optimizer, which was written by [Jacob Allred](http://www.jacoballred.com/) at [Corban Works, LLC](http://www.corbanworks.com/). CW Image Optimizer was based on WP Smush.it. Jpegtran is the work of the Independent JPEG Group.
+Written by [Shane Bishop](https://ewww.io). Based upon CW Image Optimizer, which was written by [Jacob Allred](http://www.jacoballred.com/) at [Corban Works, LLC](http://www.corbanworks.com/). CW Image Optimizer was based on WP Smush.it. Jpegtran is the work of the Independent JPEG Group.
 [Hammer](http://thenounproject.com/noun/hammer/#icon-No1306) designed by [John Caserta](http://thenounproject.com/johncaserta) from The Noun Project.
 [Images](http://thenounproject.com/noun/images/#icon-No22772) designed by [Simon Henrotte](http://thenounproject.com/Gizmodesbois) from The Noun Project.
 
@@ -801,30 +830,4 @@ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-== Webhosts ==
-
-In general, these lists only apply to shared hosting services. If the providers below have VPS or dedicated server options, those will likely work just fine. If you have any contributions or corrections to these lists, please contact me via the form at http://www.shanebishop.net
-
-Webhosts where things work out of the box.
-
-* [A2 Hosting](https://partners.a2hosting.com/solutions.php?id=5959&url=638): EWWW IO is installed automatically for new sites, and is fully supported by A2 (referral link). Their Prime+SSD hosting is very nice (and still cheap).
-* [Bluehost](http://www.bluehost.com)
-* [Dreamhost](http://www.dreamhost.com)
-* [GoDaddy](http://www.godaddy.com) (only with PHP 5.3)
-* [gPowerHost](https://gpowerhost.com/)
-* [HostGator](http://www.hostgator.com)
-* [Hetzner Online](http://www.hetzner.de)
-* [Hosterdam](http://www.hosterdam.com) (FreeBSD)
-* [iFastNet](https://ifastnet.com/portal/) (with custom php.ini from customer support)
-* [Namecheap](http://www.namecheap.com)
-* [OVH](http://www.ovh.co.uk)
-* [WebFaction](http://www.webfaction.com)
-
-Webhosts where the plugin will only work in cloud mode or only some tools are installed locally.
-
-* ipower
-* Gandi
-* ipage (JPG only)
-* WP Engine - use EWWW Image Optimizer Cloud fork: http://wordpress.org/plugins/ewww-image-optimizer-cloud/
 
