@@ -1875,6 +1875,7 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 // creates webp images alongside JPG and PNG files
 // needs a filename, the filesize, mimetype, and the path to the cwebp binary
 function ewww_image_optimizer_webp_create( $file, $orig_size, $type, $tool ) {
+	// TODO: do something to handle webp error output
 	global $ewww_debug;
 	$ewww_debug .= '<b>ewww_image_optimizer_webp_create()</b><br>';
 	// change the file extension
@@ -1889,10 +1890,10 @@ function ewww_image_optimizer_webp_create( $file, $orig_size, $type, $tool ) {
 		$nice = ewww_image_optimizer_find_binary('nice', 'n');
 		switch($type) {
 			case 'image/jpeg':
-				exec( "$nice " . $tool . " -q  85 -quiet " . ewww_image_optimizer_escapeshellarg( $file ) . " -o " . ewww_image_optimizer_escapeshellarg( $webpfile ) );
+				exec( "$nice " . $tool . " -q  85 -quiet " . ewww_image_optimizer_escapeshellarg( $file ) . " -o " . ewww_image_optimizer_escapeshellarg( $webpfile ) . ' 2>&1', $cli_output );
 				break;
 			case 'image/png':
-				exec( "$nice " . $tool . " -lossless -quiet " . ewww_image_optimizer_escapeshellarg( $file ) . " -o " . ewww_image_optimizer_escapeshellarg( $webpfile ) );
+				exec( "$nice " . $tool . " -lossless -quiet " . ewww_image_optimizer_escapeshellarg( $file ) . " -o " . ewww_image_optimizer_escapeshellarg( $webpfile ) . ' 2>&1', $cli_output );
 				break;
 		}
 	}
