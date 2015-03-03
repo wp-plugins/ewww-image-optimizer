@@ -183,6 +183,7 @@ NOTE: The WebP naming scheme was changed in 2.0.1 to avoid filename conflicts. Y
 * changed: cleaned up flagallery and nextgen integration loading and made it folder-agnostic
 * fixed: disabling cloud api no longer sets optipng/pngout levels to max
 * fixed: bug with image savings string in Spanish translation
+* fixed: referencing object as an array when scanning for Meta Slider images causes Scan & Optimize to fail
 
 = 2.2.2 =
 * fixed: previous fix for deleting webp images was not working properly

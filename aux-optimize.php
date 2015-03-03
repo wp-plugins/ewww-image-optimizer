@@ -597,7 +597,7 @@ function ewww_image_optimizer_aux_images_script($hook) {
 								$path = $meta['path'];
 								$image_size = filesize($path);
 								$query = $wpdb->prepare("SELECT id FROM $wpdb->ewwwio_images WHERE path LIKE %s AND image_size LIKE '$image_size'", $path);
-								$optimized_query = $wpdb->get_results($query);
+								$optimized_query = $wpdb->get_results($query, ARRAY_A);
 								if (!empty($optimized_query)) {
 									foreach ( $optimized_query as $image ) {
 										if ( $image['path'] != $path ) {

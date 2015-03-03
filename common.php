@@ -135,6 +135,7 @@ function ewww_image_optimizer_filter_page_output( $buffer ) {
 	// modify buffer here, and then return the updated code
 	if ( class_exists( 'DOMDocument' ) ) {
 		$html = new DOMDocument;
+		$libxml_previous_error_reporting = libxml_use_internal_errors(true);
 		$html->loadHTML($buffer);
 		$images = $html->getElementsByTagName('img');
 		foreach ($images as $image) {
@@ -203,6 +204,8 @@ function ewww_image_optimizer_filter_page_output( $buffer ) {
 			}
 		}
 		$buffer = $html->saveHTML();
+		libxml_clear_errors();
+		libxml_user_internal_errors($libxml_previous_error_reporting);
 	}
 	return $buffer;
 }
@@ -713,7 +716,6 @@ function ewww_image_optimizer_ims() {
 			echo '<table class="wp-list-table widefat media" cellspacing="0"><thead><tr><th>ID</th><th>&nbsp;</th><th>' . __('Title', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</th><th>' . __('Gallery', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</th><th>' . __('Image Optimizer', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</th></tr></thead>';
 			$alternate = true;
 			foreach ($attachments as $ID) {
-				// TODO: for what do we need the meta?
 				$meta = get_metadata('post', $ID);
 				if ( is_array( $meta['_wp_attachment_metadata'][0] ) ) {
 					$meta = $meta['_wp_attachment_metadata'][0];
