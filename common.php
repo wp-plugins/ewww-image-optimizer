@@ -136,7 +136,8 @@ function ewww_image_optimizer_filter_page_output( $buffer ) {
 	if ( class_exists( 'DOMDocument' ) ) {
 		$html = new DOMDocument;
 		$libxml_previous_error_reporting = libxml_use_internal_errors(true);
-		$html->loadHTML($buffer);
+		$html->encoding = 'utf-8';
+		$html->loadHTML(utf8_decode($buffer));
 		$images = $html->getElementsByTagName('img');
 		foreach ($images as $image) {
 			$home_url = get_home_url();
@@ -203,9 +204,9 @@ function ewww_image_optimizer_filter_page_output( $buffer ) {
 				$nscript->appendChild($image);
 			}
 		}
-		$buffer = $html->saveHTML();
+		$buffer = $html->saveHTML($html->documentElement);
 		libxml_clear_errors();
-		libxml_user_internal_errors($libxml_previous_error_reporting);
+		libxml_use_internal_errors($libxml_previous_error_reporting);
 	}
 	return $buffer;
 }
