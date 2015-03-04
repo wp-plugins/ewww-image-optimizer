@@ -1,7 +1,7 @@
 === EWWW Image Optimizer ===
 Contributors: nosilver4u
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MKMQKCBFFG3WW
-Tags: image, attachment, optimize, optimization, lossless, lossy, photo, picture, seo, compression, gmagick, jpegtran, gifsicle, optipng, pngout, pngquant, jpegmini, tinypng, webp, wp-cli 
+Tags: image, attachment, optimize, optimization, lossless, lossy, photo, picture, seo, compression, gmagick, jpegtran, gifsicle, optipng, pngout, pngquant, jpegmini, tinyjpg, tinypng, webp, wp-cli 
 Requires at least: 3.5
 Tested up to: 4.1
 Stable tag: 2.2.2
@@ -19,14 +19,14 @@ The EWWW Image Optimizer is a WordPress plugin that will automatically optimize 
 1. **Faster backups.** Smaller image sizes also means faster backups.
 1. **Less bandwidth usage.** Optimizing your images can save you hundreds of KB per image, which means significantly less bandwidth usage.
 1. **Super fast.** The plugin can run on your own server, so you don’t have to wait for a third party service to receive, process, and return your images. You can optimize hundreds of images in just a few minutes. PNG files take the longest, but you can adjust the settings for your situation.
-1. **Best JPG optimization.** With JPEGmini integration, nothing else comes close (requires an API subscription).
+1. **Best JPG optimization.** With TinyJPG integration, nothing else comes close (requires an API subscription).
 1. **Better PNG optimization.** You can use pngout, optipng, and pngquant in conjunction.
 1. **Root access not needed** Pre-compiled binaries are made available to install directly within the Wordpress folder, and cloud optimization is provided for those who cannot run the binaries locally.
 1. **Optimize everything** With the wp_image_editor class extension, and the ability to specify your own folders for scanning, any image in Wordpress can be optimized.
 
 By default, EWWW Image Optimizer uses lossless optimization techniques, so your image quality will be exactly the same before and after the optimization. The only thing that will change is your file size. The one small exception to this is GIF animations. While the optimization is technically lossless, you will not be able to properly edit the animation again without performing an --unoptimize operation with gifsicle. The gif2png and jpg2png conversions are also lossless but the png2jpg process is not lossless. The lossy optimization for JPG and PNG files uses sophisticated algorithms to minimize perceptual quality loss, which is vastly different than setting a static quality/compression level.
 
-The tools used for optimization are [jpegtran](http://jpegclub.org/jpegtran/), [jpegmini](http://www.jpegmini.com), [optipng](http://optipng.sourceforge.net/), [pngout](http://advsys.net/ken/utils.htm), [pngquant](http://pngquant.org/), and [gifsicle](http://www.lcdf.org/gifsicle/). All of these are freely available except JPEGmini. Images are converted using the above tools and GD or 'convert' (ImageMagick).
+The tools used for optimization are [jpegtran](http://jpegclub.org/jpegtran/), [TinyJPG](http://www.tinyjpg.com), [optipng](http://optipng.sourceforge.net/), [pngout](http://advsys.net/ken/utils.htm), [pngquant](http://pngquant.org/), [TinyPNG](http://www.tinypng.com), and [gifsicle](http://www.lcdf.org/gifsicle/). All of these are freely available except TinyJPG/TinyPNG. Images are converted using the above tools and GD or 'convert' (ImageMagick).
 
 EWWW Image Optimizer calls optimization utilities directly which is well suited to shared hosting situations where these utilities may already be installed. Pre-compiled binaries/executables are provided for optipng, gifsicle, pngquant, cwebp, and jpegtran. Pngout can be installed with one-click from the settings page. If none of that works, there is a cloud option that will work for any site.
 
@@ -138,11 +138,11 @@ I've tested it on Windows (with Apache), Linux, Mac OSX, FreeBSD (8 and 9), and 
 
 = How are JPGs optimized? =
 
-Lossless optimization is done with the command *jpegtran -copy all -optimize -progressive -outfile optimized-file original-file*. Optionally, the -copy switch gets the 'none' parameter if you choose to strip metadata from your JPGs on the options page. Lossy optimization is done using the outstanding JPEGmini utility.
+Lossless optimization is done with the command *jpegtran -copy all -optimize -progressive -outfile optimized-file original-file*. Optionally, the -copy switch gets the 'none' parameter if you choose to strip metadata from your JPGs on the options page. Lossy optimization is done using the outstanding TinyJPG utility.
 
 = How are PNGs optimized? =
 
-There are three parts (and all are optional). First, using the command *pngquant original-file*, then using the commands *pngout-static -s2 original-file* and *optipng -o2 original-file*. You can adjust the optimization levels for both tools on the settings page. Optipng is an automated derivative of pngcrush, which is another widely used png optimization utility.
+There are three parts (and all are optional). First, using the command *pngquant original-file*, then using the commands *pngout-static -s2 original-file* and *optipng -o2 original-file*. You can adjust the optimization levels for both tools on the settings page. Optipng is an automated derivative of pngcrush, which is another widely used png optimization utility. EWWW I.O. Cloud uses TinyPNG for even better lossy compression than standalone pngquant.
 
 = How are GIFs optimized? =
 
@@ -154,7 +154,7 @@ That's not a question, but since I made it up, I'll answer it. See these resourc
 http://developer.yahoo.com/performance/rules.html#opt_images
 https://developers.google.com/speed/docs/best-practices/payload#CompressImages
 https://developers.google.com/speed/docs/insights/OptimizeImages
-Pngout, JPEGmini, and Pngquant were recommended by EWWW IO users. Pngout (usually) optimizes better than Optipng, and best when they are used together. JPEGmini is the best lossy compression tool that I have found for JPG images. Pngquant is an excellent lossy optimizer for PNGs, and is one of the tools used by TinyPNG.com.
+Pngout, TinyJPG/TinyPNG, and Pngquant were recommended by EWWW IO users. Pngout (usually) optimizes better than Optipng, and best when they are used together. TinyJPG is the best lossy compression tool that I have found for JPG images. Pngquant is an excellent lossy optimizer for PNGs, and is one of the tools used by TinyPNG.
 
 == Screenshots ==
 
@@ -176,6 +176,7 @@ NOTE: The WebP naming scheme was changed in 2.0.1 to avoid filename conflicts. Y
 = 2.3.0 =
 * added: WebP url rewriting for sites using CDNs, requires output buffering and libxml in PHP, and may require modifications for some themes
 * added: option to include last two months of Media Library images in Scheduled Optimization (for those that have disabled Automatic Optimization)
+* changed: lossy compression for EWWW I.O. Cloud users now uses TinyJPG and TinyPNG for superior compression
 * changed: added index to ewwwio_images table and modified queries for substantial speed-up (and less load on database servers)
 * fixed: Folders to Optimize was not being validated properly
 * fixed: notice on Unoptimized Images page
