@@ -2403,21 +2403,22 @@ function ewww_image_optimizer_savings_loop() {
 			$blogs = $wpdb->get_results($query, ARRAY_A);
 		}
 		$total_savings = 0;
-		$savings_done = $_REQUEST['ewww_savings_counter'];
+//		$savings_done = $_REQUEST['ewww_savings_counter'];
 		foreach ($blogs as $blog) {
 			switch_to_blog($blog['blog_id']);
-			$total_query = "SELECT orig_size-image_size FROM $wpdb->ewwwio_images LIMIT {$_REQUEST['ewww_savings_counter']}, $records_needed";
-		$ewww_debug .= "querying $records_needed records, starting at {$_REQUEST['ewww_savings_counter']}<br>";
-			$savings = $wpdb->get_results($total_query, ARRAY_N);
-			$records_needed -= count($savings);
-			foreach ( $savings as $saved ) {
-				$total_savings += $saved[0];
-			}
-			if ( $records_needed ) {
+			$total_query = "SELECT SUM(orig_size-image_size) FROM $wpdb->ewwwio_images";
+			//$total_query = "SELECT SUM(orig_size-image_size) FROM $wpdb->ewwwio_images LIMIT {$_REQUEST['ewww_savings_counter']}, $records_needed";
+//			$ewww_debug .= "querying $records_needed records, starting at {$_REQUEST['ewww_savings_counter']}<br>";
+			$savings = $wpdb->get_var($total_query, ARRAY_N);
+//			$records_needed -= count($savings);
+//			foreach ( $savings as $saved ) {
+				$total_savings += $savings;
+//			}
+/*			if ( $records_needed ) {
 				$savings_done -= $wpdb->get_var("SELECT COUNT(id) FROM $wpdb->ewwwio_images");
 			} else {
 				break;
-			}
+			}*/
 		}
 		restore_current_blog();
 	} else {
@@ -2436,8 +2437,9 @@ function ewww_image_optimizer_savings_loop() {
 	die();
 }
 
-function ewwwio_savings_loop_dc() {
+function ewww_image_optimizer_savings() {
 	global $wpdb;
+	global $ewww_debug;
 	if ( function_exists('is_plugin_active_for_network') && is_plugin_active_for_network( EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE_REL ) ) {	
 		if (function_exists('wp_get_sites')) {
 			add_filter('wp_is_large_network', 'ewww_image_optimizer_large_network', 20, 0);
@@ -2453,20 +2455,15 @@ function ewwwio_savings_loop_dc() {
 		$total_savings = 0;
 		foreach ($blogs as $blog) {
 			switch_to_blog($blog['blog_id']);
-			$total_query = "SELECT orig_size-image_size FROM $wpdb->ewwwio_images";
-			$savings = $wpdb->get_results($total_query, ARRAY_N);
-			foreach ( $savings as $saved ) {
-				$total_savings += $saved[0];
-			}
+			$total_query = "SELECT SUM(orig_size-image_size) FROM " . $wpdb->prefix . 'ewwwio_images';
+			$savings = $wpdb->get_var($total_query);
+			$total_savings += $savings;
 		}
 		restore_current_blog();
 	} else {
-		$total_query = "SELECT orig_size-image_size FROM $wpdb->ewwwio_images";
-		$savings = $wpdb->get_results($total_query, ARRAY_N);
 		$total_savings = 0;
-		foreach ( $savings as $saved ) {
-			$total_savings += $saved[0];
-		}
+		$total_query = "SELECT SUM(orig_size-image_size) FROM $wpdb->ewwwio_images";
+		$total_savings = $wpdb->get_var($total_query);
 	}
 	return $total_savings;
 }
@@ -2570,7 +2567,7 @@ function ewww_image_optimizer_options () {
 			"<span id='ewww-status-ok' style='display: none; color: green;'>" . __('All Clear', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</span>" . 
 			"<span id='ewww-status-attention' style='color: red;'>" . __('Requires Attention', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</span>"  .
 		"</h3>\n" .
-			"<b>" . __('Total Savings:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</b> <span id='ewww-total-savings'>" . __('Calculating...', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</span><br>";
+			"<b>" . __('Total Savings:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</b> <span id='ewww-total-savings'>" . size_format( ewww_image_optimizer_savings(), 2 ) . "</span><br>";
 			if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_key')) {
 				$output[] = '<p><b>' . __('Cloud optimization API Key', EWWW_IMAGE_OPTIMIZER_DOMAIN) . ":</b> ";
 				$verify_cloud = ewww_image_optimizer_cloud_verify(false); 
@@ -2901,6 +2898,7 @@ function ewww_image_optimizer_options () {
 			"<p><b>CDN Networks:</b><br>Add the MaxCDN content delivery network to increase website speeds dramatically! <a target='_blank' href='http://tracking.maxcdn.com/c/91625/36539/378'>Sign Up Now and Save 25%</a> (100% Money Back Guarantee for 30 days). Integrate it within Wordpress using the W3 Total Cache plugin.</p>\n" .
 		"</div>\n" .
 	"</div>\n";
+//	$output[] = "<p>" . ewwwio_savings_loop_dc() . "</p>";
 	$ewww_debug .= '--' . ini_get('max_execution_time') . '--<br>';
 	echo apply_filters( 'ewww_image_optimizer_settings', $output );
 	ewwwio_memory( __FUNCTION__ );

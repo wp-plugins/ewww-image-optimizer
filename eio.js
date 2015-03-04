@@ -80,7 +80,7 @@ jQuery(document).ready(function($) {
 			ewww_savings_counter: ewww_savings_counter,
 			ewww_savings_todo: ewww_savings_todo,
 		};
-		ewwwLoopSavings();
+//		ewwwLoopSavings();
 		return false;
 	} else {
 	$(function() {

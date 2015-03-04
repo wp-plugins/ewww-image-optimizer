@@ -178,6 +178,7 @@ NOTE: The WebP naming scheme was changed in 2.0.1 to avoid filename conflicts. Y
 * added: option to include last two months of Media Library images in Scheduled Optimization (for those that have disabled Automatic Optimization)
 * changed: lossy compression for EWWW I.O. Cloud users now uses TinyJPG and TinyPNG for superior compression
 * changed: added index to ewwwio_images table and modified queries for substantial speed-up (and less load on database servers)
+* changed: Total Savings calculation now uses a single SQL statement, please report any related errors right away
 * fixed: Folders to Optimize was not being validated properly
 * fixed: notice on Unoptimized Images page
 * fixed: mysql error when attempting to query negative number of records on settings page
