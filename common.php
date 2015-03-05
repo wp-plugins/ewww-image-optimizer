@@ -119,8 +119,8 @@ add_action( 'wp_ajax_ewww_webp_rewrite', 'ewww_image_optimizer_webp_rewrite' );
 register_deactivation_hook( EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE, 'ewww_image_optimizer_network_deactivate' );
 add_action( 'shutdown', 'ewwwio_memory_output' );
 if ( ewww_image_optimizer_get_option( 'ewww_image_optimizer_webp_for_cdn' ) ) {
-	add_action('wp_head', 'ewww_image_optimizer_buffer_start');
-	add_action('wp_footer', 'ewww_image_optimizer_buffer_end');
+	add_action('init', 'ewww_image_optimizer_buffer_start');
+	add_action('wp_after_admin_bar_render', 'ewww_image_optimizer_buffer_end');
 }
 
 // functions to capture all page output, replace image urls with webp derivatives, and add webp fallback 
@@ -134,6 +134,9 @@ function ewww_image_optimizer_filter_page_output( $buffer ) {
 	global $ewww_debug;
 	// modify buffer here, and then return the updated code
 	if ( class_exists( 'DOMDocument' ) ) {
+		preg_match('/.+<head>/s', $buffer, $html_head);
+//		$ewww_debug .= $html_head[0];
+//		ewww_image_optimizer_debug_log();
 		$html = new DOMDocument;
 		$libxml_previous_error_reporting = libxml_use_internal_errors(true);
 		$html->encoding = 'utf-8';
@@ -144,6 +147,9 @@ function ewww_image_optimizer_filter_page_output( $buffer ) {
 			$file = $image->getAttribute('src');
 			$file = ABSPATH . str_replace( $home_url, '', $file );
 			if (file_exists($file . '.webp')) {
+/*				$file_exists = true;
+			} elseif {
+			if ($file_exists) {*/
 				$nscript = $html->createElement('noscript');
 				$nscript->setAttribute('data-img', $image->getAttribute('src'));
 				$nscript->setAttribute('data-webp', $image->getAttribute('src') . '.webp');
@@ -207,6 +213,9 @@ function ewww_image_optimizer_filter_page_output( $buffer ) {
 		$buffer = $html->saveHTML($html->documentElement);
 		libxml_clear_errors();
 		libxml_use_internal_errors($libxml_previous_error_reporting);
+		$buffer = preg_replace('/.+<head>/s', $html_head[0], $buffer);
+		$buffer = preg_replace('|</body>\s*</html>|', '', $buffer);
+		//$buffer = preg_replace('/<\/body>\s*<\/html>\s*<\/body>\s*<\/html>/s', '</body></html>', $buffer);
 	}
 	return $buffer;
 }
@@ -742,15 +751,16 @@ function ewww_image_optimizer_ims() {
 
 // enqueue script for webp support with CDNs
 function ewww_image_optimizer_webp_load_script() {
+	global $ewww_webp_supported;
 	// check if webp is supported by the browser, and then set the appropriate js variable
 	if ( preg_match( '/webp/', $_SERVER['HTTP_ACCEPT'] ) ) {
-		$webp_supported = 1;
+		$ewww_webp_supported = 1;
 	} else {
-		$webp_supported = 0;
+		$ewww_webp_supported = 0;
 	}
 	wp_enqueue_script('ewww_webp', plugins_url('/load_webp.js', __FILE__), array('jquery'), false, true);
 	wp_localize_script('ewww_webp', 'ewww_wvars', array(
-			'webp' => $webp_supported,
+			'webp' => $ewww_webp_supported,
 		)
 	);
 }

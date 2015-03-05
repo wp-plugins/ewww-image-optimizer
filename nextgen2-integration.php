@@ -6,6 +6,7 @@ class ewwwngg {
 		add_filter('ngg_manage_images_columns', array(&$this, 'ewww_manage_images_columns'));
 		add_filter('ngg_manage_images_number_of_columns', array(&$this, 'ewww_manage_images_number_of_columns'));
 		add_filter('ngg_manage_images_row_actions', array(&$this, 'ewww_manage_images_row_actions'));
+//		add_filter('ngg_get_image_url', array(&$this, 'ewww_ngg_webp_url'), 10, 3);
 		add_action('ngg_manage_image_custom_column', array(&$this, 'ewww_manage_image_custom_column'), 10, 2);
 		add_action('ngg_added_new_image', array(&$this, 'ewww_added_new_image'));
 		add_action('admin_action_ewww_ngg_manual', array(&$this, 'ewww_ngg_manual'));
@@ -30,6 +31,20 @@ class ewwwngg {
 			add_submenu_page(NGGFOLDER, __('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), __('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), 'NextGEN Manage gallery', 'ewww-ngg-bulk', array (&$this, 'ewww_ngg_bulk_preview'));
 			$hook = add_submenu_page(null, __('Bulk Thumbnail Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), __('Bulk Thumbnail Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), 'NextGEN Manage gallery', 'ewww-ngg-thumb-bulk', array (&$this, 'ewww_ngg_thumb_bulk'));
 	}
+
+	function ewww_ngg_webp_url($image_url, $image, $size) {
+                global $ewww_debug;
+		global $ewww_webp_supported;
+                $ewww_debug .= "nextgen url: $image_url<br>";
+			// creating the 'registry' object for working with nextgen
+			$registry = C_Component_Registry::get_instance();
+			// creating a database storage object from the 'registry' object
+			$storage  = $registry->get_utility('I_Gallery_Storage');
+		$abspath = $storage->get_image_abspath($image, $size);
+                ewww_image_optimizer_debug_log();
+                //return $image_url . '.webp';
+                return $image_url;
+        }
 
 	/* ngg_added_new_image hook */
 	function ewww_added_new_image ($image, $storage = null) {
