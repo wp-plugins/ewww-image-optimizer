@@ -1,9 +1,10 @@
 <?php
 // common functions for Standard and Cloud plugins
+// TODO: turn off appropriate hooks in nextgen and flagallery when auto optimize is turned off
 // TODO: check all comments to make sure they are actually useful...
 // TODO: this could be useful: http://codex.wordpress.org/Function_Reference/maybe_unserialize
 
-define('EWWW_IMAGE_OPTIMIZER_VERSION', '222.2');
+define('EWWW_IMAGE_OPTIMIZER_VERSION', '222.3');
 
 // initialize debug global
 $disabled = ini_get('disable_functions');
@@ -108,7 +109,7 @@ function ewww_image_optimizer_load_admin_js() {
 //add_action('admin_head-upload.php', 'ewww_image_optimizer_add_bulk_actions_via_javascript'); 
 add_action( 'admin_action_bulk_optimize', 'ewww_image_optimizer_bulk_action_handler' ); 
 add_action( 'admin_action_-1', 'ewww_image_optimizer_bulk_action_handler' ); 
-add_action( 'wp_enqueue_scripts', 'ewww_image_optimizer_webp_load_script' );
+add_action( 'wp_enqueue_scripts', 'ewww_image_optimizer_webp_load_script', 1 );
 add_action( 'admin_enqueue_scripts', 'ewww_image_optimizer_media_scripts' );
 add_action( 'admin_enqueue_scripts', 'ewww_image_optimizer_settings_script' );
 add_action( 'ewww_image_optimizer_auto', 'ewww_image_optimizer_auto' );
@@ -123,6 +124,18 @@ if ( ewww_image_optimizer_get_option( 'ewww_image_optimizer_webp_for_cdn' ) ) {
 	add_action('wp_after_admin_bar_render', 'ewww_image_optimizer_buffer_end');
 }
 
+if ( defined( 'WP_CLI' ) && WP_CLI ) {
+	include( EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'iocli.php' );
+}
+
+function ewww_image_optimizer_get_plugin_version( $plugin_file ) {
+        $default_headers = array(
+		'Version' => 'Version',
+	);
+	$plugin_data = get_file_data( $plugin_file, $default_headers, 'plugin' );
+	return $plugin_data;
+}
+
 // functions to capture all page output, replace image urls with webp derivatives, and add webp fallback 
 function ewww_image_optimizer_buffer_start() {
 	ob_start('ewww_image_optimizer_filter_page_output');
@@ -132,27 +145,28 @@ function ewww_image_optimizer_buffer_end() {
 }
 function ewww_image_optimizer_filter_page_output( $buffer ) {
 	global $ewww_debug;
+	if ( empty ($buffer) || is_admin() ) {
+		return $buffer;
+	}
 	// modify buffer here, and then return the updated code
 	if ( class_exists( 'DOMDocument' ) ) {
 		preg_match('/.+<head>/s', $buffer, $html_head);
-//		$ewww_debug .= $html_head[0];
-//		ewww_image_optimizer_debug_log();
 		$html = new DOMDocument;
 		$libxml_previous_error_reporting = libxml_use_internal_errors(true);
 		$html->encoding = 'utf-8';
 		$html->loadHTML(utf8_decode($buffer));
 		$images = $html->getElementsByTagName('img');
 		foreach ($images as $image) {
+			if ($image->parentNode->tagName == 'noscript') {
+				continue;
+			}
 			$home_url = get_home_url();
 			$file = $image->getAttribute('src');
-			$file = ABSPATH . str_replace( $home_url, '', $file );
-			if (file_exists($file . '.webp')) {
-/*				$file_exists = true;
-			} elseif {
-			if ($file_exists) {*/
+			$filepath = ABSPATH . str_replace( $home_url, '', $file );
+			if (file_exists($filepath . '.webp')) {
 				$nscript = $html->createElement('noscript');
-				$nscript->setAttribute('data-img', $image->getAttribute('src'));
-				$nscript->setAttribute('data-webp', $image->getAttribute('src') . '.webp');
+				$nscript->setAttribute('data-img', $file);
+				$nscript->setAttribute('data-webp', $file . '.webp');
 				if ( $image->getAttribute('align') )
 					$nscript->setAttribute('data-align', $image->getAttribute('align'));
 				if ( $image->getAttribute('alt') )
@@ -209,19 +223,52 @@ function ewww_image_optimizer_filter_page_output( $buffer ) {
 				$image->parentNode->replaceChild($nscript, $image);
 				$nscript->appendChild($image);
 			}
+			if ( empty( $file ) && $image->getAttribute('data-src') && $image->getAttribute('data-thumbnail') ) {
+				$file = $image->getAttribute('data-src');
+				$thumb = $image->getAttribute('data-thumbnail');
+				$ewww_debug .= "checking webp for ngg data-src: $file<br>";
+				$filepath = ABSPATH . str_replace( $home_url, '', $file );
+				$ewww_debug .= "checking webp for ngg data-thumbnail: $thumb<br>";
+				$thumbpath = ABSPATH . str_replace( $home_url, '', $thumb );
+				if (file_exists($filepath . '.webp')) {
+					$ewww_debug .= "found webp for ngg data-src: $filepath<br>";
+					$image->setAttribute('data-webp', $file . '.webp');
+				}
+				if (file_exists($thumbpath . '.webp')) {
+					$ewww_debug .= "found webp for ngg data-thumbnail: $thumbpath<br>";
+					$image->setAttribute('data-webp-thumbnail', $thumb . '.webp');
+				}
+			}
+		}
+		$links = $html->getElementsByTagName( 'a' );
+		foreach ( $links as $link ) {
+			$home_url = get_home_url();
+			if ( $link->getAttribute( 'data-src' ) && $link->getAttribute( 'data-thumbnail' ) ) {
+				$file = $link->getAttribute( 'data-src' );
+				$thumb = $link->getAttribute( 'data-thumbnail' );
+				$ewww_debug .= "checking webp for ngg data-src: $file<br>";
+				$filepath = ABSPATH . str_replace( $home_url, '', $file );
+				$ewww_debug .= "checking webp for ngg data-thumbnail: $thumb<br>";
+				$thumbpath = ABSPATH . str_replace( $home_url, '', $thumb );
+				if ( file_exists( $filepath . '.webp' ) ) {
+					$ewww_debug .= "found webp for ngg data-src: $filepath<br>";
+					$link->setAttribute( 'data-webp', $file . '.webp' );
+				}
+				if ( file_exists( $thumbpath . '.webp' ) ) {
+					$ewww_debug .= "found webp for ngg data-thumbnail: $thumbpath<br>";
+					$link->setAttribute( 'data-webp-thumbnail', $thumb . '.webp' );
+				}
+				
+			}
 		}
 		$buffer = $html->saveHTML($html->documentElement);
 		libxml_clear_errors();
 		libxml_use_internal_errors($libxml_previous_error_reporting);
-		$buffer = preg_replace('/.+<head>/s', $html_head[0], $buffer);
+		$buffer = preg_replace('/<html.+>\s<head>/', $html_head[0], $buffer);
 		$buffer = preg_replace('|</body>\s*</html>|', '', $buffer);
-		//$buffer = preg_replace('/<\/body>\s*<\/html>\s*<\/body>\s*<\/html>/s', '</body></html>', $buffer);
+		ewww_image_optimizer_debug_log();
 	}
 	return $buffer;
-}
-
-if ( defined( 'WP_CLI' ) && WP_CLI ) {
-	include( EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'iocli.php' );
 }
 
 function ewwwio_memory( $function ) {
@@ -237,34 +284,40 @@ function ewww_image_optimizer_preinit() {
 	load_plugin_textdomain(EWWW_IMAGE_OPTIMIZER_DOMAIN, false, dirname(plugin_basename(__FILE__)) . '/languages/');
 	// need to include the plugin library for the is_plugin_active function
 	//require_once(ABSPATH . 'wp-admin/includes/plugin.php');
-	if ( defined('NGGFOLDER')) {
-// include the file that loads the nextgen gallery optimization functions
-//if (is_plugin_active( NGGFOLDER . '/nggallery.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network( NGGFOLDER . '/nggallery.php'))) {
-		global $ngg;
-//		$nextgen_data = get_plugin_data(trailingslashit(WP_PLUGIN_DIR) . NGGFOLDER . '/nggallery.php', false, false);
-		$ewww_debug .= 'Nextgen version: ' . $ngg->version . '<br>';
-		if (preg_match('/^2\./', $ngg->version)) { // for Nextgen 2
+
+$active_plugins = get_option( 'active_plugins' );
+if ( is_multisite() ) {
+	$active_plugins = array_merge( $active_plugins, array_flip( get_site_option( 'active_sitewide_plugins' ) ) );
+}
+
+$ewww_plugins_path = str_replace( EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE_REL, '', EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE );
+
+//add_action( 'load_nextgen_gallery_modules', 'ewww_image_optimizer_nextgen2' );
+foreach ($active_plugins as $active_plugin) {
+	if ( strpos( $active_plugin, 'nggallery.php' ) ) {
+		$ngg = ewww_image_optimizer_get_plugin_version( $ewww_plugins_path . $active_plugin );
+		// include the file that loads the nextgen gallery optimization functions
+		$ewww_debug .= 'Nextgen version: ' . $ngg['Version'] . '<br>';
+		if (preg_match('/^2\./', $ngg['Version'])) { // for Nextgen 2
+			$ewww_debug .= "loading nextgen2 support<br>";
 			require(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'nextgen2-integration.php');
 		} else {
-			preg_match( '/\d+\.\d+\.(\d+)/', $ngg->version, $nextgen_minor_version);
+			preg_match( '/\d+\.\d+\.(\d+)/', $ngg['Version'], $nextgen_minor_version);
 			if ( ! empty( $nextgen_minor_version[1] ) && $nextgen_minor_version[1] < 14 ) {
+				$ewww_debug .= "loading nextgen legacy support<br>";
 				require(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'nextgen-integration.php');
 			} elseif ( ! empty( $nextgen_minor_version[1] ) && $nextgen_minor_version[1] > 13 ) {
+				$ewww_debug .= "loading nextcellent support<br>";
 				require(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'nextcellent-integration.php');
 			}
 		}
-//}
-
-// include the file that loads the nextcellent (nextgen legacy) optimization functions
-//if (is_plugin_active('nextcellent-gallery-nextgen-legacy/nggallery.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('nextcellent-gallery-nextgen-legacy/nggallery.php'))) {
-//	require(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'nextcellent-integration.php');
-//}
 	}
-	// include the file that loads the grand flagallery optimization functions
-	if ( defined( 'FLAGFOLDER' ) ) {
-//if (is_plugin_active('flash-album-gallery/flag.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('flash-album-gallery/flag.php'))) {
+	if ( strpos( $active_plugin, 'flag.php' ) ) {
+		$ewww_debug .= "loading flagallery support<br>";
+		// include the file that loads the grand flagallery optimization functions
 		require( EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'flag-integration.php' );
 	}
+}
 }
 
 /**

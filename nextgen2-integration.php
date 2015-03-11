@@ -35,14 +35,21 @@ class ewwwngg {
 	function ewww_ngg_webp_url($image_url, $image, $size) {
                 global $ewww_debug;
 		global $ewww_webp_supported;
-                $ewww_debug .= "nextgen url: $image_url<br>";
+                $ewww_debug .= "nextgen url: $image_url at $size<br>";
+		if ($size == 'dynamic') {
+			$home_url = get_home_url();
+		//	$file = $image->getAttribute('src');
+			$imagepath = ABSPATH . str_replace( $home_url, '', $image_url );
+			if (file_exists($imagepath . '.webp')) {
+//                		return $image_url . '.webp';
+			}
+		}
 			// creating the 'registry' object for working with nextgen
-			$registry = C_Component_Registry::get_instance();
+//			$registry = C_Component_Registry::get_instance();
 			// creating a database storage object from the 'registry' object
-			$storage  = $registry->get_utility('I_Gallery_Storage');
-		$abspath = $storage->get_image_abspath($image, $size);
+//			$storage  = $registry->get_utility('I_Gallery_Storage');
+//		$abspath = $storage->get_image_abspath($image, $size);
                 ewww_image_optimizer_debug_log();
-                //return $image_url . '.webp';
                 return $image_url;
         }
 
@@ -495,3 +502,24 @@ function ewwwngg() {
 	global $ewwwngg;
 	$ewwwngg = new ewwwngg();
 }
+	class EWWWIO_Gallery_Storage extends Mixin {
+		function generate_image_size( $image, $size, $params = null, $skip_defaults = false ) {
+			global $ewww_debug;
+			if (!defined('EWWW_IMAGE_OPTIMIZER_JPEGTRAN'))
+				ewww_image_optimizer_init();
+			$success = $this->call_parent( 'generate_image_size', $image, $size, $params, $skip_defaults );
+			if ( $success ) {
+				//$filename = $this->object->get_image_abspath($image, $size);
+				$filename = $success->fileName;
+				ewww_image_optimizer_aux_images_loop( $filename, true );
+				$ewww_debug .= "nextgen dynamic thumb saved: $filename <br>";
+				$image_size = filesize($filename);
+				$ewww_debug .= "optimized size: $image_size <br>";
+			}
+			ewww_image_optimizer_debug_log();
+			ewwwio_memory( __FUNCTION__ );
+			return $success;
+		}
+	}
+	$storage = C_Gallery_Storage::get_instance();
+	$storage->get_wrapped_instance()->add_mixin('EWWWIO_Gallery_Storage');

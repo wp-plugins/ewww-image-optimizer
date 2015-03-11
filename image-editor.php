@@ -16,7 +16,7 @@ if ( class_exists( 'Bbpp_Animated_Gif' ) ) {
 				$ewww_debug .= "image editor size: $image_size <br>";
 				ewww_image_optimizer_debug_log();
 			}
-	ewwwio_memory( __FUNCTION__ );
+			ewwwio_memory( __FUNCTION__ );
 			return $saved;
 		}
 		public function multi_resize( $sizes ) {
@@ -37,7 +37,7 @@ if ( class_exists( 'Bbpp_Animated_Gif' ) ) {
 				$ewww_debug .= "image editor size: $image_size <br>";
 			}
 			ewww_image_optimizer_debug_log();
-	ewwwio_memory( __FUNCTION__ );
+			ewwwio_memory( __FUNCTION__ );
 			return $metadata;
 		}
 	}
@@ -58,7 +58,7 @@ if ( class_exists( 'Bbpp_Animated_Gif' ) ) {
 				$ewww_debug .= "image editor size: $image_size <br>";
 				ewww_image_optimizer_debug_log();
 			}
-	ewwwio_memory( __FUNCTION__ );
+			ewwwio_memory( __FUNCTION__ );
 			return $saved;
 		}
 	}
@@ -79,7 +79,7 @@ if ( class_exists( 'Bbpp_Animated_Gif' ) ) {
 				$ewww_debug = "$ewww_debug image editor size: $image_size <br>";
 				ewww_image_optimizer_debug_log();
 			}
-	ewwwio_memory( __FUNCTION__ );
+			ewwwio_memory( __FUNCTION__ );
 			return $saved;
 		}
 	}
@@ -101,7 +101,7 @@ if (class_exists('WP_Thumb_Image_Editor_Imagick')) {
 				$ewww_debug .= "image editor size: $image_size <br>";
 				ewww_image_optimizer_debug_log();
 			}
-	ewwwio_memory( __FUNCTION__ );
+			ewwwio_memory( __FUNCTION__ );
 			return $saved;
 		}
 	}
@@ -122,7 +122,7 @@ if (class_exists('WP_Thumb_Image_Editor_Imagick')) {
 				$ewww_debug .= "image editor size: $image_size <br>";
 				ewww_image_optimizer_debug_log();
 			}
-	ewwwio_memory( __FUNCTION__ );
+			ewwwio_memory( __FUNCTION__ );
 			return $saved;
 		}
 	}
@@ -144,7 +144,7 @@ if (class_exists('WP_Image_Editor_Gmagick')) {
 				$ewww_debug .= "image editor size: $image_size <br>";
 				ewww_image_optimizer_debug_log();
 			}
-	ewwwio_memory( __FUNCTION__ );
+			ewwwio_memory( __FUNCTION__ );
 			return $saved;
 		}
 	}

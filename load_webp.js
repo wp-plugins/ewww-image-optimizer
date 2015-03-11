@@ -1,5 +1,23 @@
 jQuery(document).ready(function($) {
-	$('.ewww_webp').each(function(ewww_index) {
+	if (ewww_wvars.webp == 1) {
+		$('.batch-image img, .image-wrapper a, .ngg-pro-masonry-item a').each(function() {
+			var ewww_attr = $(this).attr('data-webp');
+			if (typeof ewww_attr !== typeof undefined && ewww_attr !== false) {
+				$(this).attr('data-src', ewww_attr);
+			}
+			var ewww_attr = $(this).attr('data-webp-thumbnail');
+			if (typeof ewww_attr !== typeof undefined && ewww_attr !== false) {
+				$(this).attr('data-thumbnail', ewww_attr);
+			}
+		});
+		$('.image-wrapper a, .ngg-pro-masonry-item a').each(function() {
+			var ewww_attr = $(this).attr('data-webp');
+			if (typeof ewww_attr !== typeof undefined && ewww_attr !== false) {
+				$(this).attr('href', ewww_attr);
+			}
+		});
+	}
+	$('.ewww_webp').each(function() {
 		var ewww_img = document.createElement('img');
 		if (ewww_wvars.webp == 1) {
 			$(ewww_img).attr('src', $(this).attr('data-webp'));
