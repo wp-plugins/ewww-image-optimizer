@@ -1,6 +1,5 @@
 <?php
 // common functions for Standard and Cloud plugins
-// TODO: turn off appropriate hooks in nextgen and flagallery when auto optimize is turned off
 // TODO: check all comments to make sure they are actually useful...
 // TODO: this could be useful: http://codex.wordpress.org/Function_Reference/maybe_unserialize
 
@@ -129,6 +128,8 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 }
 
 function ewww_image_optimizer_get_plugin_version( $plugin_file ) {
+	global $ewww_debug;
+	$ewww_debug .= '<b>ewww_image_optimizer_get_plugin_version()</b><br>';
         $default_headers = array(
 		'Version' => 'Version',
 	);
@@ -138,13 +139,18 @@ function ewww_image_optimizer_get_plugin_version( $plugin_file ) {
 
 // functions to capture all page output, replace image urls with webp derivatives, and add webp fallback 
 function ewww_image_optimizer_buffer_start() {
+	global $ewww_debug;
+	$ewww_debug .= '<b>ewww_image_optimizer_buffer_start()</b><br>';
 	ob_start('ewww_image_optimizer_filter_page_output');
 }
 function ewww_image_optimizer_buffer_end() {
+	global $ewww_debug;
+	$ewww_debug .= '<b>ewww_image_optimizer_buffer_end()</b><br>';
 	ob_end_flush();
 }
 function ewww_image_optimizer_filter_page_output( $buffer ) {
 	global $ewww_debug;
+	$ewww_debug .= '<b>ewww_image_optimizer_filter_page_output()</b><br>';
 	if ( empty ($buffer) || is_admin() ) {
 		return $buffer;
 	}
@@ -285,39 +291,39 @@ function ewww_image_optimizer_preinit() {
 	// need to include the plugin library for the is_plugin_active function
 	//require_once(ABSPATH . 'wp-admin/includes/plugin.php');
 
-$active_plugins = get_option( 'active_plugins' );
-if ( is_multisite() ) {
-	$active_plugins = array_merge( $active_plugins, array_flip( get_site_option( 'active_sitewide_plugins' ) ) );
-}
+	$active_plugins = get_option( 'active_plugins' );
+	if ( is_multisite() ) {
+		$active_plugins = array_merge( $active_plugins, array_flip( get_site_option( 'active_sitewide_plugins' ) ) );
+	}
 
-$ewww_plugins_path = str_replace( EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE_REL, '', EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE );
+	$ewww_plugins_path = str_replace( EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE_REL, '', EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE );
 
-//add_action( 'load_nextgen_gallery_modules', 'ewww_image_optimizer_nextgen2' );
-foreach ($active_plugins as $active_plugin) {
-	if ( strpos( $active_plugin, 'nggallery.php' ) ) {
-		$ngg = ewww_image_optimizer_get_plugin_version( $ewww_plugins_path . $active_plugin );
-		// include the file that loads the nextgen gallery optimization functions
-		$ewww_debug .= 'Nextgen version: ' . $ngg['Version'] . '<br>';
-		if (preg_match('/^2\./', $ngg['Version'])) { // for Nextgen 2
-			$ewww_debug .= "loading nextgen2 support<br>";
-			require(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'nextgen2-integration.php');
-		} else {
-			preg_match( '/\d+\.\d+\.(\d+)/', $ngg['Version'], $nextgen_minor_version);
-			if ( ! empty( $nextgen_minor_version[1] ) && $nextgen_minor_version[1] < 14 ) {
-				$ewww_debug .= "loading nextgen legacy support<br>";
-				require(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'nextgen-integration.php');
-			} elseif ( ! empty( $nextgen_minor_version[1] ) && $nextgen_minor_version[1] > 13 ) {
-				$ewww_debug .= "loading nextcellent support<br>";
-				require(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'nextcellent-integration.php');
+	//add_action( 'load_nextgen_gallery_modules', 'ewww_image_optimizer_nextgen2' );
+	foreach ($active_plugins as $active_plugin) {
+		if ( strpos( $active_plugin, 'nggallery.php' ) ) {
+			$ngg = ewww_image_optimizer_get_plugin_version( $ewww_plugins_path . $active_plugin );
+			// include the file that loads the nextgen gallery optimization functions
+			$ewww_debug .= 'Nextgen version: ' . $ngg['Version'] . '<br>';
+			if (preg_match('/^2\./', $ngg['Version'])) { // for Nextgen 2
+				$ewww_debug .= "loading nextgen2 support<br>";
+				require(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'nextgen2-integration.php');
+			} else {
+				preg_match( '/\d+\.\d+\.(\d+)/', $ngg['Version'], $nextgen_minor_version);
+				if ( ! empty( $nextgen_minor_version[1] ) && $nextgen_minor_version[1] < 14 ) {
+					$ewww_debug .= "loading nextgen legacy support<br>";
+					require(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'nextgen-integration.php');
+				} elseif ( ! empty( $nextgen_minor_version[1] ) && $nextgen_minor_version[1] > 13 ) {
+					$ewww_debug .= "loading nextcellent support<br>";
+					require(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'nextcellent-integration.php');
+				}
 			}
 		}
+		if ( strpos( $active_plugin, 'flag.php' ) ) {
+			$ewww_debug .= "loading flagallery support<br>";
+			// include the file that loads the grand flagallery optimization functions
+			require( EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'flag-integration.php' );
+		}
 	}
-	if ( strpos( $active_plugin, 'flag.php' ) ) {
-		$ewww_debug .= "loading flagallery support<br>";
-		// include the file that loads the grand flagallery optimization functions
-		require( EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'flag-integration.php' );
-	}
-}
 }
 
 /**

@@ -5,7 +5,9 @@ class ewwwngg {
 		add_action('admin_init', array(&$this, 'admin_init'));
 		add_filter('ngg_manage_images_columns', array(&$this, 'ewww_manage_images_columns'));
 		add_action('ngg_manage_image_custom_column', array(&$this, 'ewww_manage_image_custom_column'), 10, 2);
-		add_action('ngg_added_new_image', array(&$this, 'ewww_added_new_image'));
+		if ( ! ewww_image_optimizer_get_option( 'ewww_image_optimizer_noauto' ) ) {
+			add_action('ngg_added_new_image', array(&$this, 'ewww_added_new_image'));
+		}
 		add_action('admin_action_ewww_ngg_manual', array(&$this, 'ewww_ngg_manual'));
 		add_action('admin_menu', array(&$this, 'ewww_ngg_bulk_menu'));
 		$i18ngg = strtolower  ( _n( 'Gallery', 'Galleries', 1, 'nggallery' ) );
@@ -434,10 +436,10 @@ class ewwwngg {
 <?php	}
 }
 // initialize the plugin and the class
-add_action('init', 'ewwwngg');
+//add_action('init', 'ewwwngg');
 //add_action('admin_print_scripts-tools_page_ewww-ngg-bulk', 'ewww_image_optimizer_scripts');
 
-function ewwwngg() {
+//function ewwwngg() {
 	global $ewwwngg;
 	$ewwwngg = new ewwwngg();
-}
+//}

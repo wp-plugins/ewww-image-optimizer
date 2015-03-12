@@ -6,9 +6,10 @@ class ewwwngg {
 		add_filter('ngg_manage_images_columns', array(&$this, 'ewww_manage_images_columns'));
 		add_filter('ngg_manage_images_number_of_columns', array(&$this, 'ewww_manage_images_number_of_columns'));
 		add_filter('ngg_manage_images_row_actions', array(&$this, 'ewww_manage_images_row_actions'));
-//		add_filter('ngg_get_image_url', array(&$this, 'ewww_ngg_webp_url'), 10, 3);
 		add_action('ngg_manage_image_custom_column', array(&$this, 'ewww_manage_image_custom_column'), 10, 2);
-		add_action('ngg_added_new_image', array(&$this, 'ewww_added_new_image'));
+		if ( ! ewww_image_optimizer_get_option( 'ewww_image_optimizer_noauto' ) ) {
+			add_action('ngg_added_new_image', array(&$this, 'ewww_added_new_image'));
+		}
 		add_action('admin_action_ewww_ngg_manual', array(&$this, 'ewww_ngg_manual'));
 		add_action('admin_menu', array(&$this, 'ewww_ngg_bulk_menu'));
 		$i18ngg = strtolower  ( _n( 'Gallery', 'Galleries', 1, 'nggallery' ) );
@@ -31,27 +32,6 @@ class ewwwngg {
 			add_submenu_page(NGGFOLDER, __('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), __('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), 'NextGEN Manage gallery', 'ewww-ngg-bulk', array (&$this, 'ewww_ngg_bulk_preview'));
 			$hook = add_submenu_page(null, __('Bulk Thumbnail Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), __('Bulk Thumbnail Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), 'NextGEN Manage gallery', 'ewww-ngg-thumb-bulk', array (&$this, 'ewww_ngg_thumb_bulk'));
 	}
-
-	function ewww_ngg_webp_url($image_url, $image, $size) {
-                global $ewww_debug;
-		global $ewww_webp_supported;
-                $ewww_debug .= "nextgen url: $image_url at $size<br>";
-		if ($size == 'dynamic') {
-			$home_url = get_home_url();
-		//	$file = $image->getAttribute('src');
-			$imagepath = ABSPATH . str_replace( $home_url, '', $image_url );
-			if (file_exists($imagepath . '.webp')) {
-//                		return $image_url . '.webp';
-			}
-		}
-			// creating the 'registry' object for working with nextgen
-//			$registry = C_Component_Registry::get_instance();
-			// creating a database storage object from the 'registry' object
-//			$storage  = $registry->get_utility('I_Gallery_Storage');
-//		$abspath = $storage->get_image_abspath($image, $size);
-                ewww_image_optimizer_debug_log();
-                return $image_url;
-        }
 
 	/* ngg_added_new_image hook */
 	function ewww_added_new_image ($image, $storage = null) {
@@ -496,12 +476,13 @@ class ewwwngg {
 <?php	}
 }
 // initialize the plugin and the class
-add_action('init', 'ewwwngg');
+/*add_action('init', 'ewwwngg');
 
-function ewwwngg() {
+function ewwwngg() {*/
 	global $ewwwngg;
 	$ewwwngg = new ewwwngg();
-}
+//}
+if ( class_exists( 'Mixin' ) && ! ewww_image_optimizer_get_option( 'ewww_image_optimizer_noauto' ) ) {
 	class EWWWIO_Gallery_Storage extends Mixin {
 		function generate_image_size( $image, $size, $params = null, $skip_defaults = false ) {
 			global $ewww_debug;
@@ -523,3 +504,4 @@ function ewwwngg() {
 	}
 	$storage = C_Gallery_Storage::get_instance();
 	$storage->get_wrapped_instance()->add_mixin('EWWWIO_Gallery_Storage');
+}
