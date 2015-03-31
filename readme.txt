@@ -194,6 +194,7 @@ NOTE: The WebP naming scheme was changed in 2.0.1 to avoid filename conflicts. Y
 * changed: suppress plugin warnings when running 'init' outside of admin pages
 * added: compatibility with NextGEN Public Uploader and other NextGEN 2 plugins that use legacy uploads
 * added: auto-optimization for MyArcade plugin
+* fixed: bug in GIF processing rendered Gifsicle impotent (no savings possible), non Cloud users should re-optimize all their GIFs in Force mode
 
 = 2.2.2 =
 * fixed: previous fix for deleting webp images was not working properly

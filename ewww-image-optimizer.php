@@ -16,7 +16,6 @@ License: GPLv3
 */
 
 // TODO: make mention of wp-plugins/ewwwio repo on github
-// TODO: make sure Flag, Nextcellent, and nextgen1 don't throw fits on manage gallery page due to undefined cosntants
 
 // Constants
 define('EWWW_IMAGE_OPTIMIZER_DOMAIN', 'ewww-image-optimizer');
@@ -243,7 +242,6 @@ function ewww_image_optimizer_install_paths () {
 
 // installs the executables that are bundled with the plugin
 function ewww_image_optimizer_install_tools () {
-	// TODO: expand permission to allow anything HIGHER than 755
 	global $ewww_debug;
 	global $ewww_admin;
 	$ewww_debug .= "<b>ewww_image_optimizer_install_tools()</b><br>";
@@ -1806,7 +1804,7 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 			if ($optimize) {
 				$tempfile = $file . ".tmp"; //temporary GIF output
 				// run gifsicle on the GIF
-				exec( "$nice " . $tools['GIFSICLE'] . " -b -O3 --careful -o $tempfile" . ewww_image_optimizer_escapeshellarg( $file ) );
+				exec( "$nice " . $tools['GIFSICLE'] . " -b -O3 --careful -o $tempfile " . ewww_image_optimizer_escapeshellarg( $file ) );
 				if (file_exists($tempfile)) {
 					// retrieve the filesize of the temporary GIF
 					$new_size = filesize($tempfile);
