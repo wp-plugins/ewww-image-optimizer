@@ -68,7 +68,8 @@ class ewwwngg {
 
 	/* optimize the thumbs of the images POSTed from the previous page */
 	function ewww_ngg_thumb_bulk() {
-		if (!wp_verify_nonce( $_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
+		$permissions = apply_filters( 'ewww_image_optimizer_manual_permissions', '' );
+		if ( ! wp_verify_nonce( $_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-bulk' ) || ! current_user_can( $permissions ) ) {
 			wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 		}?> 
 		<div class="wrap">
@@ -113,7 +114,8 @@ class ewwwngg {
 	/* Manually process an image from the NextGEN Gallery */
 	function ewww_ngg_manual() {
 		// check permission of current user
-		if ( FALSE === current_user_can('upload_files') ) {
+		$permissions = apply_filters( 'ewww_image_optimizer_manual_permissions', '' );
+		if ( FALSE === current_user_can( $permissions ) ) {
 			wp_die(__('You don\'t have permission to work with uploaded files.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 		}
 		// make sure function wasn't called without an attachment to work with
@@ -197,19 +199,23 @@ class ewwwngg {
 				return;
 			}
 			// if we have a valid status, display it, the image size, and give a re-optimize link
-			if ( $status && !empty( $status ) ) {
+			if ( ! empty ( $status ) ) {
 				echo $status;
 				echo "<br>" . sprintf(__('Image Size: %s', EWWW_IMAGE_OPTIMIZER_DOMAIN), $file_size);
-				printf("<br><a href=\"admin.php?action=ewww_ngg_manual&amp;ewww_force=1&amp;ewww_attachment_ID=%d\">%s</a>",
-				$id,
-				__('Re-optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+				if ( current_user_can( apply_filters( 'ewww_image_optimizer_manual_permissions', '' ) ) )  {
+					printf("<br><a href=\"admin.php?action=ewww_ngg_manual&amp;ewww_force=1&amp;ewww_attachment_ID=%d\">%s</a>",
+						$id,
+						__('Re-optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+				}
 			// otherwise, give the image size, and a link to optimize right now
 			} else {
 				_e('Not processed', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 				echo "<br>" . sprintf(__('Image Size: %s', EWWW_IMAGE_OPTIMIZER_DOMAIN), $file_size);
-				printf("<br><a href=\"admin.php?action=ewww_ngg_manual&amp;ewww_attachment_ID=%d\">%s</a>",
-				$id,
-				__('Optimize now!', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+				if ( current_user_can( apply_filters( 'ewww_image_optimizer_manual_permissions', '' ) ) )  {
+					printf("<br><a href=\"admin.php?action=ewww_ngg_manual&amp;ewww_attachment_ID=%d\">%s</a>",
+						$id,
+						__('Optimize now!', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+				}
 			}
 		}
 	}
@@ -365,7 +371,8 @@ class ewwwngg {
 
 	/* start the bulk operation */
 	function ewww_ngg_bulk_init() {
-                if (!wp_verify_nonce( $_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
+		$permissions = apply_filters( 'ewww_image_optimizer_bulk_permissions', '' );
+                if ( ! wp_verify_nonce( $_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-bulk' ) || ! current_user_can( $permissions ) ) {
                         wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
                 }
 		// toggle the resume flag to indicate an operation is in progress
@@ -378,7 +385,8 @@ class ewwwngg {
 
 	/* output the filename of the image being optimized */
 	function ewww_ngg_bulk_filename() {
-                if (!wp_verify_nonce( $_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
+		$permissions = apply_filters( 'ewww_image_optimizer_bulk_permissions', '' );
+                if ( ! wp_verify_nonce( $_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-bulk' ) || ! current_user_can( $permissions ) ) {
                         wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
                 }
 		// need this file to work with metadata
@@ -395,7 +403,8 @@ class ewwwngg {
 
 	/* process each image in the bulk loop */
 	function ewww_ngg_bulk_loop() {
-                if (!wp_verify_nonce( $_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
+		$permissions = apply_filters( 'ewww_image_optimizer_bulk_permissions', '' );
+                if ( ! wp_verify_nonce( $_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-bulk' ) || ! current_user_can( $permissions ) ) {
                         wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
                 }
 		// need this file to work with metadata
@@ -435,7 +444,8 @@ class ewwwngg {
 
 	/* finish the bulk operation */
 	function ewww_ngg_bulk_cleanup() {
-                if (!wp_verify_nonce( $_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
+		$permissions = apply_filters( 'ewww_image_optimizer_bulk_permissions', '' );
+                if ( ! wp_verify_nonce( $_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-bulk' ) || ! current_user_can( $permissions ) ) {
                         wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
                 }
 		// reset all the bulk options in the db
@@ -447,8 +457,11 @@ class ewwwngg {
 	}
 
 	// insert a bulk optimize option in the actions list for the gallery and image management pages (via javascript, since we have no hooks)
-	function ewww_ngg_bulk_actions_script() {?>
-		<script type="text/javascript">
+	function ewww_ngg_bulk_actions_script() {
+		if ( ! current_user_can( apply_filters( 'ewww_image_optimizer_bulk_permissions', '' ) ) ) {
+			return;
+		}
+?>		<script type="text/javascript">
 			jQuery(document).ready(function($){
 				$('select[name^="bulkaction"] option:last-child').after('<option value="bulk_optimize">Bulk Optimize</option>');
 			});

@@ -80,7 +80,8 @@ function ewww_image_optimizer_webp_script($hook) {
 // called by javascript to initialize some output
 function ewww_image_optimizer_webp_initialize() {
 	// verify that an authorized user has started the migration
-	if (!wp_verify_nonce( $_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-webp' ) || !current_user_can( 'edit_others_posts' ) ) {
+	$permissions = apply_filters( 'ewww_image_optimizer_admin_permissions', '' );
+	if ( ! wp_verify_nonce( $_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-webp' ) || ! current_user_can( $permissions ) ) {
 		wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 	}
 	if ( get_option( 'ewww_image_optimizer_webp_skipped' ) ) {
@@ -97,8 +98,8 @@ function ewww_image_optimizer_webp_initialize() {
 // called by javascript to process each image in the loop
 function ewww_image_optimizer_webp_loop() {
 	global $ewww_debug;
-	// verify that an authorized user has started the migration
-	if (!wp_verify_nonce( $_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-webp' ) || !current_user_can( 'edit_others_posts' ) ) {
+	$permissions = apply_filters( 'ewww_image_optimizer_admin_permissions', '' );
+	if ( ! wp_verify_nonce( $_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-webp' ) || ! current_user_can( $permissions ) ) {
 		wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 	} 
 	// retrieve the time when the migration starts
@@ -180,7 +181,7 @@ function ewww_image_optimizer_webp_loop() {
 	$elapsed = microtime(true) - $started;
 	$ewww_debug .= "took $elapsed seconds this time around<br>";
 	// store the updated list of images back in the database
-	update_option('ewww_image_optimizer_webp_images', $images);
+	update_option( 'ewww_image_optimizer_webp_images', $images );
 //	$ewww_debug .= "peak memory usage: " . memory_get_peak_usage(true) . "<br>";
 	ewww_image_optimizer_debug_log();
 	die();
@@ -188,24 +189,24 @@ function ewww_image_optimizer_webp_loop() {
 
 // called by javascript to cleanup after ourselves
 function ewww_image_optimizer_webp_cleanup() {
-	// verify that an authorized user has started the migration
-	if (!wp_verify_nonce( $_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-webp' ) || !current_user_can( 'edit_others_posts' ) ) {
-		wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+	$permissions = apply_filters( 'ewww_image_optimizer_admin_permissions', '' );
+	if ( ! wp_verify_nonce( $_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-webp' ) || ! current_user_can( $permissions ) ) {
+		wp_die( __( 'Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN ) );
 	}
 	$skipped = get_option( 'ewww_image_optimizer_webp_skipped' );
 	// all done, so we can remove the webp options
-	delete_option('ewww_image_optimizer_webp_images');
-	delete_option('ewww_image_optimizer_webp_skipped', '');
+	delete_option( 'ewww_image_optimizer_webp_images' );
+	delete_option( 'ewww_image_optimizer_webp_skipped', '' );
 	if ( $skipped ) {
-		echo '<p><b>' . __('Skipped:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</b></p>';
+		echo '<p><b>' . __( 'Skipped:', EWWW_IMAGE_OPTIMIZER_DOMAIN ) . '</b></p>';
 		echo "<p>$skipped</p>";
 	}
 	// and let the user know we are done
-	echo '<p><b>' . __('Finished', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</b></p>';
+	echo '<p><b>' . __( 'Finished', EWWW_IMAGE_OPTIMIZER_DOMAIN ) . '</b></p>';
 	die();
 }
-add_action('admin_enqueue_scripts', 'ewww_image_optimizer_webp_script');
-add_action('wp_ajax_webp_init', 'ewww_image_optimizer_webp_initialize');
-add_action('wp_ajax_webp_loop', 'ewww_image_optimizer_webp_loop');
-add_action('wp_ajax_webp_cleanup', 'ewww_image_optimizer_webp_cleanup');
+add_action( 'admin_enqueue_scripts', 'ewww_image_optimizer_webp_script' );
+add_action( 'wp_ajax_webp_init', 'ewww_image_optimizer_webp_initialize' );
+add_action( 'wp_ajax_webp_loop', 'ewww_image_optimizer_webp_loop' );
+add_action( 'wp_ajax_webp_cleanup', 'ewww_image_optimizer_webp_cleanup' );
 ?>
