@@ -93,6 +93,8 @@ add_filter( 'manage_media_columns', 'ewww_image_optimizer_columns' );
 $plugin = plugin_basename ( EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE );
 add_filter( "plugin_action_links_$plugin", 'ewww_image_optimizer_settings_link' );
 add_filter( 'ewww_image_optimizer_settings', 'ewww_image_optimizer_filter_settings_page' );
+add_filter( 'myarcade_filter_screenshot', 'ewww_image_optimizer_myarcade_thumbnail' );
+add_filter( 'myarcade_filter_thumbnail', 'ewww_image_optimizer_myarcade_thumbnail' );
 add_action( 'manage_media_custom_column', 'ewww_image_optimizer_custom_column', 10, 2 );
 add_action( 'plugins_loaded', 'ewww_image_optimizer_preinit' );
 add_action( 'admin_init', 'ewww_image_optimizer_admin_init' );
@@ -330,17 +332,27 @@ function ewww_image_optimizer_preinit() {
 /**
  * Plugin initialization function
  */
-function ewww_image_optimizer_init() {
+function ewww_image_optimizer_init( $admin = false ) {
 	ewwwio_memory( __FUNCTION__ );
 	global $ewww_debug;
 	global $ewww_memory;
+	global $ewww_admin;
+	$ewww_admin = $admin;
 	$ewww_debug .= "<b>ewww_image_optimizer_init()</b><br>";
+	if ( $ewww_admin ) {
+		$ewww_debug .= 'we are in the admin, feel free to shout<br>';
+	} else {
+		$ewww_debug .= 'no admin, be quiet<br>';
+	}
 	if (get_option('ewww_image_optimizer_version') < EWWW_IMAGE_OPTIMIZER_VERSION) {
 		ewww_image_optimizer_install_table();
 		ewww_image_optimizer_set_defaults();
 		update_option('ewww_image_optimizer_version', EWWW_IMAGE_OPTIMIZER_VERSION);
 	}
 	ewww_image_optimizer_cloud_init();
+	if ( ! $ewww_admin ) {
+//		ewww_image_optimizer_tool_init();
+	}
 	ewwwio_memory( __FUNCTION__ );
 }
 
@@ -349,7 +361,7 @@ function ewww_image_optimizer_admin_init() {
 	ewwwio_memory( __FUNCTION__ );
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_admin_init()</b><br>";
-	ewww_image_optimizer_init();
+	ewww_image_optimizer_init( true );
 	if (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network(EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE_REL)) {
 		// set the common network settings if they have been POSTed
 		if ( isset( $_POST['ewww_image_optimizer_delay'] ) && wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww_image_optimizer_options-options' ) ) {
@@ -810,6 +822,18 @@ function ewww_image_optimizer_ims() {
 		}
 	echo '</div>';
 	return;	
+}
+
+// optimize MyArcade screenshots and thumbs
+function ewww_image_optimizer_myarcade_thumbnail( $url ) {
+	global $ewww_debug;
+	$ewww_debug .= "thumb url passed: $url<br>";
+	if ( ! empty( $url ) ) {
+        	$thumb_path = str_replace( get_option('siteurl') . '/', ABSPATH, $url );
+		$ewww_debug .= "thumb path generated: $thumb_path<br>";
+		ewww_image_optimizer( $thumb_path );
+	}
+	return $url;
 }
 
 // enqueue script for webp support with CDNs
