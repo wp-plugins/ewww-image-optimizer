@@ -37,7 +37,6 @@ class ewwwngg {
 	function ewww_added_new_image ($image, $storage = null) {
 		global $ewww_debug;
 		$ewww_debug .= "<b>ewww_added_new_image()</b><br>";
-		$ewww_debug .= 'nextgen image object: ' . print_r( $image, true ) . '<br>';
 		if (empty($storage)) {
 			// creating the 'registry' object for working with nextgen
 			$registry = C_Component_Registry::get_instance();

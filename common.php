@@ -1258,6 +1258,7 @@ function ewww_image_optimizer_cloud_verify ( $cache = true, $api_key = '' ) {
 			}
 		}
 	}
+	do_action( 'ewww_image_optimizer_verify', $result['body'] );
 	if (empty($verified)) {
 		ewwwio_memory( __FUNCTION__ );
 		return FALSE;
