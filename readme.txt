@@ -181,6 +181,7 @@ NOTE: The WebP naming scheme was changed in 2.0.1 to avoid filename conflicts. Y
 * added: option to speed up lossy compression by using less compression
 * added: compatibility with NextGEN Public Uploader and other NextGEN 2 plugins that use legacy uploads
 * added: auto-optimization for MyArcade plugin
+* changed: resizes are not processed twice during upload. they were only optimized once previously, but this should give a small speed boost to uploads.
 * changed: manual optimize/convert/restore links require editor role, bulk optimization requires admin role, can be changed via filters
 * changed: disabling automatic optimization affects Nextgen, Nextcellent, and FlaGallery as well
 * changed: lossy compression for EWWW I.O. Cloud users now uses TinyJPG and TinyPNG for superior compression

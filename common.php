@@ -2,7 +2,6 @@
 // common functions for Standard and Cloud plugins
 // TODO: check all comments to make sure they are actually useful...
 // TODO: this could be useful: http://codex.wordpress.org/Function_Reference/maybe_unserialize
-// TODO: hide manual links based on manual permissions filter
 
 define('EWWW_IMAGE_OPTIMIZER_VERSION', '222.3');
 
@@ -85,6 +84,7 @@ function wptuts_screen_help( $contextual_help, $screen_id, $screen ) {
 if ( ! ewww_image_optimizer_get_option( 'ewww_image_optimizer_noauto' ) ) {
 	add_filter( 'wp_generate_attachment_metadata', 'ewww_image_optimizer_resize_from_meta_data', 15, 2 );
 	add_filter( 'wp_image_editors', 'ewww_image_optimizer_load_editor', 60 );
+	add_action('add_attachment', 'ewww_image_optimizer_add_attachment');
 }
 // this hook is used to ensure we populate the metadata with webp images
 add_filter( 'wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment_metadata', 8, 2 );
@@ -631,17 +631,24 @@ function ewww_image_optimizer_network_settings_saved() {
 function ewww_image_optimizer_load_editor($editors) {
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_load_editor()</b><br>";
-	if (!class_exists('EWWWIO_GD_Editor') && !class_exists('EWWWIO_Imagick_Editor'))
-		include_once(plugin_dir_path(__FILE__) . '/image-editor.php');
-	if (!in_array('EWWWIO_GD_Editor', $editors))
-		array_unshift($editors, 'EWWWIO_GD_Editor');
-	if (!in_array('EWWWIO_Imagick_Editor', $editors))
-		array_unshift($editors, 'EWWWIO_Imagick_Editor');
-	if (!in_array('EWWWIO_Gmagick_Editor', $editors) && class_exists('WP_Image_Editor_Gmagick'))
-		array_unshift($editors, 'EWWWIO_Gmagick_Editor');
-	$ewww_debug .= "loading image editors: " . print_r($editors, true) . "<br>";
+	if ( ! class_exists( 'EWWWIO_GD_Editor' ) && ! class_exists( 'EWWWIO_Imagick_Editor' ) )
+		include_once( plugin_dir_path(__FILE__) . '/image-editor.php' );
+	if ( ! in_array( 'EWWWIO_GD_Editor', $editors ) )
+		array_unshift( $editors, 'EWWWIO_GD_Editor' );
+	if ( ! in_array( 'EWWWIO_Imagick_Editor', $editors ) )
+		array_unshift( $editors, 'EWWWIO_Imagick_Editor' );
+	if ( ! in_array( 'EWWWIO_Gmagick_Editor', $editors ) && class_exists( 'WP_Image_Editor_Gmagick' ) )
+		array_unshift( $editors, 'EWWWIO_Gmagick_Editor' );
+	$ewww_debug .= "loading image editors: " . print_r( $editors, true ) . "<br>";
 	ewwwio_memory( __FUNCTION__ );
 	return $editors;
+}
+
+// when an attachment is added, remove the image editor filters
+function ewww_image_optimizer_add_attachment($id) {
+	global $ewww_debug;
+	$ewww_debug .= "<b>ewww_image_optimizer_add_attachment</b><br>";
+	remove_filter( 'wp_image_editors', 'ewww_image_optimizer_load_editor', 60 );
 }
 
 // runs scheduled optimization of various auxiliary images
@@ -1742,7 +1749,7 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = tr
 	}
 	$ewww_debug .= "retrieved file path: $file_path<br>";
 	// see if this is a new image and Imsanity resized it (which means it could be already optimized)
-	if (!empty($new_image) && function_exists('imsanity_get_max_width_height')) {
+	/*if (!empty($new_image) && function_exists('imsanity_get_max_width_height')) {
 		list($maxW,$maxH) = imsanity_get_max_width_height(IMSANITY_SOURCE_LIBRARY);
 		list($oldW, $oldH) = getimagesize($file_path);
 		list($newW, $newH) = wp_constrain_dimensions($oldW, $oldH, $maxW, $maxH);
@@ -1772,8 +1779,8 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = tr
 					'id' => $already_optimized['id'],
 				));
 		}
-	}
-	list($file, $msg, $conv, $original) = ewww_image_optimizer( $file_path, $gallery_type, false, $new_image, true );
+	}*/
+	list($file, $msg, $conv, $original) = ewww_image_optimizer( $file_path, $gallery_type, false, false, true );
 	// update the optimization results in the metadata
 	$meta['ewww_image_optimizer'] = $msg;
 	if ($file === false) {
@@ -1864,7 +1871,7 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = tr
 			if (!$dup_size) {
 				$resize_path = $base_dir . $data['file'];
 				// run the optimization and store the results
-				list($optimized_file, $results, $resize_conv, $original) = ewww_image_optimizer($resize_path, $gallery_type, $conv, $new_image);
+				list($optimized_file, $results, $resize_conv, $original) = ewww_image_optimizer($resize_path, $gallery_type, $conv);
 				// if the resize was converted, store the result and the original filename in the metadata for later recovery
 				if ($resize_conv) {
 					// if we don't already have the update attachment filter
@@ -3064,5 +3071,4 @@ function ewwwio_memory_output() {
 		file_put_contents(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'memory.log', $timestamp . $ewww_memory, FILE_APPEND);
 	}
 }
-
 ?>
