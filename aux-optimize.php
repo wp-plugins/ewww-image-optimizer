@@ -437,6 +437,7 @@ function ewww_image_optimizer_image_scan($dir) {
 	if (!is_dir($dir)) {
 		return $images;
 	}
+	$ewww_debug .= "scanning folder for images: $dir<br>";
 	$iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir), RecursiveIteratorIterator::CHILD_FIRST);
 	$start = microtime(true);
 	$query = "SELECT path,image_size FROM $wpdb->ewwwio_images";
@@ -452,6 +453,9 @@ function ewww_image_optimizer_image_scan($dir) {
 			continue;
 		} else {
 			$path = $path->getPathname();
+			if ( preg_match( '/\.po$/', $path ) ) {
+				continue;
+			}
 			$mimetype = ewww_image_optimizer_mimetype($path, 'i');
 			if (empty($mimetype) || !preg_match('/^image\/(jpeg|png|gif)/', $mimetype)) {
 				$ewww_debug .= "not a usable mimetype: $path<br>";
@@ -535,6 +539,7 @@ function ewww_image_optimizer_aux_images_script($hook) {
 		// retrieve the attachment IDs that have not been finished from the 'bulk attachments' option
 		$attachments = get_option('ewww_image_optimizer_aux_attachments');
 	} else {
+		$attachments = array();
 		// collect a list of images from the current theme
 		$child_path = get_stylesheet_directory();
 		$parent_path = get_template_directory();
@@ -542,6 +547,7 @@ function ewww_image_optimizer_aux_images_script($hook) {
 		if ($child_path !== $parent_path) {
 			$attachments = array_merge($attachments, ewww_image_optimizer_image_scan($parent_path));
 		}
+//	ewww_image_optimizer_debug_log();
 		// collect a list of images for buddypress
 		if (is_plugin_active('buddypress/bp-loader.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('buddypress/bp-loader.php'))) {
 			// get the value of the wordpress upload directory

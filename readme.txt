@@ -196,6 +196,7 @@ NOTE: The WebP naming scheme was changed in 2.0.1 to avoid filename conflicts. Y
 * fixed: referencing object as an array when scanning for Meta Slider images causes Scan & Optimize to fail
 * fixed: BIGINT errors when calculating savings
 * fixed: warning with Nextgen2 when plugin init had not yet occurred
+* fixed: Scan and Optimize consuming too much memory when checking mimetype of .po files
 
 = 2.2.2 =
 * fixed: previous fix for deleting webp images was not working properly
