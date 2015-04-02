@@ -453,7 +453,7 @@ function ewww_image_optimizer_image_scan($dir) {
 			continue;
 		} else {
 			$path = $path->getPathname();
-			if ( preg_match( '/\.po$/', $path ) ) {
+			if ( preg_match( '/\.(po|mo|php|txt|js|css|html)$/', $path ) ) {
 				continue;
 			}
 			$mimetype = ewww_image_optimizer_mimetype($path, 'i');

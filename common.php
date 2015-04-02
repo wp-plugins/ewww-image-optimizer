@@ -2,8 +2,9 @@
 // common functions for Standard and Cloud plugins
 // TODO: check all comments to make sure they are actually useful...
 // TODO: this could be useful: http://codex.wordpress.org/Function_Reference/maybe_unserialize
+// TODO: if W3TC doesn't want to play nice, can we remove their filter, and add it back in with a higher priority number?
 
-define('EWWW_IMAGE_OPTIMIZER_VERSION', '222.3');
+define('EWWW_IMAGE_OPTIMIZER_VERSION', '222.6');
 
 // initialize debug global
 $disabled = ini_get('disable_functions');
@@ -84,7 +85,13 @@ function wptuts_screen_help( $contextual_help, $screen_id, $screen ) {
 if ( ! ewww_image_optimizer_get_option( 'ewww_image_optimizer_noauto' ) ) {
 	add_filter( 'wp_generate_attachment_metadata', 'ewww_image_optimizer_resize_from_meta_data', 15, 2 );
 	add_filter( 'wp_image_editors', 'ewww_image_optimizer_load_editor', 60 );
-	add_action('add_attachment', 'ewww_image_optimizer_add_attachment');
+	add_action( 'add_attachment', 'ewww_image_optimizer_add_attachment' );
+add_filter( 'wp_handle_upload', 'ewww_handle_upload' );
+function ewww_handle_upload($params) {
+	global $ewww_debug;
+	$ewww_debug .= 'upload handler<br>';
+	return $params;
+}
 }
 // this hook is used to ensure we populate the metadata with webp images
 add_filter( 'wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment_metadata', 8, 2 );
@@ -644,11 +651,26 @@ function ewww_image_optimizer_load_editor($editors) {
 	return $editors;
 }
 
-// when an attachment is added, remove the image editor filters
-function ewww_image_optimizer_add_attachment($id) {
+function ewww_image_optimizer_add_attachment() {
 	global $ewww_debug;
-	$ewww_debug .= "<b>ewww_image_optimizer_add_attachment</b><br>";
+	$ewww_debug .= "<b>ewww_image_optimizer_add_attachment()</b><br>";
+	add_filter( 'intermediate_image_sizes_advanced', 'ewww_image_optimizer_image_sizes', 200 );
+}
+
+// when an attachment is added, remove the image editor filters
+function ewww_image_optimizer_image_sizes( $sizes ) {
+	global $ewww_debug;
+	$ewww_debug .= "<b>ewww_image_optimizer_image_sizes()</b><br>";
 	remove_filter( 'wp_image_editors', 'ewww_image_optimizer_load_editor', 60 );
+	add_filter( 'wp_generate_attachment_metadata', 'ewww_image_optimizer_restore_editor_hooks', 1 );
+	return $sizes;
+}
+
+function ewww_image_optimizer_restore_editor_hooks( $metadata ) {
+	global $ewww_debug;
+	$ewww_debug .= "<b>ewww_image_optimizer_restore_editor_hooks()</b><br>";
+	add_filter( 'wp_image_editors', 'ewww_image_optimizer_load_editor', 60 );
+	return $metadata;
 }
 
 // runs scheduled optimization of various auxiliary images
@@ -759,7 +781,7 @@ function ewww_image_optimizer_retina ( $id, $retina_path ) {
 	$opt_size = filesize($retina_path);
 	$ewww_debug .= "retina size: $opt_size<br>";
 	$query = $wpdb->prepare("SELECT id,path FROM $wpdb->ewwwio_images WHERE path = %s AND image_size = '$opt_size'", $temp_path);
-	$optimized_query = $wpdb->get_results($query);
+	$optimized_query = $wpdb->get_results( $query, ARRAY_A );
 	if (!empty($optimized_query)) {
 		foreach ( $optimized_query as $image ) {
 			if ( $image['path'] != $temp_path ) {
@@ -1749,7 +1771,7 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = tr
 	}
 	$ewww_debug .= "retrieved file path: $file_path<br>";
 	// see if this is a new image and Imsanity resized it (which means it could be already optimized)
-	/*if (!empty($new_image) && function_exists('imsanity_get_max_width_height')) {
+	if (!empty($new_image) && function_exists('imsanity_get_max_width_height')) {
 		list($maxW,$maxH) = imsanity_get_max_width_height(IMSANITY_SOURCE_LIBRARY);
 		list($oldW, $oldH) = getimagesize($file_path);
 		list($newW, $newH) = wp_constrain_dimensions($oldW, $oldH, $maxW, $maxH);
@@ -1779,8 +1801,8 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = tr
 					'id' => $already_optimized['id'],
 				));
 		}
-	}*/
-	list($file, $msg, $conv, $original) = ewww_image_optimizer( $file_path, $gallery_type, false, false, true );
+	}
+	list($file, $msg, $conv, $original) = ewww_image_optimizer( $file_path, $gallery_type, false, $new_image, true );
 	// update the optimization results in the metadata
 	$meta['ewww_image_optimizer'] = $msg;
 	if ($file === false) {
@@ -1871,7 +1893,7 @@ function ewww_image_optimizer_resize_from_meta_data($meta, $ID = null, $log = tr
 			if (!$dup_size) {
 				$resize_path = $base_dir . $data['file'];
 				// run the optimization and store the results
-				list($optimized_file, $results, $resize_conv, $original) = ewww_image_optimizer($resize_path, $gallery_type, $conv);
+				list($optimized_file, $results, $resize_conv, $original) = ewww_image_optimizer( $resize_path, $gallery_type, $conv, $new_image );
 				// if the resize was converted, store the result and the original filename in the metadata for later recovery
 				if ($resize_conv) {
 					// if we don't already have the update attachment filter
