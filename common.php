@@ -1,9 +1,7 @@
 <?php
 // common functions for Standard and Cloud plugins
-// TODO: check all comments to make sure they are actually useful...
-// TODO: this could be useful: http://codex.wordpress.org/Function_Reference/maybe_unserialize
 
-define('EWWW_IMAGE_OPTIMIZER_VERSION', '222.6');
+define('EWWW_IMAGE_OPTIMIZER_VERSION', '222.7');
 
 // initialize debug global
 $disabled = ini_get('disable_functions');
@@ -875,11 +873,7 @@ function ewww_image_optimizer_ims() {
 			$alternate = true;
 			foreach ($attachments as $ID) {
 				$meta = get_metadata('post', $ID);
-				if ( is_array( $meta['_wp_attachment_metadata'][0] ) ) {
-					$meta = $meta['_wp_attachment_metadata'][0];
-				} else {
-					$meta = unserialize($meta['_wp_attachment_metadata'][0]);
-				}
+				$meta = maybe_unserialize($meta['_wp_attachment_metadata'][0]);
 				$image_name = get_the_title($ID);
 				$gallery_name = get_the_title($gid);
 				$image_url = $meta['sizes']['mini']['url'];
@@ -2444,7 +2438,6 @@ function ewww_image_optimizer_display_unoptimized_media() {
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_display_unoptimized_media()</b><br>";
 	$attachments = ewww_image_optimizer_count_optimized ( 'media', true );
-//	$ims_columns = get_column_headers('ims_gallery');
 	echo "<div class='wrap'><h3>" . __('Unoptimized Images', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</h3>";
 	printf( '<p>' . __( 'We have %d images to optimize.', EWWW_IMAGE_OPTIMIZER_DOMAIN ) . '</p>', count( $attachments ) ); 
 	sort($attachments, SORT_NUMERIC);
@@ -2456,23 +2449,13 @@ function ewww_image_optimizer_display_unoptimized_media() {
 	if ( count( $attachments ) < 500 ) {
 		sort($attachments, SORT_NUMERIC);
 		$image_string = implode(',', $attachments);
-//		echo "<p><a href='upload.php?page=ewww-image-optimizer-bulk&ids=$image_string'>" . __('Optimize Gallery', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a></p>";
 		echo '<table class="wp-list-table widefat media" cellspacing="0"><thead><tr><th>ID</th><th>&nbsp;</th><th>' . __('Title', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</th><th>' . __('Image Optimizer', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</th></tr></thead>';
 		$alternate = true;
 		foreach ($attachments as $ID) {
-			/*$meta = get_metadata('post', $ID);
-			if ( is_array( $meta['_wp_attachment_metadata'][0] ) ) {
-				$meta = $meta['_wp_attachment_metadata'][0];
-			} else {
-				$meta = unserialize($meta['_wp_attachment_metadata'][0]);
-			}*/
 			$image_name = get_the_title($ID);
-//			$gallery_name = get_the_title($gid);
-//			$image_url = $meta['sizes']['mini']['url'];
 ?>			<tr<?php if($alternate) echo " class='alternate'"; ?>><td><?php echo $ID; ?></td>
 <?php			echo "<td style='width:80px' class='column-icon'>" . wp_get_attachment_image( $ID, 'thumbnail' ) . "</td>";
 			echo "<td class='title'>$image_name</td>";
-//			echo "<td>$gallery_name</td><td>";
 			echo "<td>";
 			ewww_image_optimizer_custom_column('ewww-image-optimizer', $ID);
 			echo "</td></tr>";
