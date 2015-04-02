@@ -181,6 +181,7 @@ NOTE: The WebP naming scheme was changed in 2.0.1 to avoid filename conflicts. Y
 * added: option to speed up lossy compression by using less compression
 * added: compatibility with NextGEN Public Uploader and other NextGEN 2 plugins that use legacy uploads
 * added: auto-optimization for MyArcade plugin
+* added: delay uploading with W3TC CDN function until after optimization
 * changed: resizes are not processed twice during upload. they were only optimized once previously, but this should give a small speed boost to uploads.
 * changed: manual optimize/convert/restore links require editor role, bulk optimization requires admin role, can be changed via filters
 * changed: disabling automatic optimization affects Nextgen, Nextcellent, and FlaGallery as well
@@ -199,6 +200,7 @@ NOTE: The WebP naming scheme was changed in 2.0.1 to avoid filename conflicts. Y
 * fixed: warning with Nextgen2 when plugin init had not yet occurred
 * fixed: Scan and Optimize consuming too much memory when checking mimetype of .po files
 * fixed: wp retina detection queries referencing object as an array
+* fixed: originals from converted resizes were not deleted during attachment removal
 
 = 2.2.2 =
 * fixed: previous fix for deleting webp images was not working properly

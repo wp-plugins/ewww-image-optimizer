@@ -3,6 +3,7 @@ if ( class_exists( 'Bbpp_Animated_Gif' ) ) {
 	class EWWWIO_GD_Editor extends Bbpp_Animated_Gif {
 		public function save( $filename = null, $mime_type = null ) {
 			global $ewww_debug;
+//TODO: rethink these checks. should we be checking for JPEGTRAN still, or perhaps the CLOUD constant?
 			if (!defined('EWWW_IMAGE_OPTIMIZER_JPEGTRAN'))
 				ewww_image_optimizer_init();
 			$saved = parent::save($filename, $mimetype);

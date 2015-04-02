@@ -2,7 +2,6 @@
 // common functions for Standard and Cloud plugins
 // TODO: check all comments to make sure they are actually useful...
 // TODO: this could be useful: http://codex.wordpress.org/Function_Reference/maybe_unserialize
-// TODO: if W3TC doesn't want to play nice, can we remove their filter, and add it back in with a higher priority number?
 
 define('EWWW_IMAGE_OPTIMIZER_VERSION', '222.6');
 
@@ -29,7 +28,7 @@ if (!isset($wpdb->ewwwio_images)) {
 	$wpdb->ewwwio_images = $wpdb->prefix . "ewwwio_images";
 }
 
-add_action( 'contextual_help', 'wptuts_screen_help', 10, 3 );
+/*add_action( 'contextual_help', 'wptuts_screen_help', 10, 3 );
 function wptuts_screen_help( $contextual_help, $screen_id, $screen ) {
  
     // The add_help_tab function for screen was introduced in WordPress 3.3.
@@ -77,22 +76,19 @@ function wptuts_screen_help( $contextual_help, $screen_id, $screen ) {
     ));
  
     return $contextual_help;
-}
+}*/
 
 /**
  * Hooks
  */
 if ( ! ewww_image_optimizer_get_option( 'ewww_image_optimizer_noauto' ) ) {
-	add_filter( 'wp_generate_attachment_metadata', 'ewww_image_optimizer_resize_from_meta_data', 15, 2 );
-	add_filter( 'wp_image_editors', 'ewww_image_optimizer_load_editor', 60 );
+	add_filter( 'wp_handle_upload', 'ewww_image_optimizer_handle_upload' );
 	add_action( 'add_attachment', 'ewww_image_optimizer_add_attachment' );
-add_filter( 'wp_handle_upload', 'ewww_handle_upload' );
-function ewww_handle_upload($params) {
-	global $ewww_debug;
-	$ewww_debug .= 'upload handler<br>';
-	return $params;
+	add_filter( 'wp_image_editors', 'ewww_image_optimizer_load_editor', 60 );
+	add_filter( 'wp_generate_attachment_metadata', 'ewww_image_optimizer_resize_from_meta_data', 15, 2 );
 }
-}
+
+
 // this hook is used to ensure we populate the metadata with webp images
 add_filter( 'wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment_metadata', 8, 2 );
 add_filter( 'manage_media_columns', 'ewww_image_optimizer_columns' );
@@ -651,13 +647,14 @@ function ewww_image_optimizer_load_editor($editors) {
 	return $editors;
 }
 
+// register the filter that will remove the image_editor hooks when at attachment is added
 function ewww_image_optimizer_add_attachment() {
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_add_attachment()</b><br>";
 	add_filter( 'intermediate_image_sizes_advanced', 'ewww_image_optimizer_image_sizes', 200 );
 }
 
-// when an attachment is added, remove the image editor filters
+// remove the image editor filter, and add a new filter that will restore it later
 function ewww_image_optimizer_image_sizes( $sizes ) {
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_image_sizes()</b><br>";
@@ -666,11 +663,34 @@ function ewww_image_optimizer_image_sizes( $sizes ) {
 	return $sizes;
 }
 
+// restore the image editor filter after the resizes have completed
 function ewww_image_optimizer_restore_editor_hooks( $metadata ) {
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_restore_editor_hooks()</b><br>";
 	add_filter( 'wp_image_editors', 'ewww_image_optimizer_load_editor', 60 );
 	return $metadata;
+}
+
+// during an upload, remove the W3TC CDN filter and add a new filter with our own wrapper around the W3TC function
+function ewww_image_optimizer_handle_upload($params) {
+	global $ewww_debug;
+	$ewww_debug .= 'ewww_image_optimizer_handle_upload()<br>';
+	if ( function_exists( 'w3_instance' ) ) {
+		$w3_plugin_cdn = w3_instance('W3_Plugin_Cdn');
+		$removed = remove_filter( 'update_attached_file', array( $w3_plugin_cdn, 'update_attached_file' ) );
+		add_filter( 'wp_generate_attachment_metadata', 'ewww_image_optimizer_update_attached_file_w3tc', 20, 2 );
+	}
+	return $params;
+}
+
+// this is the delayed wrapper for the W3TC CDN function that runs after optimization (priority 20)
+function ewww_image_optimizer_update_attached_file_w3tc( $meta, $id ) {
+	global $ewww_debug;
+	$ewww_debug .= 'ewww_image_optimizer_update_attached_file_w3tc()<br>';
+	list($file_path, $upload_path) = ewww_image_optimizer_attachment_path($meta, $id);
+	$w3_plugin_cdn = w3_instance('W3_Plugin_Cdn');
+	$w3_plugin_cdn->update_attached_file( $file_path, $id );
+	return $meta;
 }
 
 // runs scheduled optimization of various auxiliary images
@@ -701,7 +721,6 @@ function ewww_image_optimizer_auto() {
 			}
 		}
 		ewww_image_optimizer_aux_images_cleanup(true);
-//		ewww_image_optimizer_debug_log();
 	}
 	ewwwio_memory( __FUNCTION__ );
 	return;
@@ -929,7 +948,7 @@ function ewww_image_optimizer_debug_log() {
 		$timestamp = date('y-m-d h:i:s.u') . "  ";
 		if (!file_exists(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'debug.log'))
 			touch(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'debug.log');
-		$ewww_debug_log = preg_replace('/<br>/', "\n", $ewww_debug);
+		$ewww_debug_log = str_replace('<br>', "\n", $ewww_debug);
 		file_put_contents(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'debug.log', $timestamp . $ewww_debug_log, FILE_APPEND);
 	}
 	$ewww_debug = '';
@@ -1215,7 +1234,7 @@ function ewww_image_optimizer_delete ($id) {
 				$filename = $data['orig_file'];
 				// retrieve any posts that link the image
 				$esql = "SELECT ID, post_content FROM $wpdb->posts WHERE post_content LIKE '%$filename%'";
-				$rows = $wpdb->get_row($esql);
+				$srows = $wpdb->get_row($esql);
 				// if there are no posts containing links to the original, delete it
 				if(empty($srows)) {
 					unlink($base_dir . $data['orig_file']);
@@ -2574,7 +2593,7 @@ function ewww_image_optimizer_savings_loop() {
 			$total_query = "SELECT SUM(orig_size-image_size) FROM $wpdb->ewwwio_images";
 			//$total_query = "SELECT SUM(orig_size-image_size) FROM $wpdb->ewwwio_images LIMIT {$_REQUEST['ewww_savings_counter']}, $records_needed";
 //			$ewww_debug .= "querying $records_needed records, starting at {$_REQUEST['ewww_savings_counter']}<br>";
-			$savings = $wpdb->get_var($total_query, ARRAY_N);
+			$savings = $wpdb->get_var($total_query);
 //			$records_needed -= count($savings);
 //			foreach ( $savings as $saved ) {
 				$total_savings += $savings;

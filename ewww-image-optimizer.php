@@ -1134,7 +1134,6 @@ function ewww_image_optimizer_find_binary ($binary, $switch) {
  * @returns array
  */
 function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new = false, $fullsize = false) {
-//	global $wpdb;
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer()</b><br>";
 	// if the plugin gets here without initializing, we need to run through some things first
