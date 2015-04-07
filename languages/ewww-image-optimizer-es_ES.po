@@ -2,7 +2,7 @@
 # This file is distributed under the same license as the EWWW Image Optimizer package.
 msgid ""
 msgstr ""
-"PO-Revision-Date: 2015-03-24 14:46:36+0000\n"
+"PO-Revision-Date: 2015-04-07 03:53:16+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -12,27 +12,27 @@ msgstr ""
 
 #: common.php:1034
 msgid "You don't have permission to optimize images."
-msgstr ""
+msgstr "No tienes permiso para optimizar las imágenes."
 
 #: common.php:2908
 msgid "Faster lossy optimization"
-msgstr ""
+msgstr "Optimización más rápido con pérdida"
 
 #: common.php:2908
 msgid "Speed up the lossy operations by performing less compression."
-msgstr ""
+msgstr "Acelerar las operaciones con pérdidas mediante la realización de menos compresión."
 
 #: common.php:2916
 msgid "Requires an EWWW Image Optimizer Cloud Subscription."
-msgstr ""
+msgstr "Requiere una suscripción de EWWW Imagen Optimizer Cloud."
 
 #: common.php:2918
 msgid "Uses pngquant locally. Use EWWW I.O. Cloud for even better lossy compression."
-msgstr ""
+msgstr "Utiliza pngquant localmente. Utilice EWWW I.O. Nube para una mejor compresión con pérdida."
 
 #: common.php:2976
 msgid "Uses output buffering and libxml functionality from PHP. Use this if the Apache rewrite rules do not work, or if your images are served from a CDN."
-msgstr ""
+msgstr "Utiliza búferes de salida y la funcionalidad libxml desde PHP. Use esto si las reglas de reescritura de Apache no funcionan, o si sus imágenes se sirven de un CDN."
 
 #: common.php:1327
 msgid "optimized %1$d images, usage will reset in %2$d day."

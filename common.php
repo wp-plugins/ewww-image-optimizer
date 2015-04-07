@@ -113,7 +113,6 @@ add_action( 'load-upload.php', 'ewww_image_optimizer_load_admin_js' );
 //add_action('admin_head-upload.php', 'ewww_image_optimizer_add_bulk_actions_via_javascript'); 
 add_action( 'admin_action_bulk_optimize', 'ewww_image_optimizer_bulk_action_handler' ); 
 add_action( 'admin_action_-1', 'ewww_image_optimizer_bulk_action_handler' ); 
-add_action( 'wp_enqueue_scripts', 'ewww_image_optimizer_webp_load_script', 1 );
 add_action( 'admin_enqueue_scripts', 'ewww_image_optimizer_media_scripts' );
 add_action( 'admin_enqueue_scripts', 'ewww_image_optimizer_settings_script' );
 add_action( 'ewww_image_optimizer_auto', 'ewww_image_optimizer_auto' );
@@ -126,6 +125,7 @@ add_action( 'shutdown', 'ewwwio_memory_output' );
 if ( ewww_image_optimizer_get_option( 'ewww_image_optimizer_webp_for_cdn' ) ) {
 	add_action('init', 'ewww_image_optimizer_buffer_start');
 	add_action('wp_after_admin_bar_render', 'ewww_image_optimizer_buffer_end');
+	add_action( 'wp_enqueue_scripts', 'ewww_image_optimizer_webp_load_script', 1 );
 }
 
 if ( defined( 'WP_CLI' ) && WP_CLI ) {
