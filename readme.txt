@@ -173,6 +173,12 @@ NOTE: The WebP naming scheme was changed in 2.0.1 to avoid filename conflicts. Y
 * copy metadata from original images to webp variants
 * If you would like to help translate this plugin in your language, get started here: http://translate.ewww.io/projects/ewww-image-optimizer/
 
+= 2.3.1 =
+* fixed: load_webp.js was being inserted regardless of the associated Alternative WebP Rewrites option
+* fixed: wrong slash in plugin path for Windows users with NextGEN and FlaGallery
+* updated: translation for Spanish
+* changed: progressbar color updated to match new colors in 4.2 for default theme
+
 = 2.3.0 =
 * fixed: bug in GIF processing rendered Gifsicle impotent (no savings possible), non Cloud users should re-optimize all their GIFs in Force mode
 * added: WebP url rewriting for sites using CDNs, requires output buffering and libxml in PHP, and may require modifications for some themes
@@ -203,6 +209,7 @@ NOTE: The WebP naming scheme was changed in 2.0.1 to avoid filename conflicts. Y
 * fixed: originals from converted resizes were not deleted during attachment removal
 * fixed: WebP versions of retina 2x images were not renamed properly
 * fixed: Unoptimized images displays an empty table for zero images to optimize
+* updated: translations for Portuguese, Romanian, and Polish
 
 = 2.2.2 =
 * fixed: previous fix for deleting webp images was not working properly

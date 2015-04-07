@@ -1,7 +1,7 @@
 <?php
 // common functions for Standard and Cloud plugins
 
-define('EWWW_IMAGE_OPTIMIZER_VERSION', '230.0');
+define('EWWW_IMAGE_OPTIMIZER_VERSION', '230.1');
 
 // initialize debug global
 $disabled = ini_get('disable_functions');
@@ -565,7 +565,7 @@ function ewww_image_optimizer_admin_background() {
 			case 'sunrise':
 				return "#dd823b";
 			default:
-				return "#0074a2";
+				return "#0073aa";
 		}
 	}
 	ewwwio_memory( __FUNCTION__ );
