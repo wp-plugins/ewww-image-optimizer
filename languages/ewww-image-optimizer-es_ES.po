@@ -1,1056 +1,1158 @@
-# Copyright (C) 2013 EWWW Image Optimizer
+# Translation of EWWW Image Optimizer in Spanish (Spain)
 # This file is distributed under the same license as the EWWW Image Optimizer package.
 msgid ""
 msgstr ""
-"Project-Id-Version: EWWW Image Optimizer 1.7.6\n"
-"Report-Msgid-Bugs-To: http://wordpress.org/tag/ewww-image-optimizer\n"
-"POT-Creation-Date: 2013-12-20 23:49:19+00:00\n"
+"PO-Revision-Date: 2015-03-24 14:46:36+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2014-01-08 15:32+0100\n"
-"Last-Translator: jelena kovacevic <jecajeca260@gmail.com>\n"
-"X-Generator: Poedit 1.5.5\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: GlotPress/0.1\n"
+"Project-Id-Version: EWWW Image Optimizer\n"
 
-#: aux-optimize.php:12 bulk.php:20 flag-integration.php:66
-#: nextgen-integration.php:234 nextgen2-integration.php:234
-msgid "Start optimizing"
-msgstr "Inicie la optimización"
+#: common.php:1034
+msgid "You don't have permission to optimize images."
+msgstr ""
 
-#: aux-optimize.php:14
+#: common.php:2908
+msgid "Faster lossy optimization"
+msgstr ""
+
+#: common.php:2908
+msgid "Speed up the lossy operations by performing less compression."
+msgstr ""
+
+#: common.php:2916
+msgid "Requires an EWWW Image Optimizer Cloud Subscription."
+msgstr ""
+
+#: common.php:2918
+msgid "Uses pngquant locally. Use EWWW I.O. Cloud for even better lossy compression."
+msgstr ""
+
+#: common.php:2976
+msgid "Uses output buffering and libxml functionality from PHP. Use this if the Apache rewrite rules do not work, or if your images are served from a CDN."
+msgstr ""
+
+#: common.php:1327
+msgid "optimized %1$d images, usage will reset in %2$d day."
+msgid_plural "optimized %1$d images, usage will reset in %2$d days."
+msgstr[0] "%1$d imágenes optimizadas, el tratamiento se restablecerá en %2$d día."
+msgstr[1] "%1$d imágenes optimizadas, el tratamiento se restablecerá en %2$d días."
+
+#: common.php:1329
+msgid "%1$d image credit remaining."
+msgid_plural "%1$d image credits remaining."
+msgstr[0] "%1$d crédito de imagen restante."
+msgstr[1] "%1$d créditos de imagen restantes."
+
+#: common.php:2956
+msgid "Include Media Library Folders"
+msgstr "Incluir carpetas de la biblioteca de medios"
+
+#: common.php:2956
+msgid "If you have disabled automatic optimization, enable this if you want Scheduled Optimization to include the latest two folders from the Media Library."
+msgstr "Si ha deshabilitado las optimizaciones automáticas, habilite esto si desea que la optimización programada incluya las últimas dos carpetas de la biblioteca de medios."
+
+#: common.php:2976
+msgid "Alternative WebP Rewriting"
+msgstr "Reescritura alternativa de WebP"
+
+#: bulk.php:350
+msgid "%d images"
+msgstr "%d imágenes"
+
+#: common.php:2953
+msgid "Provide paths containing images to be optimized using \"Scan and Optimize\" on the Bulk Optimize page or by Scheduled Optimization."
+msgstr "Indique rutas que contengan imágenes que desee optimizar usando \"Escanear y optimizar\" en la página de optimización masiva o programada."
+
+#: iocli.php:53
+msgctxt "string will be something like \"media\" or \"nextgen\""
+msgid "Optimizing %1$s with a %2$d second pause between images."
+msgstr "Optimizando %1$s con un %2$d segundo de pausa entre imágenes."
+
+#: iocli.php:50
+msgid "Forcing re-optimization of previously processed images."
+msgstr "Forzando reoptimización de las imágenes previamente procesadas."
+
+#: iocli.php:64 iocli.php:103 iocli.php:112 iocli.php:132 iocli.php:145
+msgid "Bulk status has been reset, starting from the beginning."
+msgstr "Se ha reiniciado la operación en masa, comenzando desde el principio. "
+
+#: iocli.php:158
+msgid "Bulk status has been reset, the next bulk operation will start from the beginning."
+msgstr "Se ha reiniciado el estado, la próxima operación en masa comenzará desde el principio."
+
+#: iocli.php:160
+msgid "Please specify a valid library option, see \"wp-cli help ewwwio optimize\" for more information."
+msgstr "Por favor, especifique una opción válida de la biblioteca. Revise \"wp-cli help ewwwio optimize\" para más información."
+
+#: common.php:718 common.php:2400
+msgid "Unoptimized Images"
+msgstr "Imágenes no optimizadas"
+
+#: common.php:2406
+msgid "Optimize All Images"
+msgstr "Optimizar todas las imágenes"
+
+#: common.php:2435
+msgid "There are too many images to display."
+msgstr "Hay demasiadas imágenes para mostrar."
+
+#: iocli.php:84 iocli.php:149
+msgid "%1$d images in other folders need optimizing."
+msgstr "Necesitan optimización %1$d imágenes en otras carpetas ."
+
+#: iocli.php:126
+msgid "NextGEN/Nextcellent not installed."
+msgstr "NextGEN/Nextcellent no está instalado."
+
+#: iocli.php:139
+msgid "Grand Flagallery not installed."
+msgstr "Grand Flagallery no está instalado."
+
+#: common.php:2955
+msgid "Disable Automatic Optimization"
+msgstr "Deshabilitar optimización automática"
+
+#: common.php:2955
+msgid "Images will not be optimized on upload. Images may be optimized with the Bulk Optimize tools or with Scheduled optimization."
+msgstr "Las imágenes no se optimizarán al cargarse. Éstas podrán hacerlo mediante las herramientas de optimización masiva o programada."
+
+#: common.php:2960
+msgid "Exclude full-size images from metadata removal"
+msgstr "No eliminar metadatos de las imágenes en tamaño completo."
+
+#: aux-optimize.php:10
+msgid "Scan and optimize"
+msgstr "Escanear y optimizar"
+
+#: aux-optimize.php:12
 msgid "Resume previous optimization"
-msgstr "Reanudar la optimización anterior"
+msgstr "Reanudar la optimización previa"
 
-#: aux-optimize.php:43
-msgid "Optimize <i>Almost</i> Everything"
-msgstr "Optimizar <i>Casi</ i> Todo"
+#: aux-optimize.php:30
+msgid "Optimize Everything Else"
+msgstr "Actualizar lo restante"
 
-#: aux-optimize.php:48
-msgid ""
-"This tool will optimize large batches of images from your wordpress install. "
-"This does not include the Media Library or galleries where we have full "
-"integration. This tool is for images in your theme, BuddyPress, WP "
-"Symposium, and other folders that you have specified on the settings page."
-msgstr ""
-"Esta herramienta optimiza grandes lotes de imágenes de su instalación de "
-"WordPress. Esto no incluye la biblioteca de medios o galerías donde tenemos "
-"plena integración. Esta herramienta es para imágenes en su tema, BuddyPress, "
-"WP Symposium, y otras carpetas que han sido especificadas en la página de "
-"configuración."
+#: aux-optimize.php:31
+msgid "Use this tool to optimize images outside of the Media Library and galleries where we have full integration. Examples: theme images, BuddyPress, WP Symposium, and any folders that you have specified on the settings page."
+msgstr "Esta herramienta optimiza imágenes que están fuera de la biblioteca de medios o galerías, donde existe una integración total. Por ejemplo: imágenes en su tema, BuddyPress, WP Symposium, y otras carpetas que han sido especificadas en la página de configuración."
 
-#: aux-optimize.php:50
+#: aux-optimize.php:33
 msgid "The database schema has changed, you need to convert to the new format."
-msgstr ""
-"El esquema de base de datos ha cambiado, es necesario convertir al nuevo "
-"formato."
+msgstr "El esquema de base de datos ha cambiado, es necesario convertir al nuevo formato."
 
-#: aux-optimize.php:54
+#: aux-optimize.php:37
 msgid "Convert Table"
 msgstr "Convertir tabla"
 
-#: aux-optimize.php:58
+#: aux-optimize.php:40
 msgid "There are no images to optimize."
-msgstr "No hay imágenes para optimizar."
+msgstr "No hay imágenes que optimizar."
 
-#: aux-optimize.php:60 bulk.php:31 flag-integration.php:76
-#: nextgen-integration.php:244 nextgen2-integration.php:244
-msgid "We have %d images to optimize."
-msgstr "Tenemos %d imágenes para optimizar."
+#: aux-optimize.php:41 iocli.php:66 iocli.php:147
+msgid "Scanning, this could take a while"
+msgstr "Escaneando, esto puede tardar un rato"
+
+#: aux-optimize.php:43
+msgid "Last optimization was completed on %1$s at %2$s and optimized %3$d images"
+msgstr "La última optimización se completó en %1$s a las %2$s y se optimizaron %3$d imágenes"
+
+#: aux-optimize.php:47 bulk.php:58
+msgid "Optimize Again"
+msgstr "Optimizar de nuevo"
+
+#: aux-optimize.php:52 bulk.php:64 flag-integration.php:104
+#: nextcellent-integration.php:272 nextgen-integration.php:260
+#: nextgen2-integration.php:296
+msgid "If you would like to start over again, press the Reset Status button to reset the bulk operation status."
+msgstr "Si desea empezar de nuevo, pulse el botón Reiniciar estado para restablecer el estado de la operación masiva."
+
+#: aux-optimize.php:56 bulk.php:68 flag-integration.php:108
+#: nextcellent-integration.php:276 nextgen-integration.php:264
+#: nextgen2-integration.php:300
+msgid "Reset Status"
+msgstr "Reiniciar estado"
 
 #: aux-optimize.php:65
-msgid ""
-"You should import Media Library images into the table to prevent duplicate "
-"optimization."
-msgstr ""
-"Usted debe importar imágenes de la biblioteca de medios para evitar que la "
-"optimización se duplique."
+msgid "The plugin keeps track of already optimized images to prevent re-optimization. There are %d images that have been optimized so far."
+msgstr "El plugin mantiene un registro de imágenes ya optimizadas para prevenir la reoptimización. Por ahora hay %d imágenes que han sido optimizadas."
 
 #: aux-optimize.php:67
-msgid "Import Images"
-msgstr "Importar imágenes"
-
-#: aux-optimize.php:74 bulk.php:39 flag-integration.php:84
-#: nextgen-integration.php:251 nextgen2-integration.php:251
-msgid ""
-"If you would like to start over again, press the Reset Status button to "
-"reset the bulk operation status."
-msgstr ""
-"Si desea empezar de nuevo, pulse el botón Resetear Estado para restablecer "
-"el estado de la operación masiva."
-
-#: aux-optimize.php:78 bulk.php:43 flag-integration.php:88
-#: nextgen-integration.php:255 nextgen2-integration.php:255
-msgid "Reset Status"
-msgstr "Resetear Estado"
-
-#: aux-optimize.php:83
-msgid ""
-"The plugin keeps track of already optimized images to prevent re-"
-"optimization. If you would like to re-optimize images, or flush the table "
-"for some reason, press the Empty Table button to reset the bulk operation "
-"status."
-msgstr ""
-"El plugin mantiene un registro de imágenes ya optimizadas para prevenir la "
-"re-optimización. Si usted desea volver a optimizar las imágenes, o eliminar "
-"la tabla, por alguna razón, pulse el botón vaciar Tabla para restablecer el "
-"estado de la misma."
-
-#: aux-optimize.php:87
-msgid "Empty Table"
-msgstr "Tabla Vacía"
-
-#: aux-optimize.php:90
 msgid "Show Optimized Images"
 msgstr "Mostrar imágenes optimizadas"
 
-#: aux-optimize.php:98
+#: aux-optimize.php:75
 msgid "page"
 msgstr "página"
 
-#: aux-optimize.php:98
+#: aux-optimize.php:75
 msgid "of"
 msgstr "de"
 
-#: aux-optimize.php:120
-msgid "Importing"
-msgstr "Importando"
-
-#: aux-optimize.php:127 aux-optimize.php:243 aux-optimize.php:500
-#: aux-optimize.php:519 aux-optimize.php:535 aux-optimize.php:592 bulk.php:145
-#: bulk.php:160 bulk.php:179 bulk.php:227 flag-integration.php:217
-#: flag-integration.php:230 flag-integration.php:248 flag-integration.php:287
-#: nextgen-integration.php:64 nextgen-integration.php:347
-#: nextgen-integration.php:360 nextgen-integration.php:377
-#: nextgen-integration.php:417 nextgen2-integration.php:339
-#: nextgen2-integration.php:352 nextgen2-integration.php:369
-#: nextgen2-integration.php:409
+#: aux-optimize.php:93 aux-optimize.php:125 aux-optimize.php:379
+#: aux-optimize.php:420 aux-optimize.php:672 aux-optimize.php:696
+#: aux-optimize.php:713 bulk.php:377 bulk.php:394 bulk.php:414 bulk.php:476
+#: common.php:1621 common.php:2506 common.php:2517 common.php:2612
+#: flag-integration.php:261 flag-integration.php:275 flag-integration.php:294
+#: flag-integration.php:345 mwebp.php:85 mwebp.php:103 mwebp.php:194
+#: nextcellent-integration.php:73 nextcellent-integration.php:376
+#: nextcellent-integration.php:390 nextcellent-integration.php:408
+#: nextcellent-integration.php:449 nextgen-integration.php:70
+#: nextgen-integration.php:349 nextgen-integration.php:362
+#: nextgen-integration.php:379 nextgen-integration.php:419
+#: nextgen2-integration.php:389 nextgen2-integration.php:403
+#: nextgen2-integration.php:424 nextgen2-integration.php:472
 msgid "Cheatin&#8217; eh?"
-msgstr "¿Haciendo trampas&#8217; eh?"
+msgstr "¿Haciendo trampas&#8217; verdad?"
 
-#: aux-optimize.php:140
-msgid "Nothing to import"
-msgstr "Nada para importar"
+#: aux-optimize.php:249 aux-optimize.php:291 aux-optimize.php:294
+msgid "Unknown Savings"
+msgstr "Ahorros desconocidos"
 
-#: aux-optimize.php:236
+#: aux-optimize.php:315
 msgid "Finished importing"
-msgstr "Terminando de importar"
+msgstr "Importación finalizada"
 
-#: aux-optimize.php:251
-msgid "Filename"
-msgstr "Nombre de la Fila"
+#: aux-optimize.php:332 common.php:1529 common.php:1901
+msgid "Previously Optimized"
+msgstr "Optimizado previamente"
 
-#: aux-optimize.php:251
-msgid "Image Type"
-msgstr "Tipo de imagen"
-
-#: aux-optimize.php:269
-msgid "Remove from table"
-msgstr "Eliminar de la tabla"
-
-#: aux-optimize.php:251 ewww-image-optimizer.php:1068
-#: ewww-image-optimizer.php:1100 flag-integration.php:299
-#: nextgen-integration.php:137 nextgen2-integration.php:137
-msgid "Image Optimizer"
-msgstr "Imágen optimizada"
-
-#: aux-optimize.php:268 ewww-image-optimizer.php:2690
-#: ewww-image-optimizer.php:2723 flag-integration.php:351
-#: flag-integration.php:358 nextgen-integration.php:193
-#: nextgen-integration.php:200 nextgen2-integration.php:193
-#: nextgen2-integration.php:200
-msgid "Image Size: %s"
-msgstr "Tamaño de la imagen: %s"
-
-#: aux-optimize.php:508 aux-optimize.php:524 bulk.php:152 bulk.php:169
-#: flag-integration.php:223 flag-integration.php:241
-#: nextgen-integration.php:353 nextgen-integration.php:370
-#: nextgen2-integration.php:362
-msgid "Optimizing"
-msgstr "Optimizando"
-
-#: aux-optimize.php:574 bulk.php:193 flag-integration.php:263
-#: nextgen-integration.php:393 nextgen2-integration.php:385
-msgid "Optimized image:"
-msgstr "Imagen Optimizada"
-
-#: aux-optimize.php:580 bulk.php:211 flag-integration.php:273
-#: nextgen-integration.php:95 nextgen-integration.php:403
-#: nextgen2-integration.php:395
-msgid "Elapsed: %.3f seconds"
-msgstr "Transcurrido: %.3f segundos"
-
-#: aux-optimize.php:599 bulk.php:233 nextgen-integration.php:101
-msgid "Finished"
-msgstr "Finalizado"
-
-#: bulk.php:10 flag-integration.php:57 nextgen-integration.php:224
-#: nextgen2-integration.php:224
-msgid "You do not appear to have uploaded any images yet."
-msgstr "No parece haber subido ninguna imagen todavía."
-
-#: bulk.php:15 ewww-image-optimizer.php:1020 ewww-image-optimizer.php:2742
-#: flag-integration.php:27 flag-integration.php:32 flag-integration.php:37
-#: flag-integration.php:61 nextgen-integration.php:26
-#: nextgen-integration.php:229 nextgen2-integration.php:26
-#: nextgen2-integration.php:229
-msgid "Bulk Optimize"
-msgstr "Optimización de Volumen"
-
-#: bulk.php:22 flag-integration.php:68 nextgen-integration.php:236
-#: nextgen2-integration.php:236
-msgid "Resume previous bulk operation"
-msgstr "Restaurar operación anterior de bulk"
-
-#: bulk.php:195
-msgid "Skipped image, ID:"
-msgstr "Imagen saltada, ID:"
-
-#: bulk.php:199 flag-integration.php:264
-msgid "Full size – %s"
-msgstr "Tamaño Completo – %s"
-
-#: bulk.php:233
-msgid "Return to Media Library"
-msgstr "Regresar a la librería de Medios"
-
-#: ewww-image-optimizer.php:266
-msgid ""
-"EWWW Image Optimizer is supported on Linux, FreeBSD, Mac OSX, and Windows"
-msgstr ""
-"EWWW Image Optimizer está soportado en Linux, FreeBSD, Mac OSX y Windows"
-
-#: ewww-image-optimizer.php:266
-msgid "Unfortunately, the EWWW Image Optimizer plugin does not work with %s"
-msgstr "Por desgracia, el plugin de EWWW Imagen Optimizer no funciona con %s"
-
-#: ewww-image-optimizer.php:306
-msgid "Settings saved"
-msgstr "Ajustes salvados"
-
-#: ewww-image-optimizer.php:732
-msgid "EWWW Image Optimizer could not create the tool folder"
-msgstr "EWWW Image Optimizer no pudo crear la carpeta de herramienta"
-
-#: ewww-image-optimizer.php:732
-msgid "Please adjust permissions or create the folder"
-msgstr "Por favor ajuste los permisos o cree la carpeta"
-
-#: ewww-image-optimizer.php:828
-msgid "EWWW Image Optimizer could not install tools in %s"
-msgstr "EWWW Image Optimizer no se pudo instalar herramientas en %s"
-
-#: ewww-image-optimizer.php:828
-msgid ""
-"Please adjust permissions or create the folder. If you have installed the "
-"tools elsewhere on your system, check the option to %s."
-msgstr ""
-"Por favor, ajuste los permisos o cree la carpeta. Si ha instalado las "
-"herramientas en otra parte del sistema, seleccione la opción de %s."
-
-#: ewww-image-optimizer.php:828 ewww-image-optimizer.php:3033
-msgid "Use System Paths"
-msgstr "Utilizar Rutas de Sistema"
-
-#: ewww-image-optimizer.php:828
-msgid "For more details, visit the %1$s or the %2$s."
-msgstr "Para más detalles, visite el %1$s o la %2$s."
-
-#: ewww-image-optimizer.php:828 ewww-image-optimizer.php:982
-msgid "Settings Page"
-msgstr "Ajustes de Página"
-
-#: ewww-image-optimizer.php:828 ewww-image-optimizer.php:982
-#: ewww-image-optimizer.php:2868
-msgid "Installation Instructions"
-msgstr "Instrucciones de instalación"
-
-#: ewww-image-optimizer.php:871
-msgid ""
-"EWWW Image Optimizer attempted to move your custom-built binaries to %s but "
-"the operation was unsuccessful"
-msgstr ""
-"EWWW Image Optimizer intentó mover los archivos binarios a %s, pero la "
-"operación no tuvo éxito"
-
-#: ewww-image-optimizer.php:871
-msgid "Please adjust permissions the permissions on this folder"
-msgstr "Por favor, ajuste los permisos de los permisos en esta carpeta"
-
-#: ewww-image-optimizer.php:897
-msgid ""
-"EWWW Image Optimizer requires exec(). Your system administrator has disabled "
-"this function."
-msgstr ""
-"EWWW Image Optimizer requiere exec(). El administrador del sistema ha "
-"desactivado esta función"
-
-#: ewww-image-optimizer.php:904
-msgid ""
-"Safe Mode is turned on for PHP. This plugin cannot operate in Safe Mode."
-msgstr ""
-"El Modo Seguro está activado para PHP. Este plugin no puede operar en modo "
-"seguro."
-
-#: ewww-image-optimizer.php:982
-msgid ""
-"EWWW Image Optimizer requires %1$s, %2$s or %3$s, and %4$s. You are missing: "
-"%5$s. Please install via the %6$s or the %7$s."
-msgstr ""
-"EWWW Image Optimizer requiere %1$s, %2$s o %3$s, y %4$s. Se está perdiendo: "
-"%5$s. Por favor instale vía el %6$s o el %7$s."
-
-#: ewww-image-optimizer.php:1022
-msgid "Optimize Theme Images"
-msgstr "Optimizar Imágenes de Temas"
-
-#: ewww-image-optimizer.php:1022 ewww-image-optimizer.php:1049
-msgid "Optimize"
-msgstr "Optimizar"
-
-#: ewww-image-optimizer.php:1024
-msgid "Optimize More Images"
-msgstr "Optimizar Más Imágenes"
-
-#: ewww-image-optimizer.php:1024
-msgid "Optimize More"
-msgstr "Optimizar Más"
-
-#: ewww-image-optimizer.php:1028
-msgid "Optimize BuddyPress Images"
-msgstr "Optimizar Imágenes BuddyPress "
-
-#: ewww-image-optimizer.php:1028
-msgid "BuddyPress Optimize"
-msgstr "BuddyPress Optimize"
-
-#: ewww-image-optimizer.php:1033
-msgid "Optimize WP Symposium Images"
-msgstr "Optimizar Imágenes de WP Symposium "
-
-#: ewww-image-optimizer.php:1033
-msgid "WP Symposium Optimize"
-msgstr "WP Symposium Optimize"
-
-#: ewww-image-optimizer.php:1049
-msgid "Image Store Optimize"
-msgstr "Image Store Optimize"
-
-#: ewww-image-optimizer.php:1057
-msgid "Image Store Optimization"
-msgstr "Optimización de Image Store"
-
-#: ewww-image-optimizer.php:1067
-msgid "Choose a gallery or"
-msgstr "Elija una galería o"
-
-#: ewww-image-optimizer.php:1067
-msgid "optimize all galleries"
-msgstr "optimizar todas las galerías"
-
-#: ewww-image-optimizer.php:1068
-msgid "Gallery ID"
-msgstr "ID de Galería "
-
-#: ewww-image-optimizer.php:1068
-msgid "Gallery Name"
-msgstr "Nombre de la Galería"
-
-#: ewww-image-optimizer.php:1068
-msgid "Images"
-msgstr "Imágenes"
-
-#: ewww-image-optimizer.php:1084 ewww-image-optimizer.php:1099
-msgid "Optimize Gallery"
-msgstr "Galería optimizada"
-
-#: ewww-image-optimizer.php:1100
-msgid "Title"
-msgstr "Título"
-
-#: ewww-image-optimizer.php:1100 nextgen-integration.php:10
-#: nextgen-integration.php:264 nextgen2-integration.php:10
-#: nextgen2-integration.php:264
-msgid "Gallery"
-msgstr "Galería"
-
-#: ewww-image-optimizer.php:1169
-msgid "Settings"
-msgstr "Ajustes"
-
-#: ewww-image-optimizer.php:1269 flag-integration.php:188
-#: nextgen-integration.php:108 nextgen2-integration.php:108
-msgid "You don't have permission to work with uploaded files."
-msgstr "Usted no tiene permiso para trabajar con los archivos subidos."
-
-#: ewww-image-optimizer.php:1274 flag-integration.php:192
-#: nextgen-integration.php:112 nextgen2-integration.php:112
-msgid "No attachment ID was provided."
-msgstr "No se proporcionó ningún ID del archivo adjunto"
-
-#: ewww-image-optimizer.php:1313 ewww-image-optimizer.php:1346
-msgid "Original Restored"
-msgstr "Restaurado el Original"
-
-#: ewww-image-optimizer.php:1503
-msgid "used %1$d of %2$d, usage will reset in %3$d day."
-msgid_plural "used %1$d of %2$d, usage will reset in %3$d days."
-msgstr[0] "usado %1$d de %2$d, el uso se reseterá en %3$d dia."
-msgstr[1] "usado %1$d de %2$d, el uso se reseterá en %3$d dias."
-
-#: ewww-image-optimizer.php:1646
-msgid "Could not find <span class='code'>%s</span>"
-msgstr "No se pudo encontrar <span class='code'>%s</span>"
-
-#: ewww-image-optimizer.php:1654
-msgid "<span class='code'>%s</span> is not writable"
-msgstr "<span class='code'>%s</span> no se puede escribir"
-
-#: ewww-image-optimizer.php:1675
-msgid ""
-"Missing finfo_file(), getimagesize() and mime_content_type() PHP functions"
-msgstr ""
-"Faltan las funciones PHP finfo_file(), getimagesize() y mime_content_type()"
-
-#: ewww-image-optimizer.php:1760 ewww-image-optimizer.php:2167
-msgid "%s is disabled"
-msgstr "%s está deshabilitado"
-
-#: ewww-image-optimizer.php:1764 ewww-image-optimizer.php:1976
-#: ewww-image-optimizer.php:1980 ewww-image-optimizer.php:2171
-#: ewww-image-optimizer.php:2651 ewww-image-optimizer.php:2662
-#: ewww-image-optimizer.php:2673 flag-integration.php:325
-#: flag-integration.php:331 flag-integration.php:337
-#: nextgen-integration.php:172 nextgen-integration.php:179
-#: nextgen2-integration.php:165 nextgen2-integration.php:172
-#: nextgen2-integration.php:179
-msgid "%s is missing"
-msgstr "%s está ausente"
-
-#: ewww-image-optimizer.php:1865
-msgid "Unable to write file"
-msgstr "No se puede escribir el archivo"
-
-#: ewww-image-optimizer.php:1868
-msgid "Optimization failed"
-msgstr "Optimización fallida"
-
-#: ewww-image-optimizer.php:1972
-msgid "png tools are disabled"
-msgstr "Las herramientas png están desactivadas"
-
-#: ewww-image-optimizer.php:2267
-msgid "License exceeded"
-msgstr "Licencia superada"
-
-#: ewww-image-optimizer.php:2272 ewww-image-optimizer.php:2378
+#: aux-optimize.php:335 common.php:1569 common.php:1860
 msgid "No savings"
 msgstr "No hay ahorros"
 
-#: ewww-image-optimizer.php:2288
+#: aux-optimize.php:342 common.php:1534 ewww-image-optimizer.php:1905
+msgid "License exceeded"
+msgstr "Licencia concluida"
+
+#: aux-optimize.php:387
+msgid "Filename"
+msgstr "Nombre de archivo"
+
+#: aux-optimize.php:387
+msgid "Image Type"
+msgstr "Tipo de imagen"
+
+#: aux-optimize.php:387 common.php:794 common.php:826 common.php:2186
+#: common.php:2412 flag-integration.php:357 nextcellent-integration.php:148
+#: nextgen-integration.php:144 nextgen2-integration.php:120
+#: nextgen2-integration.php:123
+msgid "Image Optimizer"
+msgstr "Imagen optimizada"
+
+#: aux-optimize.php:406 common.php:2280 common.php:2335
+#: flag-integration.php:414 flag-integration.php:423
+#: nextcellent-integration.php:204 nextcellent-integration.php:213
+#: nextgen-integration.php:200 nextgen-integration.php:207
+#: nextgen2-integration.php:204
+msgid "Image Size: %s"
+msgstr "Tamaño de la imagen: %s"
+
+#: aux-optimize.php:406
+msgid "Remove from table"
+msgstr "Eliminar de la tabla"
+
+#: aux-optimize.php:653
+msgid "Nothing to optimize"
+msgstr "Nada que optimizar"
+
+#: aux-optimize.php:683 aux-optimize.php:701 bulk.php:384 bulk.php:403
+#: flag-integration.php:267 flag-integration.php:286 iocli.php:198
+#: nextcellent-integration.php:382 nextcellent-integration.php:400
+#: nextgen-integration.php:355 nextgen-integration.php:372
+#: nextgen2-integration.php:416
+msgid "Optimizing"
+msgstr "Optimizando"
+
+#: aux-optimize.php:722 bulk.php:482 mwebp.php:205
+#: nextcellent-integration.php:111 nextgen-integration.php:108
+msgid "Finished"
+msgstr "Finalizado"
+
+#: bulk.php:12 common.php:717 common.php:2365 common.php:2367 common.php:2698
+#: common.php:2700 flag-integration.php:35 flag-integration.php:40
+#: flag-integration.php:45 flag-integration.php:72
+#: nextcellent-integration.php:34 nextcellent-integration.php:245
+#: nextgen-integration.php:32 nextgen-integration.php:236
+#: nextgen2-integration.php:32 nextgen2-integration.php:265
+msgid "Bulk Optimize"
+msgstr "Optimización en masa"
+
+#: bulk.php:16 flag-integration.php:77 nextcellent-integration.php:250
+#: nextgen-integration.php:241 nextgen2-integration.php:270
+msgid "Start optimizing"
+msgstr "Iniciar la optimización"
+
+#: bulk.php:18 flag-integration.php:79 nextcellent-integration.php:252
+#: nextgen-integration.php:243 nextgen2-integration.php:272
+msgid "Resume previous bulk operation"
+msgstr "Restaurar la operación masiva anterior"
+
+#: bulk.php:24
+msgid "Importing"
+msgstr "Importando"
+
+#: bulk.php:29 flag-integration.php:86 nextcellent-integration.php:259
+#: nextgen2-integration.php:279
+msgid "Stop Optimizing"
+msgstr "Parar la optimización"
+
+#: bulk.php:33
+msgid "You should import Media Library images into the table to prevent duplicate optimization."
+msgstr "Usted debe importar imágenes de la biblioteca de medios para evitar que la optimización se duplique."
+
+#: bulk.php:35
+msgid "Import Images"
+msgstr "Importar imágenes"
+
+#: bulk.php:41 flag-integration.php:90 nextgen2-integration.php:283
+msgid "Force re-optimize"
+msgstr "Forzar reoptimización"
+
+#: bulk.php:42 common.php:2919 flag-integration.php:91
+#: nextgen2-integration.php:284
+msgid "Choose how long to pause between images (in seconds, 0 = disabled)"
+msgstr "Elija el tiempo de pausa entre la imágenes (en segundos, 0 = desactivado)"
+
+#: bulk.php:45
+msgid "Optimize Media Library"
+msgstr "Optimizar la biblioteca de medios"
+
+#: bulk.php:47 flag-integration.php:67 nextcellent-integration.php:240
+#: nextgen-integration.php:231 nextgen2-integration.php:259
+msgid "You do not appear to have uploaded any images yet."
+msgstr "No parece haber subido ninguna imagen todavía."
+
+#: bulk.php:51
+msgid "%1$d images in the Media Library have been selected, unable to determine how many resizes and how many are unoptimized."
+msgstr "Se han seleccionado %1$d imágenes en la biblioteca de medios, no es posible determinar sus dimensiones ni cuántas no están optimizadas."
+
+#: bulk.php:53 iocli.php:68 iocli.php:106
+msgid "%1$d images in the Media Library have been selected (%2$d unoptimized), with %3$d resizes (%4$d unoptimized)."
+msgstr "%1$d imágenes en la biblioteca de medios han sido seleccionadas   (%2$d no optimizadas), con %3$d reajustadas  (%4$d no optimizadas), "
+
+#: bulk.php:55 flag-integration.php:96 nextcellent-integration.php:264
+#: nextgen-integration.php:252 nextgen2-integration.php:289
+msgid "Previously optimized images will be skipped by default."
+msgstr "Las imágenes optimizadas previamente serán excluidas por defecto"
+
+#: bulk.php:433 common.php:1648 flag-integration.php:311 iocli.php:371
+#: iocli.php:415 iocli.php:495 iocli.php:568 nextcellent-integration.php:424
+#: nextgen-integration.php:395 nextgen2-integration.php:440
+msgid "Optimized image:"
+msgstr "Imagen optimizada"
+
+#: bulk.php:435 iocli.php:206
+msgid "Skipped image, ID:"
+msgstr "Imagen saltada, ID:"
+
+#: bulk.php:439 flag-integration.php:312 iocli.php:210 iocli.php:416
+msgid "Full size – %s"
+msgstr "Tamaño completo – %s"
+
+#: bulk.php:454 common.php:1654 flag-integration.php:330 iocli.php:225
+#: iocli.php:377 iocli.php:434 iocli.php:512 iocli.php:578
+#: nextcellent-integration.php:105 nextcellent-integration.php:434
+#: nextgen-integration.php:102 nextgen-integration.php:405
+#: nextgen2-integration.php:457
+msgid "Elapsed: %.3f seconds"
+msgstr "Transcurrido: %.3f segundos"
+
+#: bulk.php:482
+msgid "Return to Media Library"
+msgstr "Regresar a la biblioteca de medios"
+
+#: common.php:627
+msgid "Settings saved"
+msgstr "Ajustes guardados"
+
+#: common.php:719 mwebp.php:5
+msgid "Migrate WebP Images"
+msgstr "Migrar imágenes WebP"
+
+#: common.php:734
+msgid "Image Store Optimize"
+msgstr "Optimización de imágenes almacenadas"
+
+#: common.php:734
+msgid "Optimize"
+msgstr "Optimizar"
+
+#: common.php:783
+msgid "Image Store Optimization"
+msgstr "Optimización de imágenes almacenadas"
+
+#: common.php:793
+msgid "Choose a gallery or"
+msgstr "Elija una galería u"
+
+#: common.php:793
+msgid "optimize all galleries"
+msgstr "optimice todas las galerías"
+
+#: common.php:794
+msgid "Gallery ID"
+msgstr "ID de Galería "
+
+#: common.php:794
+msgid "Gallery Name"
+msgstr "Nombre de la galería"
+
+#: common.php:794
+msgid "Images"
+msgstr "Imágenes"
+
+#: common.php:810 common.php:825
+msgid "Optimize Gallery"
+msgstr "Galería optimizada"
+
+#: common.php:826 common.php:2412
+msgid "Title"
+msgstr "Título"
+
+#: common.php:826 nextgen-integration.php:13 nextgen-integration.php:276
+#: nextgen2-integration.php:15 nextgen2-integration.php:315
+msgid "Gallery"
+msgstr "Galería"
+
+#: common.php:913
+msgid "Settings"
+msgstr "Ajustes"
+
+#: flag-integration.php:221 nextcellent-integration.php:119
+#: nextgen-integration.php:115 nextgen2-integration.php:88
+msgid "You don't have permission to work with uploaded files."
+msgstr "Usted no tiene permiso para trabajar con los archivos subidos."
+
+#: common.php:1039 flag-integration.php:225 nextcellent-integration.php:123
+#: nextgen-integration.php:119 nextgen2-integration.php:92
+msgid "No attachment ID was provided."
+msgstr "No se proporcionó ninguna ID adjunta."
+
+#: common.php:1079 common.php:1112
+msgid "Original Restored"
+msgstr "Original restaurado"
+
+#: common.php:1331
+msgid "used %1$d of %2$d, usage will reset in %3$d day."
+msgid_plural "used %1$d of %2$d, usage will reset in %3$d days."
+msgstr[0] "usado %1$d de %2$d, el uso se reiniciará en %3$d día."
+msgstr[1] "usado %1$d de %2$d, el uso se reiniciará en %3$d días."
+
+#: common.php:1581
 msgid "Reduced by %01.1f%% (%s)"
-msgstr "Reducido a %01.1f%% (%s)"
+msgstr "Reducido un %01.1f%% (%s)"
 
-#: ewww-image-optimizer.php:2395
-msgid "Previously Optimized"
-msgstr "Optimizado Previamente"
+#: common.php:2208
+msgid "Cloudinary image"
+msgstr "Imagen Cloudinary"
 
-#: ewww-image-optimizer.php:2636
+#: common.php:2224
 msgid "Could not retrieve file path."
 msgstr "No se pudo recuperar la ruta del archivo."
 
-#: ewww-image-optimizer.php:2653
+#: common.php:2241 common.php:2252 common.php:2263
+#: ewww-image-optimizer.php:1322 ewww-image-optimizer.php:1572
+#: ewww-image-optimizer.php:1576 ewww-image-optimizer.php:1801
+#: flag-integration.php:388 flag-integration.php:394 flag-integration.php:400
+#: nextcellent-integration.php:176 nextcellent-integration.php:183
+#: nextcellent-integration.php:190 nextgen-integration.php:172
+#: nextgen-integration.php:179 nextgen-integration.php:186
+#: nextgen2-integration.php:163 nextgen2-integration.php:170
+#: nextgen2-integration.php:177
+msgid "%s is missing"
+msgstr "%s está ausente"
+
+#: common.php:2243
 msgid "JPG to PNG"
 msgstr "JPG a PNG"
 
-#: ewww-image-optimizer.php:2655
-msgid ""
-"WARNING: Removes metadata. Requires GD or ImageMagick. PNG is generally much "
-"better than JPG for logos and other images with a limited range of colors."
-msgstr ""
-"ADVERTENCIA: Elimina los metadatos. Requiere GD o ImageMagick. PNG es "
-"generalmente mucho mejor que JPG para los logotipos y otras imágenes con una "
-"gama limitada de colores."
+#: common.php:2245
+msgid "WARNING: Removes metadata. Requires GD or ImageMagick. PNG is generally much better than JPG for logos and other images with a limited range of colors."
+msgstr "ADVERTENCIA: Elimina los metadatos. Requiere GD o ImageMagick. PNG es generalmente mucho mejor que JPG para los logotipos y otras imágenes con una gama limitada de colores."
 
-#: ewww-image-optimizer.php:2664
+#: common.php:2254
 msgid "PNG to JPG"
 msgstr "PNG a JPG"
 
-#: ewww-image-optimizer.php:2666
-msgid ""
-"WARNING: This is not a lossless conversion and requires GD or ImageMagick. "
-"JPG is much better than PNG for photographic use because it compresses the "
-"image and discards data. Transparent images will only be converted if a "
-"background color has been set."
-msgstr ""
-"ADVERTENCIA: Esto no es una conversión sin pérdidas y requiere GD o "
-"ImageMagick. JPG es mucho mejor que PNG para uso fotográfico, ya que "
-"comprime la imagen y descarta datos. Las imágenes transparentes sólo se "
-"convertirán si un color de fondo se ha establecido."
+#: common.php:2256
+msgid "WARNING: This is not a lossless conversion and requires GD or ImageMagick. JPG is much better than PNG for photographic use because it compresses the image and discards data. Transparent images will only be converted if a background color has been set."
+msgstr "ADVERTENCIA: Esto no es una conversión sin pérdidas y requiere GD o ImageMagick. JPG es mucho mejor que PNG para uso fotográfico, ya que comprime la imagen y descarta datos. Las imágenes transparentes sólo se convertirán si se ha establecido un color de fondo."
 
-#: ewww-image-optimizer.php:2675
+#: common.php:2265
 msgid "GIF to PNG"
 msgstr "GIF a PNG"
 
-#: ewww-image-optimizer.php:2677
-msgid ""
-"PNG is generally better than GIF, but does not support animation. Animated "
-"images will not be converted."
-msgstr ""
-"PNG es generalmente mejor que GIF, pero no admite la animación. Las imágenes "
-"animadas no se convertirán."
+#: common.php:2267
+msgid "PNG is generally better than GIF, but does not support animation. Animated images will not be converted."
+msgstr "PNG es generalmente mejor que GIF; pero no admite animaciones. Las imágenes animadas no se convertirán."
 
-#: ewww-image-optimizer.php:2682 flag-integration.php:345
-#: nextgen-integration.php:187 nextgen2-integration.php:187
+#: common.php:2272 flag-integration.php:408 nextcellent-integration.php:198
+#: nextgen-integration.php:194 nextgen2-integration.php:185
 msgid "Unsupported file type"
 msgstr "Tipo de archivo no compatible"
 
-#: ewww-image-optimizer.php:2694 flag-integration.php:354
-#: nextgen-integration.php:196 nextgen2-integration.php:196
+#: common.php:2285 flag-integration.php:418 nextcellent-integration.php:208
+#: nextgen-integration.php:203 nextgen2-integration.php:227
 msgid "Re-optimize"
-msgstr "Re-optimizar"
+msgstr "Reoptimizar"
 
-#: ewww-image-optimizer.php:2717
+#: common.php:2312
 msgid "Restore original"
 msgstr "Restaurar el original"
 
-#: ewww-image-optimizer.php:2721 flag-integration.php:357
-#: nextgen-integration.php:199 nextgen2-integration.php:199
+#: common.php:2333 flag-integration.php:422 nextcellent-integration.php:212
+#: nextgen-integration.php:206 nextgen2-integration.php:198
 msgid "Not processed"
 msgstr "No procesado"
 
-#: ewww-image-optimizer.php:2727 flag-integration.php:361
-#: nextgen-integration.php:203 nextgen2-integration.php:203
+#: common.php:2338 flag-integration.php:427 nextcellent-integration.php:217
+#: nextgen-integration.php:210 nextgen2-integration.php:231
 msgid "Optimize now!"
 msgstr "¡Optimizar ahora!"
 
-#: ewww-image-optimizer.php:2773
-msgid "You don't have permission to install image optimizer utilities."
-msgstr "Usted no tiene permiso para instalar utilidades de image optimizer."
+#: common.php:2616
+msgid "Insertion successful"
+msgstr "Inserción exitosa"
 
-#: ewww-image-optimizer.php:2778
-msgid "tar command not found"
-msgstr "comando tar no encontrado"
+#: common.php:2618
+msgid "Insertion failed"
+msgstr "La inserción falló"
 
-#: ewww-image-optimizer.php:2795 ewww-image-optimizer.php:2808
-#: ewww-image-optimizer.php:2821
-msgid "could not move pngout"
-msgstr "no puede moverse pngout"
+#: common.php:2657
+msgid "Pngout was successfully installed, check the Plugin Status area for version information."
+msgstr "Pngout se ha instalado correctamente, compruebe el área de Estado del Plugin para informarse sobre la versión."
 
-#: ewww-image-optimizer.php:2797 ewww-image-optimizer.php:2810
-msgid "could not set permissions"
-msgstr "no puede cambiar los permisos"
-
-#: ewww-image-optimizer.php:2852
-msgid ""
-"Pngout was successfully installed, check the Plugin Status area for version "
-"information."
-msgstr ""
-"Pngout se ha instalado correctamente, compruebe el área de Estado del Plugin "
-"para información de la versión."
-
-#: ewww-image-optimizer.php:2857
+#: common.php:2662
 msgid "Pngout was not installed: %1$s. Make sure this folder is writable: %2$s"
-msgstr ""
-"Pngout no se ha instalado: %1$s. Asegúrese de que esta carpeta tiene "
-"permisos de escritura: %2$s"
+msgstr "Pngout no se ha instalado: %1$s. Asegúrese de que esta carpeta tiene permisos de escritura: %2$s"
 
-#: ewww-image-optimizer.php:2866
-msgid "Image Optimizer Settings"
-msgstr "Ajustes de Image Optimizer"
-
-#: ewww-image-optimizer.php:2867
+#: common.php:2693
 msgid "Plugin Home Page"
-msgstr "Página de Inicio del Plugin"
+msgstr "Página de Inicio del plugin"
 
-#: ewww-image-optimizer.php:2869
+#: common.php:2694 ewww-image-optimizer.php:418 ewww-image-optimizer.php:540
+msgid "Installation Instructions"
+msgstr "Instrucciones de instalación"
+
+#: common.php:2695
 msgid "Plugin Support"
-msgstr "Soporte del Plugin "
+msgstr "Soporte del plugin "
 
-#: ewww-image-optimizer.php:2870
+#: common.php:2696
 msgid "Cloud Status"
-msgstr "Estado de la Nube"
+msgstr "Estado de la nube"
 
-#: ewww-image-optimizer.php:2879 ewww-image-optimizer.php:2882
+#: common.php:2698
+msgid "Media Library"
+msgstr "Biblioteca de medios"
+
+#: common.php:2702
+msgid "New images uploaded to the Media Library will be optimized automatically. If you have existing images you would like to optimize, you can use the %s tool."
+msgstr "Las nuevas imágenes que sean subidas a la biblioteca de medios serán optimizadas automáticamente. Si ya tienes imágenes en la biblioteca de medios que quisieras optimizar, puedes usar la siguiente herramienta %s."
+
+#: common.php:2704
+msgid "Plugin Status"
+msgstr "Estado de la extensión (plugin)"
+
+#: common.php:2705
+msgid "All Clear"
+msgstr "Todo perfecto"
+
+#: common.php:2706
+msgid "Requires Attention"
+msgstr "Requiere atención"
+
+#: common.php:2708
+msgid "Total Savings:"
+msgstr "Total ahorrado:"
+
+#: common.php:2710 common.php:2903
+msgid "Cloud optimization API Key"
+msgstr "Clave API de optimización en la nube"
+
+#: common.php:2713 common.php:2715
 msgid "Verified,"
 msgstr "Verificado,"
 
-#: ewww-image-optimizer.php:2885
+#: common.php:2717
 msgid "Not Verified"
 msgstr "No verificado"
 
-#: ewww-image-optimizer.php:2890
-msgid ""
-"If updated versions are available below you may either download the newer "
-"versions and install them yourself, or uncheck \"Use System Paths\" and use "
-"the bundled tools."
-msgstr ""
-"Si hay versiones actualizadas disponibles a continuación puede descargar las "
-"versiones más recientes e instalarlas usted mismo, o quita la marca \"Usar "
-"Caminos del Sistema\" y utilizar las herramientas de paquetes."
+#: common.php:2723
+msgid "Expand"
+msgstr "Expandir"
 
-#: ewww-image-optimizer.php:2891 ewww-image-optimizer.php:2894
-msgid ""
-"Updates are optional, but may contain increased optimization or security "
-"patches"
-msgstr ""
-"Las actualizaciones son opcionales, pero pueden contener el aumento de los "
-"parches de optimización o de seguridad"
+#: common.php:2724
+msgid "Collapse"
+msgstr "Colapsar"
 
-#: ewww-image-optimizer.php:2893
-msgid ""
-"If updated versions are available below, you may need to enable write "
-"permission on the %s folder to use the automatic installs."
-msgstr ""
-"Si hay versiones actualizadas disponibles a continuación, es posible que "
-"necesite habilitar el permiso de escritura en la carpeta %s para utilizar "
-"los instaladores automáticos."
+#: common.php:2728
+msgid "If updated versions are available below you may either download the newer versions and install them yourself, or uncheck \"Use System Paths\" and use the bundled tools."
+msgstr "Si hay versiones actualizadas disponibles a continuación, puede descargar las versiones más recientes e instalarlas usted mismo; o bien quite la marca \"Usar rutas del sistema\" y utilice las herramientas empaquetadas."
 
-#: ewww-image-optimizer.php:2944
+#: common.php:2729 common.php:2732
+msgid "Updates are optional, but may contain increased optimization or security patches"
+msgstr "Las actualizaciones son opcionales; pero pueden contener parches que aumenten la optimización o la seguridad."
+
+#: common.php:2731
+msgid "If updated versions are available below, you may need to enable write permission on the %s folder to use the automatic installs."
+msgstr "Si hay versiones actualizadas disponibles a continuación, es posible que necesite habilitar el permiso de escritura en la carpeta %s para utilizar los instaladores automáticos."
+
+#: common.php:2742 common.php:2752 common.php:2762 common.php:2772
+#: common.php:2782 common.php:2792 common.php:2816 common.php:2824
+#: common.php:2838 common.php:2844 common.php:2852
+msgid "Installed"
+msgstr "Instalado"
+
+#: common.php:2742 common.php:2752 common.php:2762 common.php:2772
+#: common.php:2782 common.php:2792
+msgid "version"
+msgstr "versión"
+
+#: common.php:2744 common.php:2754 common.php:2764 common.php:2774
+#: common.php:2784 common.php:2794 common.php:2819 common.php:2827
+#: common.php:2841 common.php:2849 common.php:2855
+msgid "Missing"
+msgstr "Ausente"
+
+#: common.php:2774
 msgid "Install"
 msgstr "Instalar"
 
-#: ewww-image-optimizer.php:2944
+#: common.php:2774
 msgid "automatically"
 msgstr "automáticamente"
 
-#: ewww-image-optimizer.php:2944
+#: common.php:2774
 msgid "manually"
 msgstr "manualmente"
 
-#: ewww-image-optimizer.php:2944
-msgid ""
-"Pngout is free closed-source software that can produce drastically reduced "
-"filesizes for PNGs, but can be very time consuming to process images"
-msgstr ""
-"Pngout es software libre de código cerrado que puede producir una reducción "
-"drástica de tamaños de archivos para PNGs, puede demorar mucho tiempo para "
-"procesar las imágenes"
+#: common.php:2774
+msgid "Pngout is free closed-source software that can produce drastically reduced filesizes for PNGs, but can be very time consuming to process images"
+msgstr "Pngout es un software gratuito de código cerrado que puede reducir drásticamente el tamaño de los archivos PNG; pero puede demorarse mucho tiempo a la hora de procesar las imágenes"
 
-#: ewww-image-optimizer.php:2949
-msgid "%s only need one, used for conversion, not optimization: "
-msgstr ""
-"%s sólo necesita uno, que se utiliza para la conversión, no la optimización:"
+#: common.php:2800
+msgid "On"
+msgstr "Encendido"
 
-#: ewww-image-optimizer.php:2949
+#: common.php:2803
+msgid "Off"
+msgstr "Apagado"
+
+#: common.php:2806
+msgid "Disabled"
+msgstr "Deshabilitado"
+
+#: common.php:2809
+msgid "Enabled"
+msgstr "Habilitado"
+
+#: common.php:2812
+msgid "%s only need one, used for conversion, not optimization"
+msgstr "%s sólo necesitas uno, utiliza para la conversión, no para la optimización"
+
+#: common.php:2812
 msgid "Graphics libraries"
 msgstr "Librerías gráficas"
 
-#: ewww-image-optimizer.php:2974
+#: common.php:2834
 msgid "Only need one of these:"
-msgstr "Solo necesita uno de estos:"
+msgstr "Sólo necesita uno de estos:"
 
-#: ewww-image-optimizer.php:2996 ewww-image-optimizer.php:2999
-#: ewww-image-optimizer.php:3002
+#: common.php:2859 common.php:2863 common.php:2866
 msgid "command not found on your system"
-msgstr "comando no encontrado en su sistema"
+msgstr "orden no encontrada en su sistema"
 
-#: ewww-image-optimizer.php:2999
+#: common.php:2863
 msgid "not required"
 msgstr "no requerido"
 
-#: ewww-image-optimizer.php:3002
+#: common.php:2866
 msgid "required for automatic pngout installer"
 msgstr "necesario para el instalador pngout automático"
 
-#: ewww-image-optimizer.php:3013
+#: common.php:2887
 msgid "Cloud Settings"
-msgstr "Ajustes de la Nube"
+msgstr "Ajustes de la nube"
 
-#: ewww-image-optimizer.php:3014
-msgid ""
-"If exec() is disabled for security reasons (and enabling it is not an "
-"option), or you would like to offload image optimization to a third-party "
-"server, you may purchase an API key for our cloud optimization service. The "
-"API key should be entered below, and cloud optimization must be enabled for "
-"each image format individually."
-msgstr ""
-"Si exec() está desactivado por motivos de seguridad (y habilitarlo no es una "
-"opción), o desea descargar la optimización de imágenes a un servidor de "
-"terceros, deberá adquirir una llave de API para nuestro servicio de "
-"optimización de la nube. La llave de la API debe introducirse a "
-"continuación, y la optimización de la nube debe ser habilitada para cada "
-"formato de imagen de forma individual."
+#: common.php:2888
+msgid "Basic Settings"
+msgstr "Ajustes básicos"
 
-#: ewww-image-optimizer.php:3014
+#: common.php:2889
+msgid "Advanced Settings"
+msgstr "Ajustes avanzados"
+
+#: common.php:2890
+msgid "Conversion Settings"
+msgstr "Ajustes de conversión"
+
+#: common.php:2901
+msgid "If exec() is disabled for security reasons (and enabling it is not an option), or you would like to offload image optimization to a third-party server, you may purchase an API key for our cloud optimization service. The API key should be entered below, and cloud optimization must be enabled for each image format individually."
+msgstr "Si exec() está desactivado por motivos de seguridad (y habilitarlo no es una opción), o desea descargar la optimización de imágenes a un servidor de terceros, deberá adquirir una clave API para nuestro servicio de optimización de la nube. La clave API debe introducirse a continuación y la optimización en la nube ha de estar habilitada para cada formato de imagen individualmente."
+
+#: common.php:2901 common.php:2903 common.php:2916 common.php:2918
 msgid "Purchase an API key."
-msgstr "Adquirir una llave de API."
+msgstr "Adquirir una clave API."
 
-#: ewww-image-optimizer.php:3016
-msgid "Cloud optimization API Key"
-msgstr "Llave de API de optimización en la nube"
-
-#: ewww-image-optimizer.php:3016
+#: common.php:2903
 msgid "API Key will be validated when you save your settings."
-msgstr "La llave de API se validará cuando se guarde la configuración."
+msgstr "La clave API se validará cuando se guarde la configuración."
 
-#: ewww-image-optimizer.php:3016
-msgid "Purchase a key."
-msgstr "Compre una llave."
+#: common.php:2904
+msgid "JPG cloud optimization"
+msgstr "optimización JPG en la nube"
 
-#: ewww-image-optimizer.php:3017 ewww-image-optimizer.php:3018
-#: ewww-image-optimizer.php:3019
-msgid "cloud optimization"
-msgstr "optimización de la nube"
+#: common.php:2904
+msgid "Use the Basic Settings tab to enable lossy compression with JPEGmini."
+msgstr "Use la siguiente pestaña de configuración básica para añadir una compresión de JPEGmini (con pérdidas)."
 
-#: ewww-image-optimizer.php:3021
-msgid "General Settings"
-msgstr "Ajustes Generales"
+#: common.php:2905
+msgid "PNG cloud optimization"
+msgstr "optimización PNG en la nube"
 
-#: ewww-image-optimizer.php:3023
-msgid ""
-"The plugin performs a check to make sure your system has the programs we use "
-"for optimization: jpegtran, optipng, pngout, and gifsicle. In some rare "
-"cases, these checks may falsely report that you are missing the required "
-"utilities even though you have them installed."
-msgstr ""
-"El plugin realiza una comprobación para asegurarse de que su sistema tiene "
-"los programas que utilizamos para la optimización:  jpegtran, optipng, "
-"pngout, y gifsicle. En algunos casos raros, estos controles pueden informar "
-"falsamente que se echa en falta los servicios públicos necesarios a pesar de "
-"que las tengan instaladas."
+#: common.php:2906
+msgid "extra PNG compression (slower)"
+msgstr "compresión extra de PNG (más lento)"
 
-#: ewww-image-optimizer.php:3026
+#: common.php:2907
+msgid "GIF cloud optimization"
+msgstr "optimización GIF en la nube"
+
+#: common.php:2912
 msgid "Debugging"
-msgstr "depuración"
+msgstr "Depuración"
 
-#: ewww-image-optimizer.php:3026
-msgid ""
-"Use this to provide information for support purposes, or if you feel "
-"comfortable digging around in the code to fix a problem you are experiencing."
-msgstr ""
-"Utilice esta información para proporcionar información con fines de apoyo, o "
-"si se siente cómodo mire el código para solucionar un problema que esté "
-"experimentando."
+#: common.php:2912
+msgid "Use this to provide information for support purposes, or if you feel comfortable digging around in the code to fix a problem you are experiencing."
+msgstr "Utilice esta información para presentarla en busca de ayuda o, si entiende de programación, revise el código para solucionar un problema que esté experimentando."
 
-#: ewww-image-optimizer.php:3027
-msgid "Scheduled optimization"
-msgstr "Optimización programada"
-
-#: ewww-image-optimizer.php:3027
-msgid ""
-"This will enable scheduled optimization of images for your theme, "
-"buddypress, and any additional folders you have configured below. Runs "
-"hourly: wp_cron only runs when your site is visited, so it may be even "
-"longer between optimizations."
-msgstr ""
-"Esto permitirá la optimización programada de imágenes para su tema, "
-"buddypress, y cualquier carpeta adicional que haya configurado a "
-"continuación. Se ejecuta a cada hora: wp_cron sólo se ejecuta cuando su "
-"sitio es visitado, por lo que puede ser aún más largo entre las "
-"optimizaciones."
-
-#: ewww-image-optimizer.php:3028
-msgid "Folders to optimize"
-msgstr "Carpetas para optimizar"
-
-#: ewww-image-optimizer.php:3028
-msgid ""
-"One path per line, must be within %s. Use full paths, not relative paths."
-msgstr ""
-"Un camino por línea, debe ser dentro de %s. Utilice caminos absolutos, no "
-"caminos relativos."
-
-#: ewww-image-optimizer.php:3031
-msgid ""
-"Please submit a support request in the forums to have folders created by a "
-"particular plugin auto-included in the future."
-msgstr ""
-"Por favor llene un pedido de soporte en los foros para tener archivos "
-"creados por un plugin particular auto incluído en el futuro."
-
-#: ewww-image-optimizer.php:3033
-msgid ""
-"If you have already installed the utilities in a system location, such as %s "
-"or %s, use this to force the plugin to use those versions and skip the auto-"
-"installers."
-msgstr ""
-"Si ya ha instalado las utilidades en una ubicación del sistema, tales como "
-"%s o %s, utilice esto para forzar al plugin de usar esas versiones y saltar "
-"los autoinstaladores."
-
-#: ewww-image-optimizer.php:3035 ewww-image-optimizer.php:3036
-#: ewww-image-optimizer.php:3037 ewww-image-optimizer.php:3038
-msgid "disable"
-msgstr "deshabilitado"
-
-#: ewww-image-optimizer.php:3041
-msgid "Optimization Settings"
-msgstr "Ajustes de Optimización"
-
-#: ewww-image-optimizer.php:3043
+#: common.php:2913
 msgid "Remove metadata"
 msgstr "Eliminar metadatos"
 
-#: ewww-image-optimizer.php:3044
-msgid "This wil remove ALL metadata: EXIF and comments."
-msgstr "Esto quitará TODOS los metadatos: EXIF y comentarios."
+#: common.php:2914
+msgid "This will remove ALL metadata: EXIF and comments."
+msgstr "Esto borrará TODOS los metadatos: EXIF y comentarios."
 
-#: ewww-image-optimizer.php:3046 ewww-image-optimizer.php:3057
-msgid "optimization level"
-msgstr "nivel de optimización"
+#: common.php:2915
+msgid "Lossy JPG optimization"
+msgstr "Optimización de la calidad en JPG"
 
-#: ewww-image-optimizer.php:3048 ewww-image-optimizer.php:3049
-#: ewww-image-optimizer.php:3050 ewww-image-optimizer.php:3051
-#: ewww-image-optimizer.php:3052 ewww-image-optimizer.php:3053
-#: ewww-image-optimizer.php:3054 ewww-image-optimizer.php:3059
-#: ewww-image-optimizer.php:3060 ewww-image-optimizer.php:3061
-#: ewww-image-optimizer.php:3062
-msgid "Level %d"
-msgstr "Nivel %d"
-
-#: ewww-image-optimizer.php:3048
-msgid "%d trial"
-msgstr "%d prueba"
-
-#: ewww-image-optimizer.php:3049 ewww-image-optimizer.php:3050
-#: ewww-image-optimizer.php:3051 ewww-image-optimizer.php:3052
-#: ewww-image-optimizer.php:3053 ewww-image-optimizer.php:3054
-msgid "%d trials"
-msgstr "%d pruebas"
-
-#: ewww-image-optimizer.php:3055 ewww-image-optimizer.php:3063
-msgid "default"
-msgstr "por defecto"
-
-#: ewww-image-optimizer.php:3056
-msgid ""
-"According to the author of optipng, 10 trials should satisfy most people, 30 "
-"trials should satisfy everyone."
-msgstr ""
-"De acuerdo con el autor de optipng, 10 pruebas deben satisfacer la mayoría "
-"de la gente, 30 pruebas deben satisfacer a todos."
-
-#: ewww-image-optimizer.php:3059
-msgid "Xtreme! (Slowest)"
-msgstr "¡Extremo! (Lento)"
-
-#: ewww-image-optimizer.php:3060
-msgid "Intense (Slow)"
-msgstr "Intenso (Lento)"
-
-#: ewww-image-optimizer.php:3061
-msgid "Longest Match (Fast)"
-msgstr "Partido más largo (Rápido)"
-
-#: ewww-image-optimizer.php:3062
-msgid "Huffman Only (Faster)"
-msgstr "Sólo Huffman (Más Rápido)"
-
-#: ewww-image-optimizer.php:3064
-msgid "If you have CPU cycles to spare, go with level %d"
-msgstr "Si tiene ciclos de CPU de sobra, vaya con el nivel %d"
-
-#: ewww-image-optimizer.php:3067
-msgid "Conversion Settings"
-msgstr "Ajustes de Conversión"
-
-#: ewww-image-optimizer.php:3068
-msgid ""
-"Conversion is only available for images in the Media Library. By default, "
-"all images have a link available in the Media Library for one-time "
-"conversion. Turning on individual conversion operations below will enable "
-"conversion filters any time an image is uploaded or modified."
-msgstr ""
-"La conversión sólo está disponible para imágenes en la biblioteca "
-"multimedia. Por defecto, todas las imágenes tienen un enlace disponible en "
-"la biblioteca multimedia para la conversión de una sola vez. El encendido de "
-"las obras de transformación individuales por debajo permitirá filtros de "
-"conversión cada vez que una imagen se carga o se modifica."
-
-#: ewww-image-optimizer.php:3069
-msgid "NOTE:"
-msgstr "NOTA:"
-
-#: ewww-image-optimizer.php:3069
-msgid ""
-"The plugin will attempt to update image locations for any posts that contain "
-"the images. You may still need to manually update locations/urls for "
-"converted images."
-msgstr ""
-"El plugin intentará actualizar la ubicación de las imágenes para cualquier "
-"mensaje que contiene las imágenes. Es posible que aún tenga que actualizar "
-"manualmente las ubicaciones/urls de imágenes convertidas."
-
-#: ewww-image-optimizer.php:3072
-msgid "Hide Conversion Links"
-msgstr "Ocultar Enlaces de Conversión "
-
-#: ewww-image-optimizer.php:3072
-msgid ""
-"Site or Network admins can use this to prevent other users from using the "
-"conversion links in the Media Library which bypass the settings below."
-msgstr ""
-"Los administradores de Sitio o de Red pueden usar esto para evitar que otros "
-"usuarios estén utilizando los enlaces de conversión en la Biblioteca de "
-"Medios que eviten la siguiente configuración."
-
-#: ewww-image-optimizer.php:3073
-msgid "Delete originals"
-msgstr "Eliminar originales"
-
-#: ewww-image-optimizer.php:3073
-msgid ""
-"This will remove the original image from the server after a successful "
-"conversion."
-msgstr ""
-"Esto eliminará la imagen original del servidor después de una conversión "
-"exitosa."
-
-#: ewww-image-optimizer.php:3074 ewww-image-optimizer.php:3076
-#: ewww-image-optimizer.php:3082
-msgid "enable %s to %s conversion"
-msgstr "habilitar %s a %s conversión"
-
-#: ewww-image-optimizer.php:3074 ewww-image-optimizer.php:3076
+#: common.php:2915 common.php:2917 common.php:2974 common.php:2977
+#: common.php:2979
 msgid "WARNING:"
 msgstr "ADVERTENCIA:"
 
-#: ewww-image-optimizer.php:3074
-msgid "Removes metadata and increases cpu usage dramatically."
-msgstr "Elimina los metadatos y el uso de CPU aumenta dramáticamente."
+#: common.php:2915 common.php:2917
+msgid "While most users will not notice a difference in image quality, lossy means there IS a loss in image quality."
+msgstr "Aunque la mayoría de los usuarios no notarán ninguna diferencia en cuanto a la calidad de la imagen, \"lossy\" (con pérdidas) significa que sí se pierde calidad de imagen."
 
-#: ewww-image-optimizer.php:3075
-msgid ""
-"PNG is generally much better than JPG for logos and other images with a "
-"limited range of colors. Checking this option will slow down JPG processing "
-"significantly, and you may want to enable it only temporarily."
-msgstr ""
-"PNG es generalmente mucho mejor que JPG para los logotipos y otras imágenes "
-"con una gama limitada de colores. Al marcar esta opción se ralentizará el "
-"procesamiento JPG significativamente, y es posible que desee permitir esto "
-"sólo temporalmente."
+#: common.php:2917
+msgid "Lossy PNG optimization"
+msgstr "Optimización PNG con pérdidas"
 
-#: ewww-image-optimizer.php:3076
-msgid "This is not a lossless conversion."
-msgstr "Esto no es una conversión sin pérdidas."
+#: common.php:2919
+msgid "Bulk Delay"
+msgstr "Retraso masivo"
 
-#: ewww-image-optimizer.php:3077
-msgid ""
-"JPG is generally much better than PNG for photographic use because it "
-"compresses the image and discards data. PNGs with transparency are not "
-"converted by default."
-msgstr ""
-"JPG es en general mucho mejor que PNG para uso fotográfico, ya que comprime "
-"la imagen y descarta los datos. Los PNG con transparencia no se convierten "
-"por defecto."
-
-#: ewww-image-optimizer.php:3078
-msgid "JPG background color:"
-msgstr "Color de fondo de JPG:"
-
-#: ewww-image-optimizer.php:3078
-msgid "HEX format (#123def)"
-msgstr "Formato HEX  (#123def)"
-
-#: ewww-image-optimizer.php:3079
-msgid ""
-"Background color is used only if the PNG has transparency. Leave this value "
-"blank to skip PNGs with transparency."
-msgstr ""
-"El color de fondo se utiliza sólo si el PNG tiene la transparencia. Deje "
-"este valor en blanco para omitir los archivos PNG con transparencia."
-
-#: ewww-image-optimizer.php:3080
-msgid "JPG quality level:"
-msgstr "Nivel de calidad de JPG:"
-
-#: ewww-image-optimizer.php:3080
-msgid "Valid values are 1-100."
-msgstr "Los valores válidos son 1-100."
-
-#: ewww-image-optimizer.php:3081
-msgid ""
-"If JPG quality is blank, the plugin will attempt to set the optimal quality "
-"level or default to 92. Remember, this is a lossy conversion, so you are "
-"losing pixels, and it is not recommended to actually set the level here "
-"unless you want noticable loss of image quality."
-msgstr ""
-"Si la calidad del JPG está en blanco, el plugin intentará ajustar el nivel "
-"óptimo de calidad o por defecto a 92. Recuerde, esto es una conversión con "
-"pérdida, por lo que están perdiendo píxeles, y no se recomienda para la "
-"creación efectiva del nivel de aquí a menos que quieras pérdida notable de "
-"calidad de imagen."
-
-#: ewww-image-optimizer.php:3082
-msgid "No warnings here, just do it."
-msgstr "Ninguna advertencia aquí, solamente hágalo."
-
-#: ewww-image-optimizer.php:3083
-msgid ""
-"PNG is generally better than GIF, but animated images cannot be converted."
-msgstr ""
-"PNG es generalmente mejor que GIF, pero las imágenes animadas no se puede "
-"convertir."
-
-#: ewww-image-optimizer.php:2750
-msgid "Cloudinary image"
-msgstr "imagen Cloudinary"
-
-#: ewww-image-optimizer.php:3085
-msgid "Save Changes"
-msgstr "Salvar Cambios"
-
-#: ewww-image-optimizer.php:3142
+#: common.php:2921
 msgid "Automatic Cloudinary upload"
 msgstr "Subida automática de Cloudinary"
 
-#: ewww-image-optimizer.php:3142
-msgid ""
-"When enabled, uploads to the Media Library will be transferred to Cloudinary "
-"after optimization. Cloudinary generates resizes, so only the full-size "
-"image is uploaded."
-msgstr ""
-"Cuando se habilita, las subidas a la Librería de Media serán transferidas a Cloudinary luego de la optimización. Cloudinary genera cambios de tamaños, por lo que solamente la imagen "
-"de tamaño completo es subida."
+#: common.php:2921
+msgid "When enabled, uploads to the Media Library will be transferred to Cloudinary after optimization. Cloudinary generates resizes, so only the full-size image is uploaded."
+msgstr "Si está habilitado, las subidas a la biblioteca de medios serán transferidas a Cloudinary después de la optimización. Cloudinary genera imágenes redimensionadas, por lo que solamente se subirán las de tamaño completo."
 
-#: flag-integration.php:269 nextgen-integration.php:92
+#: common.php:2930
+msgid "optipng optimization level"
+msgstr "nivel de optimización de optipng"
+
+#: common.php:2932 common.php:2933 common.php:2934 common.php:2935
+#: common.php:2936 common.php:2937 common.php:2938 common.php:2943
+#: common.php:2944 common.php:2945 common.php:2946
+msgid "Level %d"
+msgstr "Nivel %d"
+
+#: common.php:2932
+msgid "%d trial"
+msgstr "%d prueba"
+
+#: common.php:2933 common.php:2934 common.php:2935 common.php:2936
+#: common.php:2937 common.php:2938
+msgid "%d trials"
+msgstr "%d pruebas"
+
+#: common.php:2939 common.php:2947
+msgid "default"
+msgstr "por defecto"
+
+#: common.php:2940
+msgid "According to the author of optipng, 10 trials should satisfy most people, 30 trials should satisfy everyone."
+msgstr "Según el autor de optipng, 10 pruebas deberían de satisfacer a la mayoría de la gente; 30 pruebas debieran de satisfacerlos a todos."
+
+#: common.php:2941
+msgid "pngout optimization level"
+msgstr "nivel de optimización pngout"
+
+#: common.php:2943
+msgid "Xtreme! (Slowest)"
+msgstr "¡Extremo! (Lentísimo)"
+
+#: common.php:2944
+msgid "Intense (Slow)"
+msgstr "Intenso (Lento)"
+
+#: common.php:2945
+msgid "Longest Match (Fast)"
+msgstr "Partido más largo (Rápido)"
+
+#: common.php:2946
+msgid "Huffman Only (Faster)"
+msgstr "Sólo Huffman (Más rápido)"
+
+#: common.php:2948
+msgid "If you have CPU cycles to spare, go with level %d"
+msgstr "Si tiene GHz de sobra, vaya con el nivel %d"
+
+#: common.php:2950
+msgid "Scheduled optimization"
+msgstr "Optimización programada"
+
+#: common.php:2950
+msgid "This will enable scheduled optimization of unoptimized images for your theme, buddypress, and any additional folders you have configured below. Runs hourly: wp_cron only runs when your site is visited, so it may be even longer between optimizations."
+msgstr "Esto permitirá la optimización programada de imágenes no optimizadas para su tema, buddypress y cualquier carpeta adicional que haya configurado a continuación. Se ejecuta a cada hora: wp_cron sólo arranca cuando visitan su sitio web, por lo que puede retrasarse entre optimizaciones."
+
+#: common.php:2951
+msgid "Folders to optimize"
+msgstr "Carpetas para optimizar"
+
+#: common.php:2951
+msgid "One path per line, must be within %s. Use full paths, not relative paths."
+msgstr "Un ruta por línea, debe estar dentro de %s. Utilice rutas absolutas, no rutas relativas."
+
+#: common.php:2954
+msgid "Please submit a support request in the forums to have folders created by a particular plugin auto-included in the future."
+msgstr "Por favor, rellene una petición de soporte en los foros para obtener carpetas creadas por un plugin particular autoincluido en el futuro."
+
+#: common.php:2957
+msgid "Skip Small Images"
+msgstr "Saltar imágenes pequeñas"
+
+#: common.php:2957
+msgid "Do not optimize images smaller than this (in bytes)"
+msgstr "No optimizar las imágenes que sean menores de este tamaño (en bytes)"
+
+#: common.php:2958
+msgid "Skip Large PNG Images"
+msgstr "Saltarse imágenes PNG grandes."
+
+#: common.php:2958
+msgid "Do not optimize PNG images larger than this (in bytes)"
+msgstr "No optimizar las imágenes PNG mayores de este tamaño (en bytes)"
+
+#: common.php:2959
+msgid "Exclude full-size images from lossy optimization"
+msgstr "Evitar pérdidas de calidad en la optimización excluyendo imágenes de tamaño completo"
+
+#: common.php:2961 ewww-image-optimizer.php:418
+msgid "Use System Paths"
+msgstr "Utilizar rutas del sistema"
+
+#: common.php:2961
+msgid "If you have already installed the utilities in a system location, such as %s or %s, use this to force the plugin to use those versions and skip the auto-installers."
+msgstr "Si ya ha instalado las utilidades en una ubicación del sistema, tales como %s o %s, utilice esto para forzar el plugin a usar esas versiones y a saltarse los autoinstaladores."
+
+#: common.php:2962 common.php:2963 common.php:2964 common.php:2965
+msgid "disable"
+msgstr "deshabilitado"
+
+#: common.php:2968
+msgid "Conversion is only available for images in the Media Library (except WebP). By default, all images have a link available in the Media Library for one-time conversion. Turning on individual conversion operations below will enable conversion filters any time an image is uploaded or modified."
+msgstr "La conversión sólo está disponible para imágenes en la biblioteca de medios (excepto Webp).  Por defecto, todas las imágenes tienen un enlace disponible en la biblioteca de medios para la conversión de una sola vez. Marcar una operación de conversión individual habilitará los filtros de conversión cada vez que suba o modifique una imagen."
+
+#: common.php:2969
+msgid "NOTE:"
+msgstr "NOTA:"
+
+#: common.php:2969
+msgid "The plugin will attempt to update image locations for any posts that contain the images. You may still need to manually update locations/urls for converted images."
+msgstr "El plugin intentará actualizar la ubicación de las imágenes para cualquier mensaje que contenga las imágenes. Es posible que aún tenga que actualizar manualmente las ubicaciones/urls de imágenes convertidas."
+
+#: common.php:2972
+msgid "Hide Conversion Links"
+msgstr "Ocultar enlaces de conversión "
+
+#: common.php:2972
+msgid "Site or Network admins can use this to prevent other users from using the conversion links in the Media Library which bypass the settings below."
+msgstr "Los administradores del sitio o de la red pueden usar esto para evitar que otros usuarios usen enlaces de conversión en la biblioteca de medios que sobrescriban la siguiente configuración."
+
+#: common.php:2973
+msgid "Delete originals"
+msgstr "Eliminar originales"
+
+#: common.php:2973
+msgid "This will remove the original image from the server after a successful conversion."
+msgstr "Esto eliminará la imagen original del servidor después de una conversión exitosa."
+
+#: common.php:2974
+msgid "JPG/PNG to WebP"
+msgstr "JPG/PNG a WebP"
+
+#: common.php:2974
+msgid "JPG to WebP conversion is lossy, but quality loss is minimal. PNG to WebP conversion is lossless."
+msgstr "La conversión del formato JPG a WebP tiene pérdidas (lossy); pero la calidad de pérdida es mínima. La conversión del formato PNG a WebP no tiene pérdidas."
+
+#: common.php:2975
+msgid "Originals are never deleted, and WebP images should only be served to supported browsers."
+msgstr "Los originales nunca se borran y las imágenes en formato WebP sólo deberían utilizarse en navegadores soportados."
+
+#: common.php:2975
+msgid "You can use the rewrite rules below to serve WebP images with Apache."
+msgstr "Puede usar las siguientes reglas de reescribir para ofrecer las imágenes WebP en un servidor Apache."
+
+#: common.php:2977 common.php:2979 common.php:2985
+msgid "enable %s to %s conversion"
+msgstr "habilitar %s a %s conversión"
+
+#: common.php:2977
+msgid "Removes metadata and increases cpu usage dramatically."
+msgstr "Elimina los metadatos e incrementa drásticamente el uso del CPU."
+
+#: common.php:2978
+msgid "PNG is generally much better than JPG for logos and other images with a limited range of colors. Checking this option will slow down JPG processing significantly, and you may want to enable it only temporarily."
+msgstr "PNG es generalmente mucho mejor que JPG para los logotipos y otras imágenes con una gama limitada de colores. Al marcar esta opción se ralentizará el procesamiento JPG significativamente, y es posible que desee permitir esto sólo temporalmente."
+
+#: common.php:2979
+msgid "This is not a lossless conversion."
+msgstr "Esto no es una conversión sin pérdidas."
+
+#: common.php:2980
+msgid "JPG is generally much better than PNG for photographic use because it compresses the image and discards data. PNGs with transparency are not converted by default."
+msgstr "JPG es en general mucho mejor que PNG para uso fotográfico, ya que comprime la imagen y descarta los datos. Los PNG con transparencia no se convierten por defecto."
+
+#: common.php:2981
+msgid "JPG background color:"
+msgstr "Color de fondo de JPG:"
+
+#: common.php:2981
+msgid "HEX format (#123def)"
+msgstr "Formato HEX  (#123def)"
+
+#: common.php:2982
+msgid "Background color is used only if the PNG has transparency. Leave this value blank to skip PNGs with transparency."
+msgstr "El color de fondo se utiliza sólo si el PNG tiene transparencias. Deje este valor en blanco para omitir los archivos PNG con transparencia."
+
+#: common.php:2983
+msgid "JPG quality level:"
+msgstr "Nivel de calidad del JPG:"
+
+#: common.php:2983
+msgid "Valid values are 1-100."
+msgstr "Los valores válidos están entre 1-100."
+
+#: common.php:2984
+msgid "If JPG quality is blank, the plugin will attempt to set the optimal quality level or default to 92. Remember, this is a lossy conversion, so you are losing pixels, and it is not recommended to actually set the level here unless you want noticable loss of image quality."
+msgstr "Si la calidad del JPG está en blanco, el plugin intentará ajustar el nivel óptimo de calidad o por defecto a 92. Recuerde que esto es una conversión con pérdidas, por lo que está perdiendo píxeles y no se recomienda establecer este nivel a menos que pretenda una pérdida notable en la calidad de imagen."
+
+#: common.php:2985
+msgid "No warnings here, just do it."
+msgstr "Ninguna advertencia aquí, solamente hágalo."
+
+#: common.php:2986
+msgid "PNG is generally better than GIF, but animated images cannot be converted."
+msgstr "PNG es generalmente mejor que GIF; pero las imágenes animadas no se pueden convertir."
+
+#: common.php:2988
+msgid "Save Changes"
+msgstr "Guardar cambios"
+
+#: common.php:2992
+msgid "There are many ways to serve WebP images to visitors with supported browsers. You may choose any you wish, but it is recommended to serve them with an .htaccess file using mod_rewrite and mod_headers. The plugin can insert the rules for you if the file is writable, or you can edit .htaccess yourself."
+msgstr "Hay varias maneras de ofrecer imágenes WebP a los visitantes con navegadores que aceptan este formato. Puede usar la que más desee; pero le recomiendo que ofrezca este formato utilizando el archivo .htaccess que utiliza las reglas mod_rewrite y mod_headers. Esta extensión (plugin) puede insertar estas reglas por usted si el archivo .htaccess es escribible o usted mismo puede modificar el archivo .htaccess."
+
+#: common.php:2995
+msgid "Rules verified successfully"
+msgstr "Las reglas se verificaron con éxito"
+
+#: common.php:3010
+msgid "The image to the right will display a WebP image with WEBP in white text, if your site is serving WebP images and your browser supports WebP."
+msgstr "La imagen a su derecha mostrará una imagen en formato WebP con WEBP en texto blanco, solo si su página web está ofreciendo WebP y su navegador acepta el formato WebP."
+
+#: common.php:3011
+msgid "Insert Rewrite Rules"
+msgstr "Insertar reglas de reescritura"
+
+#: ewww-image-optimizer.php:157
+msgid "EWWW Image Optimizer is supported on Linux, FreeBSD, Mac OSX, and Windows"
+msgstr "EWWW Image Optimizer está disponible en Linux, FreeBSD, Mac OSX y Windows"
+
+#: ewww-image-optimizer.php:157
+msgid "Unfortunately, the EWWW Image Optimizer plugin does not work with %s"
+msgstr "Por desgracia, el plugin de EWWW Imagen Optimizer no funciona con %s"
+
+#: ewww-image-optimizer.php:262
+msgid "EWWW Image Optimizer could not create the tool folder"
+msgstr "EWWW Image Optimizer no pudo crear la carpeta de herramienta"
+
+#: ewww-image-optimizer.php:262
+msgid "Please adjust permissions or create the folder"
+msgstr "Por favor, ajuste los permisos o cree la carpeta"
+
+#: ewww-image-optimizer.php:418
+msgid "EWWW Image Optimizer could not install tools in %s"
+msgstr "EWWW Image Optimizer no se pudo instalar herramientas en %s"
+
+#: ewww-image-optimizer.php:418
+msgid "Please adjust permissions or create the folder. If you have installed the tools elsewhere on your system, check the option to %s."
+msgstr "Por favor, ajuste los permisos o cree la carpeta. Si ha instalado las herramientas en otra parte del sistema, seleccione la opción de %s."
+
+#: ewww-image-optimizer.php:418
+msgid "For more details, visit the %1$s or the %2$s."
+msgstr "Para más detalles, visite %1$s o %2$s."
+
+#: ewww-image-optimizer.php:418 ewww-image-optimizer.php:540
+msgid "Settings Page"
+msgstr "Página de ajustes"
+
+#: ewww-image-optimizer.php:438
+msgid "EWWW Image Optimizer requires exec(). Your system administrator has disabled this function."
+msgstr "EWWW Image Optimizer requiere exec(). El administrador del sistema ha desactivado esta función"
+
+#: ewww-image-optimizer.php:448
+msgid "Safe Mode is turned on for PHP. This plugin cannot operate in Safe Mode."
+msgstr "El Modo Seguro está activado para PHP. Este plugin no puede operar en modo seguro."
+
+#: ewww-image-optimizer.php:540
+msgid "EWWW Image Optimizer uses %1$s, %2$s, %3$s, %4$s, %5$s, and %6$s. You are missing: %7$s. Please install via the %8$s or the %9$s."
+msgstr "EWWW Image Optimizer requiere %1$s, %2$s, %3$s, %4$s, %5$s, y %6$s.. Se está perdiendo: %7$s. Por favor instale por la siguiente %8$s o el %9$s."
+
+#: ewww-image-optimizer.php:1147 ewww-image-optimizer.php:1254
+#: ewww-image-optimizer.php:1261
+msgid "Optimization skipped"
+msgstr "Omitir la optimización "
+
+#: ewww-image-optimizer.php:1158
+msgid "Could not find <span class='code'>%s</span>"
+msgstr "No se pudo encontrar <span class='code'>%s</span>"
+
+#: ewww-image-optimizer.php:1166
+msgid "<span class='code'>%s</span> is not writable"
+msgstr "<span class='code'>%s</span> no se puede escribir"
+
+#: ewww-image-optimizer.php:1187
+msgid "Missing finfo_file(), getimagesize() and mime_content_type() PHP functions"
+msgstr "Faltan las funciones PHP finfo_file(), getimagesize() y mime_content_type()"
+
+#: ewww-image-optimizer.php:1318 ewww-image-optimizer.php:1797
+msgid "%s is disabled"
+msgstr "%s está deshabilitado"
+
+#: ewww-image-optimizer.php:1361
+msgid "Unable to write file"
+msgstr "Deshabilitar escritura del archivo"
+
+#: ewww-image-optimizer.php:1364
+msgid "Optimization failed"
+msgstr "La optimización falló"
+
+#: ewww-image-optimizer.php:1568
+msgid "png tools are disabled"
+msgstr "Las herramientas png están deshabilitadas"
+
+#: ewww-image-optimizer.php:1956
+msgid "You don't have permission to install image optimizer utilities."
+msgstr "Usted no tiene permiso para instalar utilidades de image optimizer."
+
+#: ewww-image-optimizer.php:1961
+msgid "tar command not found"
+msgstr "orden tar no encontrado"
+
+#: ewww-image-optimizer.php:1978 ewww-image-optimizer.php:1991
+#: ewww-image-optimizer.php:2004
+msgid "could not move pngout"
+msgstr "no pudo mover pngout"
+
+#: ewww-image-optimizer.php:1980 ewww-image-optimizer.php:1993
+msgid "could not set permissions"
+msgstr "no pudo cambiar los permisos"
+
+#: flag-integration.php:95 iocli.php:73 iocli.php:81 iocli.php:118
+#: iocli.php:136 nextgen2-integration.php:288
+msgid "%1$d images have been selected (%2$d unoptimized), with %3$d resizes (%4$d unoptimized)."
+msgstr "%1$d imágenes han sido seleccionadas (%2$d no optimizadas), con %3$d reajustadas (%4$d no optimizadas),"
+
+#: flag-integration.php:318 iocli.php:422
+msgid "Optimized size – %s"
+msgstr "Tamaño optimizado"
+
+#: flag-integration.php:325 iocli.php:429 nextcellent-integration.php:102
+#: nextgen-integration.php:99
 msgid "Thumbnail – %s"
 msgstr "Miniatura – %s"
 
-#: flag-integration.php:293 nextgen-integration.php:423
-#: nextgen2-integration.php:415
+#: flag-integration.php:351 iocli.php:239 iocli.php:385 iocli.php:447
+#: iocli.php:526 iocli.php:591 nextcellent-integration.php:455
+#: nextgen-integration.php:425 nextgen2-integration.php:478
 msgid "Finished Optimization!"
 msgstr "¡Optimización finalizada!"
 
-#: image-editor.php:16 image-editor.php:24 image-editor.php:28
-#: image-editor.php:31
-msgid "Image Editor Save Failed"
-msgstr "Falló la Salva del Editor de imágenes"
+#: mwebp.php:6
+msgid "The migration is split into two parts. First, the plugin needs to scan all folders for webp images. Once it has obtained the list of images to rename, it will proceed with the renaming"
+msgstr "La migración se divide en dos partes. En primer lugar, el plugin tiene que escanear todas las carpetas de imágenes WebP. Una vez que se ha obtenido la lista de imágenes por renombrar, se procederá a cambiarles el nombre."
 
-#: nextgen-integration.php:27 nextgen-integration.php:67
-#: nextgen2-integration.php:27
+#: mwebp.php:7
+msgid "Start Migration"
+msgstr "Iniciar la migración"
+
+#: mwebp.php:94
+msgid "Scanning"
+msgstr "Escaneando"
+
+#: mwebp.php:115
+msgid "%d Webp images left to rename."
+msgstr "%d imágenes WebP quedaron por renombrarse."
+
+#: mwebp.php:201
+msgid "Skipped:"
+msgstr "Saltado:"
+
+#: nextcellent-integration.php:35 nextcellent-integration.php:76
+#: nextgen-integration.php:33 nextgen-integration.php:73
+#: nextgen2-integration.php:33
 msgid "Bulk Thumbnail Optimize"
-msgstr "Bulk Thumbnail Optimize"
+msgstr "Optimización masiva de miniaturas"
 
-#: nextgen-integration.php:53
+#: nextcellent-integration.php:61 nextgen-integration.php:59
 msgid "The thumbnails for your new images have not been optimized."
 msgstr "Las miniaturas de sus imágenes nuevas no se han optimizado."
 
-#: nextgen-integration.php:57
+#: nextcellent-integration.php:65 nextgen-integration.php:63
 msgid "Optimize Thumbs"
-msgstr "Optimizar Thumbs"
+msgstr "Optimizar miniatura"
 
-#: nextgen-integration.php:82
+#: nextcellent-integration.php:92 nextgen-integration.php:89
 msgid "Processing"
 msgstr "Procesando"
 
-#: nextgen-integration.php:165
-msgid "% is missing"
-msgstr "% está ausente"
+#: common.php:2401 iocli.php:76 iocli.php:122 nextcellent-integration.php:263
+#: nextgen-integration.php:251
+msgid "We have %d images to optimize."
+msgstr "Tenemos %d imágenes para optimizar."
 
-#: nextgen-integration.php:394 nextgen2-integration.php:386
+#: nextcellent-integration.php:294
+msgid "Galleries"
+msgstr "Galerías"
+
+#: iocli.php:501 iocli.php:569 nextcellent-integration.php:425
+#: nextgen-integration.php:396 nextgen2-integration.php:446
 msgid "Full size - %s"
 msgstr "Tamaño completo -%s"
 
-#: nextgen-integration.php:400 nextgen2-integration.php:392
+#: iocli.php:504 iocli.php:575 nextcellent-integration.php:431
+#: nextgen-integration.php:402 nextgen2-integration.php:449
 msgid "Thumbnail - %s"
 msgstr "Miniatura - %s"
-
-#. Description of the plugin/theme
-msgid ""
-"Reduce file sizes for images within WordPress including NextGEN Gallery and "
-"GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle."
-msgstr ""
-"Reducir el tamaño de los archivos de imágenes dentro de WordPress incluyendo "
-"NextGEN Gallery y GRAND FlAGallery. Utiliza jpegtran, optipng/pngout y "
-"gifsicle."
