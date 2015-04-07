@@ -1,7 +1,7 @@
 <?php
 // common functions for Standard and Cloud plugins
 
-define('EWWW_IMAGE_OPTIMIZER_VERSION', '222.7');
+define('EWWW_IMAGE_OPTIMIZER_VERSION', '223.0');
 
 // initialize debug global
 $disabled = ini_get('disable_functions');
@@ -794,7 +794,13 @@ function ewww_image_optimizer_retina ( $id, $retina_path ) {
 	$no_ext_path = $file_info['dirname'] . '/' . preg_replace('/\d+x\d+@2x$/', '', $file_info['filename']) . $dimensions[0] * 2 . 'x' . $dimensions[1] * 2 . '-tmp';
 	$temp_path = $no_ext_path . $extension;
 	$ewww_debug .= "temp path: $temp_path<br>";
+	// check for any orphaned webp retina images also, and fix their paths
 	$ewww_debug .= "retina path: $retina_path<br>";
+	$webp_path = $temp_path . '.webp';
+	$ewww_debug .= "retina webp path: $webp_path<br>";
+	if ( file_exists( $webp_path ) ) {
+		rename( $webp_path, $retina_path . '.webp' );
+	}
 	$opt_size = filesize($retina_path);
 	$ewww_debug .= "retina size: $opt_size<br>";
 	$query = $wpdb->prepare("SELECT id,path FROM $wpdb->ewwwio_images WHERE path = %s AND image_size = '$opt_size'", $temp_path);
@@ -2439,31 +2445,33 @@ function ewww_image_optimizer_display_unoptimized_media() {
 	$ewww_debug .= "<b>ewww_image_optimizer_display_unoptimized_media()</b><br>";
 	$attachments = ewww_image_optimizer_count_optimized ( 'media', true );
 	echo "<div class='wrap'><h3>" . __('Unoptimized Images', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</h3>";
-	printf( '<p>' . __( 'We have %d images to optimize.', EWWW_IMAGE_OPTIMIZER_DOMAIN ) . '</p>', count( $attachments ) ); 
-	sort($attachments, SORT_NUMERIC);
-	$image_string = implode(',', $attachments);
-	echo '<form method="post" action="upload.php?page=ewww-image-optimizer-bulk">'
-		. "<input type='hidden' name='ids' value='$image_string' />"
-		. '<input type="submit" class="button-secondary action" value="' . __('Optimize All Images', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '" />'
-		. '</form>';
-	if ( count( $attachments ) < 500 ) {
+	printf( '<p>' . __( 'We have %d images to optimize.', EWWW_IMAGE_OPTIMIZER_DOMAIN ) . '</p>', count( $attachments ) );
+	if ( count( $attachments ) != 0 ) {
 		sort($attachments, SORT_NUMERIC);
 		$image_string = implode(',', $attachments);
-		echo '<table class="wp-list-table widefat media" cellspacing="0"><thead><tr><th>ID</th><th>&nbsp;</th><th>' . __('Title', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</th><th>' . __('Image Optimizer', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</th></tr></thead>';
-		$alternate = true;
-		foreach ($attachments as $ID) {
-			$image_name = get_the_title($ID);
-?>			<tr<?php if($alternate) echo " class='alternate'"; ?>><td><?php echo $ID; ?></td>
-<?php			echo "<td style='width:80px' class='column-icon'>" . wp_get_attachment_image( $ID, 'thumbnail' ) . "</td>";
-			echo "<td class='title'>$image_name</td>";
-			echo "<td>";
-			ewww_image_optimizer_custom_column('ewww-image-optimizer', $ID);
-			echo "</td></tr>";
-			$alternate = !$alternate;
+		echo '<form method="post" action="upload.php?page=ewww-image-optimizer-bulk">'
+			. "<input type='hidden' name='ids' value='$image_string' />"
+			. '<input type="submit" class="button-secondary action" value="' . __('Optimize All Images', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '" />'
+			. '</form>';
+		if ( count( $attachments ) < 500 ) {
+			sort($attachments, SORT_NUMERIC);
+			$image_string = implode(',', $attachments);
+			echo '<table class="wp-list-table widefat media" cellspacing="0"><thead><tr><th>ID</th><th>&nbsp;</th><th>' . __('Title', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</th><th>' . __('Image Optimizer', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</th></tr></thead>';
+			$alternate = true;
+			foreach ($attachments as $ID) {
+				$image_name = get_the_title($ID);
+?>				<tr<?php if($alternate) echo " class='alternate'"; ?>><td><?php echo $ID; ?></td>
+<?php				echo "<td style='width:80px' class='column-icon'>" . wp_get_attachment_image( $ID, 'thumbnail' ) . "</td>";
+				echo "<td class='title'>$image_name</td>";
+				echo "<td>";
+				ewww_image_optimizer_custom_column('ewww-image-optimizer', $ID);
+				echo "</td></tr>";
+				$alternate = !$alternate;
+			}
+			echo '</table>';
+		} else {
+			echo '<p>' . __( 'There are too many images to display.', EWWW_IMAGE_OPTIMIZER_DOMAIN ) . '</p>'; 
 		}
-		echo '</table>';
-	} else {
-		echo '<p>' . __( 'There are too many images to display.', EWWW_IMAGE_OPTIMIZER_DOMAIN ) . '</p>'; 
 	}
 	echo '</div>';
 	return;	
