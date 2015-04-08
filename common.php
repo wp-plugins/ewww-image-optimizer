@@ -1,7 +1,7 @@
 <?php
 // common functions for Standard and Cloud plugins
 
-define('EWWW_IMAGE_OPTIMIZER_VERSION', '231.0');
+define('EWWW_IMAGE_OPTIMIZER_VERSION', '231.1');
 
 // initialize debug global
 $disabled = ini_get('disable_functions');
@@ -593,7 +593,7 @@ function ewww_image_optimizer_install_table() {
 		image_size int UNSIGNED,
 		orig_size int UNSIGNED,
 		UNIQUE KEY id (id),
-		INDEX path_image_size (path(255), image_size)
+		KEY path_image_size (path(255),image_size)
 	);";
 
 	// include the upgrade library to initialize a table

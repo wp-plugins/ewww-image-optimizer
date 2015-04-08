@@ -164,14 +164,14 @@ Pngout, TinyJPG/TinyPNG, JPEGmini, and Pngquant were recommended by EWWW IO user
 
 == Changelog ==
 
-= IMPORTANT =
-NOTE: The WebP naming scheme was changed in 2.0.1 to avoid filename conflicts. You will need to update your rewrite rules via the settings page, and run the WebP upgrade script. Every image in the Media Library with a WebP version using the old naming scheme will have a link to the upgrade process (in list view, not grid view).
-
 = future =
 * these are current feature requests, if you see something you like here, go vote for it in the support forum
 * full GMedia support (still waiting for more votes)
 * copy metadata from original images to webp variants
 * If you would like to help translate this plugin in your language, get started here: http://translate.ewww.io/projects/ewww-image-optimizer/
+
+= 2.3.2 =
+* fixed: sql error for duplicate key name during plugin upgrade
 
 = 2.3.1 =
 * fixed: load_webp.js was being inserted regardless of the associated Alternative WebP Rewrites option
