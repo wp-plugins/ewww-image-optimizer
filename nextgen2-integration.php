@@ -29,8 +29,11 @@ class ewwwngg {
 
 	/* adds the Bulk Optimize page to the tools menu, and a hidden page for optimizing thumbnails */
 	function ewww_ngg_bulk_menu () {
-			add_submenu_page(NGGFOLDER, __('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), __('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), 'NextGEN Manage gallery', 'ewww-ngg-bulk', array (&$this, 'ewww_ngg_bulk_preview'));
-			$hook = add_submenu_page(null, __('Bulk Thumbnail Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), __('Bulk Thumbnail Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), 'NextGEN Manage gallery', 'ewww-ngg-thumb-bulk', array (&$this, 'ewww_ngg_thumb_bulk'));
+		if ( ! defined( 'NGGFOLDER' ) ) {
+			return;
+		}
+		add_submenu_page(NGGFOLDER, __('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), __('Bulk Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), 'NextGEN Manage gallery', 'ewww-ngg-bulk', array (&$this, 'ewww_ngg_bulk_preview'));
+		$hook = add_submenu_page(null, __('Bulk Thumbnail Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), __('Bulk Thumbnail Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN), 'NextGEN Manage gallery', 'ewww-ngg-thumb-bulk', array (&$this, 'ewww_ngg_thumb_bulk'));
 	}
 
 	/* ngg_added_new_image hook */

@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: image, attachment, optimize, optimization, lossless, lossy, photo, picture, seo, compression, gmagick, jpegtran, gifsicle, optipng, pngout, pngquant, jpegmini, tinyjpg, tinypng, webp, wp-cli 
 Requires at least: 3.5
 Tested up to: 4.2-beta4
-Stable tag: 2.3.0
+Stable tag: 2.3.1
 License: GPLv3
 
 Reduce file sizes for images in WordPress including NextGEN, GRAND FlAGallery and more using lossless/lossy methods and image format conversion.
@@ -176,6 +176,8 @@ NOTE: The WebP naming scheme was changed in 2.0.1 to avoid filename conflicts. Y
 = 2.3.1 =
 * fixed: load_webp.js was being inserted regardless of the associated Alternative WebP Rewrites option
 * fixed: wrong slash in plugin path for Windows users with NextGEN and FlaGallery
+* fixed: extra comma in table upgrade sql
+* fixed: special characters malformed by alternate webp rewriting
 * updated: translation for Spanish
 * changed: progressbar color updated to match new colors in 4.2 for default theme
 

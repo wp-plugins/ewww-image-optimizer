@@ -1,7 +1,7 @@
 <?php
 // common functions for Standard and Cloud plugins
 
-define('EWWW_IMAGE_OPTIMIZER_VERSION', '230.1');
+define('EWWW_IMAGE_OPTIMIZER_VERSION', '231.0');
 
 // initialize debug global
 $disabled = ini_get('disable_functions');
@@ -165,7 +165,8 @@ function ewww_image_optimizer_filter_page_output( $buffer ) {
 		$html = new DOMDocument;
 		$libxml_previous_error_reporting = libxml_use_internal_errors(true);
 		$html->encoding = 'utf-8';
-		$html->loadHTML(utf8_decode($buffer));
+//		$html->loadHTML(utf8_decode($buffer));
+		$html->loadHTML($buffer);
 		$images = $html->getElementsByTagName('img');
 		foreach ($images as $image) {
 			if ($image->parentNode->tagName == 'noscript') {
@@ -592,7 +593,7 @@ function ewww_image_optimizer_install_table() {
 		image_size int UNSIGNED,
 		orig_size int UNSIGNED,
 		UNIQUE KEY id (id),
-		INDEX path_image_size (path(255), image_size),
+		INDEX path_image_size (path(255), image_size)
 	);";
 
 	// include the upgrade library to initialize a table
