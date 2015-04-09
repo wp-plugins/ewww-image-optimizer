@@ -1,5 +1,24 @@
-jQuery(document).ready(function($) {
-	if (ewww_wvars.webp == 1) {
+//borrowed from https://developers.google.com/speed/webp/faq#how_can_i_detect_browser_support_using_javascript
+function check_webp_feature(feature, callback) {
+    var kTestImages = {
+        lossy: "UklGRiIAAABXRUJQVlA4IBYAAAAwAQCdASoBAAEADsD+JaQAA3AAAAAA",
+        lossless: "UklGRhoAAABXRUJQVlA4TA0AAAAvAAAAEAcQERGIiP4HAA==",
+        alpha: "UklGRkoAAABXRUJQVlA4WAoAAAAQAAAAAAAAAAAAQUxQSAwAAAARBxAR/Q9ERP8DAABWUDggGAAAABQBAJ0BKgEAAQAAAP4AAA3AAP7mtQAAAA==",
+        animation: "UklGRlIAAABXRUJQVlA4WAoAAAASAAAAAAAAAAAAQU5JTQYAAAD/////AABBTk1GJgAAAAAAAAAAAAAAAAAAAGQAAABWUDhMDQAAAC8AAAAQBxAREYiI/gcA"
+    };
+    var img = new Image();
+    img.onload = function () {
+        var result = (img.width > 0) && (img.height > 0);
+        callback(result);
+    };
+    img.onerror = function () {
+        callback(false);
+    };
+    img.src = "data:image/webp;base64," + kTestImages[feature];
+}
+function ewww_load_images(ewww_webp_supported) {
+	(function($) {
+	if (ewww_webp_supported) {
 		$('.batch-image img, .image-wrapper a, .ngg-pro-masonry-item a').each(function() {
 			var ewww_attr = $(this).attr('data-webp');
 			if (typeof ewww_attr !== typeof undefined && ewww_attr !== false) {
@@ -19,7 +38,7 @@ jQuery(document).ready(function($) {
 	}
 	$('.ewww_webp').each(function() {
 		var ewww_img = document.createElement('img');
-		if (ewww_wvars.webp == 1) {
+		if (ewww_webp_supported) {
 			$(ewww_img).attr('src', $(this).attr('data-webp'));
 		} else {
 			$(ewww_img).attr('src', $(this).attr('data-img'));
@@ -130,56 +149,6 @@ jQuery(document).ready(function($) {
 		}
 		$(this).after(ewww_img);
 	});
-});
-/*				if ( $image->getAttribute('align') )
-					$nscript->setAttribute('data-align', $image->getAttribute('align'));
-				if ( $image->getAttribute('alt') )
-					$nscript->setAttribute('data-alt', $image->getAttribute('alt'));
-				if ( $image->getAttribute('border') )
-					$nscript->setAttribute('data-border', $image->getAttribute('border'));
-				if ( $image->getAttribute('crossorigin') )
-					$nscript->setAttribute('data-crossorigin', $image->getAttribute('crossorigin'));
-				if ( $image->getAttribute('height') )
-					$nscript->setAttribute('data-height', $image->getAttribute('height'));
-				if ( $image->getAttribute('hspace') )
-					$nscript->setAttribute('data-hspace', $image->getAttribute('hspace'));
-				if ( $image->getAttribute('ismap') )
-					$nscript->setAttribute('data-ismap', $image->getAttribute('ismap'));
-				if ( $image->getAttribute('longdesc') )
-					$nscript->setAttribute('data-longdesc', $image->getAttribute('longdesc'));
-				if ( $image->getAttribute('usemap') )
-					$nscript->setAttribute('data-usemap', $image->getAttribute('usemap'));
-				if ( $image->getAttribute('vspace') )
-					$nscript->setAttribute('data-vspace', $image->getAttribute('vspace'));
-				if ( $image->getAttribute('width') )
-					$nscript->setAttribute('data-width', $image->getAttribute('width'));
-				if ( $image->getAttribute('accesskey') )
-					$nscript->setAttribute('data-accesskey', $image->getAttribute('accesskey'));
-				if ( $image->getAttribute('class') )
-					$nscript->setAttribute('data-class', $image->getAttribute('class'));
-				if ( $image->getAttribute('contenteditable') )
-					$nscript->setAttribute('data-contenteditable', $image->getAttribute('contenteditable'));
-				if ( $image->getAttribute('contextmenu') )
-					$nscript->setAttribute('data-contextmenu', $image->getAttribute('contextmenu'));
-				if ( $image->getAttribute('dir') )
-					$nscript->setAttribute('data-dir', $image->getAttribute('dir'));
-				if ( $image->getAttribute('draggable') )
-					$nscript->setAttribute('data-draggable', $image->getAttribute('draggable'));
-				if ( $image->getAttribute('dropzone') )
-					$nscript->setAttribute('data-dropzone', $image->getAttribute('dropzone'));
-				if ( $image->getAttribute('hidden') )
-					$nscript->setAttribute('data-hidden', $image->getAttribute('hidden'));
-				if ( $image->getAttribute('id') )
-					$nscript->setAttribute('data-id', $image->getAttribute('id'));
-				if ( $image->getAttribute('lang') )
-					$nscript->setAttribute('data-lang', $image->getAttribute('lang'));
-				if ( $image->getAttribute('spellcheck') )
-					$nscript->setAttribute('data-spellcheck', $image->getAttribute('spellcheck'));
-				if ( $image->getAttribute('style') )
-					$nscript->setAttribute('data-style', $image->getAttribute('style'));
-				if ( $image->getAttribute('tabindex') )
-					$nscript->setAttribute('data-tabindex', $image->getAttribute('tabindex'));
-				if ( $image->getAttribute('title') )
-					$nscript->setAttribute('data-title', $image->getAttribute('title'));
-				if ( $image->getAttribute('translate') )
-					$nscript->setAttribute('data-translate', $image->getAttribute('translate'));*/
+	})(jQuery);
+}
+check_webp_feature('alpha', ewww_load_images);

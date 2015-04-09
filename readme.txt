@@ -168,10 +168,15 @@ Pngout, TinyJPG/TinyPNG, JPEGmini, and Pngquant were recommended by EWWW IO user
 * these are current feature requests, if you see something you like here, go vote for it in the support forum
 * full GMedia support (still waiting for more votes)
 * copy metadata from original images to webp variants
+* EWWW I.O. as a stand-alone tool
+* Webp support for caching plugins
 * If you would like to help translate this plugin in your language, get started here: http://translate.ewww.io/projects/ewww-image-optimizer/
 
 = 2.3.2 =
 * fixed: sql error for duplicate key name during plugin upgrade
+* fixed: is_plugin_active undefined during scheduled optimization
+* changed: minify and load webp script inline
+* changed: client-side webp detection for caching plugins
 
 = 2.3.1 =
 * fixed: load_webp.js was being inserted regardless of the associated Alternative WebP Rewrites option
