@@ -175,6 +175,7 @@ Pngout, TinyJPG/TinyPNG, JPEGmini, and Pngquant were recommended by EWWW IO user
 = 2.3.2 =
 * fixed: sql error for duplicate key name during plugin upgrade
 * fixed: is_plugin_active undefined during scheduled optimization
+* fixed: webp rewriting strips </body> and </html>
 * changed: minify and load webp script inline
 * changed: client-side webp detection for caching plugins
 

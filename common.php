@@ -1,7 +1,7 @@
 <?php
 // common functions for Standard and Cloud plugins
 
-define('EWWW_IMAGE_OPTIMIZER_VERSION', '231.3');
+define('EWWW_IMAGE_OPTIMIZER_VERSION', '231.4');
 
 // initialize debug global
 $disabled = ini_get('disable_functions');
@@ -123,8 +123,8 @@ add_action( 'wp_ajax_ewww_webp_rewrite', 'ewww_image_optimizer_webp_rewrite' );
 register_deactivation_hook( EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE, 'ewww_image_optimizer_network_deactivate' );
 add_action( 'shutdown', 'ewwwio_memory_output' );
 if ( ewww_image_optimizer_get_option( 'ewww_image_optimizer_webp_for_cdn' ) ) {
-	add_action('init', 'ewww_image_optimizer_buffer_start');
-	add_action('wp_after_admin_bar_render', 'ewww_image_optimizer_buffer_end');
+	add_action( 'init', 'ewww_image_optimizer_buffer_start' );
+//	add_action( 'wp_after_admin_bar_render', 'ewww_image_optimizer_buffer_end' );
 	add_action( 'wp_enqueue_scripts', 'ewww_image_optimizer_webp_load_jquery' );
 	add_action( 'wp_print_footer_scripts', 'ewww_image_optimizer_webp_inline_script' );
 }
@@ -280,7 +280,7 @@ function ewww_image_optimizer_filter_page_output( $buffer ) {
 		if ( ! empty( $html_head ) ) {
 			$buffer = preg_replace('/<html.+>\s<head>/', $html_head[0], $buffer);
 		}
-		$buffer = preg_replace('|</body>\s*</html>|', '', $buffer);
+//		$buffer = preg_replace('|</body>\s*</html>|', '', $buffer);
 		ewww_image_optimizer_debug_log();
 	}
 	return $buffer;

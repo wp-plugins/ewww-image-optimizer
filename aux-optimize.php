@@ -552,8 +552,10 @@ function ewww_image_optimizer_aux_images_script($hook) {
 			$attachments = array_merge($attachments, ewww_image_optimizer_image_scan($parent_path));
 		}
 //	ewww_image_optimizer_debug_log();
-		// need to include the plugin library for the is_plugin_active function
-		require_once(ABSPATH . 'wp-admin/includes/plugin.php');
+		if ( ! function_exists( 'is_plugin_active' ) ) {
+			// need to include the plugin library for the is_plugin_active function
+			require_once(ABSPATH . 'wp-admin/includes/plugin.php');
+		}
 		// collect a list of images for buddypress
 		if (is_plugin_active('buddypress/bp-loader.php') || (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network('buddypress/bp-loader.php'))) {
 			// get the value of the wordpress upload directory
