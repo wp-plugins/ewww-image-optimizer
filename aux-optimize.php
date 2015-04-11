@@ -457,7 +457,8 @@ function ewww_image_optimizer_image_scan($dir) {
 			continue;
 		} else {
 			$path = $path->getPathname();
-			if ( preg_match( '/\.(po|mo|php|txt|js|css|html)$/', $path ) ) {
+			if ( preg_match( '/\.(po|mo|pot|php|txt|js|css|html|woff|webp|json|svg|xml|ttf|otf|eot|md)$/', $path ) ) {
+				$ewww_debug .= "not a usable extension: $path<br>";
 				continue;
 			}
 			$mimetype = ewww_image_optimizer_mimetype($path, 'i');

@@ -164,6 +164,9 @@ function ewww_image_optimizer_filter_page_output( $buffer ) {
 	// modify buffer here, and then return the updated code
 	if ( class_exists( 'DOMDocument' ) ) {
 		preg_match('/.+<head>/s', $buffer, $html_head);
+		if ( empty( $html_head ) ) {
+			return $buffer;
+		}
 		$html = new DOMDocument;
 		$libxml_previous_error_reporting = libxml_use_internal_errors(true);
 		$html->encoding = 'utf-8';
