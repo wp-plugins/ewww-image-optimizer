@@ -66,10 +66,10 @@ jQuery(document).ready(function($) {
 			$('#ewww-optimization-settings').hide();
 			$('#ewww-conversion-settings').show();
 		});
-		if (!ewww_vars.savings_todo) {
-			$('#ewww-total-savings').text('0');
-			return false;
-		}
+//		if (!ewww_vars.savings_todo) {
+//			$('#ewww-total-savings').text('0');
+//			return false;
+//		}
 		var ewww_savings_counter = 0;
 		var ewww_savings_total = 0;
 		var ewww_savings_todo = parseInt(ewww_vars.savings_todo);

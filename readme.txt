@@ -178,6 +178,7 @@ Pngout, TinyJPG/TinyPNG, JPEGmini, and Pngquant were recommended by EWWW IO user
 * fixed: webp rewriting strips </body> and </html>
 * changed: minify and load webp script inline
 * changed: client-side webp detection for caching plugins
+* changed: settings page ui refinements
 
 = 2.3.1 =
 * fixed: load_webp.js was being inserted regardless of the associated Alternative WebP Rewrites option
