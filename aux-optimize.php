@@ -130,20 +130,17 @@ function ewww_image_optimizer_import_loop() {
 	} 
 	global $wpdb;
 	global $ewww_debug;
-//	echo "starting usage: " . memory_get_usage() . "<br>";
 	// retrieve the time when the optimizer starts
 //	$started = microtime(true);
 	$import_finished = false;
 	$import_status = get_option( 'ewww_image_optimizer_import_status' );
 	$attachments = $wpdb->get_results("SELECT posts.ID,metas.meta_value FROM $wpdb->postmeta metas INNER JOIN $wpdb->posts posts ON posts.ID = metas.post_id WHERE posts.post_mime_type LIKE '%image%' AND metas.meta_key = '_wp_attachment_metadata' AND metas.meta_value LIKE '%ewww_image_optimizer%' LIMIT {$import_status['media']}, 100", ARRAY_N);
-//	echo "after loading metadata: " . memory_get_usage() . "<br>";
 	if ( count( $attachments ) === 0 ) {
 		$import_finished = true;
 	} else {
 		$import_status['media'] += count( $attachments );
 	}
 	$already_optimized = array();
-//	echo "after loading already optimized: " . memory_get_usage() . "<br>";
 	$ewww_debug .= "importing " . count($attachments) . " attachments<br>";
 	$insert_query = "INSERT INTO $wpdb->ewwwio_images (path, image_size, orig_size, results, temp) VALUES ";
 	$rows = array();
@@ -311,7 +308,6 @@ function ewww_image_optimizer_import_loop() {
 		$wpdb->query($insert_query . implode(', ', $rows));
 		$rows = array();
 	}
-//	echo "after we are done: " . memory_get_usage() . "<br>";
 	if ( $import_finished ) {
 		update_option('ewww_image_optimizer_imported', true);
 		update_option( 'ewww_image_optimizer_import_status', '' );
@@ -401,8 +397,6 @@ function ewww_image_optimizer_aux_images_table() {
 			// get a human readable filesize
 			$file_size = size_format(filesize($optimized_image[0]), 2);
 			$file_size = str_replace('.00 B ', ' B', $file_size);
-			//$thumbnail = wp_get_image_editor($optimized_image[0]);
-			//$thumbnail->resize(50,50,true);
 ?>			<tr<?php if($alternate) echo " class='alternate'"; ?> id="ewww-image-<?php echo $optimized_image[3]; ?>">
 				<td style='width:80px' class='column-icon'><img width='50' height='50' src="<?php echo $image_url; ?>" /></td>
 				<td class='title'>...<?php echo $image_name; ?></td>
@@ -552,7 +546,6 @@ function ewww_image_optimizer_aux_images_script($hook) {
 		if ($child_path !== $parent_path) {
 			$attachments = array_merge($attachments, ewww_image_optimizer_image_scan($parent_path));
 		}
-//	ewww_image_optimizer_debug_log();
 		if ( ! function_exists( 'is_plugin_active' ) ) {
 			// need to include the plugin library for the is_plugin_active function
 			require_once(ABSPATH . 'wp-admin/includes/plugin.php');
