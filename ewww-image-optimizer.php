@@ -930,7 +930,8 @@ function ewww_image_optimizer_md5check($path) {
 		);
 	foreach ($valid_md5sums as $md5_sum) {
 		if ($md5_sum == md5_file($path)) {
-	ewwwio_memory( __FUNCTION__ );
+			$ewww_debug .= 'md5sum verified, binary is intact<br>';
+			ewwwio_memory( __FUNCTION__ );
 			return TRUE;
 		}
 	}

@@ -1,4 +1,5 @@
 <?php 
+if ( ! class_exists('ewwwngg')) {
 class ewwwngg {
 	/* initializes the nextgen integration functions */
 	function ewwwngg() {
@@ -493,6 +494,7 @@ class ewwwngg {
 			});
 		</script>
 <?php	}
+}
 }
 // initialize the plugin and the class
 /*add_action('init', 'ewwwngg');

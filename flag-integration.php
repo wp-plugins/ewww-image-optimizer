@@ -1,4 +1,5 @@
 <?php 
+if ( ! class_exists('ewwwflag')) {
 class ewwwflag {
 	/* initializes the flagallery integration functions */
 	function ewwwflag() {
@@ -430,7 +431,7 @@ class ewwwflag {
 		}
 	}
 }
-
+}
 //add_action( 'init', 'ewwwflag' );
 
 //function ewwwflag() {

@@ -110,6 +110,32 @@ Pngout is not enabled by default because it is resource intensive. Optipng is th
 
 http://ewww.io/2014/12/06/the-plugin-says-im-missing-something/
 
+= Webhosts =
+
+In general, these lists only apply to shared hosting services. If the providers below have VPS or dedicated server options, those will likely work just fine. If you have any contributions or corrections to these lists, please contact me via the form at https://ewww.io
+
+Webhosts where things work out of the box.
+
+* [A2 Hosting](https://partners.a2hosting.com/solutions.php?id=5959&url=638): EWWW IO is installed automatically for new sites, and is fully supported by A2 (referral link). Their Prime+SSD hosting is very nice (and still cheap).
+* [Bluehost](http://www.bluehost.com)
+* [Dreamhost](http://www.dreamhost.com)
+* [GoDaddy](http://www.godaddy.com) (only with PHP 5.3)
+* [gPowerHost](https://gpowerhost.com/)
+* [HostGator](http://www.hostgator.com)
+* [Hetzner Online](http://www.hetzner.de)
+* [Hosterdam](http://www.hosterdam.com) (FreeBSD)
+* [iFastNet](https://ifastnet.com/portal/) (with custom php.ini from customer support)
+* [Namecheap](http://www.namecheap.com)
+* [OVH](http://www.ovh.co.uk)
+* [WebFaction](http://www.webfaction.com)
+
+Webhosts where the plugin will only work in cloud mode or only some tools are installed locally.
+
+* ipower
+* Gandi
+* ipage (JPG only)
+* WP Engine - use EWWW Image Optimizer Cloud fork: http://wordpress.org/plugins/ewww-image-optimizer-cloud/
+
 == Frequently Asked Questions ==
 
 = Google Pagespeed says my images need compressing or resizing, but I already optimized all my images. What do I do? =
@@ -182,6 +208,7 @@ Pngout, TinyJPG/TinyPNG, JPEGmini, and Pngquant were recommended by EWWW IO user
 * changed: settings page ui refinements
 * changed: prevent parsing the request with alternative webp rewriting unless it contains html
 * changed: more extensions added to blacklist during Scan and Optimize to prevent memory errors
+* changed: added checks to prevent redeclaring ewwwngg and ewwwflag classes
 
 = 2.3.1 =
 * fixed: load_webp.js was being inserted regardless of the associated Alternative WebP Rewrites option
@@ -761,32 +788,6 @@ Improved optimization for JPGs significantly, by adding -progressive flag. May w
 
 = 1.0.1 =
 Improved performance for PNGs by specifying proper optimization level
-
-== Webhosts ==
-
-In general, these lists only apply to shared hosting services. If the providers below have VPS or dedicated server options, those will likely work just fine. If you have any contributions or corrections to these lists, please contact me via the form at https://ewww.io
-
-Webhosts where things work out of the box.
-
-* [A2 Hosting](https://partners.a2hosting.com/solutions.php?id=5959&url=638): EWWW IO is installed automatically for new sites, and is fully supported by A2 (referral link). Their Prime+SSD hosting is very nice (and still cheap).
-* [Bluehost](http://www.bluehost.com)
-* [Dreamhost](http://www.dreamhost.com)
-* [GoDaddy](http://www.godaddy.com) (only with PHP 5.3)
-* [gPowerHost](https://gpowerhost.com/)
-* [HostGator](http://www.hostgator.com)
-* [Hetzner Online](http://www.hetzner.de)
-* [Hosterdam](http://www.hosterdam.com) (FreeBSD)
-* [iFastNet](https://ifastnet.com/portal/) (with custom php.ini from customer support)
-* [Namecheap](http://www.namecheap.com)
-* [OVH](http://www.ovh.co.uk)
-* [WebFaction](http://www.webfaction.com)
-
-Webhosts where the plugin will only work in cloud mode or only some tools are installed locally.
-
-* ipower
-* Gandi
-* ipage (JPG only)
-* WP Engine - use EWWW Image Optimizer Cloud fork: http://wordpress.org/plugins/ewww-image-optimizer-cloud/
 
 == Contact and Credits ==
 

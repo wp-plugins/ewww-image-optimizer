@@ -2,7 +2,7 @@
 # This file is distributed under the same license as the EWWW Image Optimizer package.
 msgid ""
 msgstr ""
-"PO-Revision-Date: 2015-01-02 21:27:52+0000\n"
+"PO-Revision-Date: 2015-04-14 12:00:21+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -12,51 +12,51 @@ msgstr ""
 
 #: common.php:1034
 msgid "You don't have permission to optimize images."
-msgstr ""
+msgstr "U beschikt niet over de nodige rechten om afbeeldingen te optimaliseren."
 
 #: common.php:2908
 msgid "Faster lossy optimization"
-msgstr ""
+msgstr "Snellere optimalisatie met kwaliteitsverlies"
 
 #: common.php:2908
 msgid "Speed up the lossy operations by performing less compression."
-msgstr ""
+msgstr "Verhoog de snelheid van bewerkingen met kwaliteitsverlies door compressie te verminderen."
 
 #: common.php:2916
 msgid "Requires an EWWW Image Optimizer Cloud Subscription."
-msgstr ""
+msgstr "EWW Image Optimizer Cloud abonnement vereist."
 
 #: common.php:2918
 msgid "Uses pngquant locally. Use EWWW I.O. Cloud for even better lossy compression."
-msgstr ""
+msgstr "Maakt lokaal gebruik van pngquant. Gebruik EWWW I.O. Cloud voor een nog betere compressie met kwaliteitsverlies."
 
 #: common.php:2976
 msgid "Uses output buffering and libxml functionality from PHP. Use this if the Apache rewrite rules do not work, or if your images are served from a CDN."
-msgstr ""
+msgstr "Maakt gebruik van uitvoer buffering en de libxml functie van PHP. Gebruik dit als de Apache rewrite regels niet werken, of als Uw afbeeldingen worden geserveerd via een CDN."
 
 #: common.php:1327
 msgid "optimized %1$d images, usage will reset in %2$d day."
 msgid_plural "optimized %1$d images, usage will reset in %2$d days."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%1$d afbeeldingen geoptimaliseerd, gebruik wordt gereset in %2$d dag. "
+msgstr[1] "%1$d afbeeldingen geoptimaliseerd, gebruik wordt gereset in %2$d dagen. "
 
 #: common.php:1329
 msgid "%1$d image credit remaining."
 msgid_plural "%1$d image credits remaining."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Er is nog %1$d afbeelding krediet beschikbaar."
+msgstr[1] "Er zijn nog %1$d afbeelding kredieten beschikbaar."
 
 #: common.php:2956
 msgid "Include Media Library Folders"
-msgstr ""
+msgstr "Media bibliotheekmappen inbegrepen "
 
 #: common.php:2956
 msgid "If you have disabled automatic optimization, enable this if you want Scheduled Optimization to include the latest two folders from the Media Library."
-msgstr ""
+msgstr "Indien u automatische optimalisatie hebt uitgeschakeld, kan u dit selecteren om de laatste twee bibliotheekmappen mee te nemen in de geplande optimalisatie."
 
 #: common.php:2976
 msgid "Alternative WebP Rewriting"
-msgstr ""
+msgstr "Alternatief WebP Herschrijven"
 
 #: bulk.php:350
 msgid "%d images"
