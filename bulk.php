@@ -106,6 +106,7 @@ function ewww_image_optimizer_count_optimized ( $gallery, $return_ids = false ) 
 			// retrieve all the image attachment metadata from the database
 			while ( $attachments = $wpdb->get_results( "SELECT metas.meta_value,post_id FROM $wpdb->postmeta metas INNER JOIN $wpdb->posts posts ON posts.ID = metas.post_id WHERE posts.post_mime_type LIKE '%image%' AND metas.meta_key = '_wp_attachment_metadata' $attachment_query LIMIT $offset, $max_query", ARRAY_N ) ) {
 				$ewww_debug .= "fetched " . count( $attachments ) . " attachments starting at $offset<br>";
+				$disabled_sizes = ewww_image_optimizer_get_option( 'ewww_image_optimizer_disable_resizes' );
 				foreach ($attachments as $attachment) {
 					$meta = unserialize($attachment[0]);
 					if (empty($meta)) {
@@ -118,6 +119,9 @@ function ewww_image_optimizer_count_optimized ( $gallery, $return_ids = false ) 
 					// resized versions, so we can continue
 					if (isset($meta['sizes']) ) {
 						foreach($meta['sizes'] as $size => $data) {
+							if ( ! empty( $disabled_sizes[$size] ) ) {
+								continue;
+							}
 							$resize_count++;
 							if (empty($meta['sizes'][$size]['ewww_image_optimizer'])) {
 								$unoptimized_re++;

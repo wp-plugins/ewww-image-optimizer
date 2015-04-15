@@ -197,6 +197,10 @@ Pngout, TinyJPG/TinyPNG, JPEGmini, and Pngquant were recommended by EWWW IO user
 * EWWW I.O. as a stand-alone tool
 * If you would like to help translate this plugin in your language, get started here: http://translate.ewww.io/projects/ewww-image-optimizer/
 
+= 2.3.3 =
+* new: advanced option to exclude specific resizes from optimization
+* fixed: check to prevent issues with reloading nextgen2 support was only half-effective
+
 = 2.3.2 =
 * fixed: sql error for duplicate key name during plugin upgrade
 * fixed: is_plugin_active undefined during scheduled optimization
