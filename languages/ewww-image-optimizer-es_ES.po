@@ -2,7 +2,7 @@
 # This file is distributed under the same license as the EWWW Image Optimizer package.
 msgid ""
 msgstr ""
-"PO-Revision-Date: 2015-04-07 03:53:16+0000\n"
+"PO-Revision-Date: 2015-04-16 17:04:56+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -101,7 +101,7 @@ msgstr "Hay demasiadas imágenes para mostrar."
 
 #: iocli.php:84 iocli.php:149
 msgid "%1$d images in other folders need optimizing."
-msgstr "Necesitan optimización %1$d imágenes en otras carpetas ."
+msgstr "Necesitan optimización %1$d imágenes en otras carpetas."
 
 #: iocli.php:126
 msgid "NextGEN/Nextcellent not installed."
@@ -531,7 +531,7 @@ msgstr "Pngout no se ha instalado: %1$s. Asegúrese de que esta carpeta tiene pe
 
 #: common.php:2693
 msgid "Plugin Home Page"
-msgstr "Página de Inicio del plugin"
+msgstr "Página de inicio del plugin"
 
 #: common.php:2694 ewww-image-optimizer.php:418 ewww-image-optimizer.php:540
 msgid "Installation Instructions"
