@@ -662,10 +662,10 @@ function ewww_image_optimizer_aux_images_script($hook) {
 		} else {
 			echo $attachments;
 		}
-	ewwwio_memory( __FUNCTION__ );
+		ewwwio_memory( __FUNCTION__ );
 		die();
 	} else {
-	ewwwio_memory( __FUNCTION__ );
+		ewwwio_memory( __FUNCTION__ );
 		return;
 	}
 }

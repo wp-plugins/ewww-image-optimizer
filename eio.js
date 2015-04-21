@@ -188,7 +188,7 @@ jQuery(document).ready(function($) {
 			}
 	        })
 		.fail(function() { 
-			$('#ewww-scanning').html('<p style="color: red"><b>Operation timed out, you may need to increase the max_execution_time for PHP</b></p>');
+			$('#ewww-scanning').html('<p style="color: red"><b>' + ewww_vars.scan_fail + '</b></p>');
 		});
 		return false;
 	});
@@ -397,12 +397,12 @@ jQuery(document).ready(function($) {
 	                $('#ewww-bulk-status').append( response );
 			var ewww_exceed=/exceeded/m;
 			if (ewww_exceed.test(response)) {
-				$('#ewww-bulk-loading').html('<p style="color: red"><b>License Exceeded</b></p>');
+				$('#ewww-bulk-loading').html('<p style="color: red"><b>' + ewww_vars.license_exceeded + '</b></p>');
 			}
 			else if (ewww_k == 9) {
 				ewww_jqxhr.abort();
 				ewwwAuxCleanup();
-				$('#ewww-bulk-loading').html('<p style="color: red"><b>Optimization stopped, reload page to resume.</b></p>');
+				$('#ewww-bulk-loading').html('<p style="color: red"><b>' + ewww_vars.operation_stopped + '</b></p>');
 			}
 			else if (ewww_i < ewww_attachments.length) {
 				ewww_error_counter = 30;
@@ -422,9 +422,9 @@ jQuery(document).ready(function($) {
 	        })
 		.fail(function() { 
 			if (ewww_error_counter == 0) {
-				$('#ewww-bulk-loading').html('<p style="color: red"><b>Operation Interrupted</b></p>');
+				$('#ewww-bulk-loading').html('<p style="color: red"><b>' + ewww_vars.operation_interrupted + '</b></p>');
 			} else {
-				$('#ewww-bulk-loading').html('<p style="color: red"><b>Temporary failure, retrying for ' + ewww_error_counter + ' more seconds.</b></p>');
+				$('#ewww-bulk-loading').html('<p style="color: red"><b>' + ewww_vars.temporary_failure + ' ' + ewww_error_counter + '</b></p>');
 				ewww_error_counter--;
 				setTimeout(function() {
 					ewwwProcessImage();
@@ -514,7 +514,7 @@ function ewwwRemoveImage(imageID) {
 			ewww_vars.count_string = ewww_vars.count_string.replace( ewww_prev_count, ewww_vars.image_count );
 			jQuery('.displaying-num').text(ewww_vars.count_string);
 		} else {
-			alert("could not remove image from table.");
+			alert(ewww_vars.remove_failed);
 		}
 	});
 }
