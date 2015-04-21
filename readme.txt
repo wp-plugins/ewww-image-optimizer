@@ -3,7 +3,7 @@ Contributors: nosilver4u
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MKMQKCBFFG3WW
 Tags: image, attachment, optimize, optimization, lossless, lossy, photo, picture, seo, compression, gmagick, jpegtran, gifsicle, optipng, pngout, pngquant, jpegmini, tinyjpg, tinypng, webp, wp-cli 
 Requires at least: 3.5
-Tested up to: 4.2-beta4
+Tested up to: 4.2
 Stable tag: 2.3.2
 License: GPLv3
 
@@ -197,9 +197,10 @@ Pngout, TinyJPG/TinyPNG, JPEGmini, and Pngquant were recommended by EWWW IO user
 * EWWW I.O. as a stand-alone tool
 * If you would like to help translate this plugin in your language, get started here: http://translate.ewww.io/projects/ewww-image-optimizer/
 
-= 2.3.3 =
-* new: advanced option to exclude specific resizes from optimization
+= 2.4.0 =
+* new: advanced option to disable specific resizes or just exclude them from optimization
 * fixed: check to prevent issues with reloading nextgen2 support was only half-effective
+* fixed: previous fix for wrong slash on Windows breaks savings settings for Network sites
 
 = 2.3.2 =
 * fixed: sql error for duplicate key name during plugin upgrade

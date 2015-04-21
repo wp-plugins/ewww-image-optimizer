@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate image optimizers into WordPress.
- * @version 2.3.2.1
+ * @version 2.3.2.2
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -10,7 +10,7 @@ Plugin URI: http://wordpress.org/extend/plugins/ewww-image-optimizer/
 Description: Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
 Author: Shane Bishop
 Text Domain: ewww-image-optimizer
-Version: 2.3.2.1
+Version: 2.3.2.2
 Author URI: https://ewww.io/
 License: GPLv3
 */
@@ -21,17 +21,10 @@ License: GPLv3
 define('EWWW_IMAGE_OPTIMIZER_DOMAIN', 'ewww-image-optimizer');
 // this is the full path of the plugin file itself
 define('EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE', __FILE__);
-if ( strtoupper( substr( PHP_OS, 0, 3 ) ) == 'WIN' ) {
-	// this is the path of the plugin file relative to the plugins\ folder
-	define('EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE_REL', 'ewww-image-optimizer\ewww-image-optimizer.php');
-	// the folder where we install optimization tools
-	define('EWWW_IMAGE_OPTIMIZER_TOOL_PATH', WP_CONTENT_DIR . '\ewww\\');
-} else {
-	// this is the path of the plugin file relative to the plugins/ folder
-	define('EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE_REL', 'ewww-image-optimizer/ewww-image-optimizer.php');
-	// the folder where we install optimization tools
-	define('EWWW_IMAGE_OPTIMIZER_TOOL_PATH', WP_CONTENT_DIR . '/ewww/');
-}
+// this is the path of the plugin file relative to the plugins/ folder
+define('EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE_REL', 'ewww-image-optimizer/ewww-image-optimizer.php');
+// the folder where we install optimization tools
+define('EWWW_IMAGE_OPTIMIZER_TOOL_PATH', WP_CONTENT_DIR . '/ewww/');
 // this is the full system path to the plugin folder
 define('EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH', plugin_dir_path(__FILE__));
 
@@ -1051,7 +1044,6 @@ function ewww_image_optimizer_tool_found($path, $tool) {
 			exec($path . ' -V 2>&1', $pngquant_version);
 			if ( ! empty( $pngquant_version ) ) $ewww_debug .= "$path: $pngquant_version[0]<br>";
 			if ( ! empty( $pngquant_version ) && substr( $pngquant_version[0], 0, 3 ) >= 2.0 ) {
-			//if (!empty($pngquant_version) && strpos($pngquant_version[0], '2.0') === 0) {
 				$ewww_debug .= 'optimizer found<br>';
 				return $pngquant_version[0];
 			}
@@ -2017,7 +2009,7 @@ function ewww_image_optimizer_install_pngout() {
 	if (!isset($sendback)) {
 		$sendback = add_query_arg(array('ewww_pngout' => 'failed', 'ewww_error' => urlencode($pngout_error)), remove_query_arg(array('ewww_pngout', 'ewww_error'), wp_get_referer()));
 	}
-	wp_redirect($sendback);
+	wp_redirect( esc_url_raw( $sendback) );
 	ewwwio_memory( __FUNCTION__ );
 	exit(0);
 }

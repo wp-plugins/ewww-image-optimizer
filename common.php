@@ -1,7 +1,7 @@
 <?php
 // common functions for Standard and Cloud plugins
 
-define( 'EWWW_IMAGE_OPTIMIZER_VERSION', '232.1' );
+define( 'EWWW_IMAGE_OPTIMIZER_VERSION', '232.2' );
 
 // initialize debug global
 $disabled = ini_get( 'disable_functions' );
@@ -86,14 +86,12 @@ if ( ! ewww_image_optimizer_get_option( 'ewww_image_optimizer_noauto' ) ) {
 	add_filter( 'wp_handle_upload', 'ewww_image_optimizer_handle_upload' );
 	// used to turn off ewwwio_image_editor during uploads
 	add_action( 'add_attachment', 'ewww_image_optimizer_add_attachment' );
-	$disabled_sizes_opt = ewww_image_optimizer_get_option( 'ewww_image_optimizer_disable_resizes_opt' );
-	if ( ! empty( $disabled_sizes_opt ) ) {
-		// use this to turn off ewwwio_image_editor during save from the actual image editor
-		add_filter( 'load_image_to_edit_path', 'ewww_image_optimizer_editor_save_pre' );
-	}
 	add_filter( 'wp_image_editors', 'ewww_image_optimizer_load_editor', 60 );
 	add_filter( 'wp_generate_attachment_metadata', 'ewww_image_optimizer_resize_from_meta_data', 15, 2 );
 }
+// this filter turns off ewwwio_image_editor during save from the actual image editor
+// and ensures that we parse the resizes list during the image editor save function
+add_filter( 'load_image_to_edit_path', 'ewww_image_optimizer_editor_save_pre' );
 // this hook is used to ensure we populate the metadata with webp images
 add_filter( 'wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment_metadata', 8, 2 );
 add_filter( 'manage_media_columns', 'ewww_image_optimizer_columns' );
@@ -331,8 +329,14 @@ function ewww_image_optimizer_preinit() {
 	if ( is_multisite() ) {
 		$active_plugins = array_merge( $active_plugins, array_flip( get_site_option( 'active_sitewide_plugins' ) ) );
 	}
-
-	$ewww_plugins_path = str_replace( EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE_REL, '', EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE );
+	
+	
+	if ( strtoupper( substr( PHP_OS, 0, 3 ) ) == 'WIN' ) {
+		$ewww_plugins_path = str_replace( '/', '\\', EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE_REL );
+	} else {
+		$ewww_plugins_path = EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE_REL;
+	}
+	$ewww_plugins_path = str_replace( $ewww_plugins_path, '', EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE );
 
 	foreach ($active_plugins as $active_plugin) {
 		if ( strpos( $active_plugin, 'nggallery.php' ) ) {
@@ -687,9 +691,11 @@ function ewww_image_optimizer_restore_editor_hooks( $metadata ) {
 function ewww_image_optimizer_editor_save_pre( $image ) {
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_editor_save_pre()</b><br>";
-	remove_filter( 'wp_image_editors', 'ewww_image_optimizer_load_editor', 60 );
-	add_filter( 'wp_update_attachment_metadata', 'ewww_image_optimizer_restore_editor_hooks', 1 );
-	add_filter( 'wp_update_attachment_metadata', 'ewww_image_optimizer_resize_from_meta_data', 15, 2 );
+	if ( ! ewww_image_optimizer_get_option( 'ewww_image_optimizer_noauto' ) ) {
+		remove_filter( 'wp_image_editors', 'ewww_image_optimizer_load_editor', 60 );
+		add_filter( 'wp_update_attachment_metadata', 'ewww_image_optimizer_restore_editor_hooks', 1 );
+		add_filter( 'wp_update_attachment_metadata', 'ewww_image_optimizer_resize_from_meta_data', 15, 2 );
+	}
 	add_filter( 'intermediate_image_sizes', 'ewww_image_optimizer_image_sizes_advanced' );
 	return $image;
 }
@@ -699,12 +705,21 @@ function ewww_image_optimizer_image_sizes_advanced( $sizes ) {
 	global $ewww_debug;
 	$ewww_debug .= '<b>ewww_image_optimizer_image_sizes_advanced()</b><br>';
 	$disabled_sizes = ewww_image_optimizer_get_option( 'ewww_image_optimizer_disable_resizes' );
+	$flipped = false;
 	if ( ! empty( $disabled_sizes ) ) {
+		if ( ! empty( $sizes[0] ) ) {
+			$sizes = array_flip( $sizes );
+			$flipped = true;
+		}
+		$ewww_debug .= print_r( $sizes, true ) . '<br>';
 		foreach ( $disabled_sizes as $size => $disabled ) {
 			if ( ! empty( $disabled ) ) {
 				$ewww_debug .= "size disabled: $size<br>";
 				unset( $sizes[$size] );
 			}
+		}
+		if ( $flipped ) {
+			$sizes = array_flip( $sizes );
 		}
 	}
 	return $sizes;
