@@ -512,7 +512,7 @@ if ( ! class_exists( 'EWWWIO_Gallery_Storage' ) && class_exists( 'Mixin' ) && ! 
 	class EWWWIO_Gallery_Storage extends Mixin {
 		function generate_image_size( $image, $size, $params = null, $skip_defaults = false ) {
 			global $ewww_debug;
-			if (!defined('EWWW_IMAGE_OPTIMIZER_JPEGTRAN'))
+			if (!defined('EWWW_IMAGE_OPTIMIZER_CLOUD'))
 				ewww_image_optimizer_init();
 			$success = $this->call_parent( 'generate_image_size', $image, $size, $params, $skip_defaults );
 			if ( $success ) {

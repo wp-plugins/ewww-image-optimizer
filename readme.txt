@@ -201,6 +201,8 @@ Pngout, TinyJPG/TinyPNG, JPEGmini, and Pngquant were recommended by EWWW IO user
 * new: advanced option to disable specific resizes or just exclude them from optimization
 * fixed: check to prevent issues with reloading nextgen2 support was only half-effective
 * fixed: previous fix for wrong slash on Windows breaks savings settings for Network sites
+* fixed: WP_Image_Editor init() check was not checking the right constant
+* added: protection to prevent corruption of images in case of broken mimetype detection
 
 = 2.3.2 =
 * fixed: sql error for duplicate key name during plugin upgrade

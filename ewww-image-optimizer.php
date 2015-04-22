@@ -113,30 +113,30 @@ function ewww_image_optimizer_exec_init() {
 }
 
 // check for binary installation and availability
-function ewww_image_optimizer_tool_init( $hook = false, $admin = true ) {
+function ewww_image_optimizer_tool_init() {
 	global $ewww_debug;
 //	global $ewww_admin;
 	$ewww_debug .= "<b>ewww_image_optimizer_tool_init()</b><br>";
-	if ( $admin ) {
+/*	if ( $admin ) {
 		$ewww_debug .= 'we are in the admin, feel free to shout<br>';
 	} else {
 		$ewww_debug .= 'no admin, be quiet<br>';
-	}
+	}*/
 	// make sure the bundled tools are installed
 	if( ! ewww_image_optimizer_get_option( 'ewww_image_optimizer_skip_bundle' ) ) {
 		ewww_image_optimizer_install_tools ();
 	}
-	if ( $admin ) {
+//	if ( $admin ) {
 		//then we run the function to check for optimization utilities
 		add_action( 'network_admin_notices', 'ewww_image_optimizer_notice_utils' );
 		add_action( 'admin_notices', 'ewww_image_optimizer_notice_utils' );
-	} else {
+//	} else {
 		if ( EWWW_IMAGE_OPTIMIZER_CLOUD ) {
 			$ewww_debug .= 'cloud options enabled, shutting off binaries<br>';
 			ewww_image_optimizer_disable_tools();
 		}
-		ewww_image_optimizer_notice_utils();
-	}
+//		ewww_image_optimizer_notice_utils();
+//	}
 }
 
 // set some default option values
@@ -245,21 +245,19 @@ function ewww_image_optimizer_install_paths () {
 // installs the executables that are bundled with the plugin
 function ewww_image_optimizer_install_tools () {
 	global $ewww_debug;
-	global $ewww_admin;
+//	global $ewww_admin;
 	$ewww_debug .= "<b>ewww_image_optimizer_install_tools()</b><br>";
-	if ( $ewww_admin ) {
+/*	if ( $ewww_admin ) {
 		$ewww_debug .= 'we are in the admin, feel free to shout<br>';
 	} else {
 		$ewww_debug .= 'no admin, be quiet<br>';
-	}
+	}*/
 	$ewww_debug .= "Checking/Installing tools in " . EWWW_IMAGE_OPTIMIZER_TOOL_PATH . "<br>";
 	$toolfail = false;
 	if (!is_dir(EWWW_IMAGE_OPTIMIZER_TOOL_PATH)) {
 		$ewww_debug .= "Folder doesn't exist, creating...<br>";
 		if ( ! mkdir( EWWW_IMAGE_OPTIMIZER_TOOL_PATH ) ) {
-			if ( $ewww_admin ) {
-				echo "<div id='ewww-image-optimizer-warning-tool-install' class='error'><p><strong>" . __('EWWW Image Optimizer could not create the tool folder', EWWW_IMAGE_OPTIMIZER_DOMAIN) . ": " . htmlentities(EWWW_IMAGE_OPTIMIZER_TOOL_PATH) . ".</strong> " . __('Please adjust permissions or create the folder', EWWW_IMAGE_OPTIMIZER_DOMAIN) . ".</p></div>";
-			}
+			echo "<div id='ewww-image-optimizer-warning-tool-install' class='error'><p><strong>" . __('EWWW Image Optimizer could not create the tool folder', EWWW_IMAGE_OPTIMIZER_DOMAIN) . ": " . htmlentities(EWWW_IMAGE_OPTIMIZER_TOOL_PATH) . ".</strong> " . __('Please adjust permissions or create the folder', EWWW_IMAGE_OPTIMIZER_DOMAIN) . ".</p></div>";
 			$ewww_debug .= "Couldn't create folder<br>";
 			return;
 		}
@@ -413,7 +411,7 @@ function ewww_image_optimizer_install_tools () {
 			}
 		}
 	}
-	if ( $toolfail && $ewww_admin ) {
+	if ( $toolfail ) {
 		echo "<div id='ewww-image-optimizer-warning-tool-install' class='error'><p><strong>" . sprintf(__('EWWW Image Optimizer could not install tools in %s', EWWW_IMAGE_OPTIMIZER_DOMAIN), htmlentities(EWWW_IMAGE_OPTIMIZER_TOOL_PATH)) . ".</strong> " . sprintf(__('Please adjust permissions or create the folder. If you have installed the tools elsewhere on your system, check the option to %s.', EWWW_IMAGE_OPTIMIZER_DOMAIN), __('Use System Paths', EWWW_IMAGE_OPTIMIZER_DOMAIN)) . " " . sprintf(__('For more details, visit the %1$s or the %2$s.', EWWW_IMAGE_OPTIMIZER_DOMAIN), "<a href='options-general.php?page=" . EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE_REL . "'>" . __('Settings Page', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a>", "<a href='http://wordpress.org/extend/plugins/ewww-image-optimizer/installation/'>" . __('Installation Instructions', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a>.</p></div>");
 	}
 	ewwwio_memory( __FUNCTION__ );
@@ -981,15 +979,15 @@ function ewww_image_optimizer_mimetype($path, $case) {
 	}
 	// if we are dealing with a binary, and found an executable
 	if ($case == 'b' && preg_match('/executable|octet-stream/', $type)) {
-	ewwwio_memory( __FUNCTION__ );
+		ewwwio_memory( __FUNCTION__ );
 		return $type;
 	// otherwise, if we are dealing with an image
 	} elseif ($case == 'i') {
-	ewwwio_memory( __FUNCTION__ );
+		ewwwio_memory( __FUNCTION__ );
 		return $type;
 	// if all else fails, bail
 	} else {
-	ewwwio_memory( __FUNCTION__ );
+		ewwwio_memory( __FUNCTION__ );
 		return false;
 	}
 }
@@ -1180,7 +1178,7 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 	}
 	$ewww_debug .= "permissions: $file_perms, owner: $file_owner, group: $file_group <br>";
 	$type = ewww_image_optimizer_mimetype($file, 'i');
-	if (!$type) {
+	if ( strpos( $type, 'image' ) === FALSE ) {
 		//otherwise we store an error message since we couldn't get the mime-type
 		$msg = __('Missing finfo_file(), getimagesize() and mime_content_type() PHP functions', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 		$ewww_debug .= "couldn't find any functions for mimetype detection<br>";
@@ -1380,14 +1378,14 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 				}
 				$ewww_debug .= "optimized JPG size: $new_size<br>";
 				// if the best-optimized is smaller than the original JPG, and we didn't create an empty JPG
-				if ($orig_size > $new_size && $new_size != 0) {
+				if ( $orig_size > $new_size && $new_size != 0 && ewww_image_optimizer_mimetype($tempfile, 'i') == $type ) {
 					// replace the original with the optimized file
 					rename($tempfile, $file);
 					// store the results of the optimization
 					$result = "$orig_size vs. $new_size";
 				// if the optimization didn't produce a smaller JPG
 				} else {
-					if (is_file($tempfile)) {
+					if ( is_file( $tempfile ) ) {
 						// delete the optimized file
 						unlink($tempfile);
 					}
@@ -1466,14 +1464,14 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 				}
 				$ewww_debug .= "converted PNG size: $png_size<br>";
 				// if the PNG is smaller than the original JPG, and we didn't end up with an empty file
-				if ($new_size > $png_size && $png_size != 0) {
+				if ( $new_size > $png_size && $png_size != 0 && ewww_image_optimizer_mimetype($pngfile, 'i') == 'image/png' ) {
 					$ewww_debug .= "converted PNG is better: $png_size vs. $new_size<br>";
 					// store the size of the converted PNG
 					$new_size = $png_size;
 					// check to see if the user wants the originals deleted
-					if (ewww_image_optimizer_get_option('ewww_image_optimizer_delete_originals') == TRUE) {
+					if ( ewww_image_optimizer_get_option( 'ewww_image_optimizer_delete_originals' ) == TRUE ) {
 						// delete the original JPG
-						unlink($file);
+						unlink( $file );
 					}
 					// store the location of the PNG file
 					$file = $pngfile;
@@ -1485,8 +1483,8 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 					$ewww_debug .= "converted PNG is no good<br>";
 					// otherwise delete the PNG
 					$converted = FALSE;
-					if (is_file($pngfile)) {
-						unlink ($pngfile);
+					if ( is_file( $pngfile ) ) {
+						unlink ( $pngfile );
 					}
 				}
 			}
@@ -1583,20 +1581,20 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 					$ewww_debug .= "attempting lossy reduction<br>";
 					exec( "$nice " . $tools['PNGQUANT'] . " " . ewww_image_optimizer_escapeshellarg( $file ) );
 					$quantfile = preg_replace( '/\.\w+$/', '-fs8.png', $file );
-					if ( file_exists( $quantfile ) && filesize( $file ) > filesize( $quantfile ) ) {
+					if ( file_exists( $quantfile ) && filesize( $file ) > filesize( $quantfile ) && ewww_image_optimizer_mimetype($quantfile, 'i') == $type ) {
 						$ewww_debug .= "lossy reduction is better: original - " . filesize( $file ) . " vs. lossy - " . filesize( $quantfile ) . "<br>";
-						rename($quantfile, $file);
+						rename( $quantfile, $file );
 					} elseif ( file_exists( $quantfile ) ) {
 						$ewww_debug .= "lossy reduction is worse: original - " . filesize( $file ) . " vs. lossy - " . filesize( $quantfile ) . "<br>";
-						unlink($quantfile);
+						unlink( $quantfile );
 					} else {
 						$ewww_debug .= "pngquant did not produce any output<br>";
 					}
 				}
 				// if optipng is enabled
-				if(!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_optipng')) {
+				if( ! ewww_image_optimizer_get_option( 'ewww_image_optimizer_disable_optipng' ) ) {
 					// retrieve the optimization level for optipng
-					$optipng_level = ewww_image_optimizer_get_option('ewww_image_optimizer_optipng_level');
+					$optipng_level = ewww_image_optimizer_get_option( 'ewww_image_optimizer_optipng_level' );
 					if ( ewww_image_optimizer_get_option( 'ewww_image_optimizer_jpegtran_copy' ) && preg_match( '/0.7/', ewww_image_optimizer_tool_found( $tools['OPTIPNG'], 'o' ) ) && ! $keep_metadata ) {
 						$strip = '-strip all ';
 					} else {
@@ -1728,7 +1726,7 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 				} 
 				$ewww_debug .= "converted JPG size: $jpg_size<br>";
 				// if the new JPG is smaller than the original PNG
-				if ($new_size > $jpg_size && $jpg_size != 0) {
+				if ( $new_size > $jpg_size && $jpg_size != 0 && ewww_image_optimizer_mimetype($jpgfile, 'i') == 'image/jpeg' ) {
 					// store the size of the JPG as the new filesize
 					$new_size = $jpg_size;
 					// if the user wants originals delted after a conversion
@@ -1810,7 +1808,7 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 					// retrieve the filesize of the temporary GIF
 					$new_size = filesize($tempfile);
 					// if the new GIF is smaller
-					if ($orig_size > $new_size && $new_size != 0) {
+					if ($orig_size > $new_size && $new_size != 0 && ewww_image_optimizer_mimetype($tempfile, 'i') == $type ) {
 						// replace the original with the optimized file
 						rename($tempfile, $file);
 						// store the results of the optimization
@@ -1869,7 +1867,7 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 					// retrieve the filesize of the PNG
 					$png_size = filesize($pngfile);
 					// if the new PNG is smaller than the original GIF
-					if ($new_size > $png_size && $png_size != 0) {
+					if ($new_size > $png_size && $png_size != 0 && ewww_image_optimizer_mimetype($pngfile, 'i') == 'image/png' ) {
 						// store the PNG size as the new filesize
 						$new_size = $png_size;
 						// if the user wants original GIFs deleted after successful conversion

@@ -368,27 +368,27 @@ function ewww_image_optimizer_preinit() {
 /**
  * Plugin initialization function
  */
-function ewww_image_optimizer_init( $admin = false ) {
+function ewww_image_optimizer_init() {
 	ewwwio_memory( __FUNCTION__ );
 	global $ewww_debug;
 	global $ewww_memory;
-	global $ewww_admin;
-	$ewww_admin = $admin;
+//	global $ewww_admin;
+//	$ewww_admin = $admin;
 	$ewww_debug .= "<b>ewww_image_optimizer_init()</b><br>";
-	if ( $ewww_admin ) {
+/*	if ( $ewww_admin ) {
 		$ewww_debug .= 'we are in the admin, feel free to shout<br>';
 	} else {
 		$ewww_debug .= 'no admin, be quiet<br>';
-	}
+	}*/
 	if (get_option('ewww_image_optimizer_version') < EWWW_IMAGE_OPTIMIZER_VERSION) {
 		ewww_image_optimizer_install_table();
 		ewww_image_optimizer_set_defaults();
 		update_option('ewww_image_optimizer_version', EWWW_IMAGE_OPTIMIZER_VERSION);
 	}
 	ewww_image_optimizer_cloud_init();
-	if ( ! $ewww_admin ) {
+//	if ( ! $ewww_admin ) {
 //		ewww_image_optimizer_tool_init();
-	}
+//	}
 	ewwwio_memory( __FUNCTION__ );
 }
 
@@ -397,7 +397,7 @@ function ewww_image_optimizer_admin_init() {
 	ewwwio_memory( __FUNCTION__ );
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_admin_init()</b><br>";
-	ewww_image_optimizer_init( true );
+	ewww_image_optimizer_init();
 	if (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network(EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE_REL)) {
 		// set the common network settings if they have been POSTed
 		if ( isset( $_POST['ewww_image_optimizer_delay'] ) && wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww_image_optimizer_options-options' ) ) {
@@ -1175,7 +1175,8 @@ function ewww_image_optimizer_restore_from_meta_data($meta, $id) {
 			$meta['ewww_image_optimizer'] = __('Original Restored', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 			$meta['orig_file'] = $file_path;
 			$meta['converted'] = 0;
-			unlink($meta['orig_file']);
+			unlink( $meta['orig_file'] );
+			unset( $meta['orig_file'] );
 			$meta['file'] = str_replace($upload_path, '', $meta['file']);
 			// if we don't already have the update attachment filter
 			if (FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment'))
@@ -1213,6 +1214,7 @@ function ewww_image_optimizer_restore_from_meta_data($meta, $id) {
 							// add the update attachment filter
 							add_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10, 2);
 					unlink($base_dir . $data['file']);
+					unset( $meta['sizes'][$size]['orig_file'] );
 				}
 				// store info on the sizes we've processed, so we can check the list for duplicate sizes
 				$processed[$size]['width'] = $data['width'];
@@ -1586,7 +1588,7 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $n
 		} else {
 			unlink($tempfile);
 		}
-	ewwwio_memory( __FUNCTION__ );
+		ewwwio_memory( __FUNCTION__ );
 		return array($file, $converted, $msg, $newsize);
 	}
 }
