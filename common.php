@@ -331,16 +331,16 @@ function ewww_image_optimizer_preinit() {
 	}
 	
 	
-	if ( strtoupper( substr( PHP_OS, 0, 3 ) ) == 'WIN' ) {
+	/*if ( strtoupper( substr( PHP_OS, 0, 3 ) ) == 'WIN' ) {
 		$ewww_plugins_path = str_replace( '/', '\\', EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE_REL );
 	} else {
 		$ewww_plugins_path = EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE_REL;
 	}
-	$ewww_plugins_path = str_replace( $ewww_plugins_path, '', EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE );
-
+	$ewww_plugins_path = str_replace( $ewww_plugins_path, '', EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE );*/
 	foreach ($active_plugins as $active_plugin) {
 		if ( strpos( $active_plugin, 'nggallery.php' ) ) {
-			$ngg = ewww_image_optimizer_get_plugin_version( $ewww_plugins_path . $active_plugin );
+			//$ngg = ewww_image_optimizer_get_plugin_version( $ewww_plugins_path . $active_plugin );
+			$ngg = ewww_image_optimizer_get_plugin_version( trailingslashit( WP_PLUGIN_DIR ) . $active_plugin );
 			// include the file that loads the nextgen gallery optimization functions
 			$ewww_debug .= 'Nextgen version: ' . $ngg['Version'] . '<br>';
 			if (preg_match('/^2\./', $ngg['Version'])) { // for Nextgen 2

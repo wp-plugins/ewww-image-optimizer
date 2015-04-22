@@ -1591,6 +1591,8 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 						$ewww_debug .= "pngquant did not produce any output<br>";
 					}
 				}
+				$tempfile = $file . '.tmp';
+				copy( $file, $tempfile );
 				// if optipng is enabled
 				if( ! ewww_image_optimizer_get_option( 'ewww_image_optimizer_disable_optipng' ) ) {
 					// retrieve the optimization level for optipng
@@ -1601,14 +1603,32 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 						$strip = '';
 					}
 					// run optipng on the PNG file
-					exec( "$nice " . $tools['OPTIPNG'] . " -o$optipng_level -quiet $strip " . ewww_image_optimizer_escapeshellarg( $file ) );
+					exec( "$nice " . $tools['OPTIPNG'] . " -o$optipng_level -quiet $strip " . ewww_image_optimizer_escapeshellarg( $tempfile ) );
 				}
 				// if pngout is enabled
 				if(!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_pngout')) {
 					// retrieve the optimization level for pngout
 					$pngout_level = ewww_image_optimizer_get_option('ewww_image_optimizer_pngout_level');
 					// run pngout on the PNG file
-					exec( "$nice " . $tools['PNGOUT'] . " -s$pngout_level -q " . ewww_image_optimizer_escapeshellarg( $file ) );
+					exec( "$nice " . $tools['PNGOUT'] . " -s$pngout_level -q " . ewww_image_optimizer_escapeshellarg( $tempfile ) );
+				}
+				// retrieve the filesize of the temporary PNG
+				$new_size = filesize($tempfile);
+				// if the new PNG is smaller
+				if ($orig_size > $new_size && $new_size != 0 && ewww_image_optimizer_mimetype($tempfile, 'i') == $type ) {
+					// replace the original with the optimized file
+					rename($tempfile, $file);
+					// store the results of the optimization
+					$result = "$orig_size vs. $new_size";
+				// if the optimization didn't produce a smaller PNG
+				} else {
+					if (is_file($tempfile)) {
+						// delete the optimized file
+						unlink($tempfile);
+					}
+					// store the results
+					$result = 'unchanged';
+					$new_size = $orig_size;
 				}
 			// if conversion and optimization are both disabled we are done here
 			} elseif (!$convert) {
@@ -1801,7 +1821,7 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 			}
 			// if optimization is turned ON
 			if ($optimize) {
-				$tempfile = $file . ".tmp"; //temporary GIF output
+				$tempfile = $file . '.tmp'; //temporary GIF output
 				// run gifsicle on the GIF
 				exec( "$nice " . $tools['GIFSICLE'] . " -b -O3 --careful -o $tempfile " . ewww_image_optimizer_escapeshellarg( $file ) );
 				if (file_exists($tempfile)) {
