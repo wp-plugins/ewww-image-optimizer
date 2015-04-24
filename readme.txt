@@ -202,6 +202,7 @@ Pngout, TinyJPG/TinyPNG, JPEGmini, and Pngquant were recommended by EWWW IO user
 * fixed: check to prevent issues with reloading nextgen2 support was only half-effective
 * fixed: previous fix for wrong slash on Windows breaks savings settings for Network sites
 * fixed: WP_Image_Editor init() check was not checking the right constant
+* fixed: Alternative WebP Rewriting had a mismatched preg_replace causing broken <html> or <head> tags
 * added: protection to prevent corruption of images in case of broken mimetype detection
 
 = 2.3.2 =

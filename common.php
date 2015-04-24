@@ -283,7 +283,9 @@ function ewww_image_optimizer_filter_page_output( $buffer ) {
 		libxml_clear_errors();
 		libxml_use_internal_errors($libxml_previous_error_reporting);
 		if ( ! empty( $html_head ) ) {
-			$buffer = preg_replace('/<html.+>\s<head>/', $html_head[0], $buffer);
+		//preg_match( '/.+<head>/s', $buffer, $html_head );
+			//$buffer = preg_replace('/<html.+>\s<head>/', $html_head[0], $buffer);
+			$buffer = preg_replace('/.+<head>/s', $html_head[0], $buffer);
 		}
 //		$buffer = preg_replace('|</body>\s*</html>|', '', $buffer);
 		ewww_image_optimizer_debug_log();
