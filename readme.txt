@@ -198,12 +198,13 @@ Pngout, TinyJPG/TinyPNG, JPEGmini, and Pngquant were recommended by EWWW IO user
 * If you would like to help translate this plugin in your language, get started here: http://translate.ewww.io/projects/ewww-image-optimizer/
 
 = 2.4.0 =
-* new: advanced option to disable specific resizes or just exclude them from optimization
+* added: advanced option to disable specific resizes or just exclude them from optimization
+* added: Turkish and Swedish translations (with updates of most other translations)
+* added: protection to prevent corruption of images in case of broken mimetype detection
 * fixed: check to prevent issues with reloading nextgen2 support was only half-effective
 * fixed: previous fix for wrong slash on Windows breaks savings settings for Network sites
 * fixed: WP_Image_Editor init() check was not checking the right constant
 * fixed: Alternative WebP Rewriting had a mismatched preg_replace causing broken <html> or <head> tags
-* added: protection to prevent corruption of images in case of broken mimetype detection
 
 = 2.3.2 =
 * fixed: sql error for duplicate key name during plugin upgrade
