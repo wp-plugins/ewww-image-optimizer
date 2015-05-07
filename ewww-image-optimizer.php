@@ -37,10 +37,10 @@ add_action('admin_action_ewww_image_optimizer_install_pngout', 'ewww_image_optim
 function ewww_image_optimizer_cloud_init() {
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_cloud_init()</b><br>";
-	if (!defined('EWWW_IMAGE_OPTIMIZER_CLOUD') && ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_jpg') && ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_png') && ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_gif')) {
-		define('EWWW_IMAGE_OPTIMIZER_CLOUD', TRUE);
-	} elseif (!defined('EWWW_IMAGE_OPTIMIZER_CLOUD')) {
-		define('EWWW_IMAGE_OPTIMIZER_CLOUD', FALSE);
+	if ( ! defined( 'EWWW_IMAGE_OPTIMIZER_CLOUD' ) && ewww_image_optimizer_get_option( 'ewww_image_optimizer_cloud_jpg' ) && ewww_image_optimizer_get_option( 'ewww_image_optimizer_cloud_png' ) && ewww_image_optimizer_get_option( 'ewww_image_optimizer_cloud_gif' ) ) {
+		define( 'EWWW_IMAGE_OPTIMIZER_CLOUD', TRUE );
+	} elseif ( ! defined( 'EWWW_IMAGE_OPTIMIZER_CLOUD' ) ) {
+		define( 'EWWW_IMAGE_OPTIMIZER_CLOUD', FALSE );
 	}
 	ewwwio_memory( __FUNCTION__ );
 }
@@ -105,8 +105,8 @@ function ewww_image_optimizer_exec_init() {
 		add_action( 'load-ims_gallery_page_ewww-ims-optimize', 'ewww_image_optimizer_tool_init' );
 		add_action( 'load-media_page_ewww-image-optimizer-unoptimized', 'ewww_image_optimizer_tool_init' );
 		add_action( 'load-flagallery_page_flag-manage-gallery', 'ewww_image_optimizer_tool_init' );
-		add_action( 'load-gallery_page_nggallery-manage-gallery', 'ewww_image_optimizer_tool_init' );
-		add_action( 'load-galleries_page_nggallery-manage-gallery', 'ewww_image_optimizer_tool_init' );
+//		add_action( 'load-gallery_page_nggallery-manage-gallery', 'ewww_image_optimizer_tool_init' );
+//		add_action( 'load-galleries_page_nggallery-manage-gallery', 'ewww_image_optimizer_tool_init' );
 //		add_action( 'load-', 'ewww_image_optimizer_tool_init' );
 	} 
 	ewwwio_memory( __FUNCTION__ );
@@ -1184,12 +1184,12 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 		$ewww_debug .= "couldn't find any functions for mimetype detection<br>";
 		return array(false, $msg, $converted, $original);
 	}
-	if (!EWWW_IMAGE_OPTIMIZER_CLOUD) {
+	if ( ! EWWW_IMAGE_OPTIMIZER_CLOUD ) {
 		// check to see if 'nice' exists
 		$nice = ewww_image_optimizer_find_binary('nice', 'n');
 	}
 	// if the user has disabled the utility checks
-	if (ewww_image_optimizer_get_option('ewww_image_optimizer_skip_check') == TRUE || EWWW_IMAGE_OPTIMIZER_CLOUD) {
+	if ( ewww_image_optimizer_get_option( 'ewww_image_optimizer_skip_check' ) == TRUE || EWWW_IMAGE_OPTIMIZER_CLOUD) {
 		$skip_jpegtran_check = true;
 		$skip_optipng_check = true;
 		$skip_gifsicle_check = true;
@@ -1201,10 +1201,10 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 		$skip_gifsicle_check = false;
 		$skip_pngout_check = false;
 	}
-	if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_jpg')) {
+	if ( ewww_image_optimizer_get_option( 'ewww_image_optimizer_cloud_jpg' ) ) {
 		$skip_jpegtran_check = true;
 	}	
-	if (ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_png')) {
+	if ( ewww_image_optimizer_get_option( 'ewww_image_optimizer_cloud_png' ) ) {
 		$skip_optipng_check = true;
 		$skip_pngout_check = true;
 	}	

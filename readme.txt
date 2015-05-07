@@ -205,6 +205,7 @@ Pngout, TinyJPG/TinyPNG, JPEGmini, and Pngquant were recommended by EWWW IO user
 * fixed: previous fix for wrong slash on Windows breaks savings settings for Network sites
 * fixed: WP_Image_Editor init() check was not checking the right constant
 * fixed: Alternative WebP Rewriting had a mismatched preg_replace causing broken <html> or <head> tags
+* fixed: some NextGen bulk optimize functions were broken when using various translations
 
 = 2.3.2 =
 * fixed: sql error for duplicate key name during plugin upgrade
