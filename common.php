@@ -28,7 +28,7 @@ if ( ! isset( $wpdb->ewwwio_images ) ) {
 	$wpdb->ewwwio_images = $wpdb->prefix . "ewwwio_images";
 }
 
-add_action( 'contextual_help', 'wptuts_screen_help', 10, 3 );
+//add_action( 'contextual_help', 'wptuts_screen_help', 10, 3 );
 function wptuts_screen_help( $contextual_help, $screen_id, $screen ) {
  
     // The add_help_tab function for screen was introduced in WordPress 3.3.
