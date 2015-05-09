@@ -2,62 +2,62 @@
 # This file is distributed under the same license as the EWWW Image Optimizer package.
 msgid ""
 msgstr ""
-"PO-Revision-Date: 2015-03-31 22:03:47+0000\n"
+"PO-Revision-Date: 2015-05-08 20:45:05+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: GlotPress/0.1\n"
+"X-Generator: GlotPress/1.0-alpha-1000\n"
 "Project-Id-Version: EWWW Image Optimizer\n"
 
 #: bulk.php:349
 msgid "Operation timed out, you may need to increase the max_execution_time for PHP"
-msgstr ""
+msgstr "Превышено время ожидания, увеличьте параметр max_execution_time в настройках PHP"
 
 #: bulk.php:350 flag-integration.php:186 nextcellent-integration.php:368
 #: nextgen-integration.php:343 nextgen2-integration.php:385
 msgid "License Exceeded"
-msgstr ""
+msgstr "Лицензия превышена"
 
 #: bulk.php:351 flag-integration.php:187 nextcellent-integration.php:369
 #: nextgen-integration.php:344 nextgen2-integration.php:386
 msgid "Optimization stopped, reload page to resume."
-msgstr ""
+msgstr "Оптимизация остановлена, обновите страницу, чтобы продолжить."
 
 #: bulk.php:352 flag-integration.php:188 nextcellent-integration.php:370
 #: nextgen-integration.php:345 nextgen2-integration.php:387
 msgid "Operation Interrupted"
-msgstr ""
+msgstr "Операция прервана"
 
 #: bulk.php:353 flag-integration.php:189 nextcellent-integration.php:371
 #: nextgen-integration.php:346 nextgen2-integration.php:388
 msgid "Temporary failure, seconds left to retry:"
-msgstr ""
+msgstr "Сбой операции, повторная попытка через:"
 
 #: bulk.php:354 flag-integration.php:190 nextcellent-integration.php:372
 #: nextgen-integration.php:347 nextgen2-integration.php:389
 msgid "Could not remove image from table."
-msgstr ""
+msgstr "Невозможно удалить изображение из таблицы."
 
 #: common.php:2731
 msgid "Click to toggle"
-msgstr ""
+msgstr "Переключить"
 
 #: common.php:2991
 msgid "Disable Resizes"
-msgstr ""
+msgstr "Отключить изменение размеров"
 
 #: common.php:2991
 msgid "Wordpress, your theme, and other plugins generate various image sizes. You may disable optimization for certain sizes, or completely prevent those sizes from being created."
-msgstr ""
+msgstr "Wordpress, используемая тема оформления и плагины могут создавать изображения разных размеров. Для определенных типов изображений можно отключить оптимизацию или запретить создание произвольных миниатюр полностью."
 
 #: common.php:2996
 msgid "Disable Optimization"
-msgstr ""
+msgstr "Отключить оптимизацию"
 
 #: common.php:2996
 msgid "Disable Creation"
-msgstr ""
+msgstr "Отключить создание"
 
 #: common.php:1130
 msgid "You don't have permission to optimize images."
@@ -65,45 +65,45 @@ msgstr "У Вас нет прав доступа к этой функции!"
 
 #: common.php:2941
 msgid "Faster lossy optimization"
-msgstr ""
+msgstr "Быстрая оптимизация с потерями"
 
 #: common.php:2941
 msgid "Speed up the lossy operations by performing less compression."
-msgstr ""
+msgstr "Ускорьте оптимизацию за счет уменьшения степени сжатия."
 
 #: common.php:2949
 msgid "Requires an EWWW Image Optimizer Cloud Subscription."
-msgstr ""
+msgstr "Для работы требуется подписка на облачный сервис оптимизации сервис EWWW"
 
 #: common.php:2951
 msgid "Uses pngquant locally. Use EWWW I.O. Cloud for even better lossy compression."
-msgstr ""
+msgstr "Используется локальный плагин pngquant . Для лучшей оптимизации рекомендуем облачный сервис EWWW."
 
 #: common.php:3025
 msgid "Uses output buffering and libxml functionality from PHP. Use this if the Apache rewrite rules do not work, or if your images are served from a CDN."
-msgstr ""
+msgstr "Использует функционал буферизации и libxml из PHP. Опция рекомендуется лишь в случаях, когда rewrite rules сервера не работают корректно или изображения размещены на удаленном CDN."
 
 #: common.php:1423
 msgid "optimized %1$d images, usage will reset in %2$d day."
 msgid_plural "optimized %1$d images, usage will reset in %2$d days."
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "оптимизировано %1$d изображение, будет сброшено через %2$d день."
+msgstr[1] "оптимизировано %1$d изображения, будет сброшено через %2$d дня."
+msgstr[2] "оптимизировано %1$d изображений, будет сброшено через %2$d дней."
 
 #: common.php:1425
 msgid "%1$d image credit remaining."
 msgid_plural "%1$d image credits remaining."
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "%1$d данные изображений осталось."
+msgstr[1] "%1$d данных изображений осталось."
+msgstr[2] "%1$d данных изображений осталось."
 
 #: common.php:2989
 msgid "Include Media Library Folders"
-msgstr ""
+msgstr "Включить папки медиатеки"
 
 #: common.php:2989
 msgid "If you have disabled automatic optimization, enable this if you want Scheduled Optimization to include the latest two folders from the Media Library."
-msgstr ""
+msgstr "Если автоматическая оптимизация отключены, используйте опцию, если оптимизация по расписанию должна включать последние два каталога из медиатеки."
 
 #: common.php:3025
 msgid "Alternative WebP Rewriting"
