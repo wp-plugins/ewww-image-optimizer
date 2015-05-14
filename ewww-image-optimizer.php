@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate image optimizers into WordPress.
- * @version 2.4.0.1
+ * @version 2.4.1
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -10,7 +10,7 @@ Plugin URI: http://wordpress.org/extend/plugins/ewww-image-optimizer/
 Description: Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
 Author: Shane Bishop
 Text Domain: ewww-image-optimizer
-Version: 2.4.0.1
+Version: 2.4.1
 Author URI: https://ewww.io/
 License: GPLv3
 */
@@ -1933,7 +1933,6 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 // creates webp images alongside JPG and PNG files
 // needs a filename, the filesize, mimetype, and the path to the cwebp binary
 function ewww_image_optimizer_webp_create( $file, $orig_size, $type, $tool ) {
-	// TODO: do something to handle webp error output
 	global $ewww_debug;
 	$ewww_debug .= '<b>ewww_image_optimizer_webp_create()</b><br>';
 	// change the file extension

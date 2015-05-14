@@ -1,6 +1,5 @@
 <?php
 // presents the bulk optimize form with the number of images, and runs it once they submit the button
-// TODO: do not count resizes that will be skipped
 function ewww_image_optimizer_bulk_preview() {
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_bulk_preview()</b><br>";

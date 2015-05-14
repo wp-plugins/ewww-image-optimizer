@@ -1,7 +1,7 @@
 <?php
 // common functions for Standard and Cloud plugins
 
-define( 'EWWW_IMAGE_OPTIMIZER_VERSION', '240.0' );
+define( 'EWWW_IMAGE_OPTIMIZER_VERSION', '241.0' );
 
 // initialize debug global
 $disabled = ini_get( 'disable_functions' );
@@ -283,11 +283,8 @@ function ewww_image_optimizer_filter_page_output( $buffer ) {
 		libxml_clear_errors();
 		libxml_use_internal_errors($libxml_previous_error_reporting);
 		if ( ! empty( $html_head ) ) {
-			// TODO: why does this line suck so bad?
-			//$buffer = preg_replace('/<html.+>\s<head>/', $html_head[0], $buffer);
 			$buffer = preg_replace( '/<html.+>\s.*<head>/', $html_head[0], $buffer );
 		}
-//		$buffer = preg_replace('|</body>\s*</html>|', '', $buffer);
 		ewww_image_optimizer_debug_log();
 	}
 	return $buffer;
