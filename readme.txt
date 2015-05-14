@@ -197,6 +197,10 @@ Pngout, TinyJPG/TinyPNG, JPEGmini, and Pngquant were recommended by EWWW IO user
 * EWWW I.O. as a stand-alone tool
 * If you would like to help translate this plugin in your language, get started here: http://translate.ewww.io/projects/ewww-image-optimizer/
 
+= 2.4.1 =
+* fixed: Alt WebP Rewriting was slow due to an inefficient regexp
+* fixed: Scan & Optimize fails when it encounters a permissions error
+
 = 2.4.0 =
 * added: advanced option to disable specific resizes or just exclude them from optimization
 * added: Turkish and Swedish translations (with updates of most other translations)

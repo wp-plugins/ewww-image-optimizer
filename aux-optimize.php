@@ -437,7 +437,7 @@ function ewww_image_optimizer_image_scan($dir) {
 		return $images;
 	}
 	$ewww_debug .= "scanning folder for images: $dir<br>";
-	$iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir), RecursiveIteratorIterator::CHILD_FIRST);
+	$iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir), RecursiveIteratorIterator::CHILD_FIRST, RecursiveIteratorIterator::CATCH_GET_CHILD);
 	$start = microtime(true);
 	$query = "SELECT path,image_size FROM $wpdb->ewwwio_images";
 	$already_optimized = $wpdb->get_results($query, ARRAY_A);
@@ -452,7 +452,7 @@ function ewww_image_optimizer_image_scan($dir) {
 			continue;
 		} else {
 			$path = $path->getPathname();
-			if ( preg_match( '/\.(git.*|po|mo|pot|php|txt|js|css|html|woff|webp|json|svg|xml|ttf|otf|eot|md)$/', $path ) ) {
+			if ( preg_match( '/\.(po|mo|pot|php|txt|js|css|html|woff|webp|json|svg|xml|ttf|otf|eot|md)$/', $path ) ) {
 				$ewww_debug .= "not a usable extension: $path<br>";
 				continue;
 			}
