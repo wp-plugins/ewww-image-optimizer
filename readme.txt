@@ -198,6 +198,12 @@ Pngout, TinyJPG/TinyPNG, JPEGmini, and Pngquant were recommended by EWWW IO user
 * EWWW I.O. as a stand-alone tool
 * If you would like to help translate this plugin in your language, get started here: http://translate.ewww.io/projects/ewww-image-optimizer/
 
+= 2.4.2 =
+* updated: pngout installer updated to release 20150319
+* fixed: cleanup output of html entities when using wp-cli
+* fixed: Scan & Optimize throws warnings when a directory is not detected properly
+* added: W3TC S3 CDN - update original image on S3 after optimization
+
 = 2.4.1 =
 * fixed: Alt WebP Rewriting was slow due to an inefficient regexp
 * fixed: Scan & Optimize fails when it encounters a permissions error

@@ -448,9 +448,9 @@ function ewww_image_optimizer_image_scan($dir) {
 		}
 		$file_counter++;
 		$skip_optimized = false;
-		if ($path->isDir()) {
-			continue;
-		} else {
+		if ( $path->isFile() ) {
+		//	continue;
+		//} else {
 			$path = $path->getPathname();
 			if ( preg_match( '/\.(po|mo|pot|php|txt|js|css|html|woff|webp|json|svg|xml|ttf|otf|eot|md)$/', $path ) ) {
 				$ewww_debug .= "not a usable extension: $path<br>";

@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate image optimizers into WordPress.
- * @version 2.4.1
+ * @version 2.4.1.1
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -10,7 +10,7 @@ Plugin URI: http://wordpress.org/extend/plugins/ewww-image-optimizer/
 Description: Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
 Author: Shane Bishop
 Text Domain: ewww-image-optimizer
-Version: 2.4.1
+Version: 2.4.1.1
 Author URI: https://ewww.io/
 License: GPLv3
 */
@@ -895,6 +895,16 @@ function ewww_image_optimizer_md5check($path) {
 		'e006b880f9532af2af0811515218bbd4',
 		'b175b4439b054a61e8a41eca9a6e3505',
 		'eabcbabde6c7c568e95afd73b7ed096e',
+		'17cd744ab90ebaa05a4e846487a582b5', // bsd amd64 dynamic
+		'51a13a008425e429451321e7ff8bd329', // bsd i686 dynamic
+		'b7100158f68ed16bf5f7f87cdabd55fe', // mac dynamic
+		'64f6899d1b7cc8e87d2416b9608e9cde', // linux x86_64 dynamic
+		'24cf084d7e0945c7975fc86ff5d02fb9', // linux i686 dynamic
+		'63a4ee0a873a43f2e053fa85debcc526', // bsd amd64 static
+		'c44ea5ea9f20e53237a713bd5f426717', // bsd i686 static
+		'd760b7973ca81856cf2fc464637f8d77', // linux x86_64 static
+		'354917afca95aacfb99aaab570f058e6', // linux i686 static
+		'7154076fde19a421a7cca8029d4ec831', // windows
 		//pngquant
 		'6eff276339f9ad818eecd347a5fa99e2',
 		'79d8c4f5ff2dbb36068c3e3de42fdb1e',
@@ -1980,7 +1990,7 @@ function ewww_image_optimizer_install_pngout() {
 	if (PHP_OS == 'FreeBSD') {
 		$os_string = 'bsd';
 	}
-	$latest = '20130221';
+	$latest = '20150319';
 	if (empty($pngout_error)) {
 		if (PHP_OS == 'Linux' || PHP_OS == 'FreeBSD') {
 			$download_result = ewww_image_optimizer_escapeshellarg ( download_url ( 'http://static.jonof.id.au/dl/kenutils/pngout-' . $latest . '-' . $os_string . '-static.tar.gz' ) );
