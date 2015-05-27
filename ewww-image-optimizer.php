@@ -1158,6 +1158,7 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 	// initialize the original filename 
 	$original = $file;
 	$result = '';
+	// TODO: remove the span tags from the translatable string, dork...
 	// check that the file exists
 	if (FALSE === file_exists($file)) {
 		// tell the user we couldn't find the file
@@ -1166,6 +1167,7 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 		// send back the above message
 		return array(false, $msg, $converted, $original);
 	}
+	// TODO: remove the span tags from the translatable string, dork...
 	// check that the file is writable
 	if ( FALSE === is_writable($file) ) {
 		// tell the user we can't write to the file

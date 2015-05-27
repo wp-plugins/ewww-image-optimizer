@@ -2,7 +2,7 @@
 # This file is distributed under the same license as the EWWW Image Optimizer package.
 msgid ""
 msgstr ""
-"PO-Revision-Date: 2015-05-01 22:06:19+0000\n"
+"PO-Revision-Date: 2015-05-14 12:38:53+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -889,7 +889,7 @@ msgstr "Şu byte'dan büyük PNG resimlerini optimize etme:"
 
 #: common.php:3008
 msgid "Exclude full-size images from lossy optimization"
-msgstr "Full-size resimleri kayıplı optimizasyonda dışla"
+msgstr "Kayıplı optimizasyonda Full-size resimleri hariç tutun"
 
 #: common.php:3010 ewww-image-optimizer.php:417
 msgid "Use System Paths"
