@@ -202,7 +202,9 @@ Pngout, TinyJPG/TinyPNG, JPEGmini, and Pngquant were recommended by EWWW IO user
 * updated: pngout installer updated to release 20150319
 * fixed: cleanup output of html entities when using wp-cli
 * fixed: Scan & Optimize throws warnings when a directory is not detected properly
+* fixed: --noprompt for wp-cli has no effect
 * added: W3TC S3 CDN - update original image on S3 after optimization
+* added: French (fr_FR) translation
 
 = 2.4.1 =
 * fixed: Alt WebP Rewriting was slow due to an inefficient regexp

@@ -81,7 +81,9 @@ class EWWWIO_CLI extends WP_CLI_Command {
 					WP_CLI::line( 'Flagallery: ' . sprintf( __( '%1$d images have been selected (%2$d unoptimized), with %3$d resizes (%4$d unoptimized).', EWWW_IMAGE_OPTIMIZER_DOMAIN ), $fullsize_count, $unoptimized_count, $resize_count, $unoptimized_resize_count ) );
 				}
 				$other_attachments = ewww_image_optimizer_scan_other();
-				WP_CLI::confirm( sprintf( __( '%1$d images in other folders need optimizing.', EWWW_IMAGE_OPTIMIZER_DOMAIN ), count($other_attachments) ) );
+				if ( empty( $assoc_args['noprompt'] ) ) {
+					WP_CLI::confirm( sprintf( __( '%1$d images in other folders need optimizing.', EWWW_IMAGE_OPTIMIZER_DOMAIN ), count($other_attachments) ) );
+				}
 				ewww_image_optimizer_bulk_media( $delay );
 				if ( class_exists( 'ewwwngg' ) ) {
 					global $ngg;
@@ -103,7 +105,9 @@ class EWWWIO_CLI extends WP_CLI_Command {
 					WP_CLI::line( __('Bulk status has been reset, starting from the beginning.', EWWW_IMAGE_OPTIMIZER_DOMAIN ) );
 				}
 				list( $fullsize_count, $unoptimized_count, $resize_count, $unoptimized_resize_count ) = ewww_image_optimizer_count_optimized ('media');
-				WP_CLI::confirm( sprintf( __( '%1$d images in the Media Library have been selected (%2$d unoptimized), with %3$d resizes (%4$d unoptimized).', EWWW_IMAGE_OPTIMIZER_DOMAIN ), $fullsize_count, $unoptimized_count, $resize_count, $unoptimized_resize_count ) );
+				if ( empty( $assoc_args['noprompt'] ) ) {
+					WP_CLI::confirm( sprintf( __( '%1$d images in the Media Library have been selected (%2$d unoptimized), with %3$d resizes (%4$d unoptimized).', EWWW_IMAGE_OPTIMIZER_DOMAIN ), $fullsize_count, $unoptimized_count, $resize_count, $unoptimized_resize_count ) );
+				}
 				ewww_image_optimizer_bulk_media( $delay );
 				break;
 			case 'nextgen':
@@ -115,11 +119,15 @@ class EWWWIO_CLI extends WP_CLI_Command {
 					global $ngg;
 					if ( preg_match( '/^2/', $ngg->version ) ) {
 						list( $fullsize_count, $unoptimized_count, $resize_count, $unoptimized_resize_count ) = ewww_image_optimizer_count_optimized ('ngg');
-						WP_CLI::confirm( sprintf( __( '%1$d images have been selected (%2$d unoptimized), with %3$d resizes (%4$d unoptimized).', EWWW_IMAGE_OPTIMIZER_DOMAIN ), $fullsize_count, $unoptimized_count, $resize_count, $unoptimized_resize_count ) );
+						if ( empty( $assoc_args['noprompt'] ) ) {
+							WP_CLI::confirm( sprintf( __( '%1$d images have been selected (%2$d unoptimized), with %3$d resizes (%4$d unoptimized).', EWWW_IMAGE_OPTIMIZER_DOMAIN ), $fullsize_count, $unoptimized_count, $resize_count, $unoptimized_resize_count ) );
+						}
 						ewww_image_optimizer_bulk_ngg( $delay );
 					} else {
 						$attachments = ewww_image_optimizer_scan_next();
-						WP_CLI::confirm( sprintf( __( 'We have %d images to optimize.', EWWW_IMAGE_OPTIMIZER_DOMAIN ), count( $attachments ) ) );
+						if ( empty( $assoc_args['noprompt'] ) ) {
+							WP_CLI::confirm( sprintf( __( 'We have %d images to optimize.', EWWW_IMAGE_OPTIMIZER_DOMAIN ), count( $attachments ) ) );
+						}
 						ewww_image_optimizer_bulk_next( $delay, $attachments );
 					}
 				} else {
@@ -133,7 +141,9 @@ class EWWWIO_CLI extends WP_CLI_Command {
 				}
 				if ( class_exists( 'ewwwflag' ) ) {
 					list( $fullsize_count, $unoptimized_count, $resize_count, $unoptimized_resize_count ) = ewww_image_optimizer_count_optimized ('flag');
-					WP_CLI::confirm( sprintf( __( '%1$d images have been selected (%2$d unoptimized), with %3$d resizes (%4$d unoptimized).', EWWW_IMAGE_OPTIMIZER_DOMAIN ), $fullsize_count, $unoptimized_count, $resize_count, $unoptimized_resize_count ) );
+					if ( empty( $assoc_args['noprompt'] ) ) {
+						WP_CLI::confirm( sprintf( __( '%1$d images have been selected (%2$d unoptimized), with %3$d resizes (%4$d unoptimized).', EWWW_IMAGE_OPTIMIZER_DOMAIN ), $fullsize_count, $unoptimized_count, $resize_count, $unoptimized_resize_count ) );
+					}
 					ewww_image_optimizer_bulk_flag( $delay );
 				} else {
 					WP_CLI::error( __( 'Grand Flagallery not installed.', EWWW_IMAGE_OPTIMIZER_DOMAIN ) );
@@ -146,7 +156,9 @@ class EWWWIO_CLI extends WP_CLI_Command {
 				}
 				WP_CLI::line( __( 'Scanning, this could take a while', EWWW_IMAGE_OPTIMIZER_DOMAIN ) );
 				$other_attachments = ewww_image_optimizer_scan_other();
-				WP_CLI::confirm( sprintf( __( '%1$d images in other folders need optimizing.', EWWW_IMAGE_OPTIMIZER_DOMAIN ), count($other_attachments) ) );
+				if ( empty( $assoc_args['noprompt'] ) ) {
+					WP_CLI::confirm( sprintf( __( '%1$d images in other folders need optimizing.', EWWW_IMAGE_OPTIMIZER_DOMAIN ), count($other_attachments) ) );
+				}
 				ewww_image_optimizer_bulk_other( $delay, $other_attachments );
 				break;
 			default:
