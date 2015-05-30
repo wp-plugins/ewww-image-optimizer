@@ -193,16 +193,17 @@ Pngout, TinyJPG/TinyPNG, JPEGmini, and Pngquant were recommended by EWWW IO user
 = future =
 * these are current feature requests, if you see something you like here, go vote for it in the support forum
 * full GMedia support
-* WebP support for CDNs besides Cloudflare
 * copy metadata from original images to webp variants
 * EWWW I.O. as a stand-alone tool
 * If you would like to help translate this plugin in your language, get started here: http://translate.ewww.io/projects/ewww-image-optimizer/
 
 = 2.4.2 =
 * updated: pngout installer updated to release 20150319
+* fixed: Alt WebP Rewriting detects XHTML themes, and attempts to parse them as XML, but will still break if your theme does not pass validation.
 * fixed: cleanup output of html entities when using wp-cli
 * fixed: Scan & Optimize throws warnings when a directory is not detected properly
 * fixed: --noprompt for wp-cli has no effect
+* fixed: notices for exec() and Safe Mode not firing properly
 * added: W3TC S3 CDN - update original image on S3 after optimization
 * added: French (fr_FR) translation
 

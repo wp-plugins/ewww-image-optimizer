@@ -164,7 +164,7 @@ function ewww_image_optimizer_filter_page_output( $buffer ) {
 	}
 	// modify buffer here, and then return the updated code
 	if ( class_exists( 'DOMDocument' ) ) {
-		preg_match( '/.+<head>/s', $buffer, $html_head );
+		preg_match( '/.+<head[^>]*>/s', $buffer, $html_head );
 		if ( empty( $html_head ) ) {
 			return $buffer;
 		}
@@ -172,12 +172,20 @@ function ewww_image_optimizer_filter_page_output( $buffer ) {
 		$libxml_previous_error_reporting = libxml_use_internal_errors( true );
 		$html->encoding = 'utf-8';
 //		$html->loadHTML(utf8_decode($buffer));
-		$html->loadHTML( $buffer );
+		if ( preg_match( '/<.DOCTYPE.+xhtml/', $buffer ) ) {
+			$html->recover = true;
+			$xhtml_parse = $html->loadXML( $buffer );
+			$ewww_debug .= 'parsing as xhtml<br>';
+		} elseif ( empty( $xhtml_parse ) ) {
+			$html->loadHTML( $buffer );
+			$ewww_debug .= 'parsing as html<br>';
+		}
 		$images = $html->getElementsByTagName( 'img' );
 		foreach ( $images as $image ) {
 			if ( $image->parentNode->tagName == 'noscript' ) {
 				continue;
 			}
+			$ewww_debug .= 'parsing an image<br>';
 			$home_url = get_home_url();
 			$file = $image->getAttribute( 'src' );
 			$filepath = ABSPATH . str_replace( $home_url, '', $file );
@@ -260,6 +268,7 @@ function ewww_image_optimizer_filter_page_output( $buffer ) {
 		}
 		$links = $html->getElementsByTagName( 'a' );
 		foreach ( $links as $link ) {
+			$ewww_debug .= 'parsing a link<br>';
 			$home_url = get_home_url();
 			if ( $link->getAttribute( 'data-src' ) && $link->getAttribute( 'data-thumbnail' ) ) {
 				$file = $link->getAttribute( 'data-src' );
@@ -279,7 +288,17 @@ function ewww_image_optimizer_filter_page_output( $buffer ) {
 				
 			}
 		}
-		$buffer = $html->saveHTML($html->documentElement);
+		$ewww_debug .= 'preparing to dump page back to $buffer<br>';
+		if ( ! empty( $xhtml_parse ) ) {
+			$buffer = $html->saveXML( $html->documentElement );
+		} else {
+			$buffer = $html->saveHTML( $html->documentElement );
+		}
+		if ( empty( $buffer ) ) {
+			$ewww_debug .= 'save to $buffer failed<br>';
+		} else {
+			$ewww_debug .= $buffer;
+		}
 		libxml_clear_errors();
 		libxml_use_internal_errors($libxml_previous_error_reporting);
 		if ( ! empty( $html_head ) ) {

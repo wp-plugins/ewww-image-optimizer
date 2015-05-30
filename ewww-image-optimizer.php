@@ -47,13 +47,13 @@ function ewww_image_optimizer_cloud_init() {
 
 function ewww_image_optimizer_exec_init() {
 	global $ewww_debug;
-	global $ewww_admin;
+//	global $ewww_admin;
 	$ewww_debug .= "<b>ewww_image_optimizer_exec_init()</b><br>";
-	if ( $ewww_admin ) {
+/*	if ( $ewww_admin ) {
 		$ewww_debug .= 'we are in the admin, feel free to shout<br>';
 	} else {
 		$ewww_debug .= 'no admin, be quiet<br>';
-	}
+	}*/
 	if (function_exists('is_plugin_active_for_network') && is_plugin_active_for_network(EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE_REL)) {
 		// set the binary-specific network settings if they have been POSTed
 		if (isset($_POST['ewww_image_optimizer_delay'])) {
@@ -421,19 +421,19 @@ function ewww_image_optimizer_install_tools () {
 // this is another function called by hook usually
 function ewww_image_optimizer_notice_utils() {
 	global $ewww_debug;
-	global $ewww_admin;
+//	global $ewww_admin;
 	$ewww_debug .= "<b>ewww_image_optimizer_notice_utils()</b><br>";
-	if ( $ewww_admin ) {
+/*	if ( $ewww_admin ) {
 		$ewww_debug .= 'we are in the admin, feel free to shout<br>';
 	} else {
 		$ewww_debug .= 'no admin, be quiet<br>';
-	}
+	}*/
 	// Check if exec is disabled
 	if(ewww_image_optimizer_exec_check()) {
 		//display a warning if exec() is disabled, can't run much of anything without it
-		if ( $ewww_admin ) {
+	//	if ( $ewww_admin ) {
 			echo "<div id='ewww-image-optimizer-warning-opt-png' class='error'><p>" . __('EWWW Image Optimizer requires exec(). Your system administrator has disabled this function.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</p></div>";
-		}
+	//	}
 		define('EWWW_IMAGE_OPTIMIZER_NOEXEC', true);
 		$ewww_debug .= 'exec seems to be disabled<br>';
 		ewww_image_optimizer_disable_tools();
@@ -441,9 +441,9 @@ function ewww_image_optimizer_notice_utils() {
 		// otherwise, query the php settings for safe mode
 	} elseif (ewww_image_optimizer_safemode_check()) {
 		// display a warning to the user
-		if ( $ewww_admin ) {
+	//	if ( $ewww_admin ) {
 			echo "<div id='ewww-image-optimizer-warning-opt-png' class='error'><p>" . __('Safe Mode is turned on for PHP. This plugin cannot operate in Safe Mode.', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</p></div>";
-		}
+	//	}
 		define('EWWW_IMAGE_OPTIMIZER_NOEXEC', true);
 		$ewww_debug .= 'safe mode appears to be enabled<br>';
 		ewww_image_optimizer_disable_tools();
@@ -533,7 +533,7 @@ function ewww_image_optimizer_notice_utils() {
 	// expand the missing utilities list for use in the error message
 	$msg = implode( ', ', $missing );
 	// if there is a message, display the warning
-	if( ! empty( $msg ) && $ewww_admin ){
+	if( ! empty( $msg ) ){
 		echo "<div id='ewww-image-optimizer-warning-opt-png' class='error'><p>" . sprintf(__('EWWW Image Optimizer uses %1$s, %2$s, %3$s, %4$s, %5$s, and %6$s. You are missing: %7$s. Please install via the %8$s or the %9$s.', EWWW_IMAGE_OPTIMIZER_DOMAIN), "<a href='http://jpegclub.org/jpegtran/'>jpegtran</a>", "<a href='http://optipng.sourceforge.net/'>optipng</a>", "<a href='http://advsys.net/ken/utils.htm'>pngout</a>", "<a href='http://pngquant.org/'>pngquant</a>", "<a href='http://www.lcdf.org/gifsicle/'>gifsicle</a>", "<a href='https://developers.google.com/speed/webp/'>cwebp</a>", $msg, "<a href='options-general.php?page=" . EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE_REL . "'>" . __('Settings Page', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a>", "<a href='http://wordpress.org/extend/plugins/ewww-image-optimizer/installation/'>" . __('Installation Instructions', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "</a>") . "</p></div>";
 	ewwwio_memory( __FUNCTION__ );
 	}
