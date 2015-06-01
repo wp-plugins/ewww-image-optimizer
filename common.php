@@ -338,6 +338,21 @@ function ewwwio_memory( $function ) {
 	}
 }
 
+// function to check if set_time_limit() is disabled
+function ewww_image_optimizer_stl_check() {
+	global $ewww_debug;
+	$ewww_debug .= "<b>ewww_image_optimizer_stl_check()</b><br>";
+	$disabled = ini_get('disable_functions');
+	$ewww_debug .= "disable_functions = $disabled <br>";
+	if ( preg_match( '/set_time_limit/', $disabled ) ) {
+		ewwwio_memory( __FUNCTION__ );
+		return false;
+	} else {
+		ewwwio_memory( __FUNCTION__ );
+		return true;
+	}
+}
+
 function ewww_image_optimizer_preinit() {
 	global $ewww_debug;
 	$ewww_debug .= '<b>ewww_image_optimizer_preinit()</b><br>';

@@ -199,13 +199,16 @@ Pngout, TinyJPG/TinyPNG, JPEGmini, and Pngquant were recommended by EWWW IO user
 
 = 2.4.2 =
 * updated: pngout installer updated to release 20150319
+* updated: set_time_limit() moved to core function for even better timeout avoidance, and threshold increased to 90
 * fixed: Alt WebP Rewriting detects XHTML themes, and attempts to parse them as XML, but will still break if your theme does not pass validation.
 * fixed: cleanup output of html entities when using wp-cli
 * fixed: Scan & Optimize throws warnings when a directory is not detected properly
 * fixed: --noprompt for wp-cli has no effect
 * fixed: notices for exec() and Safe Mode not firing properly
+* fixed: check to see if set_time_limit() is disabled before running it
 * added: W3TC S3 CDN - update original image on S3 after optimization
 * added: French (fr_FR) translation
+* added: call set_time_limit() to avoid timeouts loading the Bulk Optimize page
 
 = 2.4.1 =
 * fixed: Alt WebP Rewriting was slow due to an inefficient regexp

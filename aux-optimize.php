@@ -442,10 +442,10 @@ function ewww_image_optimizer_image_scan($dir) {
 	$query = "SELECT path,image_size FROM $wpdb->ewwwio_images";
 	$already_optimized = $wpdb->get_results($query, ARRAY_A);
 	$file_counter = 0;
+	if ( ewww_image_optimizer_stl_check() ) {
+		set_time_limit (0);
+	}
 	foreach ($iterator as $path) {
-		if ( ini_get( 'max_execution_time' ) < 60 ) {
-			set_time_limit (0);
-		}
 		$file_counter++;
 		$skip_optimized = false;
 		if ( $path->isFile() ) {

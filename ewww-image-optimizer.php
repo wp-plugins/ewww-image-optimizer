@@ -1233,6 +1233,9 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 	} else {
 		$skip_lossy = false;
 	}
+	if ( ini_get( 'max_execution_time' ) < 90 && ewww_image_optimizer_stl_check() ) {
+		set_time_limit( 0 );
+	}
 	// if the full-size image was converted
 	if ($converted) {
 		$ewww_debug .= "full-size image was converted, need to rebuild filename for meta<br>";
