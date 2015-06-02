@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate image optimizers into WordPress.
- * @version 2.4.1.2
+ * @version 2.4.2
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -10,7 +10,7 @@ Plugin URI: http://wordpress.org/extend/plugins/ewww-image-optimizer/
 Description: Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
 Author: Shane Bishop
 Text Domain: ewww-image-optimizer
-Version: 2.4.1.2
+Version: 2.4.2
 Author URI: https://ewww.io/
 License: GPLv3
 */
@@ -1158,20 +1158,18 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 	// initialize the original filename 
 	$original = $file;
 	$result = '';
-	// TODO: remove the span tags from the translatable string, dork...
 	// check that the file exists
 	if (FALSE === file_exists($file)) {
 		// tell the user we couldn't find the file
-		$msg = sprintf(__("Could not find <span class='code'>%s</span>", EWWW_IMAGE_OPTIMIZER_DOMAIN), $file);
+		$msg = sprintf( __( 'Could not find %s', EWWW_IMAGE_OPTIMIZER_DOMAIN ), "<span class='code'>$file</span>" );
 		$ewww_debug .= "file doesn't appear to exist: $file <br>";
 		// send back the above message
 		return array(false, $msg, $converted, $original);
 	}
-	// TODO: remove the span tags from the translatable string, dork...
 	// check that the file is writable
 	if ( FALSE === is_writable($file) ) {
 		// tell the user we can't write to the file
-		$msg = sprintf(__("<span class='code'>%s</span> is not writable", EWWW_IMAGE_OPTIMIZER_DOMAIN), $file);
+		$msg = sprintf( __( '%s is not writable', EWWW_IMAGE_OPTIMIZER_DOMAIN ), "<span class='code'>$file</span>" );
 		$ewww_debug .= "couldn't write to the file $file<br>";
 		// send back the above message
 		return array(false, $msg, $converted, $original);

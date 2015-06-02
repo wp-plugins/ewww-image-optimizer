@@ -1,7 +1,7 @@
 <?php
 // common functions for Standard and Cloud plugins
 
-define( 'EWWW_IMAGE_OPTIMIZER_VERSION', '241.2' );
+define( 'EWWW_IMAGE_OPTIMIZER_VERSION', '242.0' );
 
 // initialize debug global
 $disabled = ini_get( 'disable_functions' );
@@ -1851,7 +1851,6 @@ function ewww_image_optimizer_update_attachment_metadata($meta, $ID) {
  * Called after `wp_generate_attachment_metadata` is completed.
  */
 function ewww_image_optimizer_resize_from_meta_data( $meta, $ID = null, $log = true ) {
-	// TODO: figure out why full size images don't get uploaded/updated to S3 storage with W3TC
 	global $ewww_debug;
 	global $wpdb;
 	// may also need to track their attachment ID as well

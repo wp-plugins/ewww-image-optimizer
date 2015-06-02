@@ -74,7 +74,7 @@ function ewww_image_optimizer_bulk_preview() {
 }
 
 // retrieve image counts for the bulk process
-function ewww_image_optimizer_count_optimized ( $gallery, $return_ids = false ) {
+function ewww_image_optimizer_count_optimized( $gallery, $return_ids = false ) {
 	global $ewww_debug;
 	global $wpdb;
 	$ewww_debug .= "<b>ewww_image_optimizer_count_optmized()</b><br>";
@@ -266,7 +266,7 @@ function ewww_image_optimizer_count_optimized ( $gallery, $return_ids = false ) 
 }
 
 // prepares the bulk operation and includes the javascript functions
-function ewww_image_optimizer_bulk_script($hook) {
+function ewww_image_optimizer_bulk_script( $hook ) {
 	global $ewww_debug;
 	// make sure we are being called from the bulk optimization page
 	if ('media_page_ewww-image-optimizer-bulk' != $hook) {

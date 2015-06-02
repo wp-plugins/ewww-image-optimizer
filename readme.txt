@@ -207,6 +207,7 @@ Pngout, TinyJPG/TinyPNG, JPEGmini, and Pngquant were recommended by EWWW IO user
 * fixed: notices for exec() and Safe Mode not firing properly
 * fixed: check to see if set_time_limit() is disabled before running it
 * added: W3TC S3 CDN - update original image on S3 after optimization
+* added: German (de_DE) translation
 * added: French (fr_FR) translation
 * added: call set_time_limit() to avoid timeouts loading the Bulk Optimize page
 
