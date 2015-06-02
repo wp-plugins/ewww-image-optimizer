@@ -2,7 +2,7 @@
 # This file is distributed under the same license as the EWWW Image Optimizer package.
 msgid ""
 msgstr ""
-"PO-Revision-Date: 2015-06-02 20:16:14+0000\n"
+"PO-Revision-Date: 2015-06-02 20:34:57+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -423,7 +423,7 @@ msgstr "Migriere WebP Bilder"
 
 #: common.php:836
 msgid "Image Store Optimize"
-msgstr "Bilder Store Optimize"
+msgstr "Image Store Optimierung"
 
 #: common.php:836
 msgid "Optimize"
@@ -431,7 +431,7 @@ msgstr "Optimiere"
 
 #: common.php:891
 msgid "Image Store Optimization"
-msgstr "Bilder Store Optimization"
+msgstr "Image Store Optimierung"
 
 #: common.php:901
 msgid "Choose a gallery or"
