@@ -586,6 +586,16 @@ function ewww_image_optimizer_path_check ( $j = true, $o = true, $g = true, $p =
 	$pngout = false;
 	$pngquant = false;
 	$webp = false;
+	if ( EWWW_IMAGE_OPTIMIZER_NOEXEC ) {
+		return array(
+			'JPEGTRAN' => false,
+			'OPTIPNG' => false,
+			'GIFSICLE' => false,
+			'PNGOUT' => false,
+			'PNGQUANT' => false,
+			'WEBP' => false,
+		);
+	}
 	// for Windows, everything must be in the wp-content/ewww folder, so that is all we check
 	if ('WINNT' == PHP_OS) {
 		if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran.exe') && $j) {
@@ -1196,7 +1206,22 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 	}
 	if ( ! EWWW_IMAGE_OPTIMIZER_CLOUD ) {
 		// check to see if 'nice' exists
-		$nice = ewww_image_optimizer_find_binary('nice', 'n');
+		$nice = ewww_image_optimizer_find_binary( 'nice', 'n' );
+		if ( ! defined( 'EWWW_IMAGE_OPTIMIZER_NOEXEC' ) ) {
+			// Check if exec is disabled
+			if( ewww_image_optimizer_exec_check() ) {
+				define( 'EWWW_IMAGE_OPTIMIZER_NOEXEC', true );
+				$ewww_debug .= 'exec seems to be disabled<br>';
+				ewww_image_optimizer_disable_tools();
+				// otherwise, query the php settings for safe mode
+			} elseif ( ewww_image_optimizer_safemode_check() ) {
+				define( 'EWWW_IMAGE_OPTIMIZER_NOEXEC', true );
+				$ewww_debug .= 'safe mode appears to be enabled<br>';
+				ewww_image_optimizer_disable_tools();
+			} else {
+				define( 'EWWW_IMAGE_OPTIMIZER_NOEXEC', false );
+			}
+		}
 	}
 	// if the user has disabled the utility checks
 	if ( ewww_image_optimizer_get_option( 'ewww_image_optimizer_skip_check' ) == TRUE || EWWW_IMAGE_OPTIMIZER_CLOUD) {
