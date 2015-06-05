@@ -1,7 +1,7 @@
 <?php
 // common functions for Standard and Cloud plugins
 
-define( 'EWWW_IMAGE_OPTIMIZER_VERSION', '242.0' );
+define( 'EWWW_IMAGE_OPTIMIZER_VERSION', '243.0' );
 
 // initialize debug global
 $disabled = ini_get( 'disable_functions' );
@@ -164,7 +164,10 @@ function ewww_image_optimizer_filter_page_output( $buffer ) {
 	}
 	// modify buffer here, and then return the updated code
 	if ( class_exists( 'DOMDocument' ) ) {
-		preg_match( '/.+<head[^>]*>/s', $buffer, $html_head );
+		preg_match( '/.+<head>/s', $buffer, $html_head );
+		if ( empty( $html_head ) ) {
+			preg_match( '/.+<head [^>]*>/s', $buffer, $html_head );
+		}
 		if ( empty( $html_head ) ) {
 			return $buffer;
 		}
