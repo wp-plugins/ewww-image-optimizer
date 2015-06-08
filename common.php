@@ -17,6 +17,11 @@ $ewww_debug .= 'EWWW IO version: ' . EWWW_IMAGE_OPTIMIZER_VERSION . '<br>';
 global $wp_version;
 $my_version = substr( $wp_version, 0, 3 );
 $ewww_debug .= "WP version: $wp_version<br>";
+if ( ! defined( 'PHP_VERSION_ID' ) ) {
+	$php_version = explode( '.', PHP_VERSION );
+	define( 'PHP_VERSION_ID', ( $version[0] * 10000 + $version[1] * 100 + $version[2] ) );
+}
+$ewww_debug .= 'PHP version: ' . PHP_VERSION_ID . '<br>';
 
 if ( WP_DEBUG ) {
 	$ewww_memory = 'plugin load: ' . memory_get_usage( true ) . "\n";
@@ -175,6 +180,8 @@ function ewww_image_optimizer_filter_page_output( $buffer ) {
 		$libxml_previous_error_reporting = libxml_use_internal_errors( true );
 		$html->encoding = 'utf-8';
 //		$html->loadHTML(utf8_decode($buffer));
+		// converts the buffer from utf-8 to html-entities
+//		$buffer = mb_convert_encoding( $buffer, 'HTML-ENTITIES', 'UTF-8' );
 		if ( preg_match( '/<.DOCTYPE.+xhtml/', $buffer ) ) {
 			$html->recover = true;
 			$xhtml_parse = $html->loadXML( $buffer );
@@ -183,6 +190,7 @@ function ewww_image_optimizer_filter_page_output( $buffer ) {
 			$html->loadHTML( $buffer );
 			$ewww_debug .= 'parsing as html<br>';
 		}
+		$html->encoding = 'utf-8';
 		$images = $html->getElementsByTagName( 'img' );
 		foreach ( $images as $image ) {
 			if ( $image->parentNode->tagName == 'noscript' ) {
@@ -293,9 +301,10 @@ function ewww_image_optimizer_filter_page_output( $buffer ) {
 		}
 		$ewww_debug .= 'preparing to dump page back to $buffer<br>';
 		if ( ! empty( $xhtml_parse ) ) {
-			$buffer = $html->saveXML( $html->documentElement );
+			$buffer = $html->saveXML( );
 		} else {
-			$buffer = $html->saveHTML( $html->documentElement );
+			//$buffer = $html->saveHTML( $html->documentElement );
+			$buffer = $html->saveHTML( );
 		}
 		if ( empty( $buffer ) ) {
 			$ewww_debug .= 'save to $buffer failed<br>';
