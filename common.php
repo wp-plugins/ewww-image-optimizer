@@ -1,7 +1,7 @@
 <?php
 // common functions for Standard and Cloud plugins
 
-define( 'EWWW_IMAGE_OPTIMIZER_VERSION', '243.0' );
+define( 'EWWW_IMAGE_OPTIMIZER_VERSION', '243.1' );
 
 // initialize debug global
 $disabled = ini_get( 'disable_functions' );
@@ -26,6 +26,10 @@ $ewww_debug .= 'PHP version: ' . PHP_VERSION_ID . '<br>';
 if ( WP_DEBUG ) {
 	$ewww_memory = 'plugin load: ' . memory_get_usage( true ) . "\n";
 }
+
+$ewww_debug .= 'ABSPATH: ' . ABSPATH . '<br>';
+$ewww_debug .= 'home url: ' . get_home_url() . '<br>';
+$ewww_debug .= 'site url: ' . get_site_url() . '<br>';
 
 // setup custom $wpdb attribute for our image-tracking table
 global $wpdb;
@@ -179,7 +183,7 @@ function ewww_image_optimizer_filter_page_output( $buffer ) {
 		$html = new DOMDocument;
 		$libxml_previous_error_reporting = libxml_use_internal_errors( true );
 		$html->encoding = 'utf-8';
-//		$html->loadHTML(utf8_decode($buffer));
+//		$buffer = utf8_decode( $buffer );
 		// converts the buffer from utf-8 to html-entities
 //		$buffer = mb_convert_encoding( $buffer, 'HTML-ENTITIES', 'UTF-8' );
 		if ( preg_match( '/<.DOCTYPE.+xhtml/', $buffer ) ) {
@@ -197,7 +201,7 @@ function ewww_image_optimizer_filter_page_output( $buffer ) {
 				continue;
 			}
 			$ewww_debug .= 'parsing an image<br>';
-			$home_url = get_home_url();
+			$home_url = get_site_url();
 			$file = $image->getAttribute( 'src' );
 			$filepath = ABSPATH . str_replace( $home_url, '', $file );
 			if ( file_exists( $filepath . '.webp' ) ) {
@@ -280,7 +284,7 @@ function ewww_image_optimizer_filter_page_output( $buffer ) {
 		$links = $html->getElementsByTagName( 'a' );
 		foreach ( $links as $link ) {
 			$ewww_debug .= 'parsing a link<br>';
-			$home_url = get_home_url();
+			$home_url = get_site_url();
 			if ( $link->getAttribute( 'data-src' ) && $link->getAttribute( 'data-thumbnail' ) ) {
 				$file = $link->getAttribute( 'data-src' );
 				$thumb = $link->getAttribute( 'data-thumbnail' );
@@ -796,18 +800,23 @@ function ewww_image_optimizer_update_attached_file_w3tc( $meta, $id ) {
 }
 
 function ewww_image_optimizer_w3tc_update_files( $files ) {
+//	global $ewww_debug;
 	global $ewww_attachment;
 	list( $file, $upload_path ) = ewww_image_optimizer_attachment_path( $ewww_attachment['meta'], $ewww_attachment['id'] );
 	$file_info = array();
 	$upload_info = w3_upload_info();
 	if ( $upload_info ) {
 		$remote_file = ltrim( $upload_info['baseurlpath'] . $ewww_attachment['meta']['file'], '/' );
-		$home_url = get_home_url();
+		$home_url = get_site_url();
 		$original_url = $home_url . $file;
 		$file_info[] = array( 'local_path' => $file,
 			'remote_path' => $remote_file,
 			'original_url' => $original_url );
 		$files = array_merge( $files, $file_info );
+//		$ewww_debug .= "w3tc remote path: $remote_file<br>";
+//		$ewww_debug .= "w3tc original url: $original_url<br>";
+		//$ewww_debug .= print_r($files, true) . '<br>';
+		//ewww_image_optimizer_debug_log();
 	}
 	return $files;
 }
