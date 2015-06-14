@@ -415,6 +415,7 @@ function ewww_image_optimizer_bulk_filename() {
 // called by javascript to process each image in the loop
 function ewww_image_optimizer_bulk_loop() {
 	global $ewww_debug;
+	global $ewww_exceed;
 	// verify that an authorized user has started the optimizer
 	$permissions = apply_filters( 'ewww_image_optimizer_bulk_permissions', '' );
 	if ( ! wp_verify_nonce( $_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-bulk' ) || ! current_user_can( $permissions ) ) {
@@ -432,7 +433,11 @@ function ewww_image_optimizer_bulk_loop() {
 	$meta = wp_get_attachment_metadata( $attachment, true );
 	// do the optimization for the current attachment (including resizes)
 	$meta = ewww_image_optimizer_resize_from_meta_data ($meta, $attachment, false);
-	if ( !empty ( $meta['file'] ) ) {
+	if ( ! empty ( $ewww_exceed ) ) {
+		echo '-9exceeded';
+		die();
+	}
+	if ( ! empty ( $meta['file'] ) ) {
 		// output the filename (and path relative to 'uploads' folder)
 		printf( "<p>" . __('Optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", esc_html($meta['file']) );
 	} else {

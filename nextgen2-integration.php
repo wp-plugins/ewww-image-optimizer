@@ -457,6 +457,11 @@ class ewwwngg {
 		// get an image object
 		$image = $storage->object->_image_mapper->find($id);
 		$image = $this->ewww_added_new_image ($image, $storage);
+		global $ewww_exceed;
+		if ( ! empty ( $ewww_exceed ) ) {
+			echo '-9exceeded';
+			die();
+		}
 		// output the results of the optimization
 		printf("<p>" . __('Optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", basename($storage->object->get_image_abspath($image, 'full')));
 		// get an array of sizes available for the $image

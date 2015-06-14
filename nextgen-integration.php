@@ -392,6 +392,11 @@ class ewwwngg {
 		$file_path = $meta->image->imagePath;
 		// run the optimizer on the current image
 		$fres = ewww_image_optimizer($file_path, 2, false, false, true);
+		global $ewww_exceed;
+		if ( ! empty ( $ewww_exceed ) ) {
+			echo '-9exceeded';
+			die();
+		}
 		// update the metadata of the optimized image
 		nggdb::update_image_meta($id, array('ewww_image_optimizer' => $fres[1]));
 		// output the results of the optimization

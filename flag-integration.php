@@ -312,6 +312,11 @@ class ewwwflag {
 		$file_path = $meta->image->imagePath;
 		// optimize the full-size version
 		$fres = ewww_image_optimizer($file_path, 3, false, false, true);
+		global $ewww_exceed;
+		if ( ! empty ( $ewww_exceed ) ) {
+			echo '-9exceeded';
+			die();
+		}
 		$meta->image->meta_data['ewww_image_optimizer'] = $fres[1];
 		// let the user know what happened
 		printf( "<p>" . __('Optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", esc_html($meta->image->filename) );

@@ -394,9 +394,9 @@ jQuery(document).ready(function($) {
 			ewww_i++;
 			$('#ewww-bulk-progressbar').progressbar("option", "value", ewww_i );
 			$('#ewww-bulk-counter').html('Optimized ' + ewww_i + '/' + ewww_attachments.length);
-	                $('#ewww-bulk-status').append( response );
-			var ewww_exceed=/exceeded/m;
-			if (ewww_exceed.test(response)) {
+//			var ewww_exceed=/exceeded/m;
+//			if (ewww_exceed.test(response)) {
+			if (response == '-9exceeded') {
 				$('#ewww-bulk-loading').html('<p style="color: red"><b>' + ewww_vars.license_exceeded + '</b></p>');
 			}
 			else if (ewww_k == 9) {
@@ -405,10 +405,12 @@ jQuery(document).ready(function($) {
 				$('#ewww-bulk-loading').html('<p style="color: red"><b>' + ewww_vars.operation_stopped + '</b></p>');
 			}
 			else if (ewww_i < ewww_attachments.length) {
+	                	$('#ewww-bulk-status').append( response );
 				ewww_error_counter = 30;
 				ewwwProcessImage();
 			}
 			else {
+	                	$('#ewww-bulk-status').append( response );
 			        var ewww_cleanup_data = {
 			                action: ewww_cleanup_action,
 					ewww_wpnonce: ewww_vars._wpnonce,

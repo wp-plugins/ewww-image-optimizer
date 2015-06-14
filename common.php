@@ -1800,6 +1800,13 @@ function ewww_image_optimizer_aux_images_loop( $attachment = null, $auto = false
 	$attachments = get_option( 'ewww_image_optimizer_aux_attachments' );
 	// do the optimization for the current image
 	$results = ewww_image_optimizer( $attachment );
+	global $ewww_exceed;
+	if ( ! empty ( $ewww_exceed ) ) {
+		if ( ! $auto ) {
+			echo '-9exceeded';
+		}
+		die();
+	}
 	// remove the first element fromt the $attachments array
 	if ( ! empty( $attachments ) ) {
 		array_shift( $attachments );
@@ -1887,7 +1894,7 @@ function ewww_image_optimizer_resize_from_meta_data( $meta, $ID = null, $log = t
 	$ewww_debug .= "<b>ewww_image_optimizer_resize_from_meta_data()</b><br>";
 	$gallery_type = 1;
 	$ewww_debug .= "attachment id: $ID<br>";
-	if (!metadata_exists('post', $ID, '_wp_attachment_metadata')) {
+	if ( ! metadata_exists( 'post', $ID, '_wp_attachment_metadata' ) ) {
 		$ewww_debug .= "this is a newly uploaded image with no metadata yet<br>";
 		$new_image = true;
 	} else {
