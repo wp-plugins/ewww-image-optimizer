@@ -202,6 +202,7 @@ Pngout, TinyJPG/TinyPNG, JPEGmini, and Pngquant were recommended by EWWW IO user
 * fixed: Alt WebP Rewriting mangles certain characters due to older versions of libxml
 * fixed: Alt WebP Rewriting parses xml files when it should leave them alone - feeds and sitemaps
 * fixed: issues with API license exceeded during bulk optimization
+* fixed: pngout regression with .tmp and .tmp.png files preventing optimization
 
 = 2.4.3 =
 * fixed: Alt WebP Rewriting breaks themes with <header> elements

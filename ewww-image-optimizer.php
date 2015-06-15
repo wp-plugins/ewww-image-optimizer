@@ -1629,7 +1629,7 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 						$ewww_debug .= "pngquant did not produce any output<br>";
 					}
 				}
-				$tempfile = $file . '.tmp';
+				$tempfile = $file . '.tmp.png';
 				copy( $file, $tempfile );
 				// if optipng is enabled
 				if( ! ewww_image_optimizer_get_option( 'ewww_image_optimizer_disable_optipng' ) ) {
