@@ -196,6 +196,10 @@ Pngout, TinyJPG/TinyPNG, JPEGmini, and Pngquant were recommended by EWWW IO user
 * EWWW I.O. as a stand-alone tool
 * If you would like to help translate this plugin in your language, get started here: http://translate.ewww.io/projects/ewww-image-optimizer/
 
+= 2.4.5 =
+* fixed: warning on settings page for implode() function
+* updated: gifsicle works again on Windows XP and Server 2003
+
 = 2.4.4 =
 * fixed: Alt WebP Rewriting unable to find images when WP url and Site url are different (subdirectory install)
 * fixed: Alt WebP Rewriting mangles certain characters due to older versions of libxml
