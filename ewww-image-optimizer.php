@@ -177,7 +177,7 @@ function ewww_image_optimizer_install_paths () {
 		$optipng_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'optipng-mac';
 		$jpegtran_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'jpegtran-mac';
 		$pngquant_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'pngquant-mac';
-		$webp_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'cwebp-mac8';
+		$webp_src = EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'cwebp-mac9';
 		$gifsicle_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'gifsicle';
 		$optipng_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'optipng';
 		$jpegtran_dst = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'jpegtran';
@@ -328,21 +328,21 @@ function ewww_image_optimizer_install_tools () {
 			$ewww_debug .= "Couldn't copy webp<br>";
 		}
 	}
-	// install special version of cwebp for Mac OSX 10.7 systems
+	// install special version of cwebp for Mac OSX 10.8 systems
 	if (PHP_OS == 'Darwin') {
-		$webp7_dst = $webp_dst . '-alt';
-		$webp7_src = str_replace('mac8', 'mac7', $webp_src);
-		if (!file_exists($webp7_dst) || (ewww_image_optimizer_md5check($webp7_dst) && filesize($webp7_dst) != filesize($webp7_src))) {
-			$ewww_debug .= "copying $webp7_src to $webp7_dst<br>";
-			if (!copy($webp7_src, $webp7_dst)) {
+		$webp8_dst = $webp_dst . '-alt';
+		$webp8_src = str_replace('mac9', 'mac8', $webp_src);
+		if (!file_exists($webp8_dst) || (ewww_image_optimizer_md5check($webp8_dst) && filesize($webp8_dst) != filesize($webp8_src))) {
+			$ewww_debug .= "copying $webp8_src to $webp8_dst<br>";
+			if (!copy($webp8_src, $webp8_dst)) {
 				// this isn't a fatal error, besides we'll see it in the debug if needed
-				$ewww_debug .= "Couldn't copy OSX 10.7 cwebp to cwebp-alt<br>";
+				$ewww_debug .= "Couldn't copy OSX 10.8 cwebp to cwebp-alt<br>";
 			}
-			$webp7_perms = substr(sprintf('%o', fileperms($webp7_dst)), -4);
-			$ewww_debug .= "cwebp7-alt (OSX 10.7) permissions: $webp7_perms<br>";
-			if ($webp7_perms != '0755') {
-				if (!chmod($webp7_dst, 0755)) {
-					$ewww_debug .= "couldn't set cwebp7-alt permissions<br>";
+			$webp8_perms = substr(sprintf('%o', fileperms($webp8_dst)), -4);
+			$ewww_debug .= "cwebp8-alt (OSX 10.8) permissions: $webp8_perms<br>";
+			if ($webp8_perms != '0755') {
+				if (!chmod($webp8_dst, 0755)) {
+					$ewww_debug .= "couldn't set cwebp8-alt permissions<br>";
 				}
 			}
 		}
@@ -860,11 +860,11 @@ function ewww_image_optimizer_md5check($path) {
 		'0467bd0c73473221d21afbc5275503e4',
 		'293e26924a274c6185a06226619d8e02',
 		'bcb27d22377f8abf3e9fe88a60030885',
-		'8359078a649aeec2bd472ec84a4f39e1', // optipng-sol
-		'aa20003676d1a3321032fa550a73716a', // optipng-fbsd
-		'9a9e86346590878d23ef663086ffae2b', // optipng-mac
-		'e3d154829ea57a0bdd88b080f6851265', // optipng.exe
-		'31698da4f5ca00b35e910c77acae65bb', // optipng-linux
+		'8359078a649aeec2bd472ec84a4f39e1', // optipng-sol .7.5
+		'aa20003676d1a3321032fa550a73716a', // optipng-fbsd .7.5
+		'9a9e86346590878d23ef663086ffae2b', // optipng-mac .7.5
+		'e3d154829ea57a0bdd88b080f6851265', // optipng.exe .7.5
+		'31698da4f5ca00b35e910c77acae65bb', // optipng-linux .7.5
 		//gifsicle
 		'2384f770d307c42b9c1e53cdc8dd662d',
 		'24fc5f33b33c0d11fb2e88f5a93949d0',
@@ -881,11 +881,16 @@ function ewww_image_optimizer_md5check($path) {
 		'151e395e2efa0e7845b18984d0f092af',
 		'7ae972062cf3f99218057b055a4e1e9c',
 		'c0bf45a291b93fd0a52318eddeaf5791',
-		'ac8fa17a7004fa216242af2367d1a838', // gifsicle-sol
-		'db1037b1e5e42108b48da564b8598610', // gifsicle-fbsd
-		'58f42368e86a4910d101d37fee748409', // gifsicle-linux
-		'39aca9edbb9495a241dc21fa678a09da', // gifsicle-mac
-		'32a75a5122ff9b783ed7dd76d65f6297', // gifsicle.exe
+		'ac8fa17a7004fa216242af2367d1a838', // gifsicle-sol 1.84
+		'040dd3e5cacb3a635e45a4241f854cae', // gifsicle-sol 1.87
+		'db1037b1e5e42108b48da564b8598610', // gifsicle-fbsd 1.84
+		'6574c83061c35ec71ee78c6714ee5a07', // gifsicle-fbsd 1.87
+		'58f42368e86a4910d101d37fee748409', // gifsicle-linux 1.84
+		'40ceed9c36838b5b9ccc505ab224d90f', // gifsicle-linux 1.87
+		'39aca9edbb9495a241dc21fa678a09da', // gifsicle-mac 1.84
+		'a474c8fa2237bb0b758bf646670a7d12', // gifsicle-mac 1.87
+		'32a75a5122ff9b783ed7dd76d65f6297', // gifsicle.exe 1.84
+		'9f4e0fad8d136d0649f5c3bcafd519e1', // gifsicle.exe 1.87
 		//pngout
 		'2b62778559e31bc750dc2dcfd249be32', 
 		'ea8655d1a1ef98833b294fb74f349c3e',
@@ -927,16 +932,25 @@ function ewww_image_optimizer_md5check($path) {
 		'46bb066d676bf94cbfd78bdc0227e74e', // pngquant-linux
 		'3b94673f48a92cf034eb0095611966da', // pngquant-mac
 		//cwebp
-		'085ea7844800980c72fa30835d6f6044', // cwebp.exe
-		'4610c239ba00d515701c75e90efe5534', // cwebp-sol
-		'44acd143a8dac72bbf5795a10d96da98', // cwebp-fbsd
-		'038b5acbbcd43e6811850be7d51236de', // cwebp-fbsd64
-		'9429dd850cc2f976961de5fe61f05e97', // cwebp-linux6
-		'eb3a5b6eae54140269ed6dcf6f792d37', // cwebp-linux664
-		'62272b2bd33218664b2355f516b6e8fc', // cwebp-linux8
-		'9b6f13ce6ee5a028cbd2765e2d53a1d7', // cwebp-linux864
-		'd43bf5eed775695d5ecfe4eafcbd7af7', // cwebp-mac8
-		'dab793f82cf6a3830898c75410583154', // cwebp-mac7
+		'085ea7844800980c72fa30835d6f6044', // cwebp.exe 0.4.1
+		'd36486979358245e8b1cd276f0077864', // cwebp.exe 0.4.3
+		'4610c239ba00d515701c75e90efe5534', // cwebp-sol 0.4.1
+		'cf7a155952105202f679d11beeef0364', // cwebp-sol 0.4.3
+		'44acd143a8dac72bbf5795a10d96da98', // cwebp-fbsd 0.4.1
+		'038b5acbbcd43e6811850be7d51236de', // cwebp-fbsd64 0.4.1
+		'829f4eb1950c425e064fd780c492a94c', // cwebp-fbsd64 0.4.3
+		'9429dd850cc2f976961de5fe61f05e97', // cwebp-linux6 0.4.1
+		'fec01e585f6164f911b89a7bf5b3e7eb', // cwebp-linux6 0.4.3
+		'eb3a5b6eae54140269ed6dcf6f792d37', // cwebp-linux664 0.4.1
+		'361c019b0a31d208c64b54bd813a3f76', // cwebp-linux664 0.4.3
+		'62272b2bd33218664b2355f516b6e8fc', // cwebp-linux8 0.4.1
+		'c7ee80d24efdb6aa2b87700cf98d7cbc', // cwebp-linux8 0.4.3
+		'9b6f13ce6ee5a028cbd2765e2d53a1d7', // cwebp-linux864 0.4.1
+		'f9ab108c759d95d66123185c12de132d', // cwebp-linux864 0.4.3
+		'7153ac42b8d8a2322853a408ec50fe0b', // cwebp-mac9 0.4.3
+		'd43bf5eed775695d5ecfe4eafcbd7af7', // cwebp-mac8 0.4.1
+		'4fdbf2eabdcb4261ddb4045f48cc8310', // cwebp-mac8 0.4.2
+		'dab793f82cf6a3830898c75410583154', // cwebp-mac7 0.4.1
 		);
 	foreach ($valid_md5sums as $md5_sum) {
 		if ($md5_sum == md5_file($path)) {

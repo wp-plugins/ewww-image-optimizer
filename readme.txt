@@ -192,7 +192,6 @@ Pngout, TinyJPG/TinyPNG, JPEGmini, and Pngquant were recommended by EWWW IO user
 
 = future =
 * these are current feature requests, if you see something you like here, go vote for it in the support forum
-* full GMedia support
 * copy metadata from original images to webp variants
 * EWWW I.O. as a stand-alone tool
 * If you would like to help translate this plugin in your language, get started here: http://translate.ewww.io/projects/ewww-image-optimizer/
@@ -203,6 +202,10 @@ Pngout, TinyJPG/TinyPNG, JPEGmini, and Pngquant were recommended by EWWW IO user
 * fixed: Alt WebP Rewriting parses xml files when it should leave them alone - feeds and sitemaps
 * fixed: issues with API license exceeded during bulk optimization
 * fixed: pngout regression with .tmp and .tmp.png files preventing optimization
+* updated: bundled Gifsicle updated to 1.87
+* updated: bundled cwebp updated to 0.4.3 (0.4.2 for Mac OS 10.8)
+* deprecated: pngout 20151319 does not work on CentOS 5, older versions available at http://static.jonof.id.au/dl/kenutils/
+* deprecated: FreeBSD 8.4 support, moving to 9.3 64-bit only
 
 = 2.4.3 =
 * fixed: Alt WebP Rewriting breaks themes with <header> elements
