@@ -199,6 +199,7 @@ Pngout, TinyJPG/TinyPNG, JPEGmini, and Pngquant were recommended by EWWW IO user
 = 2.4.5 =
 * fixed: warning on settings page for implode() function
 * updated: gifsicle works again on Windows XP and Server 2003
+* added: filter to allow changing time period for scheduled optimization
 
 = 2.4.4 =
 * fixed: Alt WebP Rewriting unable to find images when WP url and Site url are different (subdirectory install)

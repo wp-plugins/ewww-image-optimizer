@@ -569,7 +569,7 @@ function ewww_image_optimizer_admin_init() {
 	// setup scheduled optimization if the user has enabled it, and it isn't already scheduled
 	if (ewww_image_optimizer_get_option('ewww_image_optimizer_auto') == TRUE && !wp_next_scheduled('ewww_image_optimizer_auto')) {
 		$ewww_debug .= "scheduling auto-optimization<br>";
-		wp_schedule_event(time(), 'hourly', 'ewww_image_optimizer_auto');
+		wp_schedule_event( time(), apply_filters( 'ewww_image_optimizer_schedule', 'hourly' ), 'ewww_image_optimizer_auto' );
 	} elseif (ewww_image_optimizer_get_option('ewww_image_optimizer_auto') == TRUE) {
 		$ewww_debug .= "auto-optimization already scheduled: " . wp_next_scheduled('ewww_image_optimizer_auto') . "<br>";
 	} elseif (wp_next_scheduled('ewww_image_optimizer_auto')) {
