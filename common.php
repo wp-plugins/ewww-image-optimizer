@@ -27,10 +27,6 @@ if ( WP_DEBUG ) {
 	$ewww_memory = 'plugin load: ' . memory_get_usage( true ) . "\n";
 }
 
-$ewww_debug .= 'ABSPATH: ' . ABSPATH . '<br>';
-$ewww_debug .= 'home url: ' . get_home_url() . '<br>';
-$ewww_debug .= 'site url: ' . get_site_url() . '<br>';
-
 // setup custom $wpdb attribute for our image-tracking table
 global $wpdb;
 if ( ! isset( $wpdb->ewwwio_images ) ) {
@@ -2776,9 +2772,12 @@ function ewww_image_optimizer_get_image_sizes() {
 
 // displays the EWWW IO options and provides one-click install for the optimizer utilities
 function ewww_image_optimizer_options () {
-	// TODO: output options to debugging
 	global $ewww_debug;
 	$ewww_debug .= '<b>ewww_image_optimizer_options()</b><br>';
+	$ewww_debug .= 'ABSPATH: ' . ABSPATH . '<br>';
+	$ewww_debug .= 'home url: ' . get_home_url() . '<br>';
+	$ewww_debug .= 'site url: ' . get_site_url() . '<br>';
+
 	$output = array();
 	if (isset($_REQUEST['ewww_pngout'])) {
 		if ($_REQUEST['ewww_pngout'] == 'success') {
