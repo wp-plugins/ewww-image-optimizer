@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate image optimizers into WordPress.
- * @version 2.4.4.3
+ * @version 2.4.5
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -10,7 +10,7 @@ Plugin URI: http://wordpress.org/extend/plugins/ewww-image-optimizer/
 Description: Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
 Author: Shane Bishop
 Text Domain: ewww-image-optimizer
-Version: 2.4.4.3
+Version: 2.4.5
 Author URI: https://ewww.io/
 License: GPLv3
 */
@@ -483,50 +483,50 @@ function ewww_image_optimizer_notice_utils() {
 	// we are going to store our validation results in $missing
 	$missing = array();
 	// go through each of the required tools
-	foreach($required as $key => $req){
+	foreach( $required as $key => $req ) {
 		// if the tool wasn't found, add it to the $missing array if we are supposed to check the tool in question
-		switch($key) {
+		switch( $key ) {
 			case 'JPEGTRAN':
-				if (!$skip_jpegtran_check && empty($req)) {
+				if ( ! $skip_jpegtran_check && empty( $req ) ) {
 					$missing[] = 'jpegtran';
 					$req = false;
 				}
-				define('EWWW_IMAGE_OPTIMIZER_' . $key, $req);
+				define( 'EWWW_IMAGE_OPTIMIZER_' . $key, $req );
 				break; 
 			case 'OPTIPNG':
-				if (!$skip_optipng_check && empty($req)) {
+				if ( ! $skip_optipng_check && empty( $req ) ) {
 					$missing[] = 'optipng';
 					$req = false;
 				}
-				define('EWWW_IMAGE_OPTIMIZER_' . $key, $req);
+				define( 'EWWW_IMAGE_OPTIMIZER_' . $key, $req );
 				break;
 			case 'GIFSICLE':
-				if (!$skip_gifsicle_check && empty($req)) {
+				if ( ! $skip_gifsicle_check && empty( $req ) ) {
 					$missing[] = 'gifsicle';
 					$req = false;
 				}
-				define('EWWW_IMAGE_OPTIMIZER_' . $key, $req);
+				define( 'EWWW_IMAGE_OPTIMIZER_' . $key, $req );
 				break;
 			case 'PNGOUT':
-				if (!$skip_pngout_check && empty($req)) {
+				if ( ! $skip_pngout_check && empty( $req ) ) {
 					$missing[] = 'pngout';
 					$req = false;
 				}
-				define('EWWW_IMAGE_OPTIMIZER_' . $key, $req);
+				define( 'EWWW_IMAGE_OPTIMIZER_' . $key, $req );
 				break;
 			case 'PNGQUANT':
-				if (!$skip_pngquant_check && empty($req)) {
+				if ( ! $skip_pngquant_check && empty( $req ) ) {
 					$missing[] = 'pngquant';
 					$req = false;
 				}
-				define('EWWW_IMAGE_OPTIMIZER_' . $key, $req);
+				define( 'EWWW_IMAGE_OPTIMIZER_' . $key, $req );
 				break;
 			case 'WEBP':
-				if (!$skip_webp_check && empty($req)) {
+				if ( ! $skip_webp_check && empty( $req ) ) {
 					$missing[] = 'webp';
 					$req = false;
 				}
-				define('EWWW_IMAGE_OPTIMIZER_' . $key, $req);
+				define( 'EWWW_IMAGE_OPTIMIZER_' . $key, $req );
 				break;
 		}
 	}
@@ -732,9 +732,9 @@ function ewww_image_optimizer_path_check ( $j = true, $o = true, $g = true, $p =
 				$gifsicle = ewww_image_optimizer_find_binary('gifsicle', 'g');
 			}
 		}
-		if ($p) {
+		if ( $p ) {
 			// pngout is special and has a dynamic and static binary to check
-			if (file_exists(EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static') && !$use_system) {
+			if ( file_exists( EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static' ) && ! $use_system ) {
 				$ppt = EWWW_IMAGE_OPTIMIZER_TOOL_PATH . 'pngout-static';
 				$ewww_debug .= "found $ppt, testing...<br>";
 				if (ewww_image_optimizer_md5check($ppt) && ewww_image_optimizer_mimetype($ppt, 'b')) {
