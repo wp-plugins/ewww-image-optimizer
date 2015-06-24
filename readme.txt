@@ -196,6 +196,9 @@ Pngout, TinyJPG/TinyPNG, JPEGmini, and Pngquant were recommended by EWWW IO user
 * EWWW I.O. as a stand-alone tool
 * If you would like to help translate this plugin in your language, get started here: http://translate.ewww.io/projects/ewww-image-optimizer/
 
+= 2.4.6 =
+* fixed: some admin pages were testing all tools regardless of the active settings
+
 = 2.4.5 =
 * fixed: warning on settings page for implode() function
 * fixed: notice on admin pages with get_home_url() function

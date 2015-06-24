@@ -33,7 +33,7 @@ if ( ! isset( $wpdb->ewwwio_images ) ) {
 	$wpdb->ewwwio_images = $wpdb->prefix . "ewwwio_images";
 }
 
-//add_action( 'contextual_help', 'wptuts_screen_help', 10, 3 );
+add_action( 'contextual_help', 'wptuts_screen_help', 10, 3 );
 function wptuts_screen_help( $contextual_help, $screen_id, $screen ) {
  
     // The add_help_tab function for screen was introduced in WordPress 3.3.
@@ -325,7 +325,7 @@ function ewww_image_optimizer_filter_page_output( $buffer ) {
 		if ( ! empty( $html_head ) ) {
 			$buffer = preg_replace( '/<html.+>\s.*<head>/', $html_head[0], $buffer );
 		}
-		ewww_image_optimizer_debug_log();
+//		ewww_image_optimizer_debug_log();
 	}
 	return $buffer;
 }
@@ -1136,7 +1136,7 @@ function ewww_image_optimizer_aux_paths_sanitize ($input) {
 			$path_array[] = $path;
 		}
 	}
-	ewww_image_optimizer_debug_log();
+//	ewww_image_optimizer_debug_log();
 	ewwwio_memory( __FUNCTION__ );
 	return $path_array;
 }
@@ -2410,7 +2410,7 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 		switch($type) {
 			case 'image/jpeg':
 				// if jpegtran is missing, tell them that
-				if(!EWWW_IMAGE_OPTIMIZER_JPEGTRAN && !ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_jpg')) {
+				if( ! EWWW_IMAGE_OPTIMIZER_JPEGTRAN && ! ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_jpg')) {
 					$valid = false;
 					$msg = '<br>' . sprintf(__('%s is missing', EWWW_IMAGE_OPTIMIZER_DOMAIN), '<em>jpegtran</em>');
 				} else {
@@ -2421,7 +2421,7 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 				break; 
 			case 'image/png':
 				// if pngout and optipng are missing, tell the user
-				if(!EWWW_IMAGE_OPTIMIZER_PNGOUT && !EWWW_IMAGE_OPTIMIZER_OPTIPNG && !ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_png')) {
+				if( ! EWWW_IMAGE_OPTIMIZER_PNGOUT && ! EWWW_IMAGE_OPTIMIZER_OPTIPNG && ! ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_png')) {
 					$valid = false;
 					$msg = '<br>' . sprintf(__('%s is missing', EWWW_IMAGE_OPTIMIZER_DOMAIN), '<em>optipng/pngout</em>');
 				} else {
