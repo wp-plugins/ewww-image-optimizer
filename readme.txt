@@ -199,6 +199,7 @@ Pngout, TinyJPG/TinyPNG, JPEGmini, and Pngquant were recommended by EWWW IO user
 = 2.4.6 =
 * fixed: some admin pages were testing all tools regardless of the active settings
 * fixed: check that image exists in WP_Image_Editor extension
+* fixed: load 'tool_init' earlier on Media Library to prevent errors with Enhanced Media Library plugin
 
 = 2.4.5 =
 * fixed: warning on settings page for implode() function

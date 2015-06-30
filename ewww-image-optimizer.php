@@ -97,7 +97,7 @@ function ewww_image_optimizer_exec_init() {
 		$ewww_debug .= 'unsupported OS, disabling tools: ' . PHP_OS . '<br>';
 		ewww_image_optimizer_disable_tools();
 	} else {
-		add_action( 'load-upload.php', 'ewww_image_optimizer_tool_init' );
+		add_action( 'load-upload.php', 'ewww_image_optimizer_tool_init', 9 );
 		add_action( 'load-media-new.php', 'ewww_image_optimizer_tool_init' );
 		add_action( 'load-media_page_ewww-image-optimizer-bulk', 'ewww_image_optimizer_tool_init' );
 		add_action( 'load-settings_page_ewww-image-optimizer/ewww-image-optimizer', 'ewww_image_optimizer_tool_init' );
