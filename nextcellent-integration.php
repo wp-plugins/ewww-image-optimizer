@@ -58,7 +58,7 @@ class ewwwngg {
 		$gallery = $gid;
 		// prepare the $images array for POSTing
 		$images = serialize($images); 
-		$thumb_output = "<div id='bulk-forms'><p>" . __( 'The thumbnails for your new images have not been optimized.', EWWW_IMAGE_OPTIMIZER_DOMAIN ) . "</p><form id='thumb-optimize' method='post' action='admin.php?page=ewww-ngg-thumb-bulk'>" . wp_nonce_field( 'ewww-image-optimizer-bulk', 'ewww_wpnonce' ) . "<input type='hidden' name='ewww_attachments' value='$images'><input type='submit' class='button-secondary action' value='" . __( 'Optimize Thumbs', EWWW_IMAGE_OPTIMIZER_DOMAIN ) . "' /></form>";
+		$thumb_output = "<div id='bulk-forms'><p>" . __( 'The thumbnails for your new images have not been optimized.', EWWW_IMAGE_OPTIMIZER_DOMAIN ) . "</p><form id='thumb-optimize' method='post' action='admin.php?page=ewww-ngg-thumb-bulk'>" . wp_nonce_field( 'ewww-image-optimizer-bulk', 'ewww_wpnonce', true, false ) . "<input type='hidden' name='ewww_attachments' value='$images'><input type='submit' class='button-secondary action' value='" . __( 'Optimize Thumbs', EWWW_IMAGE_OPTIMIZER_DOMAIN ) . "' /></form>";
 		echo apply_filters( 'ewww_ngg_new_thumbs', $thumb_output );
 	}
 
