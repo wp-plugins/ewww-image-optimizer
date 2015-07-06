@@ -197,7 +197,7 @@ Pngout, TinyJPG/TinyPNG, JPEGmini, and Pngquant were recommended by EWWW IO user
 * If you would like to help translate this plugin in your language, get started here: http://translate.ewww.io/projects/ewww-image-optimizer/
 
 = 2.4.6 =
-* fixed: some admin pages were testing all tools regardless of the active settings
+* fixed: some admin pages were testing all tools regardless of the active settings (also improves admin load times)
 * fixed: check that image exists in WP_Image_Editor extension
 * fixed: load 'tool_init' earlier on Media Library to prevent errors with Enhanced Media Library plugin
 * added: filter to modify/suppress output of thumbnail optimization message after image upload for Nextcellent (useful for things like Lightroom integration)
