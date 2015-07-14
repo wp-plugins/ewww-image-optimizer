@@ -196,6 +196,9 @@ Pngout, TinyJPG/TinyPNG, JPEGmini, and Pngquant were recommended by EWWW IO user
 * EWWW I.O. as a stand-alone tool
 * If you would like to help translate this plugin in your language, get started here: http://translate.ewww.io/projects/ewww-image-optimizer/
 
+= 2.4.7 =
+* fixed: defer nextgen loading until 'init' to prevent activation/upgrade problems
+
 = 2.4.6 =
 * fixed: some admin pages were testing all tools regardless of the active settings (also improves admin load times)
 * fixed: check that image exists in WP_Image_Editor extension

@@ -1,7 +1,7 @@
 <?php
 // common functions for Standard and Cloud plugins
 
-define( 'EWWW_IMAGE_OPTIMIZER_VERSION', '246.0' );
+define( 'EWWW_IMAGE_OPTIMIZER_VERSION', '246.1' );
 
 // initialize debug global
 $disabled = ini_get( 'disable_functions' );
@@ -114,6 +114,7 @@ add_filter( 'myarcade_filter_screenshot', 'ewww_image_optimizer_myarcade_thumbna
 add_filter( 'myarcade_filter_thumbnail', 'ewww_image_optimizer_myarcade_thumbnail' );
 add_action( 'manage_media_custom_column', 'ewww_image_optimizer_custom_column', 10, 2 );
 add_action( 'plugins_loaded', 'ewww_image_optimizer_preinit' );
+add_action( 'init', 'ewww_image_optimizer_gallery_support' );
 add_action( 'admin_init', 'ewww_image_optimizer_admin_init' );
 add_action( 'admin_action_ewww_image_optimizer_manual_optimize', 'ewww_image_optimizer_manual' );
 add_action( 'admin_action_ewww_image_optimizer_manual_restore', 'ewww_image_optimizer_manual' );
@@ -381,13 +382,15 @@ function ewww_image_optimizer_preinit() {
 	global $ewww_debug;
 	$ewww_debug .= '<b>ewww_image_optimizer_preinit()</b><br>';
 	load_plugin_textdomain(EWWW_IMAGE_OPTIMIZER_DOMAIN, false, dirname(plugin_basename(__FILE__)) . '/languages/');
-
+}
+	
+function ewww_image_optimizer_gallery_support() {	
+	global $ewww_debug;
+	$ewww_debug .= '<b>ewww_image_optimizer_gallery_support()</b><br>';
 	$active_plugins = get_option( 'active_plugins' );
 	if ( is_multisite() ) {
 		$active_plugins = array_merge( $active_plugins, array_flip( get_site_option( 'active_sitewide_plugins' ) ) );
 	}
-	
-	
 	/*if ( strtoupper( substr( PHP_OS, 0, 3 ) ) == 'WIN' ) {
 		$ewww_plugins_path = str_replace( '/', '\\', EWWW_IMAGE_OPTIMIZER_PLUGIN_FILE_REL );
 	} else {
