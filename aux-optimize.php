@@ -729,7 +729,7 @@ function ewww_image_optimizer_aux_images_cleanup($auto = false) {
 	if (!$auto) {
 		// and let the user know we are done
 		echo '<p><b>' . __('Finished', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</b></p>';
-	ewwwio_memory( __FUNCTION__ );
+		ewwwio_memory( __FUNCTION__ );
 		die();
 	}
 }

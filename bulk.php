@@ -368,7 +368,7 @@ function ewww_image_optimizer_aux_images_table_count() {
 	$count = $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->ewwwio_images");
 	if (!empty($_REQUEST['ewww_inline'])) {
 		echo $count;
-	ewwwio_memory( __FUNCTION__ );
+		ewwwio_memory( __FUNCTION__ );
 		die();
 	}
 	ewwwio_memory( __FUNCTION__ );
@@ -405,9 +405,10 @@ function ewww_image_optimizer_bulk_filename() {
 	$meta = wp_get_attachment_metadata( $attachment_ID );
 	// generate the WP spinner image for display
 	$loading_image = plugins_url('/wpspin.gif', __FILE__);
-	if(!empty($meta['file']))
+	if ( ! empty( $meta['file'] ) ) {
 		// let the user know the file we are currently optimizing
 		echo "<p>" . __('Optimizing', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <b>" . $meta['file'] . "</b>&nbsp;<img src='$loading_image' /></p>";
+	}
 	ewwwio_memory( __FUNCTION__ );
 	die();
 }

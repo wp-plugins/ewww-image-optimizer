@@ -1,7 +1,7 @@
 <?php
 // common functions for Standard and Cloud plugins
 
-define( 'EWWW_IMAGE_OPTIMIZER_VERSION', '246.1' );
+define( 'EWWW_IMAGE_OPTIMIZER_VERSION', '247.0' );
 
 // initialize debug global
 $disabled = ini_get( 'disable_functions' );
@@ -423,6 +423,7 @@ function ewww_image_optimizer_gallery_support() {
 			require( EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'flag-integration.php' );
 		}
 	}
+//	ewww_image_optimizer_debug_log();
 }
 
 /**
@@ -450,6 +451,7 @@ function ewww_image_optimizer_init() {
 //		ewww_image_optimizer_tool_init();
 //	}
 	ewwwio_memory( __FUNCTION__ );
+//	ewww_image_optimizer_debug_log();
 }
 
 // Plugin initialization for admin area
@@ -607,6 +609,7 @@ function ewww_image_optimizer_admin_init() {
 		add_action('admin_enqueue_scripts', 'ewww_image_optimizer_progressbar_style'); 
 	}
 	ewwwio_memory( __FUNCTION__ );
+//	ewww_image_optimizer_debug_log();
 }
 
 // sets all the tool constants to false
@@ -618,6 +621,7 @@ function ewww_image_optimizer_disable_tools() {
 	define('EWWW_IMAGE_OPTIMIZER_PNGOUT', false);
 	define('EWWW_IMAGE_OPTIMIZER_GIFSICLE', false);
 	ewwwio_memory( __FUNCTION__ );
+//	ewww_image_optimizer_debug_log();
 }
 
 // generates css include for progressbars to match admin style
@@ -1404,9 +1408,12 @@ function ewww_image_optimizer_cloud_key_sanitize ( $key ) {
 
 // turns on the cloud settings when they are all disabled
 function ewww_image_optimizer_cloud_enable () {
+	global $ewww_debug;
+	$ewww_debug .= '<b>ewww_image_optimizer_cloud_enable()</b><br>';
 	ewww_image_optimizer_set_option('ewww_image_optimizer_cloud_jpg', true);
 	ewww_image_optimizer_set_option('ewww_image_optimizer_cloud_png', true);
 	ewww_image_optimizer_set_option('ewww_image_optimizer_cloud_gif', true);
+//	ewww_image_optimizer_debug_log();
 }
 
 // adds our version to the useragent for http requests
@@ -1657,7 +1664,7 @@ function ewww_image_optimizer_cloud_optimizer($file, $type, $convert = false, $n
 		$msg = '';
 		if (preg_match('/exceeded/', $response['body'])) {
 			$ewww_debug .= "License Exceeded<br>";
-					global $ewww_exceed;
+				//	global $ewww_exceed;
 					$ewww_exceed = true;
 			$msg = 'exceeded';
 			unlink($tempfile);

@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: image, attachment, optimize, optimization, lossless, lossy, photo, picture, seo, compression, gmagick, jpegtran, gifsicle, optipng, pngout, pngquant, jpegmini, tinyjpg, tinypng, webp, wp-cli 
 Requires at least: 3.5
 Tested up to: 4.2.2
-Stable tag: 2.4.6
+Stable tag: 2.4.7
 License: GPLv3
 
 Reduce file sizes for images in WordPress including NextGEN, GRAND FlAGallery and more using lossless/lossy methods and image format conversion.
@@ -198,6 +198,7 @@ Pngout, TinyJPG/TinyPNG, JPEGmini, and Pngquant were recommended by EWWW IO user
 
 = 2.4.7 =
 * fixed: defer nextgen loading until 'init' to prevent activation/upgrade problems
+* fixed: nextgen dynamic image generation fails if API subscription is out of image credits
 
 = 2.4.6 =
 * fixed: some admin pages were testing all tools regardless of the active settings (also improves admin load times)
