@@ -3,30 +3,33 @@ if ( ! class_exists('ewwwngg')) {
 class ewwwngg {
 	/* initializes the nextgen integration functions */
 	function ewwwngg() {
-		add_action('admin_init', array(&$this, 'admin_init'));
-		add_filter('ngg_manage_images_columns', array(&$this, 'ewww_manage_images_columns'));
-		add_action('ngg_manage_image_custom_column', array(&$this, 'ewww_manage_image_custom_column'), 10, 2);
+		add_action( 'admin_init', array( &$this, 'admin_init' ) );
+		add_filter( 'ngg_manage_images_columns', array( &$this, 'ewww_manage_images_columns' ) );
+		add_action( 'ngg_manage_image_custom_column', array( &$this, 'ewww_manage_image_custom_column' ), 10, 2 );
 		if ( ! ewww_image_optimizer_get_option( 'ewww_image_optimizer_noauto' ) ) {
-			add_action('ngg_added_new_image', array(&$this, 'ewww_added_new_image'));
+			add_action( 'ngg_added_new_image', array( &$this, 'ewww_added_new_image' ) );
 		}
-		add_action('admin_action_ewww_ngg_manual', array(&$this, 'ewww_ngg_manual'));
-		add_action('admin_menu', array(&$this, 'ewww_ngg_bulk_menu'));
+		add_action( 'admin_action_ewww_ngg_manual', array( &$this, 'ewww_ngg_manual' ) );
+		add_action( 'admin_menu', array( &$this, 'ewww_ngg_bulk_menu' ) );
 //		$i18ngg = strtolower( _n( 'Gallery', 'Galleries', 1, 'nggallery' ) );
-//		add_action('admin_head-' . $i18ngg . '_page_nggallery-manage-gallery', array(&$this, 'ewww_ngg_bulk_actions_script'));
-		add_action('admin_head-galleries_page_nggallery-manage-gallery', array(&$this, 'ewww_ngg_bulk_actions_script'));
-		add_action('admin_enqueue_scripts', array(&$this, 'ewww_ngg_bulk_script'));
-		add_action('wp_ajax_bulk_ngg_preview', array(&$this, 'ewww_ngg_bulk_preview'));
-		add_action('wp_ajax_bulk_ngg_init', array(&$this, 'ewww_ngg_bulk_init'));
-		add_action('wp_ajax_bulk_ngg_filename', array(&$this, 'ewww_ngg_bulk_filename'));
-		add_action('wp_ajax_bulk_ngg_loop', array(&$this, 'ewww_ngg_bulk_loop'));
-		add_action('wp_ajax_bulk_ngg_cleanup', array(&$this, 'ewww_ngg_bulk_cleanup'));
-		add_action('wp_ajax_ewww_ngg_thumbs', array(&$this, 'ewww_ngg_thumbs_only'));
-		add_action('ngg_after_new_images_added', array(&$this, 'ewww_ngg_new_thumbs'), 10, 2);
+//		add_action( 'admin_head-' . $i18ngg . '_page_nggallery-manage-gallery', array(&$this, 'ewww_ngg_bulk_actions_script'));
+		add_action( 'admin_head-galleries_page_nggallery-manage-gallery', array( &$this, 'ewww_ngg_bulk_actions_script' ) );
+		add_action( 'admin_enqueue_scripts', array( &$this, 'ewww_ngg_bulk_script' ) );
+		add_action( 'wp_ajax_bulk_ngg_preview', array( &$this, 'ewww_ngg_bulk_preview' ) );
+		add_action( 'wp_ajax_bulk_ngg_init', array( &$this, 'ewww_ngg_bulk_init' ) );
+		add_action( 'wp_ajax_bulk_ngg_filename', array( &$this, 'ewww_ngg_bulk_filename' ) );
+		add_action( 'wp_ajax_bulk_ngg_loop', array( &$this, 'ewww_ngg_bulk_loop' ) );
+		add_action( 'wp_ajax_bulk_ngg_cleanup', array( &$this, 'ewww_ngg_bulk_cleanup' ) );
+		add_action( 'wp_ajax_ewww_ngg_thumbs', array( &$this, 'ewww_ngg_thumbs_only' ) );
+		add_action( 'ngg_ajax_image_save', array( &$this, 'ewww_ngg_image_save' ) );
+//		if ( ! ewww_image_optimizer_get_option( 'ewww_image_optimizer_defer' ) ) {
+//			add_action( 'ngg_after_new_images_added', array( &$this, 'ewww_ngg_new_thumbs' ), 10, 2 );
+//		}
 	}
 
 	function admin_init() {
-		register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_ngg_resume');
-		register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_ngg_attachments');
+		register_setting( 'ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_ngg_resume' );
+		register_setting( 'ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_ngg_attachments' );
 	}
 
 	/* adds the Bulk Optimize page to the tools menu, and a hidden page for optimizing thumbnails */
@@ -38,6 +41,7 @@ class ewwwngg {
 	/* ngg_added_new_image hook */
 	function ewww_added_new_image ($image) {
 		// query the filesystem path of the gallery from the database
+		global $ewww_defer;
 		global $wpdb;
 		$q = $wpdb->prepare( "SELECT path FROM {$wpdb->prefix}ngg_gallery WHERE gid = %d LIMIT 1", $image['galleryID'] );
 		$gallery_path = $wpdb->get_var($q);
@@ -45,11 +49,33 @@ class ewwwngg {
 		if ( $gallery_path ) {
 			// construct the absolute path of the current image
 			$file_path = trailingslashit($gallery_path) . $image['filename'];
+			if ( $ewww_defer && ewww_image_optimizer_get_option( 'ewww_image_optimizer_defer' ) ) {
+				ewww_image_optimizer_add_deferred_attachment( "nextcellent,{$image['id']}" );
+				return;
+			}
 			// run the optimizer on the current image
 			$res = ewww_image_optimizer(ABSPATH . $file_path, 2, false, false, true);
 			// update the metadata for the optimized image
 			nggdb::update_image_meta($image['id'], array('ewww_image_optimizer' => $res[1]));
 		}
+	}
+
+	function ewww_ngg_image_save( $filename ) {
+		global $ewww_debug;
+		global $ewww_defer;
+		$ewww_debug .= "<b>ewww_ngg::ewww_ngg_image_save()</b><br>";
+		if ( file_exists( $filename ) ) {
+			if ( $ewww_defer && ewww_image_optimizer_get_option( 'ewww_image_optimizer_defer' ) ) {
+				ewww_image_optimizer_add_deferred_attachment( "file,$filename" );
+				return $saved;
+			}
+			ewww_image_optimizer($filename);
+			$ewww_debug .= "ngg_Thumbnail saved: $filename <br>";
+			$image_size = filesize($filename);
+			$ewww_debug .= "image editor size: $image_size <br>";
+		}
+		ewww_image_optimizer_debug_log();
+		ewwwio_memory( __FUNCTION__ );
 	}
 
 	/* output a small html form so that the user can optimize thumbs for the $images just added */
@@ -117,23 +143,30 @@ class ewwwngg {
 		}
 		// store the attachment $id
 		$id = intval($_GET['ewww_attachment_ID']);
-		// retrieve the metadata for the image
-		$meta = new nggMeta( $id );
-		// retrieve the image path
-		$file_path = $meta->image->imagePath;
-		// run the optimizer on the current image
-		$res = ewww_image_optimizer($file_path, 2, false, false, true);
-		// update the metadata for the optimized image
-		nggdb::update_image_meta($id, array('ewww_image_optimizer' => $res[1]));
-		// get the filepath of the thumbnail image
-		$thumb_path = $meta->image->thumbPath;
-		// run the optimization on the thumbnail
-		ewww_image_optimizer($thumb_path, 2, false, true);
+		$this->ewww_ngg_optimize( $id );
+		ewww_image_optimizer_debug_log();
 		// get the referring page, and send the user back there
 		$sendback = wp_get_referer();
 		$sendback = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $sendback);
 		wp_redirect($sendback);
 		exit(0);
+	}
+
+	/* optimize an image by ID */
+	function ewww_ngg_optimize( $id ) {
+		// retrieve the metadata for the image
+		$meta = new nggMeta( $id );
+		// retrieve the image path
+		$file_path = $meta->image->imagePath;
+		// run the optimizer on the current image
+		$fres = ewww_image_optimizer($file_path, 2, false, false, true);
+		// update the metadata for the optimized image
+		nggdb::update_image_meta($id, array('ewww_image_optimizer' => $fres[1]));
+		// get the filepath of the thumbnail image
+		$thumb_path = $meta->image->thumbPath;
+		// run the optimization on the thumbnail
+		$tres = ewww_image_optimizer($thumb_path, 2, false, true);
+		return array( $fres, $tres );
 	}
 
 	/* ngg_manage_images_columns hook */
@@ -410,26 +443,28 @@ class ewwwngg {
 		// find out what time we started, in microseconds
 		$started = microtime(true);
 		$id = $_POST['ewww_attachment'];
-		// get the metadata
+		list( $fres, $tres ) = $this->ewww_ngg_optimize( $id );
+/*		// get the metadata
 		$meta = new nggMeta($id);
 		// retrieve the filepath
 		$file_path = $meta->image->imagePath;
 		// run the optimizer on the current image
 		$fres = ewww_image_optimizer($file_path, 2, false, false, true);
+		// get the filepath of the thumbnail image
+		$thumb_path = $meta->image->thumbPath;
+		// run the optimization on the thumbnail
+		$tres = ewww_image_optimizer($thumb_path, 2, false, true);*/
 		global $ewww_exceed;
 		if ( ! empty ( $ewww_exceed ) ) {
 			echo '-9exceeded';
 			die();
 		}
 		// update the metadata of the optimized image
-		nggdb::update_image_meta($id, array('ewww_image_optimizer' => $fres[1]));
+//		nggdb::update_image_meta($id, array('ewww_image_optimizer' => $fres[1]));
 		// output the results of the optimization
-		printf("<p>" . __('Optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", $meta->image->filename);
+		//printf("<p>" . __('Optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", $meta->image->filename);
+		printf("<p>" . __('Optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", $fres[0]);
 		printf(__('Full size - %s', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "<br>", $fres[1]);
-		// get the filepath of the thumbnail image
-		$thumb_path = $meta->image->thumbPath;
-		// run the optimization on the thumbnail
-		$tres = ewww_image_optimizer($thumb_path, 2, false, true);
 		// output the results of the thumb optimization
 		printf(__('Thumbnail - %s', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "<br>", $tres[1]);
 		// outupt how much time we spent

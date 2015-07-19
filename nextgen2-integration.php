@@ -41,23 +41,28 @@ class ewwwngg {
 	}
 
 	/* ngg_added_new_image hook */
-	function ewww_added_new_image ($image, $storage = null) {
+	function ewww_added_new_image ( $image, $storage = null ) {
 		global $ewww_debug;
+		global $ewww_defer;
 		$ewww_debug .= "<b>ewww_added_new_image()</b><br>";
-		if (empty($storage)) {
+		if ( empty( $storage ) ) {
 			// creating the 'registry' object for working with nextgen
 			$registry = C_Component_Registry::get_instance();
 			// creating a database storage object from the 'registry' object
-			$storage  = $registry->get_utility('I_Gallery_Storage');
+			$storage  = $registry->get_utility( 'I_Gallery_Storage' );
 		}
 		// find the image id
 		if ( is_array( $image ) ) {
 			$image_id = $image['id'];
-                	$image = $storage->object->_image_mapper->find($image_id, TRUE);
+                	$image = $storage->object->_image_mapper->find( $image_id, TRUE );
 		} else {
-			$image_id = $storage->object->_get_image_id($image);
+			$image_id = $storage->object->_get_image_id( $image );
 		}
 		$ewww_debug .= "image id: $image_id<br>";
+		if ( $ewww_defer && ewww_image_optimizer_get_option( 'ewww_image_optimizer_defer' ) ) {
+			ewww_image_optimizer_add_deferred_attachment( "nextgen2,$image_id" );
+			return;
+		}
 		// get an array of sizes available for the $image
 		$sizes = $storage->get_image_sizes();
 		// run the optimizer on the image for each $size
@@ -526,12 +531,17 @@ if ( ! class_exists( 'EWWWIO_Gallery_Storage' ) && class_exists( 'Mixin' ) && ! 
 	class EWWWIO_Gallery_Storage extends Mixin {
 		function generate_image_size( $image, $size, $params = null, $skip_defaults = false ) {
 			global $ewww_debug;
+			global $ewww_defer;
 			if (!defined('EWWW_IMAGE_OPTIMIZER_CLOUD'))
 				ewww_image_optimizer_init();
 			$success = $this->call_parent( 'generate_image_size', $image, $size, $params, $skip_defaults );
 			if ( $success ) {
 				//$filename = $this->object->get_image_abspath($image, $size);
 				$filename = $success->fileName;
+				if ( $ewww_defer && ewww_image_optimizer_get_option( 'ewww_image_optimizer_defer' ) ) {
+					ewww_image_optimizer_add_deferred_attachment( "file,$filename" );
+					return $saved;
+				}
 				ewww_image_optimizer( $filename );
 //				ewww_image_optimizer_aux_images_loop( $filename, true );
 				$ewww_debug .= "nextgen dynamic thumb saved: $filename <br>";

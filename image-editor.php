@@ -3,6 +3,7 @@ if ( class_exists( 'Bbpp_Animated_Gif' ) ) {
 	class EWWWIO_GD_Editor extends Bbpp_Animated_Gif {
 		public function save( $filename = null, $mime_type = null ) {
 			global $ewww_debug;
+			global $ewww_defer;
 			if (!defined('EWWW_IMAGE_OPTIMIZER_CLOUD'))
 				ewww_image_optimizer_init();
 			$saved = parent::save($filename, $mimetype);
@@ -11,6 +12,10 @@ if ( class_exists( 'Bbpp_Animated_Gif' ) ) {
 					$filename = $saved['path'];
 				}
 				if ( file_exists( $filename ) ) {
+					if ( $ewww_defer && ewww_image_optimizer_get_option( 'ewww_image_optimizer_defer' ) ) {
+						ewww_image_optimizer_add_deferred_attachment( "file,$filename" );
+						return $saved;
+					}
 					ewww_image_optimizer($filename);
 					$ewww_debug .= "image editor (AGR gd) saved: $filename <br>";
 					$image_size = filesize($filename);
@@ -23,6 +28,7 @@ if ( class_exists( 'Bbpp_Animated_Gif' ) ) {
 		}
 		public function multi_resize( $sizes ) {
 			global $ewww_debug;
+			global $ewww_defer;
 			if ( ! defined( 'EWWW_IMAGE_OPTIMIZER_CLOUD' ) )
 				ewww_image_optimizer_init();
 			$metadata = parent::multi_resize( $sizes );
@@ -34,6 +40,10 @@ if ( class_exists( 'Bbpp_Animated_Gif' ) ) {
 			foreach ( $metadata as $size ) {
 				$filename = trailingslashit( $dir ) . $size['file'];
 				if ( file_exists( $filename ) ) {
+					if ( $ewww_defer && ewww_image_optimizer_get_option( 'ewww_image_optimizer_defer' ) ) {
+						ewww_image_optimizer_add_deferred_attachment( "file,$filename" );
+						return $saved;
+					}
 					ewww_image_optimizer( $filename );
 					$ewww_debug .= "image editor (AGR gd) saved: $filename <br>";
 					$image_size = filesize( $filename );
@@ -49,6 +59,7 @@ if ( class_exists( 'Bbpp_Animated_Gif' ) ) {
 	class EWWWIO_GD_Editor extends WP_Thumb_Image_Editor_GD {
 		protected function _save( $image, $filename = null, $mime_type = null ) {
 			global $ewww_debug;
+			global $ewww_defer;
 			if (!defined('EWWW_IMAGE_OPTIMIZER_CLOUD'))
 				ewww_image_optimizer_init();
 			$saved = parent::_save($image, $filename, $mime_type);
@@ -57,6 +68,10 @@ if ( class_exists( 'Bbpp_Animated_Gif' ) ) {
 					$filename = $saved['path'];
 				}
 				if ( file_exists( $filename ) ) {
+					if ( $ewww_defer && ewww_image_optimizer_get_option( 'ewww_image_optimizer_defer' ) ) {
+						ewww_image_optimizer_add_deferred_attachment( "file,$filename" );
+						return $saved;
+					}
 					ewww_image_optimizer($filename);
 					$ewww_debug .= "image editor (wpthumb GD) saved : $filename <br>";
 					$image_size = filesize($filename);
@@ -72,6 +87,7 @@ if ( class_exists( 'Bbpp_Animated_Gif' ) ) {
 	class EWWWIO_GD_Editor extends WP_Image_Editor_GD {
 		protected function _save ($image, $filename = null, $mime_type = null) {
 			global $ewww_debug;
+			global $ewww_defer;
 			if (!defined('EWWW_IMAGE_OPTIMIZER_CLOUD'))
 				ewww_image_optimizer_init();
 			$saved = parent::_save($image, $filename, $mime_type);
@@ -80,6 +96,10 @@ if ( class_exists( 'Bbpp_Animated_Gif' ) ) {
 					$filename = $saved['path'];
 				}
 				if ( file_exists( $filename ) ) {
+					if ( $ewww_defer && ewww_image_optimizer_get_option( 'ewww_image_optimizer_defer' ) ) {
+						ewww_image_optimizer_add_deferred_attachment( "file,$filename" );
+						return $saved;
+					}
 					ewww_image_optimizer($filename);
 					$ewww_debug = "$ewww_debug image editor (gd) saved: $filename <br>";
 					$image_size = filesize($filename);
@@ -96,6 +116,7 @@ if (class_exists('WP_Thumb_Image_Editor_Imagick')) {
 	class EWWWIO_Imagick_Editor extends WP_Thumb_Image_Editor_Imagick {
 		protected function _save( $image, $filename = null, $mime_type = null ) {
 			global $ewww_debug;
+			global $ewww_defer;
 			if (!defined('EWWW_IMAGE_OPTIMIZER_CLOUD'))
 				ewww_image_optimizer_init();
 			$saved = parent::_save($image, $filename, $mime_type);
@@ -104,6 +125,10 @@ if (class_exists('WP_Thumb_Image_Editor_Imagick')) {
 					$filename = $saved['path'];
 				}
 				if ( file_exists( $filename ) ) {
+					if ( $ewww_defer && ewww_image_optimizer_get_option( 'ewww_image_optimizer_defer' ) ) {
+						ewww_image_optimizer_add_deferred_attachment( "file,$filename" );
+						return $saved;
+					}
 					ewww_image_optimizer($filename);
 					$ewww_debug .= "image editor (wpthumb imagick) saved : $filename <br>";
 					$image_size = filesize($filename);
@@ -119,6 +144,7 @@ if (class_exists('WP_Thumb_Image_Editor_Imagick')) {
 	class EWWWIO_Imagick_Editor extends WP_Image_Editor_Imagick {
 		protected function _save( $image, $filename = null, $mime_type = null ) {
 			global $ewww_debug;
+			global $ewww_defer;
 			if (!defined('EWWW_IMAGE_OPTIMIZER_CLOUD'))
 				ewww_image_optimizer_init();
 			$saved = parent::_save($image, $filename, $mime_type);
@@ -127,6 +153,10 @@ if (class_exists('WP_Thumb_Image_Editor_Imagick')) {
 					$filename = $saved['path'];
 				}
 				if ( file_exists( $filename ) ) {
+					if ( $ewww_defer && ewww_image_optimizer_get_option( 'ewww_image_optimizer_defer' ) ) {
+						ewww_image_optimizer_add_deferred_attachment( "file,$filename" );
+						return $saved;
+					}
 					ewww_image_optimizer($filename);
 					$ewww_debug .= "image editor (imagick) saved: $filename <br>";
 					$image_size = filesize($filename);
@@ -143,6 +173,7 @@ if (class_exists('WP_Image_Editor_Gmagick')) {
 	class EWWWIO_Gmagick_Editor extends WP_Image_Editor_Gmagick {
 		protected function _save( $image, $filename = null, $mime_type = null ) {
 			global $ewww_debug;
+			global $ewww_defer;
 			if (!defined('EWWW_IMAGE_OPTIMIZER_CLOUD'))
 				ewww_image_optimizer_init();
 			$saved = parent::_save($image, $filename, $mime_type);
@@ -151,6 +182,10 @@ if (class_exists('WP_Image_Editor_Gmagick')) {
 					$filename = $saved['path'];
 				}
 				if ( file_exists( $filename ) ) {
+					if ( $ewww_defer && ewww_image_optimizer_get_option( 'ewww_image_optimizer_defer' ) ) {
+						ewww_image_optimizer_add_deferred_attachment( "file,$filename" );
+						return $saved;
+					}
 					ewww_image_optimizer($filename);
 					$ewww_debug .= "image editor (gmagick) saved : $filename <br>";
 					$image_size = filesize($filename);

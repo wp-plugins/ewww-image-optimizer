@@ -194,17 +194,22 @@ class ewwwflag {
 	/* flag_added_new_image hook - optimize newly uploaded images */
 	function ewww_added_new_image ($image) {
 		global $ewww_debug;
+		global $ewww_defer;
 		$ewww_debug .= "<b>ewww_flag::ewww_added_new_image()</b><br>";
 		// make sure the image path is set
 		if (isset($image->imagePath)) {
+			// get the image ID
+			$pid = $image->pid;
+			if ( $ewww_defer && ewww_image_optimizer_get_option( 'ewww_image_optimizer_defer' ) ) {
+				ewww_image_optimizer_add_deferred_attachment( "flag,$pid" );
+				return;
+			}
 			// optimize the full size
 			$res = ewww_image_optimizer($image->imagePath, 3, false, false, true);
 			// optimize the web optimized version
 			$wres = ewww_image_optimizer($image->webimagePath, 3, false, true);
 			// optimize the thumbnail
 			$tres = ewww_image_optimizer($image->thumbPath, 3, false, true);
-			// get the image ID
-			$pid = $image->pid;
 			// retrieve the metadata for the image ID
 			$meta = new flagMeta( $pid );
 			$ewww_debug .= print_r($meta->image->meta_data, TRUE) . "<br>";

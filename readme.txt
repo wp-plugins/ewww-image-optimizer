@@ -196,6 +196,11 @@ Pngout, TinyJPG/TinyPNG, JPEGmini, and Pngquant were recommended by EWWW IO user
 * EWWW I.O. as a stand-alone tool
 * If you would like to help translate this plugin in your language, get started here: http://translate.ewww.io/projects/ewww-image-optimizer/
 
+= 2.5.0 =
+* added: deferred optimization lets you upload images with no delays, and optimize later automatically
+* added: wp_cron filter has additional parameter to allow setting scheduled & deferred optimization on different freqencies
+* changed: nextcellent thumbs are optimized on creation, no need to manually optimize after upload
+
 = 2.4.7 =
 * fixed: defer nextgen loading until 'init' to prevent activation/upgrade problems
 * fixed: nextgen dynamic image generation fails if API subscription is out of image credits
