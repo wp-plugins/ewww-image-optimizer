@@ -1975,6 +1975,108 @@ function ewww_image_optimizer_update_attachment_metadata($meta, $ID) {
 	return $meta;
 }
 
+function ewww_image_optimizer_remote_fetch( $id, $meta ) {
+	global $ewww_debug;
+	global $as3cf;
+	$ewww_debug .= '<b>ewww_image_optimizer_remote_fetch</b><br>';
+	if ( class_exists( 'Amazon_S3_And_CloudFront' ) ) {
+		$full_url = get_attached_file( $id );
+		$filename = get_attached_file( $id, true );
+		$ewww_debug .= "amazon s3 fullsize url: $full_url<br>";
+		$ewww_debug .= "unfiltered fullsize path: $filename<br>";
+		$temp_file = download_url( $full_url );
+		if ( ! is_wp_error( $temp_file ) ) {
+			rename( $temp_file, $filename );
+		}
+		// resized versions, so we'll grab those too
+		if (isset($meta['sizes']) ) {
+			$disabled_sizes = ewww_image_optimizer_get_option( 'ewww_image_optimizer_disable_resizes_opt' );
+//			$ewww_debug .= "disabled sizes: " . print_r( $disabled_sizes, true ) . "<br>";
+			$ewww_debug .= "retrieving resizes<br>";
+			// meta sizes don't contain a path, so we calculate one
+/*			if ($gallery_type === 6) {
+				$base_ims_dir = dirname($file_path) . '/_resized/';
+			}*/
+			$base_dir = dirname($filename) . '/';
+			// process each resized version
+			$processed = array();
+			foreach($meta['sizes'] as $size => $data) {
+				$ewww_debug .= "processing size: $size<br>";
+				if ( preg_match('/webp/', $size) ) {
+					continue;
+				}
+				if ( ! empty( $disabled_sizes[$size] ) ) {
+					continue;
+				}
+			/*	if ($gallery_type === 6) {
+					$base_dir = dirname($file_path) . '/';
+					$image_path = $base_dir . $data['file'];
+					$ims_path = $base_ims_dir . $data['file'];
+					if (file_exists($ims_path)) {
+						$ewww_debug .= "ims resize already exists, wahoo<br>";
+							$ewww_debug .= "ims path: $ims_path<br>";
+						$image_size = filesize($ims_path);
+						$query = $wpdb->prepare("SELECT id,path FROM $wpdb->ewwwio_images WHERE path = %s AND image_size = '$image_size'", $image_path);
+						$optimized_query = $wpdb->get_results($query, ARRAY_A);
+						if (!empty($optimized_query)) {
+							foreach ( $optimized_query as $image ) {
+								if ( $image['path'] != $image_path ) {
+									$ewww_debug .= "{$image['path']} does not match $image_path, continuing our search<br>";
+								} else {
+									$already_optimized = $image;
+								}
+							}
+						}
+						if ( ! empty( $already_optimized ) ) {
+							$ewww_debug .= "updating existing record, path: $ims_path, size: " . $image_size . "<br>";
+							// store info on the current image for future reference
+							$wpdb->update( $wpdb->ewwwio_images,
+								array(
+									'path' => $ims_path,
+								),
+								array(
+									'id' => $already_optimized['id'],
+								));
+							$base_dir = $base_ims_dir;
+						}
+					}
+				}*/
+				// initialize $dup_size
+				$dup_size = false;
+				// check through all the sizes we've processed so far
+				foreach($processed as $proc => $scan) {
+					// if a previous resize had identical dimensions
+					if ($scan['height'] == $data['height'] && $scan['width'] == $data['width']) {
+						// found a duplicate resize
+						$dup_size = true;
+						// point this resize at the same image as the previous one
+//						$meta['sizes'][$size]['file'] = $meta['sizes'][$proc]['file'];
+						// and tell the user we didn't do any further optimization
+//						$meta['sizes'][$size]['ewww_image_optimizer'] = __('No savings', EWWW_IMAGE_OPTIMIZER_DOMAIN);
+					}
+				}
+				// if this is a unique size
+				if (!$dup_size) {
+					$resize_path = $base_dir . $data['file'];
+					$resize_url = $as3cf->get_attachment_url( $id, null, $size, $meta );
+					$ewww_debug .= "fetching $resize_url to $resize_path<br>";
+					$temp_file = download_url( $resize_url );
+					if ( ! is_wp_error( $temp_file ) ) {
+						rename( $temp_file, $resize_path );
+					}
+				}
+				// store info on the sizes we've processed, so we can check the list for duplicate sizes
+				$processed[$size]['width'] = $data['width'];
+				$processed[$size]['height'] = $data['height'];
+			}
+		}
+	}
+	if ( file_exists( $filename ) ) {
+		return $filename;
+	} else {
+		return false;
+	}
+}
 /**
  * Read the image paths from an attachment's meta data and process each image
  * with ewww_image_optimizer().
@@ -2006,8 +2108,11 @@ function ewww_image_optimizer_resize_from_meta_data( $meta, $ID = null, $log = t
 	}
 	// don't do anything else if the attachment path can't be retrieved
 	if ( ! is_file( $file_path ) ) {
-		$ewww_debug .= "could not retrieve path<br>";
-		return $meta;
+		$file_path = ewww_image_optimizer_remote_fetch( $ID, $meta );
+		if ( ! $file_path ) {
+			$ewww_debug .= "could not retrieve path<br>";
+			return $meta;
+		}
 	}
 	$ewww_debug .= "retrieved file path: $file_path<br>";
 	// see if this is a new image and Imsanity resized it (which means it could be already optimized)
@@ -2075,7 +2180,7 @@ function ewww_image_optimizer_resize_from_meta_data( $meta, $ID = null, $log = t
 	// resized versions, so we can continue
 	if (isset($meta['sizes']) ) {
 		$disabled_sizes = ewww_image_optimizer_get_option( 'ewww_image_optimizer_disable_resizes_opt' );
-		$ewww_debug .= "disabled sizes: " . print_r( $disabled_sizes, true ) . "<br>";
+//		$ewww_debug .= "disabled sizes: " . print_r( $disabled_sizes, true ) . "<br>";
 		$ewww_debug .= "processing resizes<br>";
 		// meta sizes don't contain a path, so we calculate one
 		if ($gallery_type === 6) {
@@ -2319,8 +2424,14 @@ function ewww_image_optimizer_attachment_path( $meta, $ID ) {
 	$upload_path = trailingslashit( $upload_dir['basedir'] );
 	// get the filepath
 	$file_path = get_attached_file( $ID );
-	$ewww_debug .= "WP thinks the file is at: $file_path<br>";
+	//if ( is_file( $file_path ) && strpos( $file_path, 'http' ) !== 0 ) {
 	if ( is_file( $file_path ) ) {
+		$ewww_debug .= "WP thinks the file is at: $file_path<br>";
+		return array( $file_path, $upload_path );
+	}
+	$file_path = get_attached_file( $ID, true );
+	if ( is_file( $file_path ) ) {
+		$ewww_debug .= "WP thinks the file is at: $file_path<br>";
 		return array( $file_path, $upload_path );
 	}
 	if ( 'ims_image' == get_post_type( $ID ) && !empty( $meta['file'] ) ) {
@@ -2498,6 +2609,11 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 			}
 		}
 		list($file_path, $upload_path) = ewww_image_optimizer_attachment_path($meta, $id);
+		// TODO: have some sort of link for supported CDN images
+/*		if ( class_exists( 'Amazon_S3_And_CloudFront' ) ) {
+			$img_url = wp_get_attachment_url( $id );
+			echo $img_url . "<br>";
+		}*/
 		// if the file does not exist
 		if (empty($file_path)) {
 			_e('Could not retrieve file path.', EWWW_IMAGE_OPTIMIZER_DOMAIN);
