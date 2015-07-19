@@ -1979,6 +1979,9 @@ function ewww_image_optimizer_remote_fetch( $id, $meta ) {
 	global $ewww_debug;
 	global $as3cf;
 	$ewww_debug .= '<b>ewww_image_optimizer_remote_fetch</b><br>';
+	if ( ! function_exists( 'download_url' ) ) {
+		require_once(ABSPATH . '/wp-admin/includes/file.php');
+	}
 	if ( class_exists( 'Amazon_S3_And_CloudFront' ) ) {
 		$full_url = get_attached_file( $id );
 		$filename = get_attached_file( $id, true );
