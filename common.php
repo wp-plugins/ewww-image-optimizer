@@ -846,7 +846,9 @@ function ewww_image_optimizer_w3tc_update_files( $files ) {
 // runs scheduled optimization of various auxiliary images
 function ewww_image_optimizer_auto() {
 	global $ewww_debug;
+	global $ewww_defer;
 	$ewww_debug .= "<b>ewww_image_optimizer_auto()</b><br>";
+	$ewww_defer = false;
 	require_once(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'bulk.php');
 	require_once(EWWW_IMAGE_OPTIMIZER_PLUGIN_PATH . 'aux-optimize.php');
 	if (ewww_image_optimizer_get_option('ewww_image_optimizer_auto') == TRUE) {
@@ -1874,6 +1876,8 @@ function ewww_image_optimizer_update_table ($attachment, $opt_size, $orig_size, 
 // called by javascript to process each image in the loop
 function ewww_image_optimizer_aux_images_loop( $attachment = null, $auto = false ) {
 	global $ewww_debug;
+	global $ewww_defer;
+	$ewww_defer = false;
 	$ewww_debug .= "<b>ewww_image_optimizer_aux_images_loop()</b><br>";
 	// verify that an authorized user has started the optimizer
 	$permissions = apply_filters( 'ewww_image_optimizer_bulk_permissions', '' );

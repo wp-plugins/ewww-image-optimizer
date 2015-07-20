@@ -300,6 +300,8 @@ class ewwwflag {
 		
 	/* process each image and it's thumbnail during the bulk operation */
 	function ewww_flag_bulk_loop() {
+		global $ewww_defer;
+		$ewww_defer = false;
 		$permissions = apply_filters( 'ewww_image_optimizer_bulk_permissions', '' );
 		if ( ! wp_verify_nonce( $_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-bulk' ) || ! current_user_can( $permissions ) ) {
 			wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));

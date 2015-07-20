@@ -34,6 +34,8 @@ class EWWWIO_CLI extends WP_CLI_Command {
 	 * @synopsis <library> [<delay>] [--force] [--reset] [--noprompt]
 	 */
 	function optimize( $args, $assoc_args ) {
+		global $ewww_defer;
+		$ewww_defer = false;
 		// because NextGEN hasn't flushed it's buffers...
 		while( @ob_end_flush() );
 		$library = $args[0];
