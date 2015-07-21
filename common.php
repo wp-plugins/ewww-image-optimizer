@@ -1,7 +1,7 @@
 <?php
 // common functions for Standard and Cloud plugins
 
-define( 'EWWW_IMAGE_OPTIMIZER_VERSION', '247.2' );
+define( 'EWWW_IMAGE_OPTIMIZER_VERSION', '247.3' );
 
 // initialize debug global
 $disabled = ini_get( 'disable_functions' );
@@ -2622,49 +2622,57 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 	global $ewww_debug;
 	$ewww_debug .= "<b>ewww_image_optimizer_custom_column()</b><br>";
 	// once we get to the EWWW IO custom column
-	if ($column_name == 'ewww-image-optimizer') {
+	if ( $column_name == 'ewww-image-optimizer' ) {
 		// retrieve the metadata
-		$meta = wp_get_attachment_metadata($id);
-		if (ewww_image_optimizer_get_option('ewww_image_optimizer_debug')) {
-			$print_meta = print_r($meta, TRUE);
-			$print_meta = preg_replace(array('/ /', '/\n+/'), array('&nbsp;', '<br />'), $print_meta);
+		$meta = wp_get_attachment_metadata( $id );
+		if ( ewww_image_optimizer_get_option( 'ewww_image_optimizer_debug' ) ) {
+			$print_meta = print_r( $meta, TRUE );
+			$print_meta = preg_replace( array('/ /', '/\n+/' ), array( '&nbsp;', '<br />' ), $print_meta );
 			echo '<div style="background-color:#ffff99;font-size: 10px;padding: 10px;margin:-10px -10px 10px;line-height: 1.1em">' . $print_meta . '</div>';
 		}
-		if(!empty($meta['cloudinary'])) {
-			_e('Cloudinary image', EWWW_IMAGE_OPTIMIZER_DOMAIN);
+		$ewww_cdn = false;
+		if( ! empty( $meta['cloudinary'] ) ) {
+			_e( 'Cloudinary image', EWWW_IMAGE_OPTIMIZER_DOMAIN );
 			return;
 		}
+		if ( class_exists( 'WindowsAzureStorageUtil' ) && ! empty( $meta['url'] ) ) {
+			_e( 'Azure Storage image', EWWW_IMAGE_OPTIMIZER_DOMAIN );
+			$ewww_cdn = true;
+		}
+		if ( class_exists( 'Amazon_S3_And_CloudFront' ) && strpos( get_attached_file( $id ), 'http' ) === 0 ) {
+			_e( 'Amazon S3 image', EWWW_IMAGE_OPTIMIZER_DOMAIN );
+			$ewww_cdn = true;
+		}
 		// if the filepath isn't set in the metadata
-		if(empty($meta['file'])){
-			if (isset($meta['file'])) {
-				unset($meta['file']);
-				if (strpos($meta['ewww_image_optimizer'], 'Could not find') === 0) {
-					unset($meta['ewww_image_optimizer']);
+/*		if( empty($meta['file'] ) ){
+			if ( isset( $meta['file'] ) ) {
+				unset( $meta['file'] );
+				if ( strpos( $meta['ewww_image_optimizer'], 'Could not find' ) === 0 ) {
+					unset( $meta['ewww_image_optimizer'] );
 				}
 				wp_update_attachment_metadata($id, $meta);
 			}
-		}
-		list($file_path, $upload_path) = ewww_image_optimizer_attachment_path($meta, $id);
-		// TODO: have some sort of link for supported CDN images
-/*		if ( class_exists( 'Amazon_S3_And_CloudFront' ) ) {
-			$img_url = wp_get_attachment_url( $id );
-			echo $img_url . "<br>";
 		}*/
+		list( $file_path, $upload_path ) = ewww_image_optimizer_attachment_path( $meta, $id );
 		// if the file does not exist
-		if (empty($file_path)) {
-			_e('Could not retrieve file path.', EWWW_IMAGE_OPTIMIZER_DOMAIN);
+		if ( empty( $file_path ) && ! $ewww_cdn ) {
+			_e( 'Could not retrieve file path.', EWWW_IMAGE_OPTIMIZER_DOMAIN );
 			return;
 		}
 		$msg = '';
 		$convert_desc = '';
 		$convert_link = '';
-		// retrieve the mimetype of the attachment
-		$type = ewww_image_optimizer_mimetype($file_path, 'i');
-		// get a human readable filesize
-		$file_size = size_format(filesize($file_path), 2);
-		$file_size = preg_replace('/\.00 B /', ' B', $file_size);
+		if ( $ewww_cdn ) {
+			$type = get_post_mime_type( $id );
+		} else {
+			// retrieve the mimetype of the attachment
+			$type = ewww_image_optimizer_mimetype( $file_path, 'i' );
+			// get a human readable filesize
+			$file_size = size_format( filesize( $file_path ), 2 );
+			$file_size = preg_replace( '/\.00 B /', ' B', $file_size );
+		}
 		// run the appropriate code based on the mimetype
-		switch($type) {
+		switch( $type ) {
 			case 'image/jpeg':
 				// if jpegtran is missing, tell them that
 				if( ! EWWW_IMAGE_OPTIMIZER_JPEGTRAN && ! ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_jpg')) {
@@ -2702,6 +2710,18 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 				// not a supported mimetype
 				_e('Unsupported file type', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 				return;
+		}
+		if ( $ewww_cdn ) {
+			// if the optimizer metadata exists
+			if ( ! empty( $meta['ewww_image_optimizer'] ) ) {
+				// output the optimizer results
+				echo "<br>" . $meta['ewww_image_optimizer'];
+			}
+			if ( current_user_can( apply_filters( 'ewww_image_optimizer_manual_permissions', '' ) ) ) {
+				// and give the user the option to optimize the image right now
+				printf( "<br><a href=\"admin.php?action=ewww_image_optimizer_manual_optimize&amp;ewww_attachment_ID=%d\">%s</a>", $id, __( 'Optimize now!', EWWW_IMAGE_OPTIMIZER_DOMAIN ) );
+			}
+			return;
 		}
 		// if the optimizer metadata exists
 		if ( ! empty($meta['ewww_image_optimizer']) ) {
