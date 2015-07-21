@@ -1998,12 +1998,8 @@ function ewww_image_optimizer_remote_fetch( $id, $meta ) {
 		// resized versions, so we'll grab those too
 		if (isset($meta['sizes']) ) {
 			$disabled_sizes = ewww_image_optimizer_get_option( 'ewww_image_optimizer_disable_resizes_opt' );
-//			$ewww_debug .= "disabled sizes: " . print_r( $disabled_sizes, true ) . "<br>";
 			$ewww_debug .= "retrieving resizes<br>";
 			// meta sizes don't contain a path, so we calculate one
-/*			if ($gallery_type === 6) {
-				$base_ims_dir = dirname($file_path) . '/_resized/';
-			}*/
 			$base_dir = dirname($filename) . '/';
 			// process each resized version
 			$processed = array();
@@ -2015,39 +2011,6 @@ function ewww_image_optimizer_remote_fetch( $id, $meta ) {
 				if ( ! empty( $disabled_sizes[$size] ) ) {
 					continue;
 				}
-			/*	if ($gallery_type === 6) {
-					$base_dir = dirname($file_path) . '/';
-					$image_path = $base_dir . $data['file'];
-					$ims_path = $base_ims_dir . $data['file'];
-					if (file_exists($ims_path)) {
-						$ewww_debug .= "ims resize already exists, wahoo<br>";
-							$ewww_debug .= "ims path: $ims_path<br>";
-						$image_size = filesize($ims_path);
-						$query = $wpdb->prepare("SELECT id,path FROM $wpdb->ewwwio_images WHERE path = %s AND image_size = '$image_size'", $image_path);
-						$optimized_query = $wpdb->get_results($query, ARRAY_A);
-						if (!empty($optimized_query)) {
-							foreach ( $optimized_query as $image ) {
-								if ( $image['path'] != $image_path ) {
-									$ewww_debug .= "{$image['path']} does not match $image_path, continuing our search<br>";
-								} else {
-									$already_optimized = $image;
-								}
-							}
-						}
-						if ( ! empty( $already_optimized ) ) {
-							$ewww_debug .= "updating existing record, path: $ims_path, size: " . $image_size . "<br>";
-							// store info on the current image for future reference
-							$wpdb->update( $wpdb->ewwwio_images,
-								array(
-									'path' => $ims_path,
-								),
-								array(
-									'id' => $already_optimized['id'],
-								));
-							$base_dir = $base_ims_dir;
-						}
-					}
-				}*/
 				// initialize $dup_size
 				$dup_size = false;
 				// check through all the sizes we've processed so far
@@ -2056,16 +2019,73 @@ function ewww_image_optimizer_remote_fetch( $id, $meta ) {
 					if ($scan['height'] == $data['height'] && $scan['width'] == $data['width']) {
 						// found a duplicate resize
 						$dup_size = true;
-						// point this resize at the same image as the previous one
-//						$meta['sizes'][$size]['file'] = $meta['sizes'][$proc]['file'];
-						// and tell the user we didn't do any further optimization
-//						$meta['sizes'][$size]['ewww_image_optimizer'] = __('No savings', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 					}
 				}
 				// if this is a unique size
 				if (!$dup_size) {
 					$resize_path = $base_dir . $data['file'];
 					$resize_url = $as3cf->get_attachment_url( $id, null, $size, $meta );
+					$ewww_debug .= "fetching $resize_url to $resize_path<br>";
+					$temp_file = download_url( $resize_url );
+					if ( ! is_wp_error( $temp_file ) ) {
+						rename( $temp_file, $resize_path );
+					}
+				}
+				// store info on the sizes we've processed, so we can check the list for duplicate sizes
+				$processed[$size]['width'] = $data['width'];
+				$processed[$size]['height'] = $data['height'];
+			}
+		}
+	}
+	// NOTE: does not seem to be any point in trying to optimize these images, as they probably optimize them on the cloudinary servers
+/*	if ( $meta['cloudinary'] && ewww_image_optimizer_get_option( 'ewww_image_optimizer_enable_cloudinary' ) ) {
+		$full_url = wp_get_attachment_url( $id );
+		$ewww_debug .= "fetching $full_url from Cloudinary<br>";
+		$temp_file = download_url( $full_url );
+		if ( ! is_wp_error( $temp_file ) ) {
+			$filename = $temp_file;
+		}
+	}*/
+	if ( get_option( 'azure_storage_use_for_default_upload' ) ) {
+		$full_url = $meta['url'];
+		$filename = $meta['file'];
+		$ewww_debug .= "azure fullsize url: $full_url<br>";
+		$ewww_debug .= "fullsize path: $filename<br>";
+		$temp_file = download_url( $full_url );
+		if ( ! is_wp_error( $temp_file ) ) {
+			rename( $temp_file, $filename );
+		}
+		// resized versions, so we'll grab those too
+		if (isset($meta['sizes']) ) {
+			$disabled_sizes = ewww_image_optimizer_get_option( 'ewww_image_optimizer_disable_resizes_opt' );
+			$ewww_debug .= "retrieving resizes<br>";
+			// meta sizes don't contain a path, so we calculate one
+			$base_dir = trailingslashit( dirname( $filename) );
+			$base_url = trailingslashit( dirname( $full_url ) );
+			// process each resized version
+			$processed = array();
+			foreach($meta['sizes'] as $size => $data) {
+				$ewww_debug .= "processing size: $size<br>";
+				if ( preg_match('/webp/', $size) ) {
+					continue;
+				}
+				if ( ! empty( $disabled_sizes[$size] ) ) {
+					continue;
+				}
+				// initialize $dup_size
+				$dup_size = false;
+				// check through all the sizes we've processed so far
+				foreach($processed as $proc => $scan) {
+					// if a previous resize had identical dimensions
+					if ($scan['height'] == $data['height'] && $scan['width'] == $data['width']) {
+						// found a duplicate resize
+						$dup_size = true;
+					}
+				}
+				// if this is a unique size
+				if (!$dup_size) {
+					$resize_path = $base_dir . $data['file'];
+					$resize_url = $base_url . $data['file'];
 					$ewww_debug .= "fetching $resize_url to $resize_path<br>";
 					$temp_file = download_url( $resize_url );
 					if ( ! is_wp_error( $temp_file ) ) {
