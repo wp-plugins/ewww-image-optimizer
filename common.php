@@ -1301,6 +1301,8 @@ function ewww_image_optimizer_jpg_quality ($quality = null) {
  */
 function ewww_image_optimizer_manual() {
 	global $ewww_debug;
+	global $ewww_defer;
+	$ewww_defer = false;
 	$ewww_debug .= "<b>ewww_image_optimizer_manual()</b><br>";
 	// check permissions of current user
 	$permissions = apply_filters( 'ewww_image_optimizer_manual_permissions', '' );
@@ -1373,7 +1375,7 @@ function ewww_image_optimizer_restore_from_meta_data($meta, $id) {
 		// process each resized version
 		$processed = array();
 		// meta sizes don't contain a path, so we calculate one
-		$base_dir = dirname($file_path) . '/';
+		$base_dir = trailingslashit( dirname( $file_path ) );
 		foreach($meta['sizes'] as $size => $data) {
 			// check through all the sizes we've processed so far
 			foreach($processed as $proc => $scan) {
@@ -1958,7 +1960,7 @@ function ewww_image_optimizer_update_attachment_metadata($meta, $ID) {
 	if (isset($meta['sizes']) ) {
 		$ewww_debug .= "processing resizes for webp updates<br>";
 		// meta sizes don't contain a path, so we use the foldername from the original to generate one
-		$base_dir = dirname($file_path) . '/';
+		$base_dir = trailingslashit( dirname( $file_path ) );
 		// process each resized version
 		$processed = array();
 		foreach($meta['sizes'] as $size => $data) {
@@ -2000,7 +2002,7 @@ function ewww_image_optimizer_remote_fetch( $id, $meta ) {
 			$disabled_sizes = ewww_image_optimizer_get_option( 'ewww_image_optimizer_disable_resizes_opt' );
 			$ewww_debug .= "retrieving resizes<br>";
 			// meta sizes don't contain a path, so we calculate one
-			$base_dir = dirname($filename) . '/';
+			$base_dir = trailingslashit( dirname( $filename) );
 			// process each resized version
 			$processed = array();
 			foreach($meta['sizes'] as $size => $data) {
@@ -2046,7 +2048,7 @@ function ewww_image_optimizer_remote_fetch( $id, $meta ) {
 			$filename = $temp_file;
 		}
 	}*/
-	if ( get_option( 'azure_storage_use_for_default_upload' ) ) {
+	if ( class_exists( 'WindowsAzureStorageUtil' ) && get_option( 'azure_storage_use_for_default_upload' ) ) {
 		$full_url = $meta['url'];
 		$filename = $meta['file'];
 		$ewww_debug .= "azure fullsize url: $full_url<br>";
@@ -2211,9 +2213,9 @@ function ewww_image_optimizer_resize_from_meta_data( $meta, $ID = null, $log = t
 		$ewww_debug .= "processing resizes<br>";
 		// meta sizes don't contain a path, so we calculate one
 		if ($gallery_type === 6) {
-			$base_ims_dir = dirname($file_path) . '/_resized/';
+			$base_ims_dir = trailingslashit( dirname( $file_path ) ) . '_resized/';
 		}
-		$base_dir = dirname($file_path) . '/';
+		$base_dir = trailingslashit( dirname( $file_path ) );
 		// process each resized version
 		$processed = array();
 		foreach($meta['sizes'] as $size => $data) {
@@ -2300,6 +2302,9 @@ function ewww_image_optimizer_resize_from_meta_data( $meta, $ID = null, $log = t
 					ewww_image_optimizer( $retina_path, 4, false, false );
 				}
 			}
+
+			// TODO: what if we look for retina images to optimize hereabouts
+
 			// store info on the sizes we've processed, so we can check the list for duplicate sizes
 			$processed[$size]['width'] = $data['width'];
 			$processed[$size]['height'] = $data['height'];
@@ -2318,7 +2323,11 @@ function ewww_image_optimizer_resize_from_meta_data( $meta, $ID = null, $log = t
 		}
 		$ewww_debug .= 'uploading to Amazon S3<br>';
 	}
-
+	if ( ! preg_match( '/' . __( 'Previously Optimized', EWWW_IMAGE_OPTIMIZER_DOMAIN ) . '/', $meta['ewww_image_optimizer'] ) && class_exists( 'DreamSpeed_Services' ) ) {
+		global $dreamspeed;
+		$dreamspeed->wp_generate_attachment_metadata( $meta, $ID );
+		$ewww_debug .= 'uploading to Dreamspeed<br>';
+	}
 	if (class_exists('Cloudinary') && Cloudinary::config_get("api_secret") && ewww_image_optimizer_get_option('ewww_image_optimizer_enable_cloudinary') && !empty($new_image)) {
 		try {
 			$result = CloudinaryUploader::upload($file,array('use_filename'=>True));
@@ -2719,7 +2728,7 @@ function ewww_image_optimizer_custom_column($column_name, $id) {
 			}
 			if (isset($meta['sizes']) ) {
 				// meta sizes don't contain a path, so we calculate one
-				$base_dir = dirname($file_path) . '/';
+				$base_dir = trailingslashit( dirname( $file_path ) );
 				foreach($meta['sizes'] as $size => $data) {
 					if (!empty($data['converted'])) {
 						if (!empty($data['orig_file']) && file_exists($base_dir . $data['orig_file'])) {

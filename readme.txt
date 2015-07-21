@@ -201,6 +201,7 @@ Pngout, TinyJPG/TinyPNG, JPEGmini, and Pngquant were recommended by EWWW IO user
 * added: wp_cron filter has additional parameter to allow setting scheduled & deferred optimization on different freqencies
 * added: remote images on S3 can be fetched when using WP Offload S3 (Amazon S3 and Cloudfront)
 * added: remote images on Azure Storage can be fetched when using Windows Azure Storage for WordPress
+* added: (re)upload to Dreamspeed after optimization
 * changed: nextcellent thumbs are optimized on creation, no need to manually optimize after upload
 
 = 2.4.7 =
