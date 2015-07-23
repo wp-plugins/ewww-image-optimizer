@@ -203,6 +203,7 @@ Pngout, TinyJPG/TinyPNG, JPEGmini, and Pngquant were recommended by EWWW IO user
 * added: remote images on Azure Storage can be fetched when using Windows Azure Storage for WordPress
 * added: (re)upload to Dreamspeed after optimization
 * changed: nextcellent thumbs are optimized on creation, no need to manually optimize after upload
+* fixed: errant tool warnings for cloud users in nextgen and flagallery
 
 = 2.4.7 =
 * fixed: defer nextgen loading until 'init' to prevent activation/upgrade problems

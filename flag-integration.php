@@ -396,40 +396,40 @@ class ewwwflag {
 			$type = ewww_image_optimizer_mimetype($file_path, 'i');
 			// get the file size
 			$file_size = size_format(filesize($file_path), 2);
-			$file_size = str_replace('B ', 'B', $file_size);
+			$file_size = str_replace( 'B ', 'B', $file_size );
 			$valid = true;
 			// if we don't have a valid tool for the image type, output the appropriate message
-	                switch($type) {
+	                switch( $type ) {
         	                case 'image/jpeg':
-                	                if(!EWWW_IMAGE_OPTIMIZER_JPEGTRAN && !EWWW_IMAGE_OPTIMIZER_CLOUD) {
+					if( ! EWWW_IMAGE_OPTIMIZER_JPEGTRAN && ! ewww_image_optimizer_get_option( 'ewww_image_optimizer_cloud_jpg' ) ) {
                         	                $valid = false;
-	     	                                $msg = '<br>' . sprintf(__('%s is missing', EWWW_IMAGE_OPTIMIZER_DOMAIN), '<em>jpegtran</em>');
+	     	                                $msg = '<br>' . sprintf( __( '%s is missing', EWWW_IMAGE_OPTIMIZER_DOMAIN ), '<em>jpegtran</em>' );
 	                                }
 					break;
 				case 'image/png':
-					if(!EWWW_IMAGE_OPTIMIZER_PNGOUT && !EWWW_IMAGE_OPTIMIZER_OPTIPNG && !EWWW_IMAGE_OPTIMIZER_CLOUD) {
+					if( ! EWWW_IMAGE_OPTIMIZER_PNGOUT && ! EWWW_IMAGE_OPTIMIZER_OPTIPNG && ! ewww_image_optimizer_get_option( 'ewww_image_optimizer_cloud_png' ) ) {
 						$valid = false;
-						$msg = '<br>' . sprintf(__('%s is missing', EWWW_IMAGE_OPTIMIZER_DOMAIN), '<em>optipng/pngout</em>');
+						$msg = '<br>' . sprintf( __( '%s is missing', EWWW_IMAGE_OPTIMIZER_DOMAIN ), '<em>optipng/pngout</em>' );
 					}
 					break;
 				case 'image/gif':
-					if(!EWWW_IMAGE_OPTIMIZER_GIFSICLE && !EWWW_IMAGE_OPTIMIZER_CLOUD) {
+					if( ! EWWW_IMAGE_OPTIMIZER_GIFSICLE && ! ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_gif' ) ) {
 						$valid = false;
-						$msg = '<br>' . sprintf(__('%s is missing', EWWW_IMAGE_OPTIMIZER_DOMAIN), '<em>gifsicle</em>');
+						$msg = '<br>' . sprintf( __( '%s is missing', EWWW_IMAGE_OPTIMIZER_DOMAIN ), '<em>gifsicle</em>' );
 					}
 					break;
 				default:
 					$valid = false;
 			}
 			// let user know if the file type is unsupported
-			if($valid == false) {
-				_e('Unsupported file type', EWWW_IMAGE_OPTIMIZER_DOMAIN);
+			if( $valid == false ) {
+				_e( 'Unsupported file type', EWWW_IMAGE_OPTIMIZER_DOMAIN );
 				return;
 			}
 			// output the image status if we know it
 			if ( ! empty( $status ) ) {
 				echo $status;
-				echo "<br>" . sprintf(__('Image Size: %s', EWWW_IMAGE_OPTIMIZER_DOMAIN), $file_size);
+				echo "<br>" . sprintf( __( 'Image Size: %s', EWWW_IMAGE_OPTIMIZER_DOMAIN ), $file_size );
 				if ( current_user_can( apply_filters( 'ewww_image_optimizer_manual_permissions', '' ) ) )  {
 					printf("<br><a href=\"admin.php?action=ewww_flag_manual&amp;ewww_force=1&amp;ewww_attachment_ID=%d\">%s</a>",
 						$id,
