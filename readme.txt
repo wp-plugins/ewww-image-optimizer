@@ -71,13 +71,25 @@ Uploads are automatically optimized. Look for Optimize under the Image Store (Ga
 
 = Translations =
 
-Huge thanks to all our translators: 
-Romanian translation by MediasInfo.ro
-Spanish translation by Manuel Ballesta Ruiz and Adrián López Galera
+Huge thanks to all our translators:
+Bulgarian translation by Ivan Arnaudov
 Dutch translation by Ludo Rubben
+French translation by Bruno Tritsch, Nicolas Juen, Philippe Dupuit, Jean-Baptiste Gourdin, Dominique Goethals, Mickaël Chapusot, and Guillaume Thibord 
+German translation by Christian Herrmann and Ralf Platschi
+Italian translation by  Umberto Moroni, Alexander Gevak and Fabrizio Balestrieri
 Polish translation by Grzegorz Janoszka
+Portuguese (Brazil) translation by Pedro Marcelo de Sá Alves and Celso Azevedo
+Romanian translation by Iosif Kadar of MediasInfo.ro
 Russian translation by Elvis of turkenichev.ru
-Portuguese translation by Pedro Marcelo de Sá Alves
+Spanish translation by Manuel Ballesta Ruiz and Adrián López Galera
+Swedish translation by Alexander Widén
+Turkish translation by sfatih
+
+In progress translations:
+Portuguese (Portugal)
+Vietnamese
+Indonesian
+Hebrew
 
 If you would like to help translate this plugin (new or existing translations), register for an account at our online translation hub: http://translate.ewww.io/
 
@@ -197,13 +209,21 @@ Pngout, TinyJPG/TinyPNG, JPEGmini, and Pngquant were recommended by EWWW IO user
 * If you would like to help translate this plugin in your language, get started here: http://translate.ewww.io/projects/ewww-image-optimizer/
 
 = 2.5.0 =
+* deprecated: Disable Automatic Optimization and Include Media Folders options: will be removed from the UI in 2.6 but remain functional if enabled
 * added: deferred optimization lets you upload images with no delays, and optimize later automatically
 * added: wp_cron filter has additional parameter to allow setting scheduled & deferred optimization on different freqencies
 * added: remote images on S3 can be fetched when using WP Offload S3 (Amazon S3 and Cloudfront)
 * added: remote images on Azure Storage can be fetched when using Windows Azure Storage for WordPress
 * added: (re)upload to Dreamspeed after optimization
+* added: action hooks before and after optimization
+* added: filter to modify the number of records queried when counting unoptimized images (default 3000)
 * changed: nextcellent thumbs are optimized on creation, no need to manually optimize after upload
+* changed: API keys are masked as password fields
+* changed: debugging functions streamlined to reduce memory usage
+* updated: translator credits - huge THANK YOU to all of them!
 * fixed: errant tool warnings for cloud users in nextgen and flagallery
+* fixed: catch extraction error for pngout during automatic install
+* fixed: settings link in error notices for network-activated installs
 
 = 2.4.7 =
 * fixed: defer nextgen loading until 'init' to prevent activation/upgrade problems

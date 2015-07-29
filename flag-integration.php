@@ -193,9 +193,8 @@ class ewwwflag {
 	}
 	/* flag_added_new_image hook - optimize newly uploaded images */
 	function ewww_added_new_image ($image) {
-		global $ewww_debug;
+		ewwwio_debug_message( '<b>' . __FUNCTION__ . '()</b>' );
 		global $ewww_defer;
-		$ewww_debug .= "<b>ewww_flag::ewww_added_new_image()</b><br>";
 		// make sure the image path is set
 		if (isset($image->imagePath)) {
 			// get the image ID
@@ -212,7 +211,7 @@ class ewwwflag {
 			$tres = ewww_image_optimizer($image->thumbPath, 3, false, true);
 			// retrieve the metadata for the image ID
 			$meta = new flagMeta( $pid );
-			$ewww_debug .= print_r($meta->image->meta_data, TRUE) . "<br>";
+			ewwwio_debug_message( print_r($meta->image->meta_data, TRUE) );
 			$meta->image->meta_data['ewww_image_optimizer'] = $res[1];
 			if ( ! empty( $meta->image->meta_data['webview'] ) ) {
 				$meta->image->meta_data['webview']['ewww_image_optimizer'] = $wres[1];

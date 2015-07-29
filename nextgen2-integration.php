@@ -3,7 +3,6 @@ if ( ! class_exists('ewwwngg')) {
 class ewwwngg {
 	/* initializes the nextgen integration functions */
 	function ewwwngg() {
-		global $ewww_debug;
 		add_action('admin_init', array(&$this, 'admin_init'));
 		add_filter('ngg_manage_images_columns', array(&$this, 'ewww_manage_images_columns'));
 		add_filter('ngg_manage_images_number_of_columns', array(&$this, 'ewww_manage_images_number_of_columns'));
@@ -15,7 +14,6 @@ class ewwwngg {
 		add_action('admin_action_ewww_ngg_manual', array(&$this, 'ewww_ngg_manual'));
 		add_action('admin_menu', array(&$this, 'ewww_ngg_bulk_menu'));
 		//$i18ngg = strtolower  ( _n( 'Gallery', 'Galleries', 1, 'nggallery' ) );
-		//$ewww_debug .= "nextgen i18n for Gallery: $i18ngg<br>";
 		//add_action('admin_head-' . $i18ngg . '_page_nggallery-manage-gallery', array(&$this, 'ewww_ngg_bulk_actions_script'));
 		add_action('admin_head', array(&$this, 'ewww_ngg_bulk_actions_script'));
 		add_action('admin_enqueue_scripts', array(&$this, 'ewww_ngg_bulk_script'));
@@ -42,9 +40,8 @@ class ewwwngg {
 
 	/* ngg_added_new_image hook */
 	function ewww_added_new_image ( $image, $storage = null ) {
-		global $ewww_debug;
+	ewwwio_debug_message( '<b>' . __FUNCTION__ . '()</b>' );
 		global $ewww_defer;
-		$ewww_debug .= "<b>ewww_added_new_image()</b><br>";
 		if ( empty( $storage ) ) {
 			// creating the 'registry' object for working with nextgen
 			$registry = C_Component_Registry::get_instance();
@@ -58,7 +55,7 @@ class ewwwngg {
 		} else {
 			$image_id = $storage->object->_get_image_id( $image );
 		}
-		$ewww_debug .= "image id: $image_id<br>";
+		ewwwio_debug_message( "image id: $image_id" );
 		if ( $ewww_defer && ewww_image_optimizer_get_option( 'ewww_image_optimizer_defer' ) ) {
 			ewww_image_optimizer_add_deferred_attachment( "nextgen2,$image_id" );
 			return;
@@ -74,10 +71,10 @@ class ewwwngg {
 			} 
 			// get the absolute path
 			$file_path = $storage->get_image_abspath($image, $size);
-			$ewww_debug .= "optimizing (nextgen): $file_path<br>";
+			ewwwio_debug_message( "optimizing (nextgen): $file_path" );
 			// optimize the image and grab the results
 			$res = ewww_image_optimizer($file_path, 2, false, false, $full_size);
-			$ewww_debug .= "results " . $res[1] . "<br>";
+			ewwwio_debug_message( "results {$res[1]}" );
 			// only if we're dealing with the full-size original
 			if ($size === 'full') {
 				// update the metadata for the optimized image
@@ -86,7 +83,7 @@ class ewwwngg {
 				$image->meta_data[$size]['ewww_image_optimizer'] = $res[1];
 			}
 			nggdb::update_image_meta($image_id, $image->meta_data);
-			$ewww_debug .= 'storing results for full size image<br>';
+			ewwwio_debug_message( 'storing results for full size image' );
 		}
 		return $image;
 	}
@@ -253,7 +250,6 @@ class ewwwngg {
 
 	/* output the html for the bulk optimize page */
 	function ewww_ngg_bulk_preview() {
-		global $ewww_debug;
 		if (!empty($_POST['doaction'])) {
                         // if there is no requested bulk action, do nothing
                         if (empty($_REQUEST['bulkaction'])) {
@@ -313,6 +309,7 @@ class ewwwngg {
 <?php           }
 	        echo '</div></div>';
 		if ( ewww_image_optimizer_get_option ( 'ewww_image_optimizer_debug' ) ) {
+			global $ewww_debug;
 			echo '<div style="background-color:#ffff99;">' . $ewww_debug . '</div>';
 		}
 		if (!empty($_REQUEST['ewww_inline'])) {
@@ -532,7 +529,7 @@ function ewwwngg() {*/
 if ( ! class_exists( 'EWWWIO_Gallery_Storage' ) && class_exists( 'Mixin' ) && ! ewww_image_optimizer_get_option( 'ewww_image_optimizer_noauto' ) ) {
 	class EWWWIO_Gallery_Storage extends Mixin {
 		function generate_image_size( $image, $size, $params = null, $skip_defaults = false ) {
-			global $ewww_debug;
+			ewwwio_debug_message( '<b>' . __FUNCTION__ . '()</b>' );
 			global $ewww_defer;
 			if (!defined('EWWW_IMAGE_OPTIMIZER_CLOUD'))
 				ewww_image_optimizer_init();
@@ -546,9 +543,9 @@ if ( ! class_exists( 'EWWWIO_Gallery_Storage' ) && class_exists( 'Mixin' ) && ! 
 				}
 				ewww_image_optimizer( $filename );
 //				ewww_image_optimizer_aux_images_loop( $filename, true );
-				$ewww_debug .= "nextgen dynamic thumb saved: $filename <br>";
+				ewwwio_debug_message( "nextgen dynamic thumb saved: $filename" );
 				$image_size = filesize($filename);
-				$ewww_debug .= "optimized size: $image_size <br>";
+				ewwwio_debug_message( "optimized size: $image_size" );
 			}
 			ewww_image_optimizer_debug_log();
 			ewwwio_memory( __FUNCTION__ );

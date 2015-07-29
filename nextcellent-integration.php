@@ -61,18 +61,17 @@ class ewwwngg {
 	}
 
 	function ewww_ngg_image_save( $filename ) {
-		global $ewww_debug;
+		ewwwio_debug_message( '<b>' . __FUNCTION__ . '()</b>' );
 		global $ewww_defer;
-		$ewww_debug .= "<b>ewww_ngg::ewww_ngg_image_save()</b><br>";
 		if ( file_exists( $filename ) ) {
 			if ( $ewww_defer && ewww_image_optimizer_get_option( 'ewww_image_optimizer_defer' ) ) {
 				ewww_image_optimizer_add_deferred_attachment( "file,$filename" );
 				return $saved;
 			}
 			ewww_image_optimizer($filename);
-			$ewww_debug .= "ngg_Thumbnail saved: $filename <br>";
+			ewwwio_debug_message( "ngg_Thumbnail saved: $filename" );
 			$image_size = filesize($filename);
-			$ewww_debug .= "image editor size: $image_size <br>";
+			ewwwio_debug_message( "image editor size: $image_size" );
 		}
 		ewww_image_optimizer_debug_log();
 		ewwwio_memory( __FUNCTION__ );
@@ -248,7 +247,6 @@ class ewwwngg {
 
 	/* output the html for the bulk optimize page */
 	function ewww_ngg_bulk_preview() {
-		global $ewww_debug;
 		if (!empty($_POST['doaction'])) {
                         // if there is no requested bulk action, do nothing
                         if (empty($_REQUEST['bulkaction'])) {
@@ -304,6 +302,7 @@ class ewwwngg {
 <?php           }
 	        echo '</div></div>';
 		if ( ewww_image_optimizer_get_option ( 'ewww_image_optimizer_debug' ) ) {
+			global $ewww_debug;
 			echo '<div style="background-color:#ffff99;">' . $ewww_debug . '</div>';
 		}
 		if (!empty($_REQUEST['ewww_inline'])) {
@@ -314,11 +313,10 @@ class ewwwngg {
 
 	/* prepares the javascript for a bulk operation */
 	function ewww_ngg_bulk_script($hook) {
-		global $ewww_debug;
-		$ewww_debug .= "<b>ewww_ngg_bulk_script</b><br />";
+		ewwwio_debug_message( '<b>' . __FUNCTION__ . '()</b>' );
 //		$i18ngg = strtolower ( _n( 'Gallery', 'Galleries', 1, 'nggallery' ) );
 		$i18ngg = strtolower ( __( 'Galleries', 'nggallery' ) );
-		$ewww_debug .= "i18n string for galleries: $i18ngg <br>";
+		ewwwio_debug_message( "i18n string for galleries: $i18ngg" );
 		// make sure we are on a legitimate page and that we have the proper POST variables if necessary
 		if ($hook != $i18ngg . '_page_ewww-ngg-bulk' && $hook != $i18ngg . '_page_nggallery-manage-gallery')
 				return;
@@ -336,7 +334,7 @@ class ewwwngg {
 		if (!empty($_REQUEST['doaction'])) {
 			// if we are optimizing a specific group of images
 			if ($_REQUEST['page'] == 'manage-images' && $_REQUEST['bulkaction'] == 'bulk_optimize') {
-				$ewww_debug .= "optimizing a group of images<br />";
+				ewwwio_debug_message( 'optimizing a group of images' );
 				check_admin_referer('ngg_updategallery');
 				// reset the resume status, not allowed here
 				update_option('ewww_image_optimizer_bulk_ngg_resume', '');
@@ -345,7 +343,7 @@ class ewwwngg {
 			}
 			// if we are optimizing a specific group of galleries
 			if ($_REQUEST['page'] == 'manage-galleries' && $_REQUEST['bulkaction'] == 'bulk_optimize') {
-				$ewww_debug .= "optimizing a group of galleries<br />";
+				ewwwio_debug_message( 'optimizing a group of galleries' );
 				check_admin_referer('ngg_bulkgallery');
 				global $nggdb;
 				// reset the resume status, not allowed here
@@ -364,16 +362,16 @@ class ewwwngg {
 			}
 		// otherwise, if we have an operation to resume
 		} elseif (!empty($resume)) {
-			$ewww_debug .= "resuming a previous operation (maybe)<br />";
+			ewwwio_debug_message( 'resuming a previous operation (maybe)' );
 			// get the list of attachment IDs from the db
-			$images = get_option('ewww_image_optimizer_bulk_ngg_attachments');
+			$images = get_option( 'ewww_image_optimizer_bulk_ngg_attachments' );
 		// otherwise, if we are on the standard bulk page, get all the images in the db
 		} elseif ($hook == $i18ngg . '_page_ewww-ngg-bulk') {
-			$ewww_debug .= "starting from scratch, grabbing all the images<br />";
+			ewwwio_debug_message( 'starting from scratch, grabbing all the images' );
 			global $wpdb;
 			$images = $wpdb->get_col("SELECT pid FROM $wpdb->nggpictures ORDER BY sortorder ASC");
 		} else {
-			$ewww_debug .= "$hook <br>";
+			ewwwio_debug_message( $hook );
 		}
 		
 		// store the image IDs to process in the db
