@@ -1,7 +1,7 @@
 <?php
 // common functions for Standard and Cloud plugins
 
-define( 'EWWW_IMAGE_OPTIMIZER_VERSION', '247.6' );
+define( 'EWWW_IMAGE_OPTIMIZER_VERSION', '250.0' );
 
 // initialize a couple globals
 $ewww_debug = '';
