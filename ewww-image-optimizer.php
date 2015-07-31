@@ -1,7 +1,7 @@
 <?php
 /**
  * Integrate image optimizers into WordPress.
- * @version 2.4.7.4
+ * @version 2.4.7.5
  * @package EWWW_Image_Optimizer
  */
 /*
@@ -10,7 +10,7 @@ Plugin URI: http://wordpress.org/extend/plugins/ewww-image-optimizer/
 Description: Reduce file sizes for images within WordPress including NextGEN Gallery and GRAND FlAGallery. Uses jpegtran, optipng/pngout, and gifsicle.
 Author: Shane Bishop
 Text Domain: ewww-image-optimizer
-Version: 2.4.7.4
+Version: 2.4.7.5
 Author URI: https://ewww.io/
 License: GPLv3
 */
@@ -1436,20 +1436,38 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 				break;
 			}
 			// if the conversion process is turned ON, or if this is a resize and the full-size was converted
-			if ($convert && !ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_jpg')) {
+			if ( $convert && ! ewww_image_optimizer_get_option( 'ewww_image_optimizer_cloud_jpg' ) ) {
 				ewwwio_debug_message( "attempting to convert JPG to PNG: $pngfile" );
-				if (empty($new_size)) {
+				if ( empty( $new_size ) ) {
 					$new_size = $orig_size;
 				}
 				// retrieve version info for ImageMagick
-				$convert_path = ewww_image_optimizer_find_binary('convert', 'i');
+				$convert_path = ewww_image_optimizer_find_binary( 'convert', 'i' );
 				// convert the JPG to PNG
-				if (!empty($convert_path)) {
+				if ( ewww_image_optimizer_gmagick_support() ) {
+					try {
+						$gmagick = new Gmagick( $file );
+						$gmagick->stripimage();
+						$gmagick->setimageformat( 'PNG' );
+						$gmagick->writeimage( $pngfile );
+					} catch ( Exception $gmagick_error ) {
+						ewwwio_debug_message( $gmagick_error->getMessage() );
+					}
+				} elseif ( ewww_image_optimizer_imagick_support() ) {
+					try {
+						$imagick = new Imagick( $file );
+						$imagick->stripImage();
+						$imagick->setImageFormat( 'PNG' );
+						$imagick->writeImage( $pngfile );
+					} catch ( Exception $imagick_error ) {
+						ewwwio_debug_message( $imagick_error->getMessage() );
+					}
+				} elseif ( ! empty( $convert_path ) ) {
 					ewwwio_debug_message( 'converting with ImageMagick' );
 					exec( $convert_path . " " . ewww_image_optimizer_escapeshellarg( $file ) . " -strip " . ewww_image_optimizer_escapeshellarg( $pngfile ) );
-				} elseif (ewww_image_optimizer_gd_support()) {
+				} elseif ( ewww_image_optimizer_gd_support() ) {
 					ewwwio_debug_message( 'converting with GD' );
-					imagepng(imagecreatefromjpeg($file), $pngfile);
+					imagepng( imagecreatefromjpeg( $file ), $pngfile );
 				}
 				// if lossy optimization is ON and full-size exclusion is not active
 				if (ewww_image_optimizer_get_option('ewww_image_optimizer_png_lossy') && $tools['PNGQUANT'] && !$skip_lossy ) {
@@ -1676,21 +1694,54 @@ function ewww_image_optimizer($file, $gallery_type = 4, $converted = false, $new
 			// flush the cache for filesize
 			clearstatcache();
 			// retrieve the new filesize of the PNG
-			$new_size = filesize($file);
+			$new_size = filesize( $file );
 			// if conversion is on and the PNG doesn't have transparency or the user set a background color to replace transparency
-			if ($convert && (!ewww_image_optimizer_png_alpha($file) || ewww_image_optimizer_jpg_background())) {
+			if ( $convert && ( ! ewww_image_optimizer_png_alpha( $file ) || ewww_image_optimizer_jpg_background() ) ) {
 				ewwwio_debug_message( "attempting to convert PNG to JPG: $jpgfile" );
-				if (empty($new_size)) {
+				if ( empty( $new_size ) ) {
 					$new_size = $orig_size;
 				}
 				// retrieve version info for ImageMagick
-				$convert_path = ewww_image_optimizer_find_binary('convert', 'i');
+				$convert_path = ewww_image_optimizer_find_binary( 'convert', 'i' );
+				$magick_background = ewww_image_optimizer_jpg_background();
+				if ( empty( $magick_background ) ) {
+					$magick_background = '000000';
+				}
 				// convert the PNG to a JPG with all the proper options
-				if (!empty($convert_path)) {
+				if ( ewww_image_optimizer_gmagick_support() ) {
+					try {
+						if ( ewww_image_optimizer_png_alpha( $file ) ) {
+							$gmagick_overlay = new Gmagick( $file );
+							$gmagick = new Gmagick();
+							$gmagick->newimage( $gmagick_overlay->getimagewidth(), $gmagick_overlay->getimageheight(), '#' . $magick_background );
+							$gmagick->compositeimage( $gmagick_overlay, 1, 0, 0 );
+						} else {
+							$gmagick = new Gmagick( $file );
+						}
+						$gmagick->setimageformat( 'JPG' );
+						$gmagick->setcompressionquality( $gquality );
+						$gmagick->writeimage( $jpgfile );
+					} catch ( Exception $gmagick_error ) {
+						ewwwio_debug_message( $gmagick_error->getMessage() );
+					}
+				} elseif ( ewww_image_optimizer_imagick_support() ) {
+					try {
+						$imagick = new Imagick( $file );
+						if ( ewww_image_optimizer_png_alpha( $file ) ) {
+							$imagick->setImageBackgroundColor( new ImagickPixel( '#' . $magick_background ) );
+							$imagick->setImageAlphaChannel( 11 );
+						}
+						$imagick->setImageFormat( 'JPG' );
+						$imagick->setCompressionQuality( $gquality );
+						$imagick->writeImage( $jpgfile );
+					} catch ( Exception $imagick_error ) {
+						ewwwio_debug_message( $imagick_error->getMessage() );
+					}
+				} elseif ( ! empty( $convert_path ) ) { 
 					ewwwio_debug_message( 'converting with ImageMagick' );
-					ewwwio_debug_message( "using command: $convert_path $background -flatten $cquality $file $jpgfile" );
-					exec ( "$convert_path $background -flatten $cquality " . ewww_image_optimizer_escapeshellarg( $file ) . " " . ewww_image_optimizer_escapeshellarg( $jpgfile ) );
-				} elseif (ewww_image_optimizer_gd_support()) {
+					ewwwio_debug_message( "using command: $convert_path $background -alpha remove $cquality $file $jpgfile" );
+					exec ( "$convert_path $background -alpha remove $cquality " . ewww_image_optimizer_escapeshellarg( $file ) . " " . ewww_image_optimizer_escapeshellarg( $jpgfile ) );
+				} elseif ( ewww_image_optimizer_gd_support() ) {
 					ewwwio_debug_message( 'converting with GD' );
 					// retrieve the data from the PNG
 					$input = imagecreatefrompng($file);

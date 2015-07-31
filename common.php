@@ -1,11 +1,7 @@
 <?php
 // common functions for Standard and Cloud plugins
 
-// TODO: find out why webp is breaking dawson.edu
-// TODO: scan for retina @2x images
-// TODO: use imagick or gmagick as a possible option for conversion
-
-define( 'EWWW_IMAGE_OPTIMIZER_VERSION', '247.4' );
+define( 'EWWW_IMAGE_OPTIMIZER_VERSION', '247.5' );
 
 // initialize a couple globals
 $ewww_debug = '';
@@ -178,14 +174,15 @@ function ewww_image_optimizer_filter_page_output( $buffer ) {
 		if ( preg_match( '/<\?xml/', $buffer ) ) {
 			return $buffer;
 		}
+		$expanded_head = false;
 		preg_match( '/.+<head>/s', $buffer, $html_head );
 		if ( empty( $html_head ) ) {
 			ewwwio_debug_message( 'did not find head tag' );
 			preg_match( '/.+<head [^>]*>/s', $buffer, $html_head );
-		}
-		if ( empty( $html_head ) ) {
-			ewwwio_debug_message( 'did not find expanded head tag either' );
-			return $buffer;
+			if ( empty( $html_head ) ) {
+				ewwwio_debug_message( 'did not find expanded head tag either' );
+				return $buffer;
+			}
 		}
 		$html = new DOMDocument;
 		$libxml_previous_error_reporting = libxml_use_internal_errors( true );
@@ -318,16 +315,22 @@ function ewww_image_optimizer_filter_page_output( $buffer ) {
 		}
 		ewwwio_debug_message( 'preparing to dump page back to $buffer' );
 		if ( ! empty( $xhtml_parse ) ) {
-			$buffer = $html->saveXML( );
+			$buffer = $html->saveXML( $html->documentElement );
 		} else {
-			//$buffer = $html->saveHTML( $html->documentElement );
-			$buffer = $html->saveHTML( );
+			$buffer = $html->saveHTML( $html->documentElement );
+			//$buffer = $html->saveHTML( );
 		}
 		libxml_clear_errors();
-		libxml_use_internal_errors($libxml_previous_error_reporting);
+		libxml_use_internal_errors( $libxml_previous_error_reporting );
+/*		ewwwio_debug_message( 'html head' );
+		ewwwio_debug_message( $html_head[0] );
+		ewwwio_debug_message( 'buffer beginning' );
+		ewwwio_debug_message( substr( $buffer, 0, 500 ) );*/
 		if ( ! empty( $html_head ) ) {
 			$buffer = preg_replace( '/<html.+>\s.*<head>/', $html_head[0], $buffer );
 		}
+//		ewwwio_debug_message( 'buffer after replacement' );
+//		ewwwio_debug_message( substr( $buffer, 0, 500 ) );
 //		ewww_image_optimizer_debug_log();
 	}
 	return $buffer;
@@ -1186,12 +1189,35 @@ function ewww_image_optimizer_gd_support() {
 		ewwwio_memory( __FUNCTION__ );
 		if ( ( ! empty( $gd_support["JPEG Support"] ) || ! empty( $gd_support["JPG Support"] ) ) && ! empty( $gd_support["PNG Support"] ) ) {
 			return TRUE;
-		} else {
-			return FALSE;
 		}
-	} else {
-		return FALSE;
 	}
+	return FALSE;
+}
+
+// check for IMagick support of both PNG and JPG
+function ewww_image_optimizer_imagick_support() {
+	ewwwio_debug_message( '<b>' . __FUNCTION__ . '()</b>' );
+	if ( extension_loaded( 'imagick' ) ) {
+		$imagick = new Imagick();
+		$formats = $imagick->queryFormats();
+		if ( in_array( 'PNG', $formats ) && in_array( 'JPG', $formats ) ) {
+			return true;
+		}
+	}
+	return false;
+}
+
+// check for IMagick support of both PNG and JPG
+function ewww_image_optimizer_gmagick_support() {
+	ewwwio_debug_message( '<b>' . __FUNCTION__ . '()</b>' );
+	if ( extension_loaded( 'gmagick' ) ) {
+		$gmagick = new Gmagick();
+		$formats = $gmagick->queryFormats();
+		if ( in_array( 'PNG', $formats ) && in_array( 'JPG', $formats ) ) {
+			return true;
+		}
+	}
+	return false;
 }
 
 function ewww_image_optimizer_aux_paths_sanitize ($input) {
@@ -1324,14 +1350,15 @@ function ewww_image_optimizer_restore_from_meta_data($meta, $id) {
 	ewwwio_debug_message( '<b>' . __FUNCTION__ . '()</b>' );
 	// get the filepath
 	list($file_path, $upload_path) = ewww_image_optimizer_attachment_path($meta, $id);
-	$file_path = get_attached_file($id);
-	if (!empty($meta['converted'])) {
-		if (file_exists($meta['orig_file'])) {
+	$file_path = get_attached_file( $id );
+	if ( ! empty( $meta['converted'] ) ) {
+		if ( file_exists( $meta['orig_file'] ) ) {
 			// update the filename in the metadata
 			$meta['file'] = $meta['orig_file'];
 			// update the optimization results in the metadata
-			$meta['ewww_image_optimizer'] = __('Original Restored', EWWW_IMAGE_OPTIMIZER_DOMAIN);
+			$meta['ewww_image_optimizer'] = __( 'Original Restored', EWWW_IMAGE_OPTIMIZER_DOMAIN );
 			$meta['orig_file'] = $file_path;
+			$meta['real_orig_file'] = $file_path;
 			$meta['converted'] = 0;
 			unlink( $meta['orig_file'] );
 			unset( $meta['orig_file'] );
@@ -1344,35 +1371,37 @@ function ewww_image_optimizer_restore_from_meta_data($meta, $id) {
 			remove_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10);
 		}
 	}
-	if (isset($meta['sizes']) ) {
+	if ( isset( $meta['sizes'] ) ) {
 		// process each resized version
 		$processed = array();
 		// meta sizes don't contain a path, so we calculate one
 		$base_dir = trailingslashit( dirname( $file_path ) );
-		foreach($meta['sizes'] as $size => $data) {
+		foreach( $meta['sizes'] as $size => $data ) {
 			// check through all the sizes we've processed so far
-			foreach($processed as $proc => $scan) {
+			foreach( $processed as $proc => $scan ) {
 				// if a previous resize had identical dimensions
-				if ($scan['height'] == $data['height'] && $scan['width'] == $data['width'] && isset($meta['sizes'][$proc]['converted'])) {
+				if ( $scan['height'] == $data['height'] && $scan['width'] == $data['width'] && isset( $meta['sizes'][ $proc ]['converted'] ) ) {
 					// point this resize at the same image as the previous one
-					$meta['sizes'][$size]['file'] = $meta['sizes'][$proc]['file'];
+					$meta['sizes'][ $size ]['file'] = $meta['sizes'][ $proc ]['file'];
 				}
 			}
-			if (isset($data['converted'])) {
+			if ( isset( $data['converted'] ) ) {
 				// if this is a unique size
-				if (file_exists($base_dir . $data['orig_file'])) {
+				if ( file_exists( $base_dir . $data['orig_file'] ) ) {
 					// update the filename
-					$meta['sizes'][$size]['file'] = $data['orig_file'];
+					$meta['sizes'][ $size ]['file'] = $data['orig_file'];
 					// update the optimization results
-					$meta['sizes'][$size]['ewww_image_optimizer'] = __('Original Restored', EWWW_IMAGE_OPTIMIZER_DOMAIN);
-					$meta['sizes'][$size]['orig_file'] = $data['file'];
-					$meta['sizes'][$size]['converted'] = 0;
+					$meta['sizes'][ $size ]['ewww_image_optimizer'] = __( 'Original Restored', EWWW_IMAGE_OPTIMIZER_DOMAIN );
+					$meta['sizes'][ $size ]['orig_file'] = $data['file'];
+					$meta['sizes'][ $size ]['real_orig_file'] = $data['file'];
+					$meta['sizes'][ $size ]['converted'] = 0;
 						// if we don't already have the update attachment filter
-						if (FALSE === has_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment'))
+						if ( FALSE === has_filter( 'wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment' ) ) {
 							// add the update attachment filter
-							add_filter('wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10, 2);
-					unlink($base_dir . $data['file']);
-					unset( $meta['sizes'][$size]['orig_file'] );
+							add_filter( 'wp_update_attachment_metadata', 'ewww_image_optimizer_update_attachment', 10, 2 );
+						}
+					unlink( $base_dir . $data['file'] );
+					unset( $meta['sizes'][ $size ]['orig_file'] );
 				}
 				// store info on the sizes we've processed, so we can check the list for duplicate sizes
 				$processed[$size]['width'] = $data['width'];
@@ -1946,6 +1975,7 @@ function ewww_image_optimizer_update_attachment_metadata( $meta, $ID ) {
 }
 
 function ewww_image_optimizer_hidpi_optimize( $orig_path ) {
+	ewwwio_debug_message( '<b>' . __FUNCTION__ . '()</b>' );
 	$hidpi_suffix = apply_filters( 'ewww_image_optimizer_hidpi_suffix', '@2x' );
 	$pathinfo = pathinfo( $orig_path );
 	$hidpi_path = $pathinfo['dirname'] . '/' . $pathinfo['filename'] . $hidpi_suffix . '.' . $pathinfo['extension'];
@@ -2252,7 +2282,6 @@ function ewww_image_optimizer_resize_from_meta_data( $meta, $ID = null, $log = t
 				$resize_path = $base_dir . $data['file'];
 				// run the optimization and store the results
 				list($optimized_file, $results, $resize_conv, $original) = ewww_image_optimizer( $resize_path, $gallery_type, $conv, $new_image );
-				ewww_image_optimizer_hidpi_optimize( $file_path );
 				// if the resize was converted, store the result and the original filename in the metadata for later recovery
 				if ($resize_conv) {
 					// if we don't already have the update attachment filter
@@ -2274,15 +2303,14 @@ function ewww_image_optimizer_resize_from_meta_data( $meta, $ID = null, $log = t
 				$meta['sizes'][$size]['ewww_image_optimizer'] = $results;
 				// optimize retina images, if they exist
 				if ( function_exists( 'wr2x_get_retina' ) && $retina_path = wr2x_get_retina( $resize_path ) ) {
-					ewww_image_optimizer( $retina_path, 4, false, false );
+					ewww_image_optimizer( $retina_path );
+				} else {
+					ewww_image_optimizer_hidpi_optimize( $resize_path );
 				}
 			}
-
-			// TODO: what if we look for retina images to optimize hereabouts
-
 			// store info on the sizes we've processed, so we can check the list for duplicate sizes
-			$processed[$size]['width'] = $data['width'];
-			$processed[$size]['height'] = $data['height'];
+			$processed[ $size ]['width'] = $data['width'];
+			$processed[ $size ]['height'] = $data['height'];
 		}
 	}
 	
@@ -2345,49 +2373,58 @@ function ewww_image_optimizer_update_attachment( $meta, $ID ) {
 	ewwwio_debug_message( '<b>' . __FUNCTION__ . '()</b>' );
 	global $wpdb;
 	// update the file location in the post metadata based on the new path stored in the attachment metadata
-	update_attached_file($ID, $meta['file']);
+	update_attached_file( $ID, $meta['file'] );
 	// retrieve the post information based on the $ID
-	$post = get_post($ID);
+//	$post = get_post( $ID );
 	// save the previous attachment address
-	$old_guid = $post->guid;
+//	$old_guid = $post->guid;
+	$guid = wp_get_attachment_url( $ID );
+	if ( empty( $meta['real_orig_file'] ) ) {
+		$old_guid = dirname( $guid ) . "/" . basename( $meta['orig_file'] );
+	} else {
+		$old_guid = dirname( $guid ) . "/" . basename( $meta['real_orig_file'] );
+		unset ( $meta['real_orig_file'] );
+	}
 	// construct the new guid based on the filename from the attachment metadata
-	$guid = dirname($post->guid) . "/" . basename($meta['file']);
+	ewwwio_debug_message( "old guid: $old_guid" );
+	ewwwio_debug_message( "new guid: $guid" );
 	// retrieve any posts that link the image
-	$esql = $wpdb->prepare("SELECT ID, post_content FROM $wpdb->posts WHERE post_content LIKE '%%%s%%'", $old_guid);
+	$esql = $wpdb->prepare( "SELECT ID, post_content FROM $wpdb->posts WHERE post_content LIKE '%%%s%%'", $old_guid );
+	ewwwio_debug_message( "using query: $esql" );
 	// while there are posts to process
-	$rows = $wpdb->get_results($esql, ARRAY_A);
-	foreach ($rows as $row) {
+	$rows = $wpdb->get_results( $esql, ARRAY_A );
+	foreach ( $rows as $row ) {
 		// replace all occurences of the old guid with the new guid
-		$post_content = str_replace($old_guid, $guid, $row['post_content']);
+		$post_content = str_replace( $old_guid, $guid, $row['post_content'] );
 		ewwwio_debug_message( "replacing $old_guid with $guid in post " . $row['ID'] );
 		// send the updated content back to the database
 		$wpdb->update(
 			$wpdb->posts,
-			array('post_content' => $post_content),
-			array('ID' => $row['ID'])
+			array( 'post_content' => $post_content ),
+			array( 'ID' => $row['ID'] )
 		);
 	}
-	if (isset($meta['sizes']) ) {
+	if ( isset( $meta['sizes'] ) ) {
 		// for each resized version
-		foreach($meta['sizes'] as $size => $data) {
+		foreach( $meta['sizes'] as $size => $data ) {
 			// if the resize was converted
-			if (isset($data['converted'])) {
+			if ( isset( $data['converted'] ) ) {
 				// generate the url for the old image
-				if (empty($data['real_orig_file'])) {
-					$old_sguid = dirname($post->guid) . "/" . basename($data['orig_file']);
+				if ( empty( $data['real_orig_file'] ) ) {
+					$old_sguid = dirname( $old_guid ) . "/" . basename( $data['orig_file'] );
 				} else {
-					$old_sguid = dirname($post->guid) . "/" . basename($data['real_orig_file']);
+					$old_sguid = dirname( $old_guid) . "/" . basename($data['real_orig_file'] );
 					unset ($meta['sizes'][$size]['real_orig_file'] );
 				}
 				ewwwio_debug_message( "processing: $size" );
-				ewwwio_debug_message( "old guid: $old_sguid" );
+				ewwwio_debug_message( "old sguid: $old_sguid" );
 				// generate the url for the new image
-				$sguid = dirname($post->guid) . "/" . basename($data['file']);
-				ewwwio_debug_message( "new guid: $sguid" );
+				$sguid = dirname( $old_guid ) . "/" . basename( $data['file'] );
+				ewwwio_debug_message( "new sguid: $sguid" );
 				// retrieve any posts that link the resize
-				$ersql = $wpdb->prepare("SELECT ID, post_content FROM $wpdb->posts WHERE post_content LIKE '%%%s%%'", $old_sguid);
+				$ersql = $wpdb->prepare( "SELECT ID, post_content FROM $wpdb->posts WHERE post_content LIKE '%%%s%%'", $old_sguid );
 				ewwwio_debug_message( "using query: $ersql" );
-				$rows = $wpdb->get_results($ersql, ARRAY_A);
+				$rows = $wpdb->get_results( $ersql, ARRAY_A );
 				// while there are posts to process
 				foreach ( $rows as $row ) {
 					// replace all occurences of the old guid with the new guid
@@ -2418,9 +2455,11 @@ function ewww_image_optimizer_update_attachment( $meta, $ID ) {
 		$mime = 'image/gif';
 	}
 	// update the attachment post with the new mimetype and guid
+	//$post->guid = $guid;
+	//$post->post_mime_type = $mime;
+//	$update_success = wp_update_post( $post, true );
 	wp_update_post( array('ID' => $ID,
-			      'post_mime_type' => $mime,
-			      'guid' => $guid ) );
+			      'post_mime_type' => $mime ) );
 	ewww_image_optimizer_debug_log();
 	ewwwio_memory( __FUNCTION__ );
 	return $meta;
@@ -3173,19 +3212,35 @@ function ewww_image_optimizer_options () {
 				$output[] = sprintf(__("%s only need one, used for conversion, not optimization", EWWW_IMAGE_OPTIMIZER_DOMAIN), '<b>' . __('Graphics libraries', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</b> - ');
 				$output[] = '<br>';
 				$toolkit_found = false;
-				if (ewww_image_optimizer_gd_support()) {
+				if ( ewww_image_optimizer_gd_support() ) {
 					$output[] = 'GD: <span style="color: green; font-weight: bolder">' . __('Installed', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 					$toolkit_found = true;
 				} else {
 					$output[] = 'GD: <span style="color: red; font-weight: bolder">' . __('Missing', EWWW_IMAGE_OPTIMIZER_DOMAIN);
-				} 
+				}
 				$output[] = '</span>&emsp;&emsp;' .
-					"Imagemagick 'convert':";
-				if (ewww_image_optimizer_find_binary('convert', 'i')) { 
-					$output[] = '<span style="color: green; font-weight: bolder"> ' . __('Installed', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</span>';
+					"Gmagick: ";
+				if ( ewww_image_optimizer_gmagick_support() ) {
+					$output[] = '<span style="color: green; font-weight: bolder">' . __('Installed', EWWW_IMAGE_OPTIMIZER_DOMAIN);
+					$toolkit_found = true;
+				} else {
+					$output[] = '<span style="color: red; font-weight: bolder">' . __('Missing', EWWW_IMAGE_OPTIMIZER_DOMAIN);
+				}
+				$output[] = '</span>&emsp;&emsp;' .
+					"Imagick: ";
+				if ( ewww_image_optimizer_imagick_support() ) {
+					$output[] = '<span style="color: green; font-weight: bolder">' . __('Installed', EWWW_IMAGE_OPTIMIZER_DOMAIN);
+					$toolkit_found = true;
+				} else {
+					$output[] = '<span style="color: red; font-weight: bolder">' . __('Missing', EWWW_IMAGE_OPTIMIZER_DOMAIN);
+				}
+				$output[] = '</span>&emsp;&emsp;' .
+					"Imagemagick 'convert': ";
+				if ( ewww_image_optimizer_find_binary( 'convert', 'i' ) ) { 
+					$output[] = '<span style="color: green; font-weight: bolder">' . __('Installed', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</span>';
 					$toolkit_found = true;
 				} else { 
-					$output[] = '<span style="color: red; font-weight: bolder"> ' . __('Missing', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</span>';
+					$output[] = '<span style="color: red; font-weight: bolder">' . __('Missing', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</span>';
 				}
 				if ( ! $toolkit_found && ( ewww_image_optimizer_get_option( 'ewww_image_optimizer_png_to_jpg' ) || ewww_image_optimizer_get_option( 'ewww_image_optimizer_jpg_to_png' ) ) ) {
 					$collapsible = false;

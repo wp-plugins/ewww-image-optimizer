@@ -217,6 +217,8 @@ Pngout, TinyJPG/TinyPNG, JPEGmini, and Pngquant were recommended by EWWW IO user
 * added: (re)upload to Dreamspeed after optimization
 * added: action hooks before and after optimization
 * added: filter to modify the number of records queried when counting unoptimized images (default 3000)
+* added: check for retina images generated without WP Retina 2x, with filter to modify @2x extension
+* added: support for Imagick and Gmagick extensons when converting images (JPG2PNG and PNG2JPG)
 * changed: nextcellent thumbs are optimized on creation, no need to manually optimize after upload
 * changed: API keys are masked as password fields
 * changed: debugging functions streamlined to reduce memory usage
@@ -224,6 +226,8 @@ Pngout, TinyJPG/TinyPNG, JPEGmini, and Pngquant were recommended by EWWW IO user
 * fixed: errant tool warnings for cloud users in nextgen and flagallery
 * fixed: catch extraction error for pngout during automatic install
 * fixed: settings link in error notices for network-activated installs
+* fixed: regression with alt webp rewriting introduced in 2.4.4 that caused duplicate <html> and <head> tags in some cases
+* fixed: url replacement when restoring original for a converted image
 
 = 2.4.7 =
 * fixed: defer nextgen loading until 'init' to prevent activation/upgrade problems
