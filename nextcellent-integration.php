@@ -1,25 +1,35 @@
 <?php 
-if (!function_exists('ewwwngg')) {
+if ( ! class_exists('ewwwngg')) {
 class ewwwngg {
 	/* initializes the nextgen integration functions */
 	function ewwwngg() {
-		add_filter('ngg_manage_images_columns', array(&$this, 'ewww_manage_images_columns'));
-		add_action('ngg_manage_image_custom_column', array(&$this, 'ewww_manage_image_custom_column'), 10, 2);
-		add_action('ngg_added_new_image', array(&$this, 'ewww_added_new_image'));
-		add_action('admin_action_ewww_ngg_manual', array(&$this, 'ewww_ngg_manual'));
-		add_action('admin_menu', array(&$this, 'ewww_ngg_bulk_menu'));
-		$i18ngg = strtolower  ( _n( 'Gallery', 'Galleries', 1, 'nggallery' ) );
-		add_action('admin_head-' . $i18ngg . '_page_nggallery-manage-gallery', array(&$this, 'ewww_ngg_bulk_actions_script'));
-		add_action('admin_enqueue_scripts', array(&$this, 'ewww_ngg_bulk_script'));
-		add_action('wp_ajax_bulk_ngg_preview', array(&$this, 'ewww_ngg_bulk_preview'));
-		add_action('wp_ajax_bulk_ngg_init', array(&$this, 'ewww_ngg_bulk_init'));
-		add_action('wp_ajax_bulk_ngg_filename', array(&$this, 'ewww_ngg_bulk_filename'));
-		add_action('wp_ajax_bulk_ngg_loop', array(&$this, 'ewww_ngg_bulk_loop'));
-		add_action('wp_ajax_bulk_ngg_cleanup', array(&$this, 'ewww_ngg_bulk_cleanup'));
-		add_action('wp_ajax_ewww_ngg_thumbs', array(&$this, 'ewww_ngg_thumbs_only'));
-		add_action('ngg_after_new_images_added', array(&$this, 'ewww_ngg_new_thumbs'), 10, 2);
-		register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_ngg_resume');
-		register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_ngg_attachments');
+		add_action( 'admin_init', array( &$this, 'admin_init' ) );
+		add_filter( 'ngg_manage_images_columns', array( &$this, 'ewww_manage_images_columns' ) );
+		add_action( 'ngg_manage_image_custom_column', array( &$this, 'ewww_manage_image_custom_column' ), 10, 2 );
+		if ( ! ewww_image_optimizer_get_option( 'ewww_image_optimizer_noauto' ) ) {
+			add_action( 'ngg_added_new_image', array( &$this, 'ewww_added_new_image' ) );
+		}
+		add_action( 'admin_action_ewww_ngg_manual', array( &$this, 'ewww_ngg_manual' ) );
+		add_action( 'admin_menu', array( &$this, 'ewww_ngg_bulk_menu' ) );
+//		$i18ngg = strtolower( _n( 'Gallery', 'Galleries', 1, 'nggallery' ) );
+//		add_action( 'admin_head-' . $i18ngg . '_page_nggallery-manage-gallery', array(&$this, 'ewww_ngg_bulk_actions_script'));
+		add_action( 'admin_head-galleries_page_nggallery-manage-gallery', array( &$this, 'ewww_ngg_bulk_actions_script' ) );
+		add_action( 'admin_enqueue_scripts', array( &$this, 'ewww_ngg_bulk_script' ) );
+		add_action( 'wp_ajax_bulk_ngg_preview', array( &$this, 'ewww_ngg_bulk_preview' ) );
+		add_action( 'wp_ajax_bulk_ngg_init', array( &$this, 'ewww_ngg_bulk_init' ) );
+		add_action( 'wp_ajax_bulk_ngg_filename', array( &$this, 'ewww_ngg_bulk_filename' ) );
+		add_action( 'wp_ajax_bulk_ngg_loop', array( &$this, 'ewww_ngg_bulk_loop' ) );
+		add_action( 'wp_ajax_bulk_ngg_cleanup', array( &$this, 'ewww_ngg_bulk_cleanup' ) );
+		add_action( 'wp_ajax_ewww_ngg_thumbs', array( &$this, 'ewww_ngg_thumbs_only' ) );
+		add_action( 'ngg_ajax_image_save', array( &$this, 'ewww_ngg_image_save' ) );
+//		if ( ! ewww_image_optimizer_get_option( 'ewww_image_optimizer_defer' ) ) {
+//			add_action( 'ngg_after_new_images_added', array( &$this, 'ewww_ngg_new_thumbs' ), 10, 2 );
+//		}
+	}
+
+	function admin_init() {
+		register_setting( 'ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_ngg_resume' );
+		register_setting( 'ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_ngg_attachments' );
 	}
 
 	/* adds the Bulk Optimize page to the tools menu, and a hidden page for optimizing thumbnails */
@@ -31,6 +41,7 @@ class ewwwngg {
 	/* ngg_added_new_image hook */
 	function ewww_added_new_image ($image) {
 		// query the filesystem path of the gallery from the database
+		global $ewww_defer;
 		global $wpdb;
 		$q = $wpdb->prepare( "SELECT path FROM {$wpdb->prefix}ngg_gallery WHERE gid = %d LIMIT 1", $image['galleryID'] );
 		$gallery_path = $wpdb->get_var($q);
@@ -38,11 +49,32 @@ class ewwwngg {
 		if ( $gallery_path ) {
 			// construct the absolute path of the current image
 			$file_path = trailingslashit($gallery_path) . $image['filename'];
+			if ( $ewww_defer && ewww_image_optimizer_get_option( 'ewww_image_optimizer_defer' ) ) {
+				ewww_image_optimizer_add_deferred_attachment( "nextcellent,{$image['id']}" );
+				return;
+			}
 			// run the optimizer on the current image
-			$res = ewww_image_optimizer(ABSPATH . $file_path, 2, false, false, ewww_image_optimizer_get_option('ewww_image_optimizer_lossy_skip_full'));
+			$res = ewww_image_optimizer(ABSPATH . $file_path, 2, false, false, true);
 			// update the metadata for the optimized image
 			nggdb::update_image_meta($image['id'], array('ewww_image_optimizer' => $res[1]));
 		}
+	}
+
+	function ewww_ngg_image_save( $filename ) {
+		ewwwio_debug_message( '<b>' . __FUNCTION__ . '()</b>' );
+		global $ewww_defer;
+		if ( file_exists( $filename ) ) {
+			if ( $ewww_defer && ewww_image_optimizer_get_option( 'ewww_image_optimizer_defer' ) ) {
+				ewww_image_optimizer_add_deferred_attachment( "file,$filename" );
+				return $saved;
+			}
+			ewww_image_optimizer($filename);
+			ewwwio_debug_message( "ngg_Thumbnail saved: $filename" );
+			$image_size = filesize($filename);
+			ewwwio_debug_message( "image editor size: $image_size" );
+		}
+		ewww_image_optimizer_debug_log();
+		ewwwio_memory( __FUNCTION__ );
 	}
 
 	/* output a small html form so that the user can optimize thumbs for the $images just added */
@@ -50,23 +82,20 @@ class ewwwngg {
 		// store the gallery id, seems to help avoid errors
 		$gallery = $gid;
 		// prepare the $images array for POSTing
-		$images = serialize($images); ?>
-                <div id="bulk-forms"><p><?php _e('The thumbnails for your new images have not been optimized.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
-                <form id="thumb-optimize" method="post" action="admin.php?page=ewww-ngg-thumb-bulk">
-			<?php wp_nonce_field( 'ewww-image-optimizer-bulk', '_wpnonce'); ?>
-			<input type="hidden" name="attachments" value="<?php echo $images; ?>">
-                        <input type="submit" class="button-secondary action" value="<?php _e('Optimize Thumbs', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?>" />
-                </form> 
-<?php	}
+		$images = serialize($images); 
+		$thumb_output = "<div id='bulk-forms'><p>" . __( 'The thumbnails for your new images have not been optimized.', EWWW_IMAGE_OPTIMIZER_DOMAIN ) . "</p><form id='thumb-optimize' method='post' action='admin.php?page=ewww-ngg-thumb-bulk'>" . wp_nonce_field( 'ewww-image-optimizer-bulk', 'ewww_wpnonce', true, false ) . "<input type='hidden' name='ewww_attachments' value='$images'><input type='submit' class='button-secondary action' value='" . __( 'Optimize Thumbs', EWWW_IMAGE_OPTIMIZER_DOMAIN ) . "' /></form>";
+		echo apply_filters( 'ewww_ngg_new_thumbs', $thumb_output );
+	}
 
 	/* optimize the thumbs of the images POSTed from the previous page */
 	function ewww_ngg_thumb_bulk() {
-		if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
+		$permissions = apply_filters( 'ewww_image_optimizer_manual_permissions', '' );
+		if ( ! wp_verify_nonce( $_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-bulk' ) || ! current_user_can( $permissions ) ) {
 			wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 		}?> 
 		<div class="wrap">
                 <div id="icon-upload" class="icon32"></div><h2><?php _e('Bulk Thumbnail Optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></h2>
-<?php		$images = unserialize ($_POST['attachments']);
+<?php		$images = unserialize ($_POST['ewww_attachments']);
 		// initialize $current, and $started time
 		$started = time();
 		$current = 0;
@@ -77,8 +106,6 @@ class ewwwngg {
 		ob_end_flush();
 		// process each image
 		foreach ($images as $id) {
-			// give each image 50 seconds (php only, doesn't include any commands issued by exec()
-			set_time_limit (50);
 			$current++;
 			echo "<p>" . __('Processing', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " $current/$total: ";
 			// get the metadata
@@ -105,32 +132,40 @@ class ewwwngg {
 	/* Manually process an image from the NextGEN Gallery */
 	function ewww_ngg_manual() {
 		// check permission of current user
-		if ( FALSE === current_user_can('upload_files') ) {
+		$permissions = apply_filters( 'ewww_image_optimizer_manual_permissions', '' );
+		if ( FALSE === current_user_can( $permissions ) ) {
 			wp_die(__('You don\'t have permission to work with uploaded files.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 		}
 		// make sure function wasn't called without an attachment to work with
-		if ( FALSE === isset($_GET['attachment_ID'])) {
+		if ( FALSE === isset($_GET['ewww_attachment_ID'])) {
 			wp_die(__('No attachment ID was provided.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 		}
 		// store the attachment $id
-		$id = intval($_GET['attachment_ID']);
-		// retrieve the metadata for the image
-		$meta = new nggMeta( $id );
-		// retrieve the image path
-		$file_path = $meta->image->imagePath;
-		// run the optimizer on the current image
-		$res = ewww_image_optimizer($file_path, 2, false, false, ewww_image_optimizer_get_option('ewww_image_optimizer_lossy_skip_full'));
-		// update the metadata for the optimized image
-		nggdb::update_image_meta($id, array('ewww_image_optimizer' => $res[1]));
-		// get the filepath of the thumbnail image
-		$thumb_path = $meta->image->thumbPath;
-		// run the optimization on the thumbnail
-		ewww_image_optimizer($thumb_path, 2, false, true);
+		$id = intval($_GET['ewww_attachment_ID']);
+		$this->ewww_ngg_optimize( $id );
+		ewww_image_optimizer_debug_log();
 		// get the referring page, and send the user back there
 		$sendback = wp_get_referer();
 		$sendback = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $sendback);
 		wp_redirect($sendback);
 		exit(0);
+	}
+
+	/* optimize an image by ID */
+	function ewww_ngg_optimize( $id ) {
+		// retrieve the metadata for the image
+		$meta = new nggMeta( $id );
+		// retrieve the image path
+		$file_path = $meta->image->imagePath;
+		// run the optimizer on the current image
+		$fres = ewww_image_optimizer($file_path, 2, false, false, true);
+		// update the metadata for the optimized image
+		nggdb::update_image_meta($id, array('ewww_image_optimizer' => $fres[1]));
+		// get the filepath of the thumbnail image
+		$thumb_path = $meta->image->thumbPath;
+		// run the optimization on the thumbnail
+		$tres = ewww_image_optimizer($thumb_path, 2, false, true);
+		return array( $fres, $tres );
 	}
 
 	/* ngg_manage_images_columns hook */
@@ -161,21 +196,21 @@ class ewwwngg {
 	                switch($type) {
         	                case 'image/jpeg':
 					// if jpegtran is missing, tell the user
-                	                if(!EWWW_IMAGE_OPTIMIZER_JPEGTRAN && !EWWW_IMAGE_OPTIMIZER_CLOUD) {
+					if( ! EWWW_IMAGE_OPTIMIZER_JPEGTRAN && ! ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_jpg')) {
                         	                $valid = false;
-	     	                                $msg = '<br>' . sprintf(__('% is missing', EWWW_IMAGE_OPTIMIZER_DOMAIN), '<em>jpegtran</em>');
+	     	                                $msg = '<br>' . sprintf(__('%s is missing', EWWW_IMAGE_OPTIMIZER_DOMAIN), '<em>jpegtran</em>');
 	                                }
 					break;
 				case 'image/png':
 					// if the PNG tools are missing, tell the user
-					if(!EWWW_IMAGE_OPTIMIZER_PNGOUT && !EWWW_IMAGE_OPTIMIZER_OPTIPNG && !EWWW_IMAGE_OPTIMIZER_CLOUD) {
+					if( ! EWWW_IMAGE_OPTIMIZER_PNGOUT && ! EWWW_IMAGE_OPTIMIZER_OPTIPNG && ! ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_png')) {
 						$valid = false;
 						$msg = '<br>' . sprintf(__('%s is missing', EWWW_IMAGE_OPTIMIZER_DOMAIN), '<em>optipng/pngout</em>');
 					}
 					break;
 				case 'image/gif':
 					// if gifsicle is missing, tell the user
-					if(!EWWW_IMAGE_OPTIMIZER_GIFSICLE && !EWWW_IMAGE_OPTIMIZER_CLOUD) {
+					if(!EWWW_IMAGE_OPTIMIZER_GIFSICLE && !ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_gif')) {
 						$valid = false;
 						$msg = '<br>' . sprintf(__('%s is missing', EWWW_IMAGE_OPTIMIZER_DOMAIN), '<em>gifsicle</em>');
 					}
@@ -189,26 +224,29 @@ class ewwwngg {
 				return;
 			}
 			// if we have a valid status, display it, the image size, and give a re-optimize link
-			if ( $status && !empty( $status ) ) {
+			if ( ! empty ( $status ) ) {
 				echo $status;
 				echo "<br>" . sprintf(__('Image Size: %s', EWWW_IMAGE_OPTIMIZER_DOMAIN), $file_size);
-				printf("<br><a href=\"admin.php?action=ewww_ngg_manual&amp;force=1&amp;attachment_ID=%d\">%s</a>",
-				$id,
-				__('Re-optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+				if ( current_user_can( apply_filters( 'ewww_image_optimizer_manual_permissions', '' ) ) )  {
+					printf("<br><a href=\"admin.php?action=ewww_ngg_manual&amp;ewww_force=1&amp;ewww_attachment_ID=%d\">%s</a>",
+						$id,
+						__('Re-optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+				}
 			// otherwise, give the image size, and a link to optimize right now
 			} else {
 				_e('Not processed', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 				echo "<br>" . sprintf(__('Image Size: %s', EWWW_IMAGE_OPTIMIZER_DOMAIN), $file_size);
-				printf("<br><a href=\"admin.php?action=ewww_ngg_manual&amp;attachment_ID=%d\">%s</a>",
-				$id,
-				__('Optimize now!', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+				if ( current_user_can( apply_filters( 'ewww_image_optimizer_manual_permissions', '' ) ) )  {
+					printf("<br><a href=\"admin.php?action=ewww_ngg_manual&amp;ewww_attachment_ID=%d\">%s</a>",
+						$id,
+						__('Optimize now!', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+				}
 			}
 		}
 	}
 
 	/* output the html for the bulk optimize page */
 	function ewww_ngg_bulk_preview() {
-		global $ewww_debug;
 		if (!empty($_POST['doaction'])) {
                         // if there is no requested bulk action, do nothing
                         if (empty($_REQUEST['bulkaction'])) {
@@ -238,32 +276,36 @@ class ewwwngg {
                         $button_text = __('Resume previous bulk operation', EWWW_IMAGE_OPTIMIZER_DOMAIN);
                 }
                 ?>
-                <div id="bulk-loading"></div>
-                <div id="bulk-progressbar"></div>
-                <div id="bulk-counter"></div>
-                <div id="bulk-status"></div>
-                <div id="bulk-forms">
-                <p class="bulk-info"><?php printf(__('We have %d images to optimize.', EWWW_IMAGE_OPTIMIZER_DOMAIN), count($attachments)); ?><br />
+                <div id="ewww-bulk-loading"></div>
+                <div id="ewww-bulk-progressbar"></div>
+                <div id="ewww-bulk-counter"></div>
+		<form id="ewww-bulk-stop" style="display:none;" method="post" action="">
+			<br /><input type="submit" class="button-secondary action" value="<?php _e('Stop Optimizing', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?>" />
+		</form>
+                <div id="ewww-bulk-status"></div>
+                <div id="ewww-bulk-forms">
+                <p class="ewww-bulk-info"><?php printf(__('We have %d images to optimize.', EWWW_IMAGE_OPTIMIZER_DOMAIN), count($attachments)); ?><br />
 		<?php _e('Previously optimized images will be skipped by default.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
-                <form id="bulk-start" class="bulk-form" method="post" action="">
+                <form id="ewww-bulk-start" class="ewww-bulk-form" method="post" action="">
 			<input type="hidden" id="ewww-delay" name="ewww-delay" value="0">
                         <input type="submit" class="button-secondary action" value="<?php echo $button_text; ?>" />
                 </form>
                 <?php
 		// if there is a previous bulk operation to resume, give the user the option to reset the resume flag
                 if (!empty($resume)) { ?>
-                        <p class="bulk-info"><?php _e('If you would like to start over again, press the Reset Status button to reset the bulk operation status.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
-                        <form id="bulk-reset" class="bulk-form" method="post" action="">
-                                <?php wp_nonce_field( 'ewww-image-optimizer-bulk-reset', '_wpnonce'); ?>
-                                <input type="hidden" name="reset" value="1">
+                        <p class="ewww-bulk-info"><?php _e('If you would like to start over again, press the Reset Status button to reset the bulk operation status.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
+                        <form id="ewww-bulk-reset" class="ewww-bulk-form" method="post" action="">
+                                <?php wp_nonce_field( 'ewww-image-optimizer-bulk-reset', 'ewww_wpnonce'); ?>
+                                <input type="hidden" name="ewww_reset" value="1">
                                 <input type="submit" class="button-secondary action" value="<?php _e('Reset Status', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?>" />
                         </form>
 <?php           }
 	        echo '</div></div>';
 		if ( ewww_image_optimizer_get_option ( 'ewww_image_optimizer_debug' ) ) {
+			global $ewww_debug;
 			echo '<div style="background-color:#ffff99;">' . $ewww_debug . '</div>';
 		}
-		if (!empty($_REQUEST['inline'])) {
+		if (!empty($_REQUEST['ewww_inline'])) {
 			die();
 		}
 		return;
@@ -271,11 +313,10 @@ class ewwwngg {
 
 	/* prepares the javascript for a bulk operation */
 	function ewww_ngg_bulk_script($hook) {
-		global $ewww_debug;
-		$ewww_debug .= "<b>ewww_ngg_bulk_script</b><br />";
+		ewwwio_debug_message( '<b>' . __FUNCTION__ . '()</b>' );
 //		$i18ngg = strtolower ( _n( 'Gallery', 'Galleries', 1, 'nggallery' ) );
 		$i18ngg = strtolower ( __( 'Galleries', 'nggallery' ) );
-		$ewww_debug .= "i18n string for galleries: $i18ngg <br>";
+		ewwwio_debug_message( "i18n string for galleries: $i18ngg" );
 		// make sure we are on a legitimate page and that we have the proper POST variables if necessary
 		if ($hook != $i18ngg . '_page_ewww-ngg-bulk' && $hook != $i18ngg . '_page_nggallery-manage-gallery')
 				return;
@@ -285,7 +326,7 @@ class ewwwngg {
 				return;
 		$images = null;
 		// see if the user wants to reset the previous bulk status
-		if (!empty($_REQUEST['reset']) && wp_verify_nonce($_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk-reset'))
+		if (!empty($_REQUEST['ewww_reset']) && wp_verify_nonce($_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-bulk-reset'))
 			update_option('ewww_image_optimizer_bulk_ngg_resume', '');
 		// see if there is a previous operation to resume
 		$resume = get_option('ewww_image_optimizer_bulk_ngg_resume');
@@ -293,7 +334,7 @@ class ewwwngg {
 		if (!empty($_REQUEST['doaction'])) {
 			// if we are optimizing a specific group of images
 			if ($_REQUEST['page'] == 'manage-images' && $_REQUEST['bulkaction'] == 'bulk_optimize') {
-				$ewww_debug .= "optimizing a group of images<br />";
+				ewwwio_debug_message( 'optimizing a group of images' );
 				check_admin_referer('ngg_updategallery');
 				// reset the resume status, not allowed here
 				update_option('ewww_image_optimizer_bulk_ngg_resume', '');
@@ -302,7 +343,7 @@ class ewwwngg {
 			}
 			// if we are optimizing a specific group of galleries
 			if ($_REQUEST['page'] == 'manage-galleries' && $_REQUEST['bulkaction'] == 'bulk_optimize') {
-				$ewww_debug .= "optimizing a group of galleries<br />";
+				ewwwio_debug_message( 'optimizing a group of galleries' );
 				check_admin_referer('ngg_bulkgallery');
 				global $nggdb;
 				// reset the resume status, not allowed here
@@ -321,16 +362,16 @@ class ewwwngg {
 			}
 		// otherwise, if we have an operation to resume
 		} elseif (!empty($resume)) {
-			$ewww_debug .= "resuming a previous operation (maybe)<br />";
+			ewwwio_debug_message( 'resuming a previous operation (maybe)' );
 			// get the list of attachment IDs from the db
-			$images = get_option('ewww_image_optimizer_bulk_ngg_attachments');
+			$images = get_option( 'ewww_image_optimizer_bulk_ngg_attachments' );
 		// otherwise, if we are on the standard bulk page, get all the images in the db
 		} elseif ($hook == $i18ngg . '_page_ewww-ngg-bulk') {
-			$ewww_debug .= "starting from scratch, grabbing all the images<br />";
+			ewwwio_debug_message( 'starting from scratch, grabbing all the images' );
 			global $wpdb;
 			$images = $wpdb->get_col("SELECT pid FROM $wpdb->nggpictures ORDER BY sortorder ASC");
 		} else {
-			$ewww_debug .= "$hook <br>";
+			ewwwio_debug_message( $hook );
 		}
 		
 		// store the image IDs to process in the db
@@ -347,14 +388,20 @@ class ewwwngg {
 		wp_localize_script('ewwwbulkscript', 'ewww_vars', array(
 				'_wpnonce' => wp_create_nonce('ewww-image-optimizer-bulk'),
 				'gallery' => 'nextgen',
-				'attachments' => $images
+				'attachments' => $images,
+				'license_exceeded' => __( 'License Exceeded', EWWW_IMAGE_OPTIMIZER_DOMAIN ),
+				'operation_stopped' => __( 'Optimization stopped, reload page to resume.', EWWW_IMAGE_OPTIMIZER_DOMAIN ),
+				'operation_interrupted' => __( 'Operation Interrupted', EWWW_IMAGE_OPTIMIZER_DOMAIN ),
+				'temporary_failure' => __( 'Temporary failure, seconds left to retry:', EWWW_IMAGE_OPTIMIZER_DOMAIN ),
+				'remove_failed' => __( 'Could not remove image from table.', EWWW_IMAGE_OPTIMIZER_DOMAIN ),
 			)
 		);
 	}
 
 	/* start the bulk operation */
 	function ewww_ngg_bulk_init() {
-                if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
+		$permissions = apply_filters( 'ewww_image_optimizer_bulk_permissions', '' );
+                if ( ! wp_verify_nonce( $_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-bulk' ) || ! current_user_can( $permissions ) ) {
                         wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
                 }
 		// toggle the resume flag to indicate an operation is in progress
@@ -367,7 +414,8 @@ class ewwwngg {
 
 	/* output the filename of the image being optimized */
 	function ewww_ngg_bulk_filename() {
-                if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
+		$permissions = apply_filters( 'ewww_image_optimizer_bulk_permissions', '' );
+                if ( ! wp_verify_nonce( $_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-bulk' ) || ! current_user_can( $permissions ) ) {
                         wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
                 }
 		// need this file to work with metadata
@@ -384,29 +432,39 @@ class ewwwngg {
 
 	/* process each image in the bulk loop */
 	function ewww_ngg_bulk_loop() {
-                if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
+		global $ewww_defer;
+		$ewww_defer = false;
+		$permissions = apply_filters( 'ewww_image_optimizer_bulk_permissions', '' );
+                if ( ! wp_verify_nonce( $_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-bulk' ) || ! current_user_can( $permissions ) ) {
                         wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
                 }
 		// need this file to work with metadata
 		require_once(WP_CONTENT_DIR . '/plugins/nextcellent-gallery-nextgen-legacy/lib/meta.php');
 		// find out what time we started, in microseconds
 		$started = microtime(true);
-		$id = $_POST['attachment'];
-		// get the metadata
+		$id = $_POST['ewww_attachment'];
+		list( $fres, $tres ) = $this->ewww_ngg_optimize( $id );
+/*		// get the metadata
 		$meta = new nggMeta($id);
 		// retrieve the filepath
 		$file_path = $meta->image->imagePath;
 		// run the optimizer on the current image
-		$fres = ewww_image_optimizer($file_path, 2, false, false, ewww_image_optimizer_get_option('ewww_image_optimizer_lossy_skip_full'));
-		// update the metadata of the optimized image
-		nggdb::update_image_meta($id, array('ewww_image_optimizer' => $fres[1]));
-		// output the results of the optimization
-		printf("<p>" . __('Optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", $meta->image->filename);
-		printf(__('Full size - %s', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "<br>", $fres[1]);
+		$fres = ewww_image_optimizer($file_path, 2, false, false, true);
 		// get the filepath of the thumbnail image
 		$thumb_path = $meta->image->thumbPath;
 		// run the optimization on the thumbnail
-		$tres = ewww_image_optimizer($thumb_path, 2, false, true);
+		$tres = ewww_image_optimizer($thumb_path, 2, false, true);*/
+		global $ewww_exceed;
+		if ( ! empty ( $ewww_exceed ) ) {
+			echo '-9exceeded';
+			die();
+		}
+		// update the metadata of the optimized image
+//		nggdb::update_image_meta($id, array('ewww_image_optimizer' => $fres[1]));
+		// output the results of the optimization
+		//printf("<p>" . __('Optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", $meta->image->filename);
+		printf("<p>" . __('Optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", $fres[0]);
+		printf(__('Full size - %s', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "<br>", $fres[1]);
 		// output the results of the thumb optimization
 		printf(__('Thumbnail - %s', EWWW_IMAGE_OPTIMIZER_DOMAIN) . "<br>", $tres[1]);
 		// outupt how much time we spent
@@ -424,7 +482,8 @@ class ewwwngg {
 
 	/* finish the bulk operation */
 	function ewww_ngg_bulk_cleanup() {
-                if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
+		$permissions = apply_filters( 'ewww_image_optimizer_bulk_permissions', '' );
+                if ( ! wp_verify_nonce( $_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-bulk' ) || ! current_user_can( $permissions ) ) {
                         wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
                 }
 		// reset all the bulk options in the db
@@ -436,8 +495,11 @@ class ewwwngg {
 	}
 
 	// insert a bulk optimize option in the actions list for the gallery and image management pages (via javascript, since we have no hooks)
-	function ewww_ngg_bulk_actions_script() {?>
-		<script type="text/javascript">
+	function ewww_ngg_bulk_actions_script() {
+		if ( ! current_user_can( apply_filters( 'ewww_image_optimizer_bulk_permissions', '' ) ) ) {
+			return;
+		}
+?>		<script type="text/javascript">
 			jQuery(document).ready(function($){
 				$('select[name^="bulkaction"] option:last-child').after('<option value="bulk_optimize">Bulk Optimize</option>');
 			});
@@ -445,11 +507,11 @@ class ewwwngg {
 <?php	}
 }
 // initialize the plugin and the class
-add_action('init', 'ewwwngg');
+//add_action('init', 'ewwwngg');
 //add_action('admin_print_scripts-tools_page_ewww-ngg-bulk', 'ewww_image_optimizer_scripts');
 
-function ewwwngg() {
+//function ewwwngg() {
 	global $ewwwngg;
 	$ewwwngg = new ewwwngg();
-}
+//}
 }

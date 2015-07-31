@@ -1,16 +1,22 @@
 <?php 
+if ( ! class_exists('ewwwflag')) {
 class ewwwflag {
 	/* initializes the flagallery integration functions */
 	function ewwwflag() {
+		add_action('admin_init', array(&$this, 'admin_init'));
 		add_filter('flag_manage_images_columns', array(&$this, 'ewww_manage_images_columns'));
 		add_action('flag_manage_gallery_custom_column', array(&$this, 'ewww_manage_image_custom_column'), 10, 2);
-		add_action('flag_manage_images_bulkaction', array(&$this, 'ewww_manage_images_bulkaction'));
-		add_action('flag_manage_galleries_bulkaction', array(&$this, 'ewww_manage_galleries_bulkaction'));
-		add_action('flag_manage_post_processor_images', array(&$this, 'ewww_flag_bulk'));
-		add_action('flag_manage_post_processor_galleries', array(&$this, 'ewww_flag_bulk'));
-//		add_action('flag_thumbnail_created', array(&$this, 'ewww_added_new_image'));
-		add_action('flag_image_optimized', array(&$this, 'ewww_added_new_image'));
-		add_action('flag_image_resized', array(&$this, 'ewww_added_new_image'));
+		if ( current_user_can( apply_filters( 'ewww_image_optimizer_bulk_permissions', '' ) ) ) {
+			add_action('flag_manage_images_bulkaction', array(&$this, 'ewww_manage_images_bulkaction'));
+			add_action('flag_manage_galleries_bulkaction', array(&$this, 'ewww_manage_galleries_bulkaction'));
+			add_action('flag_manage_post_processor_images', array(&$this, 'ewww_flag_bulk'));
+			add_action('flag_manage_post_processor_galleries', array(&$this, 'ewww_flag_bulk'));
+		}
+		//add_action('flag_thumbnail_created', array(&$this, 'ewww_added_new_image'));
+		if ( ! ewww_image_optimizer_get_option( 'ewww_image_optimizer_noauto' ) ) {
+			add_action('flag_image_optimized', array(&$this, 'ewww_added_new_image'));
+			add_action('flag_image_resized', array(&$this, 'ewww_added_new_image'));
+		}
 		add_action('admin_action_ewww_flag_manual', array(&$this, 'ewww_flag_manual'));
 		add_action('admin_menu', array(&$this, 'ewww_flag_bulk_menu'));
 		add_action('admin_enqueue_scripts', array(&$this, 'ewww_flag_bulk_script'));
@@ -18,6 +24,9 @@ class ewwwflag {
 		add_action('wp_ajax_bulk_flag_filename', array(&$this, 'ewww_flag_bulk_filename'));
 		add_action('wp_ajax_bulk_flag_loop', array(&$this, 'ewww_flag_bulk_loop'));
 		add_action('wp_ajax_bulk_flag_cleanup', array(&$this, 'ewww_flag_bulk_cleanup'));
+	}
+
+	function admin_init() {
 		register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_flag_resume');
 		register_setting('ewww_image_optimizer_options', 'ewww_image_optimizer_bulk_flag_attachments');
 	}
@@ -40,7 +49,7 @@ class ewwwflag {
 	// Handles the bulk html output
 	function ewww_flag_bulk () {
 		// if there is POST data, make sure bulkaction and doaction are the values we want
-		if (!empty($_POST) && empty($_REQUEST['reset'])) {
+		if (!empty($_POST) && empty($_REQUEST['ewww_reset'])) {
 			// if there is no requested bulk action, do nothing
 			if (empty($_REQUEST['bulkaction'])) {
 				return;
@@ -71,32 +80,32 @@ class ewwwflag {
 			$button_text = __('Resume previous bulk operation', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 		}
 		?>
-		<div id="bulk-loading"></div>
-		<div id="bulk-progressbar"></div>
-		<div id="bulk-counter"></div>
-		<form id="bulk-stop" style="display:none;" method="post" action="">
+		<div id="ewww-bulk-loading"></div>
+		<div id="ewww-bulk-progressbar"></div>
+		<div id="ewww-bulk-counter"></div>
+		<form id="ewww-bulk-stop" style="display:none;" method="post" action="">
 			<br /><input type="submit" class="button-secondary action" value="<?php _e('Stop Optimizing', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?>" />
 		</form>
-		<div id="bulk-status"></div>
-		<form class="bulk-form">
+		<div id="ewww-bulk-status"></div>
+		<form class="ewww-bulk-form">
 			<p><label for="ewww-force" style="font-weight: bold"><?php _e('Force re-optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label>&emsp;<input type="checkbox" id="ewww-force" name="ewww-force"></p>
 			<p><label for="ewww-delay" style="font-weight: bold"><?php _e('Choose how long to pause between images (in seconds, 0 = disabled)', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></label>&emsp;<input type="text" id="ewww-delay" name="ewww-delay" value="<?php if ($delay = ewww_image_optimizer_get_option ( 'ewww_image_optimizer_delay' ) ) { echo $delay; } else { echo 0; } ?>"></p>
 			<div id="ewww-delay-slider" style="width:50%"></div>
 		</form>
-		<div id="bulk-forms">
-		<p class="bulk-info"><?php printf(__('%1$d images have been selected (%2$d unoptimized), with %3$d resizes (%4$d unoptimized).', EWWW_IMAGE_OPTIMIZER_DOMAIN), $fullsize_count, $unoptimized_count, $resize_count, $unoptimized_resize_count); ?><br />
+		<div id="ewww-bulk-forms">
+		<p class="ewww-bulk-info"><?php printf(__('%1$d images have been selected (%2$d unoptimized), with %3$d resizes (%4$d unoptimized).', EWWW_IMAGE_OPTIMIZER_DOMAIN), $fullsize_count, $unoptimized_count, $resize_count, $unoptimized_resize_count); ?><br />
 		<?php _e('Previously optimized images will be skipped by default.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
-		<form id="bulk-start" class="bulk-form" method="post" action="">
+		<form id="ewww-bulk-start" class="ewww-bulk-form" method="post" action="">
 			<input type="submit" class="button-secondary action" value="<?php echo $button_text; ?>" />
 		</form>
 		<?php
 		// if there was a previous operation, offer the option to reset the option in the db
 		if (!empty($resume)):
 		?>
-			<p class="bulk-info"><?php _e('If you would like to start over again, press the Reset Status button to reset the bulk operation status.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
-			<form method="post" class="bulk-form" action="">
-				<?php wp_nonce_field( 'ewww-image-optimizer-bulk', '_wpnonce'); ?>
-				<input type="hidden" name="reset" value="1">
+			<p class="ewww-bulk-info"><?php _e('If you would like to start over again, press the Reset Status button to reset the bulk operation status.', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></p>
+			<form method="post" class="ewww-bulk-form" action="">
+				<?php wp_nonce_field( 'ewww-image-optimizer-bulk', 'ewww_wpnonce'); ?>
+				<input type="hidden" name="ewww_reset" value="1">
 				<button id="bulk-reset" type="submit" class="button-secondary action"><?php _e('Reset Status', EWWW_IMAGE_OPTIMIZER_DOMAIN); ?></button>
 			</form>
 		<?php
@@ -120,7 +129,7 @@ class ewwwflag {
 			//print_r($_REQUEST);
 		$ids = null;
 		// reset the resume flag if the user requested it
-		if (!empty($_REQUEST['reset'])) {
+		if (!empty($_REQUEST['ewww_reset'])) {
 			update_option('ewww_image_optimizer_bulk_flag_resume', '');
 		}
 		// get the resume flag from the db
@@ -173,27 +182,36 @@ class ewwwflag {
 		wp_localize_script('ewwwbulkscript', 'ewww_vars', array(
 				'_wpnonce' => wp_create_nonce('ewww-image-optimizer-bulk'),
 				'gallery' => 'flag',
-				'attachments' => $ids
+				'attachments' => $ids,
+				'license_exceeded' => __( 'License Exceeded', EWWW_IMAGE_OPTIMIZER_DOMAIN ),
+				'operation_stopped' => __( 'Optimization stopped, reload page to resume.', EWWW_IMAGE_OPTIMIZER_DOMAIN ),
+				'operation_interrupted' => __( 'Operation Interrupted', EWWW_IMAGE_OPTIMIZER_DOMAIN ),
+				'temporary_failure' => __( 'Temporary failure, seconds left to retry:', EWWW_IMAGE_OPTIMIZER_DOMAIN ),
+				'remove_failed' => __( 'Could not remove image from table.', EWWW_IMAGE_OPTIMIZER_DOMAIN ),
 			)
 		);
 	}
 	/* flag_added_new_image hook - optimize newly uploaded images */
 	function ewww_added_new_image ($image) {
-		global $ewww_debug;
-		$ewww_debug .= "<b>ewww_flag::ewww_added_new_image()</b><br>";
+		ewwwio_debug_message( '<b>' . __FUNCTION__ . '()</b>' );
+		global $ewww_defer;
 		// make sure the image path is set
 		if (isset($image->imagePath)) {
+			// get the image ID
+			$pid = $image->pid;
+			if ( $ewww_defer && ewww_image_optimizer_get_option( 'ewww_image_optimizer_defer' ) ) {
+				ewww_image_optimizer_add_deferred_attachment( "flag,$pid" );
+				return;
+			}
 			// optimize the full size
-			$res = ewww_image_optimizer($image->imagePath, 3, false, false, ewww_image_optimizer_get_option('ewww_image_optimizer_lossy_skip_full'));
+			$res = ewww_image_optimizer($image->imagePath, 3, false, false, true);
 			// optimize the web optimized version
 			$wres = ewww_image_optimizer($image->webimagePath, 3, false, true);
 			// optimize the thumbnail
 			$tres = ewww_image_optimizer($image->thumbPath, 3, false, true);
-			// get the image ID
-			$pid = $image->pid;
 			// retrieve the metadata for the image ID
 			$meta = new flagMeta( $pid );
-			$ewww_debug .= print_r($meta->image->meta_data, TRUE) . "<br>";
+			ewwwio_debug_message( print_r($meta->image->meta_data, TRUE) );
 			$meta->image->meta_data['ewww_image_optimizer'] = $res[1];
 			if ( ! empty( $meta->image->meta_data['webview'] ) ) {
 				$meta->image->meta_data['webview']['ewww_image_optimizer'] = $wres[1];
@@ -202,25 +220,27 @@ class ewwwflag {
 			// update the image metadata in the db
 			flagdb::update_image_meta($pid, $meta->image->meta_data);
 		}
+		ewww_image_optimizer_debug_log();
 	}
 
 	/* Manually process an image from the gallery */
 	function ewww_flag_manual() {
 		// make sure the current user has appropriate permissions
-		if ( FALSE === current_user_can('upload_files') ) {
+		$permissions = apply_filters( 'ewww_image_optimizer_manual_permissions', '' );
+		if ( FALSE === current_user_can( $permissions ) ) {
 			wp_die(__('You don\'t have permission to work with uploaded files.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 		}
 		// make sure we have an attachment ID
-		if ( FALSE === isset($_GET['attachment_ID'])) {
+		if ( FALSE === isset($_GET['ewww_attachment_ID'])) {
 			wp_die(__('No attachment ID was provided.', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 		}
-		$id = intval($_GET['attachment_ID']);
+		$id = intval($_GET['ewww_attachment_ID']);
 		// retrieve the metadata for the image ID
 		$meta = new flagMeta( $id );
 		// determine the path of the image
 		$file_path = $meta->image->imagePath;
 		// optimize the full size
-		$res = ewww_image_optimizer($file_path, 3, false, false, ewww_image_optimizer_get_option('ewww_image_optimizer_lossy_skip_full'));
+		$res = ewww_image_optimizer($file_path, 3, false, false, true);
 		$meta->image->meta_data['ewww_image_optimizer'] = $res[1];
 		if ( ! empty( $meta->image->meta_data['webview'] ) ) {
 			// determine path of the webview
@@ -246,7 +266,8 @@ class ewwwflag {
 
 	/* initialize bulk operation */
 	function ewww_flag_bulk_init() {
-		if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
+		$permissions = apply_filters( 'ewww_image_optimizer_bulk_permissions', '' );
+		if ( ! wp_verify_nonce( $_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-bulk' ) || ! current_user_can( $permissions ) ) {
 			wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 		}
 		// set the resume flag to indicate the bulk operation is in progress
@@ -259,12 +280,13 @@ class ewwwflag {
 
 	/* output the filename of the currently optimizing image */
 	function ewww_flag_bulk_filename() {
-		if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
+		$permissions = apply_filters( 'ewww_image_optimizer_bulk_permissions', '' );
+		if ( ! wp_verify_nonce( $_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-bulk' ) || ! current_user_can( $permissions ) ) {
 			wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 		}
 		// need this file to work with flag meta
 		require_once(WP_CONTENT_DIR . '/plugins/flash-album-gallery/lib/meta.php');
-		$id = $_POST['attachment'];
+		$id = $_POST['ewww_attachment'];
 		// retrieve the meta for the current ID
 		$meta = new flagMeta($id);
 		$loading_image = plugins_url('/wpspin.gif', __FILE__);
@@ -277,22 +299,30 @@ class ewwwflag {
 		
 	/* process each image and it's thumbnail during the bulk operation */
 	function ewww_flag_bulk_loop() {
-		if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
+		global $ewww_defer;
+		$ewww_defer = false;
+		$permissions = apply_filters( 'ewww_image_optimizer_bulk_permissions', '' );
+		if ( ! wp_verify_nonce( $_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-bulk' ) || ! current_user_can( $permissions ) ) {
 			wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 		}
-		if (!empty($_REQUEST['sleep'])) {
-			sleep($_REQUEST['sleep']);
+		if (!empty($_REQUEST['ewww_sleep'])) {
+			sleep($_REQUEST['ewww_sleep']);
 		}
 		// need this file to work with flag meta
 		require_once(WP_CONTENT_DIR . '/plugins/flash-album-gallery/lib/meta.php');
 		// record the starting time for the current image (in microseconds)
 		$started = microtime(true);
-		$id = $_POST['attachment'];
+		$id = $_POST['ewww_attachment'];
 		// get the image meta for the current ID
 		$meta = new flagMeta($id);
 		$file_path = $meta->image->imagePath;
 		// optimize the full-size version
-		$fres = ewww_image_optimizer($file_path, 3, false, false, ewww_image_optimizer_get_option('ewww_image_optimizer_lossy_skip_full'));
+		$fres = ewww_image_optimizer($file_path, 3, false, false, true);
+		global $ewww_exceed;
+		if ( ! empty ( $ewww_exceed ) ) {
+			echo '-9exceeded';
+			die();
+		}
 		$meta->image->meta_data['ewww_image_optimizer'] = $fres[1];
 		// let the user know what happened
 		printf( "<p>" . __('Optimized image:', EWWW_IMAGE_OPTIMIZER_DOMAIN) . " <strong>%s</strong><br>", esc_html($meta->image->filename) );
@@ -327,7 +357,8 @@ class ewwwflag {
 
 	/* finish the bulk operation, and clear out the bulk_flag options */
 	function ewww_flag_bulk_cleanup() {
-		if (!wp_verify_nonce( $_REQUEST['_wpnonce'], 'ewww-image-optimizer-bulk' ) || !current_user_can( 'edit_others_posts' ) ) {
+		$permissions = apply_filters( 'ewww_image_optimizer_bulk_permissions', '' );
+		if ( ! wp_verify_nonce( $_REQUEST['ewww_wpnonce'], 'ewww-image-optimizer-bulk' ) || ! current_user_can( $permissions ) ) {
 			wp_die(__('Cheatin&#8217; eh?', EWWW_IMAGE_OPTIMIZER_DOMAIN));
 		}
 		// reset the bulk flags in the db
@@ -350,11 +381,11 @@ class ewwwflag {
 		if($column_name == 'ewww_image_optimizer') {
 			// get the metadata
 			$meta = new flagMeta($id);
-		if (ewww_image_optimizer_get_option('ewww_image_optimizer_debug')) {
-			$print_meta = print_r($meta->image->meta_data, TRUE);
-			$print_meta = preg_replace(array('/ /', '/\n+/'), array('&nbsp;', '<br />'), $print_meta);
-			echo '<div style="background-color:#ffff99;font-size: 10px;padding: 10px;margin:-10px -10px 10px;line-height: 1.1em">' . $print_meta . '</div>';
-		}
+			if (ewww_image_optimizer_get_option('ewww_image_optimizer_debug')) {
+				$print_meta = print_r($meta->image->meta_data, TRUE);
+				$print_meta = preg_replace(array('/ /', '/\n+/'), array('&nbsp;', '<br />'), $print_meta);
+				echo '<div style="background-color:#ffff99;font-size: 10px;padding: 10px;margin:-10px -10px 10px;line-height: 1.1em">' . $print_meta . '</div>';
+			}
 			// grab the image status from the meta
 			$status = $meta->image->meta_data['ewww_image_optimizer'];
 			$msg = '';
@@ -364,59 +395,63 @@ class ewwwflag {
 			$type = ewww_image_optimizer_mimetype($file_path, 'i');
 			// get the file size
 			$file_size = size_format(filesize($file_path), 2);
-			$file_size = str_replace('B ', 'B', $file_size);
+			$file_size = str_replace( 'B ', 'B', $file_size );
 			$valid = true;
 			// if we don't have a valid tool for the image type, output the appropriate message
-	                switch($type) {
+	                switch( $type ) {
         	                case 'image/jpeg':
-                	                if(!EWWW_IMAGE_OPTIMIZER_JPEGTRAN && !EWWW_IMAGE_OPTIMIZER_CLOUD) {
+					if( ! EWWW_IMAGE_OPTIMIZER_JPEGTRAN && ! ewww_image_optimizer_get_option( 'ewww_image_optimizer_cloud_jpg' ) ) {
                         	                $valid = false;
-	     	                                $msg = '<br>' . sprintf(__('%s is missing', EWWW_IMAGE_OPTIMIZER_DOMAIN), '<em>jpegtran</em>');
+	     	                                $msg = '<br>' . sprintf( __( '%s is missing', EWWW_IMAGE_OPTIMIZER_DOMAIN ), '<em>jpegtran</em>' );
 	                                }
 					break;
 				case 'image/png':
-					if(!EWWW_IMAGE_OPTIMIZER_PNGOUT && !EWWW_IMAGE_OPTIMIZER_OPTIPNG && !EWWW_IMAGE_OPTIMIZER_CLOUD) {
+					if( ! EWWW_IMAGE_OPTIMIZER_PNGOUT && ! EWWW_IMAGE_OPTIMIZER_OPTIPNG && ! ewww_image_optimizer_get_option( 'ewww_image_optimizer_cloud_png' ) ) {
 						$valid = false;
-						$msg = '<br>' . sprintf(__('%s is missing', EWWW_IMAGE_OPTIMIZER_DOMAIN), '<em>optipng/pngout</em>');
+						$msg = '<br>' . sprintf( __( '%s is missing', EWWW_IMAGE_OPTIMIZER_DOMAIN ), '<em>optipng/pngout</em>' );
 					}
 					break;
 				case 'image/gif':
-					if(!EWWW_IMAGE_OPTIMIZER_GIFSICLE && !EWWW_IMAGE_OPTIMIZER_CLOUD) {
+					if( ! EWWW_IMAGE_OPTIMIZER_GIFSICLE && ! ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_gif' ) ) {
 						$valid = false;
-						$msg = '<br>' . sprintf(__('%s is missing', EWWW_IMAGE_OPTIMIZER_DOMAIN), '<em>gifsicle</em>');
+						$msg = '<br>' . sprintf( __( '%s is missing', EWWW_IMAGE_OPTIMIZER_DOMAIN ), '<em>gifsicle</em>' );
 					}
 					break;
 				default:
 					$valid = false;
 			}
 			// let user know if the file type is unsupported
-			if($valid == false) {
-				_e('Unsupported file type', EWWW_IMAGE_OPTIMIZER_DOMAIN);
+			if( $valid == false ) {
+				_e( 'Unsupported file type', EWWW_IMAGE_OPTIMIZER_DOMAIN );
 				return;
 			}
 			// output the image status if we know it
-			if (!empty($status)) {
+			if ( ! empty( $status ) ) {
 				echo $status;
-				echo "<br>" . sprintf(__('Image Size: %s', EWWW_IMAGE_OPTIMIZER_DOMAIN), $file_size);
-				printf("<br><a href=\"admin.php?action=ewww_flag_manual&amp;force=1&amp;attachment_ID=%d\">%s</a>",
-				$id,
-				__('Re-optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+				echo "<br>" . sprintf( __( 'Image Size: %s', EWWW_IMAGE_OPTIMIZER_DOMAIN ), $file_size );
+				if ( current_user_can( apply_filters( 'ewww_image_optimizer_manual_permissions', '' ) ) )  {
+					printf("<br><a href=\"admin.php?action=ewww_flag_manual&amp;ewww_force=1&amp;ewww_attachment_ID=%d\">%s</a>",
+						$id,
+						__('Re-optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+				}
 			// otherwise, tell the user that they can optimize the image now
 			} else {
 				_e('Not processed', EWWW_IMAGE_OPTIMIZER_DOMAIN);
 				echo "<br>" . sprintf(__('Image Size: %s', EWWW_IMAGE_OPTIMIZER_DOMAIN), $file_size);
-				printf("<br><a href=\"admin.php?action=ewww_flag_manual&amp;attachment_ID=%d\">%s</a>",
-				$id,
-				__('Optimize now!', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+				if ( current_user_can( apply_filters( 'ewww_image_optimizer_manual_permissions', '' ) ) )  {
+					printf("<br><a href=\"admin.php?action=ewww_flag_manual&amp;ewww_attachment_ID=%d\">%s</a>",
+						$id,
+						__('Optimize now!', EWWW_IMAGE_OPTIMIZER_DOMAIN));
+				}
 			}
 		}
 	}
 }
+}
+//add_action( 'init', 'ewwwflag' );
 
-add_action( 'init', 'ewwwflag' );
-
-function ewwwflag() {
+//function ewwwflag() {
 	global $ewwwflag;
 	$ewwwflag = new ewwwflag();
-}
+//}
 
