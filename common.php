@@ -1,7 +1,7 @@
 <?php
 // common functions for Standard and Cloud plugins
 
-define( 'EWWW_IMAGE_OPTIMIZER_VERSION', '247.5' );
+define( 'EWWW_IMAGE_OPTIMIZER_VERSION', '247.6' );
 
 // initialize a couple globals
 $ewww_debug = '';
@@ -2388,6 +2388,10 @@ function ewww_image_optimizer_update_attachment( $meta, $ID ) {
 	// construct the new guid based on the filename from the attachment metadata
 	ewwwio_debug_message( "old guid: $old_guid" );
 	ewwwio_debug_message( "new guid: $guid" );
+	if ( substr( $old_guid, -1 ) == '/' || substr( $guid, -1 ) == '/' ) {
+		ewwwio_debug_message( 'could not obtain full url for current and previous image, bailing' );
+		return $meta;
+	}
 	// retrieve any posts that link the image
 	$esql = $wpdb->prepare( "SELECT ID, post_content FROM $wpdb->posts WHERE post_content LIKE '%%%s%%'", $old_guid );
 	ewwwio_debug_message( "using query: $esql" );
@@ -2421,6 +2425,10 @@ function ewww_image_optimizer_update_attachment( $meta, $ID ) {
 				// generate the url for the new image
 				$sguid = dirname( $old_guid ) . "/" . basename( $data['file'] );
 				ewwwio_debug_message( "new sguid: $sguid" );
+				if ( substr( $old_sguid, -1 ) == '/' || substr( $sguid, -1 ) == '/' ) {
+					ewwwio_debug_message( 'could not obtain full url for current and previous resized image, bailing' );
+					continue;
+				}
 				// retrieve any posts that link the resize
 				$ersql = $wpdb->prepare( "SELECT ID, post_content FROM $wpdb->posts WHERE post_content LIKE '%%%s%%'", $old_sguid );
 				ewwwio_debug_message( "using query: $ersql" );
@@ -3272,11 +3280,11 @@ function ewww_image_optimizer_options () {
 			}
 			if (PHP_OS != 'WINNT' && !EWWW_IMAGE_OPTIMIZER_CLOUD && !EWWW_IMAGE_OPTIMIZER_NOEXEC) {
 				if ($file_command_check && !ewww_image_optimizer_find_binary('file', 'f')) {
-					$output[] = '<span style="color: red; font-weight: bolder">file ' . __('command not found on your system', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</span><br />';
+					$output[] = '<span style="color: red; font-weight: bolder">file: ' . __('command not found on your system', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '</span><br />';
 					$collapsible = false;
 				}
 				if (!ewww_image_optimizer_find_binary('nice', 'n')) {
-					$output[] = '<span style="color: orange; font-weight: bolder">nice ' . __('command not found on your system', EWWW_IMAGE_OPTIMIZER_DOMAIN) . ' (' . __('not required', EWWW_IMAGE_OPTIMIZER_DOMAIN) . ')</span><br />';
+					$output[] = '<span style="color: orange; font-weight: bolder">nice: ' . __('command not found on your system', EWWW_IMAGE_OPTIMIZER_DOMAIN) . ' (' . __('not required', EWWW_IMAGE_OPTIMIZER_DOMAIN) . ')</span><br />';
 				}
 				if (!ewww_image_optimizer_get_option('ewww_image_optimizer_disable_pngout') && !ewww_image_optimizer_get_option('ewww_image_optimizer_cloud_png') && PHP_OS != 'SunOS' && !ewww_image_optimizer_find_binary('tar', 't')) {
 					$output[] = '<span style="color: red; font-weight: bolder">tar ' . __('command not found on your system', EWWW_IMAGE_OPTIMIZER_DOMAIN) . ' (' . __('required for automatic pngout installer', EWWW_IMAGE_OPTIMIZER_DOMAIN) . ')</span><br />';
