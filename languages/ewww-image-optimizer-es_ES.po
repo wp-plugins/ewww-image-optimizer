@@ -2,7 +2,7 @@
 # This file is distributed under the same license as the EWWW Image Optimizer package.
 msgid ""
 msgstr ""
-"PO-Revision-Date: 2015-07-22 23:31:45+0000\n"
+"PO-Revision-Date: 2015-07-23 16:48:18+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -12,7 +12,7 @@ msgstr ""
 
 #: common.php:2639
 msgid "Azure Storage image"
-msgstr "Almacenamiento de Imagen Azure"
+msgstr "Almacenamiento de imagen Azure"
 
 #: common.php:2643
 msgid "Amazon S3 image"
@@ -20,11 +20,11 @@ msgstr "Imagen Amazon S3"
 
 #: common.php:3376
 msgid "Deferred Optimization"
-msgstr "Actualización Diferida"
+msgstr "Actualización diferida"
 
 #: common.php:3376
 msgid "Optimize images later via wp_cron, after image upload or generation is complete."
-msgstr "Optimizar imágenes posteriormente a través de wp_cron, después de cargar la imagen o la generación esta completa."
+msgstr "Optimizar imágenes posteriormente a través de wp_cron, después de cargar la imagen o la generación esté completa."
 
 #: ewww-image-optimizer.php:1198
 msgid "Could not find %s"
