@@ -655,8 +655,12 @@ function ewww_image_optimizer_aux_images_script( $hook ) {
 		update_option( 'ewww_image_optimizer_aux_attachments', $attachments );
 	}
 	ewww_image_optimizer_debug_log();
-	// submit a couple variables to the javascript to work with
-	$attachments = json_encode( $attachments );
+	if ( empty( $attachments ) ) {
+		$attachments = '';
+	} else {
+		// submit a couple variables to the javascript to work with
+		$attachments = json_encode( $attachments );
+	}
 	if ( ! empty( $_REQUEST['ewww_scan'] ) ) {
 		if ( empty( $attachments ) ) {
 			_e( 'Nothing to optimize', EWWW_IMAGE_OPTIMIZER_DOMAIN );

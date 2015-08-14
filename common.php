@@ -3,6 +3,8 @@
 
 define( 'EWWW_IMAGE_OPTIMIZER_VERSION', '250.0' );
 
+// TODO: get rid of the Cheatin' Eh? messages and just say Permission denied
+
 // initialize a couple globals
 $ewww_debug = '';
 $ewww_defer = true;
@@ -856,8 +858,10 @@ function ewww_image_optimizer_auto() {
 function ewww_image_optimizer_defer() {
 	ewwwio_debug_message( '<b>' . __FUNCTION__ . '()</b>' );
 	global $ewww_defer;
+	// TODO: add sleep timer
 	$ewww_defer = false;
 	$deferred_attachments = get_option( 'ewww_image_optimizer_defer_attachments' );
+	$delay = ewww_image_optimizer_get_option('ewww_image_optimizer_delay');		
 	foreach ( $deferred_attachments as $image ) {
 		list( $type, $id ) = explode( ',', $image, 2 );
 		switch ( $type ) {
@@ -900,6 +904,9 @@ function ewww_image_optimizer_defer() {
 		}
 		ewww_image_optimizer_remove_deferred_attachment( $image );
 		ewww_image_optimizer_debug_log();
+		if (!empty($delay)) {
+			sleep($delay);
+		}
 	}
 	ewwwio_memory( __FUNCTION__ );
 	return;
@@ -1979,12 +1986,7 @@ function ewww_image_optimizer_hidpi_optimize( $orig_path ) {
 	$hidpi_suffix = apply_filters( 'ewww_image_optimizer_hidpi_suffix', '@2x' );
 	$pathinfo = pathinfo( $orig_path );
 	$hidpi_path = $pathinfo['dirname'] . '/' . $pathinfo['filename'] . $hidpi_suffix . '.' . $pathinfo['extension'];
-//	if ( is_file( $hidpi_path ) ) {
 	ewww_image_optimizer( $hidpi_path );
-//		return $hidpi_path;
-/*	} else {
-		return false;
-	}*/
 }
 
 function ewww_image_optimizer_remote_fetch( $id, $meta ) {
@@ -2213,7 +2215,7 @@ function ewww_image_optimizer_resize_from_meta_data( $meta, $ID = null, $log = t
 	// resized versions, so we can continue
 	if (isset($meta['sizes']) ) {
 		$disabled_sizes = ewww_image_optimizer_get_option( 'ewww_image_optimizer_disable_resizes_opt' );
-//		$ewww_debug .= "disabled sizes: " . print_r( $disabled_sizes, true ) . "<br>";
+//		ewwwio_debug_message( "disabled sizes: " . print_r( $disabled_sizes, true ) );
 		ewwwio_debug_message( 'processing resizes' );
 		// meta sizes don't contain a path, so we calculate one
 		if ($gallery_type === 6) {
@@ -2311,6 +2313,27 @@ function ewww_image_optimizer_resize_from_meta_data( $meta, $ID = null, $log = t
 			// store info on the sizes we've processed, so we can check the list for duplicate sizes
 			$processed[ $size ]['width'] = $data['width'];
 			$processed[ $size ]['height'] = $data['height'];
+		}
+	}
+
+	// process size from a custom theme
+	if ( isset( $meta['image_meta']['resized_images'] ) ) {
+		$imagemeta_resize_pathinfo = pathinfo( $file_path );
+		$imagemeta_resize_path = '';
+		foreach ( $meta['image_meta']['resized_images'] as $imagemeta_resize ) {
+			$imagemeta_resize_path = $imagemeta_resize_pathinfo['dirname'] . '/' . $imagemeta_resize_pathinfo['filename'] . '-' . $imagemeta_resize . '.' . $imagemeta_resize_pathinfo['extension'];
+			ewww_image_optimizer( $imagemeta_resize_path );
+		}
+		
+	}
+
+	// and another custom theme
+	if ( isset( $meta['custom_sizes'] ) ) {
+		$custom_sizes_pathinfo = pathinfo( $file_path );
+		$custom_size_path = '';
+		foreach ( $meta['custom_sizes'] as $custom_size ) {
+			$custom_size_path = $custom_sizes_pathinfo['dirname'] . '/' . $custom_size['file'];
+			ewww_image_optimizer( $custom_size_path );
 		}
 	}
 	

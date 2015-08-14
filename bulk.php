@@ -113,11 +113,11 @@ function ewww_image_optimizer_count_optimized( $gallery, $return_ids = false ) {
 					if (empty($meta)) {
 						continue;
 					}
-					if (empty($meta['ewww_image_optimizer'])) {
+					if ( empty( $meta['ewww_image_optimizer'] ) ) {
 						$unoptimized_full++;
 						$ids[] = $attachment[1];
 					}
-					if ( preg_match( '/' . __('License exceeded', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '/', $meta['ewww_image_optimizer'] ) ) {
+					if ( ! empty( $meta['ewww_image_optimizer'] ) && preg_match( '/' . __('License exceeded', EWWW_IMAGE_OPTIMIZER_DOMAIN) . '/', $meta['ewww_image_optimizer'] ) ) {
 						$unoptimized_full++;
 						$ids[] = $attachment[1];
 					}

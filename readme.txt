@@ -78,17 +78,19 @@ German translation by Christian Herrmann and Ralf Platschi
 Italian translation by  Umberto Moroni, Alexander Gevak and Fabrizio Balestrieri  
 Polish translation by Grzegorz Janoszka  
 Portuguese (Brazil) translation by Pedro Marcelo de Sá Alves and Celso Azevedo  
+Portuguese (Portugal) translation by Celso Azevedo
 Romanian translation by Iosif Kadar of MediasInfo.ro  
-Russian translation by Elvis of turkenichev.ru  
+Russian translation by Elvis of turkenichev.ru, Roman Sobol, and Vitaliy Ralle
 Spanish translation by Manuel Ballesta Ruiz and Adrián López Galera  
 Swedish translation by Alexander Widén  
 Turkish translation by sfatih  
+Ukrainian translation by Roman Sobol
 
 In progress translations:  
-Portuguese (Portugal)  
 Vietnamese  
 Indonesian  
 Hebrew  
+Lithuanian
 
 If you would like to help translate this plugin (new or existing translations), register for an account at our online translation hub: http://translate.ewww.io/
 
@@ -204,6 +206,11 @@ Pngout, TinyJPG/TinyPNG, JPEGmini, and Pngquant were recommended by EWWW IO user
 
 * feature requests are sticky at the top of the support forums, vote for the ones you like: https://wordpress.org/support/plugin/ewww-image-optimizer
 * If you would like to help translate this plugin in your language, get started here: http://translate.ewww.io/projects/ewww-image-optimizer/
+
+= 2.5.1 =
+* added: Portuguese (Portugal) translation for pt_PT thanks to Celso Azevedo
+* fixed: bulk delay was ignored when processing deferred images
+* fixed: notices when scanning media library to load Bulk Optimize page
 
 = 2.5.0 =
 * deprecated: Disable Automatic Optimization and Include Media Folders options: will be removed from the UI in 2.6 but remain functional if enabled
